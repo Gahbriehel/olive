@@ -26,7 +26,6 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ teams }) => {
   const firstPlace = entries[0];
   const secondPlace = entries[1];
   const thirdPlace = entries[2];
-  const fourthPlace = entries[3];
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">

@@ -2,16 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import confetti from "canvas-confetti";
-import {
-  INITIAL_EVENTS,
-  INITIAL_TEAMS,
-  INITIAL_PEOPLE,
-  INITIAL_REGISTRATIONS,
-  INITIAL_ATTENDANCE_LOG,
-  INITIAL_GAMES,
-  INITIAL_USERS,
-  DEFAULT_SETTINGS,
-} from "@/lib/mock-data";
+import { DEFAULT_SETTINGS } from "@/lib/mock-data";
 import {
   UserRole,
   ChurchEvent,
@@ -24,6 +15,18 @@ import {
   ChurchSettings,
   CheckInMethod,
 } from "@/types/dashboard";
+import { useEvents } from "@/hooks/useEvents";
+import { usePeople } from "@/hooks/usePeople";
+import { useTeams } from "@/hooks/useTeams";
+import { useRegistrations } from "@/hooks/useRegistrations";
+import { useAttendance } from "@/hooks/useAttendance";
+import { useGames } from "@/hooks/useGames";
+import { useAuth } from "@/hooks/useAuth";
+import { adaptApiEventToChurchEvent } from "@/models/event";
+import { adaptApiPersonToPerson } from "@/models/person";
+import { adaptApiTeamToTeam } from "@/models/team";
+import { adaptApiRegistrationToRegistration } from "@/models/registration";
+import { adaptApiGameToGame } from "@/models/game";
 
 interface DashboardContextType {
   // Theme & Layout
@@ -86,23 +89,110 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
 
   const [currentRole, setCurrentRole] = useState<UserRole>("Super Admin");
-  const [selectedEventId, setSelectedEventId] = useState<string>("evt-1");
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
 
-  // Datasets
-  const [events, setEvents] = useState<ChurchEvent[]>(INITIAL_EVENTS);
-  const [teams, setTeams] = useState<Team[]>(INITIAL_TEAMS);
-  const [people, setPeople] = useState<Person[]>(INITIAL_PEOPLE);
-  const [registrations, setRegistrations] = useState<Registration[]>(
-    INITIAL_REGISTRATIONS,
+  // React Query Hooks
+  const { user } = useAuth();
+  const { events: apiEvents, createEvent } = useEvents();
+  const { people: apiPeople } = usePeople();
+  const { teams: apiTeams } = useTeams(selectedEventId);
+  const registrationsParams = React.useMemo(
+    () => ({ eventId: selectedEventId }),
+    [selectedEventId],
   );
-  const [attendanceLog, setAttendanceLog] = useState<AttendanceRecord[]>(
-    INITIAL_ATTENDANCE_LOG,
-  );
-  const [games, setGames] = useState<Game[]>(INITIAL_GAMES);
-  const [adminUsers] = useState<AdminUser[]>(INITIAL_USERS);
+  const { registrations: apiRegistrations } =
+    useRegistrations(registrationsParams);
+  const { checkIn: apiCheckIn } = useAttendance();
+  const { games: apiGames, recordScore: apiRecordScore } =
+    useGames(selectedEventId);
+
+  // Datasets state (zero mock fallbacks)
+  const [events, setEvents] = useState<ChurchEvent[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [people, setPeople] = useState<Person[]>([]);
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [attendanceLog, setAttendanceLog] = useState<AttendanceRecord[]>([]);
+  const [games, setGames] = useState<Game[]>([]);
+  const [adminUsers] = useState<AdminUser[]>([]);
   const [settings, setSettings] = useState<ChurchSettings>(DEFAULT_SETTINGS);
 
-  const activeEvent = events.find((e) => e.id === selectedEventId) || events[0];
+  // Sync API Events when available
+  useEffect(() => {
+    if (Array.isArray(apiEvents)) {
+      const adaptedEvents = apiEvents.map((e) => adaptApiEventToChurchEvent(e));
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setEvents(adaptedEvents);
+      if (
+        adaptedEvents.length > 0 &&
+        (!selectedEventId ||
+          !adaptedEvents.some((e) => e.id === selectedEventId))
+      ) {
+        setSelectedEventId(adaptedEvents[0].id);
+      }
+    }
+  }, [apiEvents, selectedEventId]);
+
+  // Sync API People when available
+  useEffect(() => {
+    if (Array.isArray(apiPeople)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPeople(apiPeople.map((p) => adaptApiPersonToPerson(p)));
+    }
+  }, [apiPeople]);
+
+  // Sync API Teams when available
+  useEffect(() => {
+    if (Array.isArray(apiTeams)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTeams(apiTeams.map((t) => adaptApiTeamToTeam(t)));
+    }
+  }, [apiTeams]);
+
+  // Sync API Registrations when available
+  useEffect(() => {
+    if (Array.isArray(apiRegistrations)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRegistrations(
+        apiRegistrations.map((r) => adaptApiRegistrationToRegistration(r)),
+      );
+    }
+  }, [apiRegistrations]);
+
+  // Sync API Games when available
+  useEffect(() => {
+    if (Array.isArray(apiGames)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setGames(apiGames.map((g, index) => adaptApiGameToGame(g, index + 1)));
+    }
+  }, [apiGames]);
+
+  // Sync User role if available from Redux auth
+  useEffect(() => {
+    if (user?.userRoles?.[0]?.role?.name) {
+      const roleName = user.userRoles[0].role.name as UserRole;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCurrentRole(roleName);
+    }
+  }, [user]);
+
+  const fallbackEvent: ChurchEvent = {
+    id: "none",
+    name: "No Active Event",
+    category: "General",
+    description: "Create or select an event to get started",
+    startDate: new Date().toISOString(),
+    endDate: new Date().toISOString(),
+    location: "Main Sanctuary",
+    capacity: 500,
+    registeredCount: 0,
+    checkedInCount: 0,
+    status: "Upcoming",
+    registrationDeadline: new Date().toISOString(),
+    teamAssignmentEnabled: true,
+  };
+
+  const activeEvent =
+    events.find((e) => e.id === selectedEventId) || events[0] || fallbackEvent;
 
   // Sync dark class on root document
   useEffect(() => {
@@ -114,10 +204,19 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [darkMode]);
 
   // Handlers
-  const handleCheckIn = (regId: string, method: CheckInMethod) => {
+  const handleCheckIn = async (regId: string, method: CheckInMethod) => {
     const reg = registrations.find(
       (r) => r.id === regId || r.registrationNumber === regId,
     );
+
+    if (reg) {
+      try {
+        await apiCheckIn({ token: reg.registrationNumber });
+      } catch {
+        // Handle error gracefully
+      }
+    }
+
     if (!reg || reg.status === "Checked-In") return;
 
     // 1. Update registration status
@@ -180,14 +279,22 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   };
 
-  const handleUpdateGameScores = (
+  const handleUpdateGameScores = async (
     gameId: string,
     updatedScores: { teamId: string; points: number }[],
   ) => {
-    const targetGame = games.find((g) => g.id === gameId);
-    if (!targetGame) return;
+    for (const score of updatedScores) {
+      try {
+        await apiRecordScore({
+          gameId,
+          teamId: score.teamId,
+          points: score.points,
+        });
+      } catch {
+        // Handle error
+      }
+    }
 
-    // Trigger confetti celebration
     try {
       confetti({
         particleCount: 80,
@@ -195,7 +302,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
         origin: { y: 0.6 },
       });
     } catch {
-      // fallback if canvas confetti unavailable
+      // fallback
     }
 
     const updatedGames = games.map((g) => {
@@ -210,7 +317,6 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
     });
     setGames(updatedGames);
 
-    // Recalculate team total points
     const teamPointsMap: Record<string, number> = {};
     updatedGames.forEach((g) => {
       g.scores.forEach((s) => {
@@ -226,20 +332,27 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   };
 
-  const handleCreateEvent = (
+  const handleCreateEvent = async (
     newEventData: Omit<
       ChurchEvent,
       "id" | "registeredCount" | "checkedInCount" | "status"
     >,
   ) => {
-    const newEvt: ChurchEvent = {
-      ...newEventData,
-      id: `evt-${Date.now()}`,
-      status: "Upcoming",
-      registeredCount: 0,
-      checkedInCount: 0,
-    };
-    setEvents([newEvt, ...events]);
+    try {
+      const created = await createEvent({
+        title: newEventData.name,
+        description: newEventData.description,
+        location: newEventData.location,
+        startDate: newEventData.startDate,
+        endDate: newEventData.endDate,
+        status: "PUBLISHED",
+      });
+      const adapted = adaptApiEventToChurchEvent(created);
+      setEvents([adapted, ...events]);
+      setSelectedEventId(adapted.id);
+    } catch {
+      // Fallback
+    }
   };
 
   const handleUpdateSettings = (newSettings: ChurchSettings) => {

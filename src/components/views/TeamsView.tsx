@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Phone, ArrowRightLeft, Sparkles } from "lucide-react";
 import {
   Card,

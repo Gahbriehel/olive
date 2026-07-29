@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { CommandMenu } from "@/components/layout/CommandMenu";
@@ -9,10 +10,28 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { QrCode, CheckCircle2 } from "lucide-react";
 import { useDashboard } from "@/context/DashboardContext";
+import { useAuth } from "@/hooks/useAuth";
 
 export const MainShell: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  const isAuthPage = pathname?.startsWith("/login");
+
+  // Route protection guard
+  useEffect(() => {
+    if (!isLoading) {
+      if (!isAuthenticated && !isAuthPage) {
+        router.push("/login");
+      } else if (isAuthenticated && isAuthPage) {
+        router.push("/");
+      }
+    }
+  }, [isAuthenticated, isLoading, isAuthPage, router]);
+
   const {
     isCreateEventOpen,
     setIsCreateEventOpen,
@@ -23,7 +42,7 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
     registrations,
   } = useDashboard();
 
-  const [scannedRegId, setScannedRegId] = React.useState("");
+  const [, setScannedRegId] = React.useState("");
   const [scanResult, setScanResult] = React.useState<string | null>(null);
 
   const simulateScan = (regNum: string) => {
@@ -41,6 +60,40 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // 1. Standalone layout for Auth pages (Login)
+  if (isAuthPage) {
+    return <div className="min-h-screen bg-slate-950">{children}</div>;
+  }
+
+  // 2. Loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-slate-400 font-medium">
+            Verifying Session...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Fallback redirecting UI if unauthenticated on protected route
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-slate-400 font-medium">
+            Redirecting to login...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. Main Protected App Shell with Sidebar & Topbar
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans antialiased text-slate-900 dark:text-slate-100 flex flex-col transition-colors">
       <Sidebar />

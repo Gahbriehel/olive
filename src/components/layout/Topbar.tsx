@@ -17,8 +17,10 @@ import {
 import { UserRole } from "@/types/dashboard";
 import { Button } from "@/components/ui/Button";
 import { useDashboard } from "@/context/DashboardContext";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Topbar: React.FC = () => {
+  const { logout } = useAuth();
   const {
     events,
     selectedEventId,
@@ -265,7 +267,10 @@ export const Topbar: React.FC = () => {
 
               <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 text-xs">
                 <button
-                  onClick={() => setIsRoleMenuOpen(false)}
+                  onClick={() => {
+                    setIsRoleMenuOpen(false);
+                    logout();
+                  }}
                   className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors font-medium"
                 >
                   <LogOut className="w-3.5 h-3.5" />

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AppProviders } from "@/app/providers";
 import { DashboardProvider } from "@/context/DashboardContext";
 import { MainShell } from "@/components/layout/MainShell";
 
@@ -17,9 +18,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col font-sans">
-        <DashboardProvider>
-          <MainShell>{children}</MainShell>
-        </DashboardProvider>
+        <AppProviders>
+          <DashboardProvider>
+            <MainShell>{children}</MainShell>
+          </DashboardProvider>
+        </AppProviders>
       </body>
     </html>
   );

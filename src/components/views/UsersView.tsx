@@ -138,48 +138,66 @@ export const UsersView: React.FC<UsersViewProps> = ({ users }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-zinc-800 text-slate-700 dark:text-slate-300">
-                {users.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors"
-                  >
-                    <td className="p-3.5 pl-5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center">
-                          {user.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-900 dark:text-slate-100">
-                            {user.name}
-                          </p>
-                          <p className="text-[11px] text-slate-400">
-                            {user.email}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-3.5">
-                      <Badge variant="indigo">{user.role}</Badge>
-                    </td>
-                    <td className="p-3.5">
-                      <Badge
-                        variant={user.status === "Active" ? "emerald" : "slate"}
-                        dot
-                      >
-                        {user.status}
-                      </Badge>
-                    </td>
-                    <td className="p-3.5 text-slate-500">{user.lastActive}</td>
-                    <td className="p-3.5 text-right pr-5">
-                      <Button variant="ghost" size="sm">
-                        Edit Role
-                      </Button>
+                {users.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-8 text-center text-slate-400">
+                      <p className="font-semibold text-sm">
+                        No administrators found
+                      </p>
+                      <p className="text-xs mt-1">
+                        User management & custom role builder is configured for
+                        Phase 2 expansion.
+                      </p>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  users.map((user) => (
+                    <tr
+                      key={user.id}
+                      className="hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors"
+                    >
+                      <td className="p-3.5 pl-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center">
+                            {user.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-900 dark:text-slate-100">
+                              {user.name}
+                            </p>
+                            <p className="text-[11px] text-slate-400">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-3.5">
+                        <Badge variant="indigo">{user.role}</Badge>
+                      </td>
+                      <td className="p-3.5">
+                        <Badge
+                          variant={
+                            user.status === "Active" ? "emerald" : "slate"
+                          }
+                          dot
+                        >
+                          {user.status}
+                        </Badge>
+                      </td>
+                      <td className="p-3.5 text-slate-500">
+                        {user.lastActive}
+                      </td>
+                      <td className="p-3.5 text-right pr-5">
+                        <Button variant="ghost" size="sm">
+                          Edit Role
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
