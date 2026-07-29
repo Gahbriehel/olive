@@ -1,0 +1,26 @@
+import type { Metadata } from "next";
+import "./globals.css";
+import { DashboardProvider } from "@/context/DashboardContext";
+import { MainShell } from "@/components/layout/MainShell";
+
+export const metadata: Metadata = {
+  title: "Church Events Platform - Grace City Admin Dashboard",
+  description:
+    "Modern SaaS Admin Platform for Church Events, Attendance & Tournaments",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" className="h-full antialiased">
+      <body className="min-h-full flex flex-col font-sans">
+        <DashboardProvider>
+          <MainShell>{children}</MainShell>
+        </DashboardProvider>
+      </body>
+    </html>
+  );
+}
