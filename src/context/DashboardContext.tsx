@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import confetti from "canvas-confetti";
-import { DEFAULT_SETTINGS } from "@/lib/mock-data";
 import {
   UserRole,
   ChurchEvent,
@@ -15,6 +14,30 @@ import {
   ChurchSettings,
   CheckInMethod,
 } from "@/types/dashboard";
+
+const DEFAULT_SETTINGS: ChurchSettings = {
+  churchName: "Grace City Church",
+  campusName: "Downtown Main Campus",
+  address: "742 Evergreen Terrace, Metropolis",
+  phone: "+1 (555) 000-1234",
+  email: "info@gracecity.org",
+  website: "https://gracecity.org",
+  branding: {
+    primaryColor: "#6366f1",
+    logoText: "GRACE CITY EVENTS",
+  },
+  emailConfig: {
+    fromName: "Grace City Youth Events",
+    fromEmail: "events@gracecity.org",
+    sendConfirmationEmails: true,
+    sendReminder24h: true,
+  },
+  preferences: {
+    autoAssignTeams: true,
+    requireQrCheckin: true,
+    allowSelfRegistration: true,
+  },
+};
 import { useEvents } from "@/hooks/useEvents";
 import { usePeople } from "@/hooks/usePeople";
 import { useTeams } from "@/hooks/useTeams";

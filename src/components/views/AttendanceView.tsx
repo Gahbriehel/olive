@@ -6,6 +6,9 @@ import {
   Clock,
   Camera,
   UserCheck,
+  Users,
+  UserX,
+  TrendingUp,
 } from "lucide-react";
 import {
   Card,
@@ -18,6 +21,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
+import { StatsCard } from "@/components/ui/StatsCard";
 import { Registration, AttendanceRecord } from "@/types/dashboard";
 
 interface AttendanceViewProps {
@@ -43,12 +47,15 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
     null,
   );
 
-  const totalReg = 1248;
-  const checkedInCount = 892 + (attendanceLog.length - 5);
-  const checkinPct = Math.min(
-    Math.round((checkedInCount / totalReg) * 100),
-    100,
-  );
+  const totalReg = registrations.length;
+  const checkedInCount = registrations.filter(
+    (r) => r.status === "Checked-In",
+  ).length;
+  const pendingCount = totalReg - checkedInCount;
+  const checkinPct =
+    totalReg > 0
+      ? Math.min(Math.round((checkedInCount / totalReg) * 100), 100)
+      : 0;
 
   const unCheckedInRegistrations = registrations.filter(
     (r) => r.status !== "Checked-In",
@@ -83,7 +90,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             </span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-            Youth Conference 2026 Attendance
+            Event Attendance Terminal
           </h1>
           <p className="text-xs text-slate-300">
             Scanning terminal active at Registration Desks 1 & 2. Fast badge
@@ -108,6 +115,42 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           <span>{scanSuccessMessage}</span>
         </div>
       )}
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard
+          title="Total Registrations"
+          value={totalReg.toLocaleString()}
+          change="Event capacity pool"
+          trend="neutral"
+          icon={Users}
+          color="indigo"
+        />
+        <StatsCard
+          title="Checked-In Today"
+          value={checkedInCount.toLocaleString()}
+          change={`${checkinPct}% check-in rate`}
+          trend="up"
+          icon={UserCheck}
+          color="emerald"
+        />
+        <StatsCard
+          title="Pending Check-in"
+          value={pendingCount.toLocaleString()}
+          change="Expected attendees"
+          trend="neutral"
+          icon={UserX}
+          color="amber"
+        />
+        <StatsCard
+          title="Check-in Rate"
+          value={`${checkinPct}%`}
+          change={`${checkedInCount} of ${totalReg}`}
+          trend="up"
+          icon={TrendingUp}
+          color="cyan"
+        />
+      </div>
 
       {/* Progress Bar Gauge */}
       <Card>

@@ -30,6 +30,8 @@ import {
   AttendanceRecord,
 } from "@/types/dashboard";
 
+import { StatsCard, StatsCardColor } from "@/components/ui/StatsCard";
+
 interface DashboardViewProps {
   activeEvent?: ChurchEvent;
   teams?: Team[];
@@ -42,24 +44,42 @@ interface DashboardViewProps {
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
+  activeEvent,
   registrations,
   onNavigate,
   onOpenQrScanner,
   onOpenCreateEvent = () => {},
   onExportCsv = () => {},
 }) => {
-  const totalReg = 1248;
-  const checkedIn = 892;
-  const attendancePct = Math.round((checkedIn / totalReg) * 100);
-  const visitors = 310;
-  const members = 938;
-  const gamesDone = "8 / 12";
+  const totalReg = registrations.length;
+  const checkedIn = registrations.filter(
+    (r) => r.status === "Checked-In",
+  ).length;
+  const attendancePct =
+    totalReg > 0 ? Math.round((checkedIn / totalReg) * 100) : 0;
+  const visitors = registrations.filter(
+    (r) => r.membershipStatus === "Visitor",
+  ).length;
+  const members = registrations.filter(
+    (r) => r.membershipStatus === "Member",
+  ).length;
+  const visitorPct =
+    totalReg > 0 ? ((visitors / totalReg) * 100).toFixed(1) : "0.0";
+  const memberPct =
+    totalReg > 0 ? ((members / totalReg) * 100).toFixed(1) : "0.0";
 
-  const stats = [
+  const stats: Array<{
+    title: string;
+    value: string;
+    change: string;
+    trend: "up" | "down" | "neutral";
+    icon: React.ComponentType<{ className?: string }>;
+    color: StatsCardColor;
+  }> = [
     {
       title: "Total Registrations",
       value: totalReg.toLocaleString(),
-      change: "+18% vs last conference",
+      change: `${activeEvent?.name || "Active Event"}`,
       trend: "up",
       icon: Users,
       color: "indigo",
@@ -75,7 +95,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     {
       title: "Visitors / First-Timers",
       value: visitors.toLocaleString(),
-      change: "24.8% of total attendees",
+      change: `${visitorPct}% of total attendees`,
       trend: "neutral",
       icon: UserPlus,
       color: "amber",
@@ -83,7 +103,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     {
       title: "Church Members",
       value: members.toLocaleString(),
-      change: "75.2% of total attendees",
+      change: `${memberPct}% of total attendees`,
       trend: "neutral",
       icon: Shield,
       color: "cyan",
@@ -91,15 +111,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     {
       title: "Attendance Rate",
       value: `${attendancePct}%`,
-      change: "892 of 1,248 checked in",
+      change: `${checkedIn} of ${totalReg} checked in`,
       trend: "up",
       icon: TrendingUp,
       color: "emerald",
     },
     {
-      title: "Games Completed",
-      value: gamesDone,
-      change: "4 games remaining today",
+      title: "Active Event Capacity",
+      value: `${activeEvent?.registeredCount || totalReg} / ${activeEvent?.capacity || 0}`,
+      change: `${activeEvent?.status || "Upcoming"} Status`,
       trend: "neutral",
       icon: Gamepad2,
       color: "rose",
@@ -221,31 +241,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* 6 Key Operational Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {stats.map((stat, idx) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={idx} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-5 pt-5">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    {stat.title}
-                  </span>
-                  <div className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                </div>
-                <div className="flex items-baseline justify-between">
-                  <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                    {stat.value}
-                  </h3>
-                  <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
-                    {stat.change}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+        {stats.map((stat, idx) => (
+          <StatsCard
+            key={idx}
+            title={stat.title}
+            value={stat.value}
+            change={stat.change}
+            trend={stat.trend}
+            icon={stat.icon}
+            color={stat.color}
+          />
+        ))}
       </div>
 
       {/* Main Grid: Latest Registrations Feed & Upcoming Schedule */}

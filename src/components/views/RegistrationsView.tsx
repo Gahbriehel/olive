@@ -1,11 +1,22 @@
 import React, { useState } from "react";
-import { Search, Download, QrCode, Send, RefreshCw } from "lucide-react";
-import { Card } from "@/components/ui/Card";
+import {
+  Download,
+  QrCode,
+  Send,
+  RefreshCw,
+  Users,
+  UserCheck,
+  Shield,
+  Mail,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Input, Select } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
+import { StatsCard } from "@/components/ui/StatsCard";
+import { Table } from "@/components/ui/Table";
 import { Registration, Team } from "@/types/dashboard";
+import { ColumnDef } from "@tanstack/react-table";
 
 interface RegistrationsViewProps {
   registrations: Registration[];
@@ -20,22 +31,117 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
   onExportCsv,
   onReassignTeam,
 }) => {
-  const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [teamFilter, setTeamFilter] = useState("All");
   const [reassignModalTarget, setReassignModalTarget] =
     useState<Registration | null>(null);
   const [selectedNewTeamId, setSelectedNewTeamId] = useState("");
 
+  const totalReg = registrations.length;
+  const checkedIn = registrations.filter(
+    (r) => r.status === "Checked-In",
+  ).length;
+  const assignedTeams = registrations.filter((r) => r.assignedTeamId).length;
+  const confirmedSent = registrations.filter((r) => r.confirmationSent).length;
+
   const filteredRegistrations = registrations.filter((r) => {
-    const matchesSearch =
-      r.name.toLowerCase().includes(search.toLowerCase()) ||
-      r.registrationNumber.toLowerCase().includes(search.toLowerCase()) ||
-      r.email.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === "All" || r.status === statusFilter;
     const matchesTeam = teamFilter === "All" || r.assignedTeamId === teamFilter;
-    return matchesSearch && matchesStatus && matchesTeam;
+    return matchesStatus && matchesTeam;
   });
+
+  const columns: ColumnDef<Registration>[] = [
+    {
+      accessorKey: "registrationNumber",
+      header: "Reg Number",
+      cell: ({ row }) => (
+        <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+          {row.original.registrationNumber}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "name",
+      header: "Attendee Name",
+      cell: ({ row }) => (
+        <div>
+          <p className="font-bold text-slate-900 dark:text-slate-100">
+            {row.original.name}
+          </p>
+          <p className="text-[11px] text-slate-400">{row.original.email}</p>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => (
+        <Badge
+          variant={row.original.status === "Checked-In" ? "emerald" : "indigo"}
+          dot
+        >
+          {row.original.status}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "assignedTeamName",
+      header: "Assigned Team",
+      cell: ({ row }) => (
+        <span
+          className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-white shadow-sm inline-block"
+          style={{ backgroundColor: row.original.assignedTeamColor }}
+        >
+          {row.original.assignedTeamName}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "qrGenerated",
+      header: "QR Ticket",
+      cell: ({ row }) =>
+        row.original.qrGenerated ? (
+          <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+            <QrCode className="w-3.5 h-3.5" />
+            Generated
+          </span>
+        ) : (
+          <span className="text-slate-400">Pending</span>
+        ),
+    },
+    {
+      accessorKey: "confirmationSent",
+      header: "Confirmation Email",
+      cell: ({ row }) =>
+        row.original.confirmationSent ? (
+          <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-semibold">
+            <Send className="w-3.5 h-3.5" />
+            Dispatched
+          </span>
+        ) : (
+          <span className="text-slate-400">Queued</span>
+        ),
+    },
+    {
+      id: "actions",
+      header: () => <div className="text-right">Reassign</div>,
+      cell: ({ row }) => (
+        <div className="text-right">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setReassignModalTarget(row.original);
+              setSelectedNewTeamId(row.original.assignedTeamId);
+            }}
+            leftIcon={<RefreshCw className="w-3.5 h-3.5 text-indigo-500" />}
+          >
+            Change Team
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   const handleConfirmReassign = () => {
     if (reassignModalTarget && selectedNewTeamId) {
@@ -66,16 +172,44 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
         </Button>
       </div>
 
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard
+          title="Total Registrations"
+          value={totalReg.toLocaleString()}
+          change="Event total roster"
+          trend="neutral"
+          icon={Users}
+          color="indigo"
+        />
+        <StatsCard
+          title="Checked-In Today"
+          value={checkedIn.toLocaleString()}
+          change={`${totalReg > 0 ? ((checkedIn / totalReg) * 100).toFixed(0) : 0}% check-in rate`}
+          trend="up"
+          icon={UserCheck}
+          color="emerald"
+        />
+        <StatsCard
+          title="Team Assignments"
+          value={assignedTeams.toLocaleString()}
+          change="Balanced to 4 teams"
+          trend="neutral"
+          icon={Shield}
+          color="cyan"
+        />
+        <StatsCard
+          title="Email Confirmation"
+          value={confirmedSent.toLocaleString()}
+          change="QR tickets sent"
+          trend="up"
+          icon={Mail}
+          color="amber"
+        />
+      </div>
+
       {/* Filter Bar */}
       <div className="flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-zinc-900 p-3 rounded-2xl border border-slate-200 dark:border-zinc-800">
-        <div className="w-full sm:flex-1">
-          <Input
-            placeholder="Search by name, reg # (e.g. YC26-1001), or email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            leftIcon={<Search className="w-4 h-4" />}
-          />
-        </div>
         <div className="w-full sm:w-44">
           <Select
             value={statusFilter}
@@ -103,94 +237,15 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
       </div>
 
       {/* Data Table */}
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-zinc-800/80 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider border-b border-slate-200 dark:border-zinc-800">
-              <tr>
-                <th className="p-3.5 pl-5">Reg Number</th>
-                <th className="p-3.5">Attendee Name</th>
-                <th className="p-3.5">Status</th>
-                <th className="p-3.5">Assigned Team</th>
-                <th className="p-3.5">QR Ticket</th>
-                <th className="p-3.5">Confirmation Email</th>
-                <th className="p-3.5 text-right pr-5">Reassign</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800 text-slate-700 dark:text-slate-300">
-              {filteredRegistrations.map((reg) => (
-                <tr
-                  key={reg.id}
-                  className="hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors"
-                >
-                  <td className="p-3.5 pl-5 font-mono font-bold text-slate-900 dark:text-slate-100">
-                    {reg.registrationNumber}
-                  </td>
-                  <td className="p-3.5">
-                    <p className="font-bold text-slate-900 dark:text-slate-100">
-                      {reg.name}
-                    </p>
-                    <p className="text-[11px] text-slate-400">{reg.email}</p>
-                  </td>
-                  <td className="p-3.5">
-                    <Badge
-                      variant={
-                        reg.status === "Checked-In" ? "emerald" : "indigo"
-                      }
-                      dot
-                    >
-                      {reg.status}
-                    </Badge>
-                  </td>
-                  <td className="p-3.5">
-                    <span
-                      className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-white shadow-sm inline-block"
-                      style={{ backgroundColor: reg.assignedTeamColor }}
-                    >
-                      {reg.assignedTeamName}
-                    </span>
-                  </td>
-                  <td className="p-3.5">
-                    {reg.qrGenerated ? (
-                      <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
-                        <QrCode className="w-3.5 h-3.5" />
-                        Generated
-                      </span>
-                    ) : (
-                      <span className="text-slate-400">Pending</span>
-                    )}
-                  </td>
-                  <td className="p-3.5">
-                    {reg.confirmationSent ? (
-                      <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-semibold">
-                        <Send className="w-3.5 h-3.5" />
-                        Dispatched
-                      </span>
-                    ) : (
-                      <span className="text-slate-400">Queued</span>
-                    )}
-                  </td>
-                  <td className="p-3.5 text-right pr-5">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setReassignModalTarget(reg);
-                        setSelectedNewTeamId(reg.assignedTeamId);
-                      }}
-                      leftIcon={
-                        <RefreshCw className="w-3.5 h-3.5 text-indigo-500" />
-                      }
-                    >
-                      Change Team
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      <Table
+        columns={columns}
+        data={filteredRegistrations}
+        searchPlaceholder="Search by name, reg # (e.g. YC26-1001), or email..."
+        enableSearch={true}
+        enablePagination={true}
+        defaultPageSize={10}
+        emptyMessage="No registrations found"
+      />
 
       {/* Reassign Team Modal */}
       <Modal

@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Plus, Edit3 } from "lucide-react";
+import {
+  Plus,
+  Edit3,
+  Gamepad2,
+  CheckCircle2,
+  PlayCircle,
+  Trophy,
+} from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -11,6 +18,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
+import { StatsCard } from "@/components/ui/StatsCard";
 import { Game, Team } from "@/types/dashboard";
 
 interface GamesViewProps {
@@ -31,6 +39,13 @@ export const GamesView: React.FC<GamesViewProps> = ({
     null,
   );
   const [scoreInputs, setScoreInputs] = useState<Record<string, number>>({});
+
+  const totalGames = games.length;
+  const completedGames = games.filter((g) => g.status === "Completed").length;
+  const inProgressGames = games.filter(
+    (g) => g.status === "In Progress",
+  ).length;
+  const totalMaxPoints = games.reduce((sum, g) => sum + g.maxPoints, 0);
 
   const handleOpenScoreModal = (game: Game) => {
     setSelectedGameForScore(game);
@@ -69,6 +84,42 @@ export const GamesView: React.FC<GamesViewProps> = ({
         <Button variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
           Create New Game
         </Button>
+      </div>
+
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard
+          title="Total Games"
+          value={totalGames.toLocaleString()}
+          change="Tournament schedule"
+          trend="neutral"
+          icon={Gamepad2}
+          color="indigo"
+        />
+        <StatsCard
+          title="Completed Games"
+          value={completedGames.toLocaleString()}
+          change="Scores recorded"
+          trend="up"
+          icon={CheckCircle2}
+          color="emerald"
+        />
+        <StatsCard
+          title="In Progress"
+          value={inProgressGames.toLocaleString()}
+          change="Live competition"
+          trend="neutral"
+          icon={PlayCircle}
+          color="amber"
+        />
+        <StatsCard
+          title="Max Point Pool"
+          value={totalMaxPoints.toLocaleString()}
+          change="Total points available"
+          trend="neutral"
+          icon={Trophy}
+          color="cyan"
+        />
       </div>
 
       {/* Games List */}

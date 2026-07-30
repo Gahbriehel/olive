@@ -1,34 +1,140 @@
 import React, { useState } from "react";
-import { Search, UserPlus, Eye, History } from "lucide-react";
-import { Card } from "@/components/ui/Card";
+import {
+  UserPlus,
+  Eye,
+  History,
+  Users,
+  Shield,
+  UserCheck,
+  Calendar,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Input, Select } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Drawer } from "@/components/ui/Drawer";
 import { Tabs } from "@/components/ui/Tabs";
+import { StatsCard } from "@/components/ui/StatsCard";
+import { Table } from "@/components/ui/Table";
 import { Person } from "@/types/dashboard";
+import { ColumnDef } from "@tanstack/react-table";
 
 interface PeopleViewProps {
   people: Person[];
 }
 
 export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
-  const [search, setSearch] = useState("");
   const [membershipFilter, setMembershipFilter] = useState("All");
   const [genderFilter, setGenderFilter] = useState("All");
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [drawerTab, setDrawerTab] = useState("info");
 
+  // Calculate dynamic stats from people
+  const totalPeople = people.length;
+  const totalMembers = people.filter(
+    (p) => p.membershipStatus === "Member",
+  ).length;
+  const totalVisitors = people.filter(
+    (p) => p.membershipStatus === "Visitor",
+  ).length;
+  const activeAttendees = people.filter(
+    (p) => p.registrationHistoryCount > 0,
+  ).length;
+
   const filteredPeople = people.filter((p) => {
-    const matchesSearch =
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.email.toLowerCase().includes(search.toLowerCase()) ||
-      p.phone.includes(search);
     const matchesMember =
       membershipFilter === "All" || p.membershipStatus === membershipFilter;
     const matchesGender = genderFilter === "All" || p.gender === genderFilter;
-    return matchesSearch && matchesMember && matchesGender;
+    return matchesMember && matchesGender;
   });
+
+  const columns: ColumnDef<Person>[] = [
+    {
+      accessorKey: "name",
+      header: "Person",
+      cell: ({ row }) => {
+        const person = row.original;
+        return (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+              {person.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
+            </div>
+            <div>
+              <p className="font-bold text-slate-900 dark:text-slate-100">
+                {person.name}
+              </p>
+              <p className="text-[11px] text-slate-400">ID: {person.id}</p>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "email",
+      header: "Contact Info",
+      cell: ({ row }) => (
+        <div>
+          <p className="font-medium text-slate-900 dark:text-slate-200">
+            {row.original.email}
+          </p>
+          <p className="text-[11px] text-slate-400">{row.original.phone}</p>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "gender",
+      header: "Gender / DOB",
+      cell: ({ row }) => (
+        <div>
+          <p className="font-medium">{row.original.gender}</p>
+          <p className="text-[11px] text-slate-400">DOB: {row.original.dob}</p>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "membershipStatus",
+      header: "Membership",
+      cell: ({ row }) => (
+        <Badge
+          variant={
+            row.original.membershipStatus === "Member" ? "emerald" : "amber"
+          }
+        >
+          {row.original.membershipStatus}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "registrationHistoryCount",
+      header: "Events Attended",
+      cell: ({ row }) => (
+        <span className="font-mono font-semibold">
+          {row.original.registrationHistoryCount} Events
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: () => <div className="text-right">Actions</div>,
+      cell: ({ row }) => (
+        <div className="text-right">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedPerson(row.original);
+            }}
+            leftIcon={<Eye className="w-3.5 h-3.5 text-indigo-500" />}
+          >
+            Details
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   const drawerTabs = [
     { id: "info", label: "Details" },
@@ -63,16 +169,44 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
         </Button>
       </div>
 
+      {/* Directory Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard
+          title="Total People"
+          value={totalPeople.toLocaleString()}
+          change="Directory total"
+          trend="neutral"
+          icon={Users}
+          color="indigo"
+        />
+        <StatsCard
+          title="Church Members"
+          value={totalMembers.toLocaleString()}
+          change={`${totalPeople > 0 ? ((totalMembers / totalPeople) * 100).toFixed(0) : 0}% of total`}
+          trend="up"
+          icon={Shield}
+          color="cyan"
+        />
+        <StatsCard
+          title="Visitors & Guests"
+          value={totalVisitors.toLocaleString()}
+          change={`${totalPeople > 0 ? ((totalVisitors / totalPeople) * 100).toFixed(0) : 0}% of total`}
+          trend="neutral"
+          icon={UserCheck}
+          color="amber"
+        />
+        <StatsCard
+          title="Active Attendees"
+          value={activeAttendees.toLocaleString()}
+          change="Attended 1+ events"
+          trend="up"
+          icon={Calendar}
+          color="emerald"
+        />
+      </div>
+
       {/* Toolbar Filters */}
       <div className="flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-zinc-900 p-3 rounded-2xl border border-slate-200 dark:border-zinc-800">
-        <div className="w-full sm:flex-1">
-          <Input
-            placeholder="Search by name, email, or phone..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            leftIcon={<Search className="w-4 h-4" />}
-          />
-        </div>
         <div className="w-full sm:w-44">
           <Select
             value={membershipFilter}
@@ -95,90 +229,16 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
         </div>
       </div>
 
-      {/* People Data Table */}
-      <Card className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-zinc-800/80 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider border-b border-slate-200 dark:border-zinc-800">
-              <tr>
-                <th className="p-3.5 pl-5">Person</th>
-                <th className="p-3.5">Contact Info</th>
-                <th className="p-3.5">Gender / DOB</th>
-                <th className="p-3.5">Membership</th>
-                <th className="p-3.5">Events Attended</th>
-                <th className="p-3.5 text-right pr-5">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800 text-slate-700 dark:text-slate-300">
-              {filteredPeople.map((person) => (
-                <tr
-                  key={person.id}
-                  onClick={() => setSelectedPerson(person)}
-                  className="hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
-                >
-                  <td className="p-3.5 pl-5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center">
-                        {person.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-900 dark:text-slate-100">
-                          {person.name}
-                        </p>
-                        <p className="text-[11px] text-slate-400">
-                          ID: {person.id}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-3.5">
-                    <p className="font-medium text-slate-900 dark:text-slate-200">
-                      {person.email}
-                    </p>
-                    <p className="text-[11px] text-slate-400">{person.phone}</p>
-                  </td>
-                  <td className="p-3.5">
-                    <p className="font-medium">{person.gender}</p>
-                    <p className="text-[11px] text-slate-400">
-                      DOB: {person.dob}
-                    </p>
-                  </td>
-                  <td className="p-3.5">
-                    <Badge
-                      variant={
-                        person.membershipStatus === "Member"
-                          ? "emerald"
-                          : "amber"
-                      }
-                    >
-                      {person.membershipStatus}
-                    </Badge>
-                  </td>
-                  <td className="p-3.5 font-mono font-semibold">
-                    {person.registrationHistoryCount} Events
-                  </td>
-                  <td className="p-3.5 text-right pr-5">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedPerson(person);
-                      }}
-                      leftIcon={<Eye className="w-3.5 h-3.5 text-indigo-500" />}
-                    >
-                      Details
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      {/* People TanStack Data Table */}
+      <Table
+        columns={columns}
+        data={filteredPeople}
+        searchPlaceholder="Search by name, email, or phone"
+        enableSearch={true}
+        enablePagination={true}
+        defaultPageSize={10}
+        emptyMessage="No people match your search criteria"
+      />
 
       {/* Person Details Slide-Over Drawer */}
       <Drawer
@@ -280,7 +340,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
                 <p className="text-slate-400 text-[11px]">
                   Church ministry department memberships:
                 </p>
-                {selectedPerson.departmentsPlaceholder.map((dept, idx) => (
+                {selectedPerson.departmentsPlaceholder?.map((dept, idx) => (
                   <div
                     key={idx}
                     className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 font-semibold text-slate-800 dark:text-slate-200 flex items-center justify-between"
@@ -299,7 +359,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
                 <p className="text-slate-400 text-[11px]">
                   Historical event check-in log:
                 </p>
-                {selectedPerson.attendanceHistoryPlaceholder.map(
+                {selectedPerson.attendanceHistoryPlaceholder?.map(
                   (hist, idx) => (
                     <div
                       key={idx}
@@ -331,7 +391,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
                   Administrator & Pastoral Notes:
                 </p>
                 <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/50 text-amber-900 dark:text-amber-200 font-medium">
-                  {selectedPerson.notesPlaceholder}
+                  {selectedPerson.notesPlaceholder || "No notes available."}
                 </div>
               </div>
             )}

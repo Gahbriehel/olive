@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { ArrowLeft, QrCode } from "lucide-react";
+import {
+  ArrowLeft,
+  QrCode,
+  Users,
+  UserCheck,
+  Shield,
+  Gamepad2,
+} from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -10,6 +17,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Tabs } from "@/components/ui/Tabs";
+import { StatsCard } from "@/components/ui/StatsCard";
 import { ChurchEvent, Team, Registration, Game } from "@/types/dashboard";
 
 interface EventDetailViewProps {
@@ -44,10 +52,15 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
     { id: "qr-status", label: "QR Status" },
   ];
 
-  const capPct = Math.round((event.registeredCount / event.capacity) * 100);
-  const checkinPct = Math.round(
-    (event.checkedInCount / event.registeredCount) * 100,
-  );
+  const capPct =
+    event.capacity > 0
+      ? Math.round((event.registeredCount / event.capacity) * 100)
+      : 0;
+  const checkinPct =
+    event.registeredCount > 0
+      ? Math.round((event.checkedInCount / event.registeredCount) * 100)
+      : 0;
+  const completedGames = games.filter((g) => g.status === "Completed").length;
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
@@ -82,60 +95,40 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
       {/* Tab Content 1: Overview */}
       {activeTab === "overview" && (
         <div className="space-y-6">
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-4 pt-4">
-                <p className="text-xs text-slate-500 font-medium">
-                  Capacity Used
-                </p>
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-1">
-                  {capPct}%
-                </h3>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  {event.registeredCount} of {event.capacity}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 pt-4">
-                <p className="text-xs text-slate-500 font-medium">
-                  Checked-In Rate
-                </p>
-                <h3 className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
-                  {checkinPct}%
-                </h3>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  {event.checkedInCount} checked in
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 pt-4">
-                <p className="text-xs text-slate-500 font-medium">
-                  Assigned Teams
-                </p>
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-1">
-                  4 Teams
-                </h3>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  Balanced allocation
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 pt-4">
-                <p className="text-xs text-slate-500 font-medium">
-                  Games Tournament
-                </p>
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-1">
-                  5 Contests
-                </h3>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  3 games completed
-                </p>
-              </CardContent>
-            </Card>
+          {/* Key Metrics Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatsCard
+              title="Capacity Used"
+              value={`${capPct}%`}
+              change={`${event.registeredCount} of ${event.capacity} seats`}
+              trend="neutral"
+              icon={Users}
+              color="indigo"
+            />
+            <StatsCard
+              title="Checked-In Rate"
+              value={`${checkinPct}%`}
+              change={`${event.checkedInCount} checked in`}
+              trend="up"
+              icon={UserCheck}
+              color="emerald"
+            />
+            <StatsCard
+              title="Assigned Teams"
+              value={`${teams.length} Teams`}
+              change="Balanced allocation"
+              trend="neutral"
+              icon={Shield}
+              color="cyan"
+            />
+            <StatsCard
+              title="Games Tournament"
+              value={`${games.length} Contests`}
+              change={`${completedGames} games completed`}
+              trend="up"
+              icon={Gamepad2}
+              color="amber"
+            />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -1,5 +1,13 @@
 import React from "react";
-import { Phone, ArrowRightLeft, Sparkles } from "lucide-react";
+import {
+  Phone,
+  ArrowRightLeft,
+  Sparkles,
+  Shield,
+  Users,
+  Trophy,
+  Scale,
+} from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -8,6 +16,7 @@ import {
   CardContent,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { StatsCard } from "@/components/ui/StatsCard";
 import { Team, Registration } from "@/types/dashboard";
 
 interface TeamsViewProps {
@@ -21,8 +30,16 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
   registrations,
   onReassignTeam,
 }) => {
+  const totalTeams = teams.length;
+  const totalAllocated = registrations.length;
+  const highestPointsTeam = teams.reduce(
+    (max, t) => (t.totalPoints > max.totalPoints ? t : max),
+    teams[0] || { name: "N/A", totalPoints: 0 },
+  );
+  const avgTeamSize =
+    totalTeams > 0 ? (totalAllocated / totalTeams).toFixed(1) : 0;
+
   const handleQuickMove = (regId: string, currentTeamId: string) => {
-    // Find next team circularly
     const teamIds = teams.map((t) => t.id);
     const currIdx = teamIds.indexOf(currentTeamId);
     const nextTeamId = teamIds[(currIdx + 1) % teamIds.length];
@@ -48,6 +65,42 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
             Auto-Balanced Roster Active
           </span>
         </div>
+      </div>
+
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard
+          title="Total Teams"
+          value={totalTeams.toLocaleString()}
+          change="Tournament divisions"
+          trend="neutral"
+          icon={Shield}
+          color="indigo"
+        />
+        <StatsCard
+          title="Allocated Members"
+          value={totalAllocated.toLocaleString()}
+          change="Assigned to teams"
+          trend="up"
+          icon={Users}
+          color="emerald"
+        />
+        <StatsCard
+          title="Leader Team"
+          value={highestPointsTeam.name}
+          change={`${highestPointsTeam.totalPoints} total points`}
+          trend="up"
+          icon={Trophy}
+          color="amber"
+        />
+        <StatsCard
+          title="Average Team Size"
+          value={`${avgTeamSize} members`}
+          change="Balanced target"
+          trend="neutral"
+          icon={Scale}
+          color="cyan"
+        />
       </div>
 
       {/* 4 Team Cards Grid */}

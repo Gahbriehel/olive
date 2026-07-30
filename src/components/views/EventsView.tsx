@@ -8,11 +8,17 @@ import {
   Clock,
   CheckCircle2,
   Eye,
+  Calendar,
+  Radio,
+  Users,
+  Layers,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
+import { StatsCard } from "@/components/ui/StatsCard";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { ChurchEvent } from "@/types/dashboard";
 
 interface EventsViewProps {
@@ -29,13 +35,22 @@ export const EventsView: React.FC<EventsViewProps> = ({
   onPublishToggle = () => {},
 }) => {
   const [search, setSearch] = useState("");
+  const debouncedSearchTerm = useDebouncedSearch(search, 1000);
   const [statusFilter, setStatusFilter] = useState("All");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
+  const totalEvents = events.length;
+  const liveEvents = events.filter((e) => e.status === "Live").length;
+  const upcomingEvents = events.filter((e) => e.status === "Upcoming").length;
+  const totalRegistrations = events.reduce(
+    (sum, e) => sum + e.registeredCount,
+    0,
+  );
+
   const filteredEvents = events.filter((evt) => {
     const matchesSearch =
-      evt.name.toLowerCase().includes(search.toLowerCase()) ||
-      evt.location.toLowerCase().includes(search.toLowerCase());
+      evt.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+      evt.location.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
     const matchesStatus = statusFilter === "All" || evt.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -83,11 +98,47 @@ export const EventsView: React.FC<EventsViewProps> = ({
         </Button>
       </div>
 
+      {/* Metrics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard
+          title="Total Events"
+          value={totalEvents.toLocaleString()}
+          change="All platform events"
+          trend="neutral"
+          icon={Calendar}
+          color="indigo"
+        />
+        <StatsCard
+          title="Live Events"
+          value={liveEvents.toLocaleString()}
+          change="Currently active"
+          trend="up"
+          icon={Radio}
+          color="emerald"
+        />
+        <StatsCard
+          title="Upcoming Events"
+          value={upcomingEvents.toLocaleString()}
+          change="Scheduled next"
+          trend="neutral"
+          icon={Layers}
+          color="cyan"
+        />
+        <StatsCard
+          title="Total Registered"
+          value={totalRegistrations.toLocaleString()}
+          change="Across all events"
+          trend="up"
+          icon={Users}
+          color="amber"
+        />
+      </div>
+
       {/* Toolbar Filters */}
       <div className="flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-zinc-900 p-3 rounded-2xl border border-slate-200 dark:border-zinc-800">
         <div className="w-full sm:flex-1">
           <Input
-            placeholder="Search events by title or location..."
+            placeholder="Search events by title or location"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             leftIcon={<Search className="w-4 h-4" />}
