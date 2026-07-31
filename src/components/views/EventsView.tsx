@@ -160,124 +160,134 @@ export const EventsView: React.FC<EventsViewProps> = ({
       </div>
 
       {/* Events Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredEvents.map((evt) => {
-          const capPct = Math.round((evt.registeredCount / evt.capacity) * 100);
-          return (
-            <Card
-              key={evt.id}
-              className="hover:border-indigo-500/40 transition-all flex flex-col justify-between"
-            >
-              <div>
-                <CardHeader className="flex flex-row items-start justify-between pb-2">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      {getStatusBadge(evt.status)}
-                      <span className="text-[11px] font-semibold text-slate-400">
-                        {evt.category}
-                      </span>
-                    </div>
-                    <CardTitle className="text-base font-bold">
-                      {evt.name}
-                    </CardTitle>
-                  </div>
-
-                  {/* Options menu dropdown */}
-                  <div className="relative">
-                    <button
-                      onClick={() =>
-                        setActiveMenuId(activeMenuId === evt.id ? null : evt.id)
-                      }
-                      className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-                    >
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
-
-                    {activeMenuId === evt.id && (
-                      <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-lg p-1.5 z-30 animate-fade-in text-xs">
-                        <button
-                          onClick={() => {
-                            onSelectEvent(evt);
-                            setActiveMenuId(null);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium text-left"
-                        >
-                          <Eye className="w-3.5 h-3.5 text-indigo-500" />
-                          View Event Details
-                        </button>
-                        <button
-                          onClick={() => {
-                            onPublishToggle(evt.id);
-                            setActiveMenuId(null);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium text-left text-slate-700 dark:text-slate-300"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                          {evt.status === "Draft"
-                            ? "Publish Event"
-                            : "Unpublish"}
-                        </button>
+      {filteredEvents.length === 0 ? (
+        <div className="p-12 text-center text-slate-500 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
+          No data available
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredEvents.map((evt) => {
+            const capPct = Math.round(
+              (evt.registeredCount / Math.max(evt.capacity, 1)) * 100,
+            );
+            return (
+              <Card
+                key={evt.id}
+                className="hover:border-indigo-500/40 transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <CardHeader className="flex flex-row items-start justify-between pb-2">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(evt.status)}
+                        <span className="text-[11px] font-semibold text-slate-400">
+                          {evt.category}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-3 pt-0">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
-                    {evt.description}
-                  </p>
-
-                  <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="truncate">{evt.location}</span>
+                      <CardTitle className="text-base font-bold">
+                        {evt.name}
+                      </CardTitle>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span>
-                        Deadline:{" "}
-                        {new Date(
-                          evt.registrationDeadline,
-                        ).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Capacity Bar */}
-                  <div className="space-y-1 pt-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-700 dark:text-slate-300">
-                        Registration Capacity
-                      </span>
-                      <span className="font-mono text-slate-500">
-                        {evt.registeredCount.toLocaleString()} /{" "}
-                        {evt.capacity.toLocaleString()} ({capPct}%)
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-indigo-600 rounded-full transition-all"
-                        style={{ width: `${Math.min(capPct, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </div>
+                    {/* Options menu dropdown */}
+                    <div className="relative">
+                      <button
+                        onClick={() =>
+                          setActiveMenuId(
+                            activeMenuId === evt.id ? null : evt.id,
+                          )
+                        }
+                        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
 
-              <div className="p-4 pt-0">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-center"
-                  onClick={() => onSelectEvent(evt)}
-                >
-                  Manage Event & View Dashboard
-                </Button>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+                      {activeMenuId === evt.id && (
+                        <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-lg p-1.5 z-30 animate-fade-in text-xs">
+                          <button
+                            onClick={() => {
+                              onSelectEvent(evt);
+                              setActiveMenuId(null);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium text-left"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-indigo-500" />
+                            View Event Details
+                          </button>
+                          <button
+                            onClick={() => {
+                              onPublishToggle(evt.id);
+                              setActiveMenuId(null);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium text-left text-slate-700 dark:text-slate-300"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                            {evt.status === "Draft"
+                              ? "Publish Event"
+                              : "Unpublish"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-3 pt-0">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                      {evt.description}
+                    </p>
+
+                    <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="truncate">{evt.location}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span>
+                          Deadline:{" "}
+                          {new Date(
+                            evt.registrationDeadline,
+                          ).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Capacity Bar */}
+                    <div className="space-y-1 pt-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">
+                          Registration Capacity
+                        </span>
+                        <span className="font-mono text-slate-500">
+                          {evt.registeredCount.toLocaleString()} /{" "}
+                          {evt.capacity.toLocaleString()} ({capPct}%)
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-indigo-600 rounded-full transition-all"
+                          style={{ width: `${Math.min(capPct, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </div>
+
+                <div className="p-4 pt-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-center"
+                    onClick={() => onSelectEvent(evt)}
+                  >
+                    Manage Event & View Dashboard
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

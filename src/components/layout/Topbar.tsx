@@ -19,8 +19,16 @@ import { Button } from "@/components/ui/Button";
 import { useDashboard } from "@/context/DashboardContext";
 import { useAuth } from "@/hooks/useAuth";
 
+const getInitials = (firstName?: string, lastName?: string, email?: string) => {
+  if (firstName && lastName)
+    return `${firstName[0]}${lastName[0]}`.toUpperCase();
+  if (firstName) return firstName.substring(0, 2).toUpperCase();
+  if (email) return email.substring(0, 2).toUpperCase();
+  return "U";
+};
+
 export const Topbar: React.FC = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const {
     events,
     selectedEventId,
@@ -47,6 +55,16 @@ export const Topbar: React.FC = () => {
   ];
 
   const activeEvent = events.find((e) => e.id === selectedEventId) || events[0];
+
+  const displayName =
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+    user?.email ||
+    "User Profile";
+  const userInitials = getInitials(
+    user?.firstName,
+    user?.lastName,
+    user?.email,
+  );
 
   return (
     <header className="sticky top-0 z-20 h-16 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-slate-200 dark:border-zinc-800 px-4 md:px-5 lg:px-6 flex items-center justify-between transition-colors">
@@ -216,11 +234,11 @@ export const Topbar: React.FC = () => {
             className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors min-h-[44px]"
           >
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">
-              PW
+              {userInitials}
             </div>
             <div className="hidden sm:block text-left">
-              <p className="text-xs font-semibold leading-tight text-slate-900 dark:text-slate-100">
-                Pastor Wilson
+              <p className="text-xs font-semibold leading-tight text-slate-900 dark:text-slate-100 max-w-[120px] truncate">
+                {displayName}
               </p>
               <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium">
                 {currentRole}
@@ -232,11 +250,11 @@ export const Topbar: React.FC = () => {
           {isRoleMenuOpen && (
             <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-xl p-3 z-50 animate-fade-in">
               <div className="pb-2.5 mb-2.5 border-b border-slate-100 dark:border-zinc-800">
-                <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                  Pastor James Wilson
+                <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                  {displayName}
                 </p>
-                <p className="text-[11px] text-slate-400">
-                  jwilson@gracecity.org
+                <p className="text-[11px] text-slate-400 truncate">
+                  {user?.email || ""}
                 </p>
               </div>
 

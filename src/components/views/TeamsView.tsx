@@ -104,78 +104,84 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
       </div>
 
       {/* 4 Team Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {teams.map((team) => {
-          const teamRegs = registrations.filter(
-            (r) => r.assignedTeamId === team.id,
-          );
-          return (
-            <Card
-              key={team.id}
-              className="relative overflow-hidden border-t-4"
-              style={{ borderTopColor: team.colorHex }}
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <span
-                    className="px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-sm"
-                    style={{ backgroundColor: team.colorHex }}
-                  >
-                    {team.name}
-                  </span>
-                  <span className="text-xs font-mono font-bold text-slate-500">
-                    {team.totalPoints} pts
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-1">
-                <div>
-                  <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-                    {team.memberCount}{" "}
-                    <span className="text-xs font-normal text-slate-400">
-                      Members
-                    </span>
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Captain:{" "}
-                    <strong className="text-slate-800 dark:text-slate-200">
-                      {team.captain}
-                    </strong>
-                  </p>
-                  <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
-                    <Phone className="w-3 h-3" />
-                    {team.captainPhone}
-                  </p>
-                </div>
-
-                {/* Member Preview List */}
-                <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-zinc-800">
-                  <p className="text-[10px] font-bold uppercase text-slate-400">
-                    Roster Sample (Click ⇄ to move)
-                  </p>
-                  {teamRegs.slice(0, 4).map((r) => (
-                    <div
-                      key={r.id}
-                      className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-zinc-800/50 text-xs"
+      {teams.length === 0 ? (
+        <div className="p-12 text-center text-slate-500 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
+          No data available
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {teams.map((team) => {
+            const teamRegs = registrations.filter(
+              (r) => r.assignedTeamId === team.id,
+            );
+            return (
+              <Card
+                key={team.id}
+                className="relative overflow-hidden border-t-4"
+                style={{ borderTopColor: team.colorHex }}
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-sm"
+                      style={{ backgroundColor: team.colorHex }}
                     >
-                      <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[110px]">
-                        {r.name}
+                      {team.name}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-slate-500">
+                      {team.totalPoints} pts
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-1">
+                  <div>
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                      {team.memberCount}{" "}
+                      <span className="text-xs font-normal text-slate-400">
+                        Members
                       </span>
-                      <button
-                        onClick={() => handleQuickMove(r.id, team.id)}
-                        className="px-2 py-1 bg-white dark:bg-zinc-700 border border-slate-200 dark:border-zinc-600 rounded text-[10px] font-mono hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950 transition-colors flex items-center gap-1"
-                        title="Move to Next Team"
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Captain:{" "}
+                      <strong className="text-slate-800 dark:text-slate-200">
+                        {team.captain}
+                      </strong>
+                    </p>
+                    <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+                      <Phone className="w-3 h-3" />
+                      {team.captainPhone}
+                    </p>
+                  </div>
+
+                  {/* Member Preview List */}
+                  <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-zinc-800">
+                    <p className="text-[10px] font-bold uppercase text-slate-400">
+                      Roster Sample (Click ⇄ to move)
+                    </p>
+                    {teamRegs.slice(0, 4).map((r) => (
+                      <div
+                        key={r.id}
+                        className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-zinc-800/50 text-xs"
                       >
-                        <ArrowRightLeft className="w-3 h-3" /> Move
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[110px]">
+                          {r.name}
+                        </span>
+                        <button
+                          onClick={() => handleQuickMove(r.id, team.id)}
+                          className="px-2 py-1 bg-white dark:bg-zinc-700 border border-slate-200 dark:border-zinc-600 rounded text-[10px] font-mono hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950 transition-colors flex items-center gap-1"
+                          title="Move to Next Team"
+                        >
+                          <ArrowRightLeft className="w-3 h-3" /> Move
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       {/* Interactive Drag & Reassign Roster Control */}
       <Card>
@@ -187,37 +193,43 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-            {registrations.map((r) => (
-              <div
-                key={r.id}
-                className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900 flex items-center justify-between hover:shadow-sm transition-all"
-              >
-                <div>
-                  <p className="font-bold text-slate-900 dark:text-slate-100">
-                    {r.name}
-                  </p>
-                  <p className="text-[10px] text-slate-400">
-                    {r.registrationNumber}
-                  </p>
-                  <span
-                    className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold text-white"
-                    style={{ backgroundColor: r.assignedTeamColor }}
-                  >
-                    {r.assignedTeamName}
-                  </span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickMove(r.id, r.assignedTeamId)}
-                  className="text-[11px] h-8"
+          {registrations.length === 0 ? (
+            <div className="p-8 text-center text-slate-500 text-sm">
+              No data available
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+              {registrations.map((r) => (
+                <div
+                  key={r.id}
+                  className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900 flex items-center justify-between hover:shadow-sm transition-all"
                 >
-                  Transfer ⇄
-                </Button>
-              </div>
-            ))}
-          </div>
+                  <div>
+                    <p className="font-bold text-slate-900 dark:text-slate-100">
+                      {r.name}
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      {r.registrationNumber}
+                    </p>
+                    <span
+                      className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold text-white"
+                      style={{ backgroundColor: r.assignedTeamColor }}
+                    >
+                      {r.assignedTeamName}
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleQuickMove(r.id, r.assignedTeamId)}
+                    className="text-[11px] h-8"
+                  >
+                    Transfer ⇄
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

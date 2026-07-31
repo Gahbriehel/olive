@@ -16,8 +16,8 @@ import {
 } from "@/types/dashboard";
 
 const DEFAULT_SETTINGS: ChurchSettings = {
-  churchName: "Grace City Church",
-  campusName: "Downtown Main Campus",
+  churchName: "Church Events",
+  campusName: "Main Campus",
   address: "742 Evergreen Terrace, Metropolis",
   phone: "+1 (555) 000-1234",
   email: "info@gracecity.org",
@@ -195,6 +195,15 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
       const roleName = user.userRoles[0].role.name as UserRole;
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentRole(roleName);
+    }
+
+    // Sync dynamic church name from logged in user profile
+    const dynamicChurchName = user?.church?.name || user?.churchName;
+    if (dynamicChurchName && settings.churchName === "Church Events") {
+      setSettings((prev) => ({
+        ...prev,
+        churchName: dynamicChurchName,
+      }));
     }
   }, [user]);
 

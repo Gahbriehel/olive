@@ -199,44 +199,52 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             />
 
             <div className="space-y-2 max-h-72 overflow-y-auto">
-              {registrations
-                .filter(
-                  (r) =>
-                    manualQuery === "" ||
-                    r.name.toLowerCase().includes(manualQuery.toLowerCase()) ||
-                    r.registrationNumber
-                      .toLowerCase()
-                      .includes(manualQuery.toLowerCase()),
-                )
-                .map((r) => (
-                  <div
-                    key={r.id}
-                    className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 text-xs"
-                  >
-                    <div>
-                      <p className="font-bold text-slate-900 dark:text-slate-100">
-                        {r.name}
-                      </p>
-                      <p className="text-[10px] text-slate-400">
-                        {r.registrationNumber} • {r.email}
-                      </p>
+              {registrations.length === 0 ? (
+                <div className="p-8 text-center text-slate-500 text-sm">
+                  No data available
+                </div>
+              ) : (
+                registrations
+                  .filter(
+                    (r) =>
+                      manualQuery === "" ||
+                      r.name
+                        .toLowerCase()
+                        .includes(manualQuery.toLowerCase()) ||
+                      r.registrationNumber
+                        .toLowerCase()
+                        .includes(manualQuery.toLowerCase()),
+                  )
+                  .map((r) => (
+                    <div
+                      key={r.id}
+                      className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 text-xs"
+                    >
+                      <div>
+                        <p className="font-bold text-slate-900 dark:text-slate-100">
+                          {r.name}
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          {r.registrationNumber} • {r.email}
+                        </p>
+                      </div>
+                      {r.status === "Checked-In" ? (
+                        <Badge variant="emerald" size="sm">
+                          Checked-In
+                        </Badge>
+                      ) : (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleManualCheckInSubmit(r)}
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
+                        >
+                          Check-In
+                        </Button>
+                      )}
                     </div>
-                    {r.status === "Checked-In" ? (
-                      <Badge variant="emerald" size="sm">
-                        Checked-In
-                      </Badge>
-                    ) : (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleManualCheckInSubmit(r)}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
-                      >
-                        Check-In
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                  ))
+              )}
             </div>
           </CardContent>
         </Card>
@@ -248,39 +256,45 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             <CardDescription>Real-time log of scanned badges</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {attendanceLog.map((log) => (
-              <div
-                key={log.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 text-xs animate-fade-in"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center">
-                    <UserCheck className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-900 dark:text-slate-100">
-                      {log.attendeeName}
-                    </p>
-                    <p className="text-[10px] text-slate-400">
-                      {log.method} • {log.checkedInBy}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <span
-                    className="inline-block px-2 py-0.5 rounded text-[10px] font-bold text-white mb-1"
-                    style={{ backgroundColor: log.teamColor }}
-                  >
-                    {log.teamName}
-                  </span>
-                  <p className="text-[10px] text-slate-400 flex items-center gap-1 justify-end">
-                    <Clock className="w-3 h-3" />
-                    {log.time}
-                  </p>
-                </div>
+            {attendanceLog.length === 0 ? (
+              <div className="p-8 text-center text-slate-500 text-sm">
+                No data available
               </div>
-            ))}
+            ) : (
+              attendanceLog.map((log) => (
+                <div
+                  key={log.id}
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 text-xs animate-fade-in"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center">
+                      <UserCheck className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-900 dark:text-slate-100">
+                        {log.attendeeName}
+                      </p>
+                      <p className="text-[10px] text-slate-400">
+                        {log.method} • {log.checkedInBy}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span
+                      className="inline-block px-2 py-0.5 rounded text-[10px] font-bold text-white mb-1"
+                      style={{ backgroundColor: log.teamColor }}
+                    >
+                      {log.teamName}
+                    </span>
+                    <p className="text-[10px] text-slate-400 flex items-center gap-1 justify-end">
+                      <Clock className="w-3 h-3" />
+                      {log.time}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>

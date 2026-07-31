@@ -25,6 +25,13 @@ export interface IUser {
   id: string;
   churchId: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
+  churchName?: string;
+  church?: {
+    id: string;
+    name: string;
+  };
   userRoles?: IUserRole[];
   createdAt?: string;
 }

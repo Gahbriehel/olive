@@ -31,6 +31,7 @@ import {
 } from "@/types/dashboard";
 
 import { StatsCard, StatsCardColor } from "@/components/ui/StatsCard";
+import { useDashboard } from "@/context/DashboardContext";
 
 interface DashboardViewProps {
   activeEvent?: ChurchEvent;
@@ -51,6 +52,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenCreateEvent = () => {},
   onExportCsv = () => {},
 }) => {
+  const { events } = useDashboard();
   const totalReg = registrations.length;
   const checkedIn = registrations.filter(
     (r) => r.status === "Checked-In",
@@ -135,7 +137,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              YOUTH CONFERENCE 2026 LIVE
+              {activeEvent?.name
+                ? `${activeEvent.name.toUpperCase()} LIVE`
+                : "EVENT DASHBOARD"}
             </span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
@@ -275,58 +279,64 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </Button>
           </CardHeader>
           <CardContent className="space-y-3">
-            {registrations.slice(0, 5).map((reg) => (
-              <div
-                key={reg.id}
-                className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center">
-                    {reg.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                        {reg.name}
-                      </p>
-                      <Badge
-                        variant={
-                          reg.membershipStatus === "Member"
-                            ? "emerald"
-                            : "amber"
-                        }
-                        size="sm"
-                      >
-                        {reg.membershipStatus}
-                      </Badge>
+            {registrations.length === 0 ? (
+              <div className="text-center p-6 text-sm text-slate-500">
+                No data available
+              </div>
+            ) : (
+              registrations.slice(0, 5).map((reg) => (
+                <div
+                  key={reg.id}
+                  className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center">
+                      {reg.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
                     </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Reg #:{" "}
-                      <span className="font-mono text-slate-700 dark:text-slate-300">
-                        {reg.registrationNumber}
-                      </span>{" "}
-                      • {reg.email}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                          {reg.name}
+                        </p>
+                        <Badge
+                          variant={
+                            reg.membershipStatus === "Member"
+                              ? "emerald"
+                              : "amber"
+                          }
+                          size="sm"
+                        >
+                          {reg.membershipStatus}
+                        </Badge>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Reg #:{" "}
+                        <span className="font-mono text-slate-700 dark:text-slate-300">
+                          {reg.registrationNumber}
+                        </span>{" "}
+                        • {reg.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span
+                      className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold text-white mb-1"
+                      style={{ backgroundColor: reg.assignedTeamColor }}
+                    >
+                      {reg.assignedTeamName}
+                    </span>
+                    <p className="text-[10px] text-slate-400 flex items-center gap-1 justify-end">
+                      <Clock className="w-3 h-3" />
+                      {reg.status === "Checked-In" ? "Checked In" : "Confirmed"}
                     </p>
                   </div>
                 </div>
-
-                <div className="text-right">
-                  <span
-                    className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold text-white mb-1"
-                    style={{ backgroundColor: reg.assignedTeamColor }}
-                  >
-                    {reg.assignedTeamName}
-                  </span>
-                  <p className="text-[10px] text-slate-400 flex items-center gap-1 justify-end">
-                    <Clock className="w-3 h-3" />
-                    {reg.status === "Checked-In" ? "Checked In" : "Confirmed"}
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
 
@@ -344,45 +354,42 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </Button>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                    Worship Night: Encounter
-                  </span>
-                  <Badge variant="indigo" size="sm">
-                    Aug 14
-                  </Badge>
+              {!events || events.length === 0 ? (
+                <div className="text-center p-6 text-sm text-slate-500">
+                  No data available
                 </div>
-                <p className="text-[11px] text-slate-500 mb-2">
-                  420 of 800 spots registered
-                </p>
-                <div className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+              ) : (
+                events.slice(0, 3).map((event) => (
                   <div
-                    className="h-full bg-indigo-600 rounded-full"
-                    style={{ width: "52.5%" }}
-                  />
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                    Volunteer & Leaders Summit
-                  </span>
-                  <Badge variant="slate" size="sm">
-                    Sep 05
-                  </Badge>
-                </div>
-                <p className="text-[11px] text-slate-500 mb-2">
-                  185 of 250 spots registered
-                </p>
-                <div className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-emerald-500 rounded-full"
-                    style={{ width: "74%" }}
-                  />
-                </div>
-              </div>
+                    key={event.id}
+                    className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                        {event.name}
+                      </span>
+                      <Badge variant="indigo" size="sm">
+                        {new Date(event.startDate).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mb-2">
+                      {event.registeredCount} of {event.capacity} spots
+                      registered
+                    </p>
+                    <div className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-indigo-600 rounded-full"
+                        style={{
+                          width: `${Math.min((event.registeredCount / Math.max(event.capacity, 1)) * 100, 100)}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
 

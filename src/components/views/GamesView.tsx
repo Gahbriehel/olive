@@ -123,76 +123,82 @@ export const GamesView: React.FC<GamesViewProps> = ({
       </div>
 
       {/* Games List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {games.map((game) => (
-          <Card key={game.id} className="flex flex-col justify-between">
-            <div>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <Badge
-                    variant={
-                      game.status === "Completed"
-                        ? "emerald"
-                        : game.status === "In Progress"
-                          ? "amber"
-                          : "slate"
-                    }
-                    dot
-                  >
-                    {game.status}
-                  </Badge>
-                  <span className="text-xs font-mono font-bold text-slate-400">
-                    Order #{game.order} • Max {game.maxPoints} pts
-                  </span>
-                </div>
-                <CardTitle className="text-base font-bold mt-1">
-                  {game.title}
-                </CardTitle>
-                <CardDescription>{game.category}</CardDescription>
-              </CardHeader>
+      {games.length === 0 ? (
+        <div className="p-12 text-center text-slate-500 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
+          No data available
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {games.map((game) => (
+            <Card key={game.id} className="flex flex-col justify-between">
+              <div>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <Badge
+                      variant={
+                        game.status === "Completed"
+                          ? "emerald"
+                          : game.status === "In Progress"
+                            ? "amber"
+                            : "slate"
+                      }
+                      dot
+                    >
+                      {game.status}
+                    </Badge>
+                    <span className="text-xs font-mono font-bold text-slate-400">
+                      Order #{game.order} • Max {game.maxPoints} pts
+                    </span>
+                  </div>
+                  <CardTitle className="text-base font-bold mt-1">
+                    {game.title}
+                  </CardTitle>
+                  <CardDescription>{game.category}</CardDescription>
+                </CardHeader>
 
-              <CardContent className="space-y-3 pt-1 text-xs">
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 space-y-1.5">
-                  <p className="font-bold text-slate-700 dark:text-slate-300">
-                    Tournament Results
-                  </p>
-                  {game.scores.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-2 mt-1">
-                      {game.scores.map((s) => (
-                        <div
-                          key={s.teamId}
-                          className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-zinc-700 font-semibold"
-                        >
-                          <span className="truncate">{s.teamName}</span>
-                          <span className="font-mono text-indigo-600 dark:text-indigo-400">
-                            +{s.points}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-slate-400 italic">
-                      No scores submitted yet.
+                <CardContent className="space-y-3 pt-1 text-xs">
+                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 space-y-1.5">
+                    <p className="font-bold text-slate-700 dark:text-slate-300">
+                      Tournament Results
                     </p>
-                  )}
-                </div>
-              </CardContent>
-            </div>
+                    {game.scores.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-2 mt-1">
+                        {game.scores.map((s) => (
+                          <div
+                            key={s.teamId}
+                            className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-zinc-700 font-semibold"
+                          >
+                            <span className="truncate">{s.teamName}</span>
+                            <span className="font-mono text-indigo-600 dark:text-indigo-400">
+                              +{s.points}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-slate-400 italic">
+                        No scores submitted yet.
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </div>
 
-            <div className="p-4 pt-0">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-center"
-                onClick={() => handleOpenScoreModal(game)}
-                leftIcon={<Edit3 className="w-4 h-4 text-indigo-500" />}
-              >
-                Submit / Edit Game Scores
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
+              <div className="p-4 pt-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-center"
+                  onClick={() => handleOpenScoreModal(game)}
+                  leftIcon={<Edit3 className="w-4 h-4 text-indigo-500" />}
+                >
+                  Submit / Edit Game Scores
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Score Submission Modal */}
       <Modal

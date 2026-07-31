@@ -37,9 +37,8 @@ export const mainNavItems: NavItem[] = [
     href: "/registrations",
     label: "Registrations",
     icon: Ticket,
-    badge: "1,248",
   },
-  { href: "/teams", label: "Teams", icon: Shield, badge: "4 Teams" },
+  { href: "/teams", label: "Teams", icon: Shield },
   { href: "/attendance", label: "Attendance", icon: QrCode, highlight: true },
   { href: "/games", label: "Games", icon: Gamepad2 },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
@@ -47,8 +46,8 @@ export const mainNavItems: NavItem[] = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-export const futureModules: FutureModule[] = [
-  { id: "small-groups", label: "Small Groups", icon: Layers },
-  { id: "giving", label: "Giving & Tithes", icon: HeartHandshake },
-  { id: "facilities", label: "Facilities & Rooms", icon: DoorClosed },
-];
+// export const futureModules: FutureModule[] = [
+//   { id: "small-groups", label: "Small Groups", icon: Layers },
+//   { id: "giving", label: "Giving & Tithes", icon: HeartHandshake },
+//   { id: "facilities", label: "Facilities & Rooms", icon: DoorClosed },
+// ];

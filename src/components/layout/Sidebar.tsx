@@ -7,11 +7,18 @@ import { Sparkles, X, Church } from "lucide-react";
 import { clsx } from "clsx";
 import { Badge } from "@/components/ui/Badge";
 import { useDashboard } from "@/context/DashboardContext";
-import { mainNavItems, futureModules } from "@/helpers/navlinks";
+import { useAuth } from "@/hooks/useAuth";
+import { mainNavItems } from "@/helpers/navlinks";
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
-  const { isMobileOpen, setIsMobileOpen } = useDashboard();
+  const { isMobileOpen, setIsMobileOpen, settings, events, selectedEventId } =
+    useDashboard();
+  const { user } = useAuth();
+
+  const churchName =
+    settings?.churchName || user?.church?.name || "Church Events";
+  const activeEvent = events.find((e) => e.id === selectedEventId) || events[0];
 
   const navContent = (
     <div className="flex flex-col h-full bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-slate-200">
@@ -22,8 +29,8 @@ export const Sidebar: React.FC = () => {
             <Church className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="font-bold text-sm leading-tight text-slate-900 dark:text-white tracking-tight">
-              Grace City
+            <h1 className="font-bold text-sm leading-tight text-slate-900 dark:text-white tracking-tight truncate">
+              {churchName}
             </h1>
             <p className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
               Events Platform
@@ -43,9 +50,9 @@ export const Sidebar: React.FC = () => {
       <div className="mx-4 mt-4 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 animate-pulse" />
-          <div className="text-[11px]">
-            <p className="font-semibold text-indigo-900 dark:text-indigo-200">
-              Youth Conference 2026
+          <div className="text-[11px] truncate">
+            <p className="font-semibold text-indigo-900 dark:text-indigo-200 truncate">
+              {activeEvent?.name || "No Active Event"}
             </p>
             <p className="text-indigo-600 dark:text-indigo-400">
               Phase 1 Live Operations
@@ -111,7 +118,7 @@ export const Sidebar: React.FC = () => {
         </div>
 
         {/* Future Architecture Modules */}
-        <div className="pt-2 border-t border-slate-100 dark:border-zinc-800">
+        {/* <div className="pt-2 border-t border-slate-100 dark:border-zinc-800">
           <div className="px-3 mb-2 flex items-center justify-between">
             <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
               Scalable Platform Modules
@@ -139,7 +146,7 @@ export const Sidebar: React.FC = () => {
               );
             })}
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Footer info */}

@@ -46,7 +46,7 @@ export function Table<TData, TValue>({
   enablePagination = true,
   defaultPageSize = 10,
   pageSizeOptions = [5, 10, 20, 50],
-  emptyMessage = "No records found",
+  emptyMessage = "No data available",
   className = "",
 }: TableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
