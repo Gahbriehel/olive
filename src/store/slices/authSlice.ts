@@ -96,7 +96,7 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isAuthenticated = true;
         state.accessToken = action.payload.accessToken;
-        state.user = action.payload.user;
+        state.user = action.payload.user || null;
       },
     );
     builder.addCase(loginUser.rejected, (state, action) => {

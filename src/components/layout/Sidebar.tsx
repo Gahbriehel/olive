@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Sparkles, X, Church } from "lucide-react";
 import { clsx } from "clsx";
-import { Badge } from "@/components/ui/Badge";
 import { useDashboard } from "@/context/DashboardContext";
 import { useAuth } from "@/hooks/useAuth";
 import { mainNavItems } from "@/helpers/navlinks";

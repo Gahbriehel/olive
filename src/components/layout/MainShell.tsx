@@ -17,9 +17,16 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user, getProfile } = useAuth();
 
   const isAuthPage = pathname?.startsWith("/login");
+
+  // Fetch user profile on startup / session restore
+  useEffect(() => {
+    if (isAuthenticated && !user && !isAuthPage) {
+      getProfile();
+    }
+  }, [isAuthenticated, user, isAuthPage, getProfile]);
 
   // Route protection guard
   useEffect(() => {

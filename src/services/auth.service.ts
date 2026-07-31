@@ -6,21 +6,51 @@ import {
   ISignUpResponse,
   IUser,
 } from "@/models/auth";
-import { IBaseResponse } from "@/models/base";
+import { IBaseResponse, extractData } from "@/models/base";
 
-function extractData<T>(resData: IBaseResponse<T> | T): T {
-  if (resData && typeof resData === "object" && "data" in resData) {
-    return (resData as IBaseResponse<T>).data;
-  }
-  return resData as T;
+interface RawAuthResponsePayload {
+  accessToken?: string;
+  refreshToken?: string;
+  access_token?: string;
+  refresh_token?: string;
+  tokens?: {
+    accessToken?: string;
+    refreshToken?: string;
+    access_token?: string;
+    refresh_token?: string;
+  };
+  user?: IUser;
+  [key: string]: unknown;
 }
 
 export const authService = {
   async login(payload: ILoginPayload): Promise<IAuthResponse> {
     const res = await apiClient.post<
-      IBaseResponse<IAuthResponse> | IAuthResponse
+      IBaseResponse<RawAuthResponsePayload> | RawAuthResponsePayload
     >("/auth/login", payload);
-    return extractData(res.data);
+    const rawData = extractData<RawAuthResponsePayload>(res.data);
+
+    const accessToken =
+      rawData?.accessToken ||
+      rawData?.tokens?.accessToken ||
+      rawData?.access_token ||
+      rawData?.tokens?.access_token ||
+      "";
+
+    const refreshToken =
+      rawData?.refreshToken ||
+      rawData?.tokens?.refreshToken ||
+      rawData?.refresh_token ||
+      rawData?.tokens?.refresh_token ||
+      "";
+
+    const user = (rawData?.user || rawData) as IUser;
+
+    return {
+      accessToken,
+      refreshToken,
+      user,
+    };
   },
 
   async register(payload: ISignUpPayload): Promise<ISignUpResponse> {
@@ -39,8 +69,30 @@ export const authService = {
 
   async refreshToken(token: string): Promise<IAuthResponse> {
     const res = await apiClient.post<
-      IBaseResponse<IAuthResponse> | IAuthResponse
-    >("/auth/refresh", { refreshToken: token });
-    return extractData(res.data);
+      IBaseResponse<RawAuthResponsePayload> | RawAuthResponsePayload
+    >("/auth/refresh", {
+      refreshToken: token,
+    });
+    const rawData = extractData<RawAuthResponsePayload>(res.data);
+
+    const accessToken =
+      rawData?.accessToken ||
+      rawData?.tokens?.accessToken ||
+      rawData?.access_token ||
+      "";
+
+    const refreshToken =
+      rawData?.refreshToken ||
+      rawData?.tokens?.refreshToken ||
+      rawData?.refresh_token ||
+      token;
+
+    const user = rawData?.user;
+
+    return {
+      accessToken,
+      refreshToken,
+      user,
+    };
   },
 };

@@ -16,7 +16,6 @@ export function useGames(eventId?: string) {
   const gamesQuery = useQuery({
     queryKey: ["games", eventId],
     queryFn: () => gamesService.getGames(eventId),
-    enabled: !!eventId,
     staleTime: 1000 * 60,
   });
 

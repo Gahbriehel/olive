@@ -10,7 +10,6 @@ export function useTeams(eventId?: string) {
   const teamsQuery = useQuery({
     queryKey: ["teams", eventId],
     queryFn: () => teamsService.getTeams(eventId),
-    enabled: !!eventId,
     staleTime: 1000 * 60 * 2,
   });
 

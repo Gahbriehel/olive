@@ -16,12 +16,25 @@ export const apiClient = axios.create({
   },
 });
 
-// Attach Authorization header if token exists
+// Attach Authorization header if token exists and clean query parameters
 apiClient.interceptors.request.use((config) => {
   const token = getAccessToken();
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  if (config.params && typeof config.params === "object") {
+    const cleaned: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(
+      config.params as Record<string, unknown>,
+    )) {
+      if (value !== "" && value !== null && value !== undefined) {
+        cleaned[key] = value;
+      }
+    }
+    config.params = cleaned;
+  }
+
   return config;
 });
 
@@ -49,10 +62,22 @@ apiClient.interceptors.response.use(
             refreshToken,
           });
 
-          if (data?.accessToken) {
-            setTokens(data.accessToken);
+          const rawData = data?.data || data;
+          const newAccessToken =
+            rawData?.accessToken ||
+            rawData?.tokens?.accessToken ||
+            rawData?.access_token;
+          const newRefreshToken =
+            rawData?.refreshToken ||
+            rawData?.tokens?.refreshToken ||
+            rawData?.refresh_token;
+
+          if (newAccessToken) {
+            setTokens(newAccessToken, newRefreshToken);
             isRefreshing = false;
-            originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            }
             return apiClient(originalRequest);
           }
         } catch {

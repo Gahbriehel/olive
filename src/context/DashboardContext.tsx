@@ -205,7 +205,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
         churchName: dynamicChurchName,
       }));
     }
-  }, [user]);
+  }, [user, settings.churchName]);
 
   const fallbackEvent: ChurchEvent = {
     id: "none",

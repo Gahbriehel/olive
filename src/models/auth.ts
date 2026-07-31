@@ -39,7 +39,7 @@ export interface IUser {
 export interface IAuthResponse {
   accessToken: string;
   refreshToken: string;
-  user: IUser;
+  user?: IUser;
 }
 
 export interface ISignUpResponse {

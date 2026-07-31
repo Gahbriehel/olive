@@ -9,9 +9,6 @@ import {
   Trophy,
   UserCheck,
   Settings,
-  Layers,
-  HeartHandshake,
-  DoorClosed,
   LucideIcon,
 } from "lucide-react";
 
