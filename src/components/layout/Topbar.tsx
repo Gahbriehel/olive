@@ -144,15 +144,17 @@ export const Topbar: React.FC = () => {
       {/* Right Controls: QR Button, Theme Toggle, Notifications, User Menu */}
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Quick QR Scan Action */}
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => setIsQrScannerOpen(true)}
-          leftIcon={<QrCode className="w-4 h-4" />}
-          className="hidden sm:inline-flex bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600"
-        >
-          Scan QR
-        </Button>
+        <div className="hidden sm:block">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setIsQrScannerOpen(true)}
+            leftIcon={<QrCode className="w-4 h-4" />}
+            className="bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600"
+          >
+            Scan QR
+          </Button>
+        </div>
         <button
           onClick={() => setIsQrScannerOpen(true)}
           className="sm:hidden p-2.5 bg-indigo-600 text-white rounded-xl shadow-sm min-h-[44px] min-w-[44px] flex items-center justify-center"
