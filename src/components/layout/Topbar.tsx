@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   Menu,
   Search,
@@ -18,6 +18,7 @@ import { UserRole } from "@/types/dashboard";
 import { Button } from "@/components/ui/Button";
 import { useDashboard } from "@/context/DashboardContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useClickOutside } from "@/hooks/useClickOutside";
 
 const getInitials = (firstName?: string, lastName?: string, email?: string) => {
   if (firstName && lastName)
@@ -46,6 +47,19 @@ export const Topbar: React.FC = () => {
   const [isRoleMenuOpen, setIsRoleMenuOpen] = useState(false);
   const [isEventMenuOpen, setIsEventMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+  // Refs for outside-click detection
+  const eventMenuRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
+  const roleMenuRef = useRef<HTMLDivElement>(null);
+
+  const closeEventMenu = useCallback(() => setIsEventMenuOpen(false), []);
+  const closeNotif = useCallback(() => setIsNotifOpen(false), []);
+  const closeRoleMenu = useCallback(() => setIsRoleMenuOpen(false), []);
+
+  useClickOutside(eventMenuRef, closeEventMenu, isEventMenuOpen);
+  useClickOutside(notifRef, closeNotif, isNotifOpen);
+  useClickOutside(roleMenuRef, closeRoleMenu, isRoleMenuOpen);
 
   const roles: UserRole[] = [
     "Super Admin",
@@ -79,9 +93,13 @@ export const Topbar: React.FC = () => {
         </button>
 
         {/* Current Event Selector */}
-        <div className="relative">
+        <div className="relative" ref={eventMenuRef}>
           <button
-            onClick={() => setIsEventMenuOpen(!isEventMenuOpen)}
+            onClick={() => {
+              setIsEventMenuOpen((v) => !v);
+              setIsNotifOpen(false);
+              setIsRoleMenuOpen(false);
+            }}
             className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/60 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors text-xs font-semibold text-slate-800 dark:text-slate-200 min-h-[38px]"
           >
             <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
@@ -177,62 +195,47 @@ export const Topbar: React.FC = () => {
         </button>
 
         {/* Notifications Popover */}
-        <div className="relative">
+        <div className="relative" ref={notifRef}>
           <button
-            onClick={() => setIsNotifOpen(!isNotifOpen)}
+            onClick={() => {
+              setIsNotifOpen((v) => !v);
+              setIsEventMenuOpen(false);
+              setIsRoleMenuOpen(false);
+            }}
             className="relative p-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-xl transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label="Notifications"
           >
             <Bell className="w-5 h-5" />
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-indigo-600 animate-ping" />
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-indigo-600" />
           </button>
 
           {isNotifOpen && (
-            <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-xl p-3 z-50 animate-fade-in">
-              <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 dark:border-zinc-800">
+            <div className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-xl p-3 z-50 animate-fade-in">
+              <div className="pb-2 mb-3 border-b border-slate-100 dark:border-zinc-800">
                 <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                  Live Alerts
-                </span>
-                <span className="text-[10px] text-indigo-600 font-semibold cursor-pointer">
-                  Mark all read
+                  Notifications
                 </span>
               </div>
-              <div className="space-y-2 text-xs">
-                <div className="p-2 rounded-xl bg-slate-50 dark:bg-zinc-800/60 flex items-start gap-2.5">
-                  <span className="p-1 rounded bg-emerald-500/10 text-emerald-600 font-bold text-[10px]">
-                    QR
-                  </span>
-                  <div>
-                    <p className="font-semibold text-slate-800 dark:text-slate-200">
-                      Jordan Miller Checked In
-                    </p>
-                    <p className="text-[10px] text-slate-400">
-                      Desk 1 • 2 mins ago
-                    </p>
-                  </div>
-                </div>
-                <div className="p-2 rounded-xl bg-slate-50 dark:bg-zinc-800/60 flex items-start gap-2.5">
-                  <span className="p-1 rounded bg-indigo-500/10 text-indigo-600 font-bold text-[10px]">
-                    GAME
-                  </span>
-                  <div>
-                    <p className="font-semibold text-slate-800 dark:text-slate-200">
-                      Team Tempest Won Dodgeball
-                    </p>
-                    <p className="text-[10px] text-slate-400">
-                      +500 Points awarded • 15 mins ago
-                    </p>
-                  </div>
-                </div>
+              <div className="py-6 flex flex-col items-center gap-2 text-center">
+                <Bell className="w-7 h-7 text-slate-300 dark:text-zinc-600" />
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  No notifications yet
+                </p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                  Alerts will appear here when available.
+                </p>
               </div>
             </div>
           )}
         </div>
 
         {/* Profile / Role Switcher Menu */}
-        <div className="relative">
+        <div className="relative" ref={roleMenuRef}>
           <button
-            onClick={() => setIsRoleMenuOpen(!isRoleMenuOpen)}
+            onClick={() => {
+              setIsRoleMenuOpen((v) => !v);
+              setIsEventMenuOpen(false);
+              setIsNotifOpen(false);
+            }}
             className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors min-h-[44px]"
           >
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">
