@@ -46,7 +46,6 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
     setIsQrScannerOpen,
     handleCreateEvent,
     handleCheckIn,
-    registrations,
   } = useDashboard();
 
   const [, setScannedRegId] = React.useState("");
@@ -55,16 +54,7 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
   const simulateScan = (regNum: string) => {
     setScannedRegId(regNum);
     handleCheckIn(regNum, "QR Scan");
-    const match = registrations.find(
-      (r) => r.registrationNumber === regNum || r.id === regNum,
-    );
-    if (match) {
-      setScanResult(
-        `Successfully Checked In: ${match.name} (${match.assignedTeamName})`,
-      );
-    } else {
-      setScanResult(`Checked in Registration #${regNum}`);
-    }
+    setScanResult(`Checked in Registration #${regNum}`);
   };
 
   // 1. Standalone layout for Auth pages (Login)

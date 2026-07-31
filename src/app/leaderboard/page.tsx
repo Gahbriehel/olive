@@ -2,10 +2,18 @@
 
 import React from "react";
 import { useDashboard } from "@/context/DashboardContext";
+import { useTeams } from "@/hooks/useTeams";
+import { adaptApiTeamToTeam } from "@/models/team";
 import { LeaderboardView } from "@/components/views/LeaderboardView";
 
 export default function LeaderboardPage() {
-  const { teams } = useDashboard();
+  const { selectedEventId } = useDashboard();
+  const { teams: apiTeams } = useTeams(selectedEventId);
+
+  const teams = React.useMemo(
+    () => (Array.isArray(apiTeams) ? apiTeams.map(adaptApiTeamToTeam) : []),
+    [apiTeams],
+  );
 
   return <LeaderboardView teams={teams} />;
 }

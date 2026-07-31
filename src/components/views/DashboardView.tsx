@@ -22,22 +22,14 @@ import {
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import {
-  NavTab,
-  Registration,
-  ChurchEvent,
-  Team,
-  AttendanceRecord,
-} from "@/types/dashboard";
-
+import { NavTab, ChurchEvent } from "@/types/dashboard";
 import { StatsCard, StatsCardColor } from "@/components/ui/StatsCard";
-import { useDashboard } from "@/context/DashboardContext";
+import { IDashboardData } from "@/models/dashboard";
 
 interface DashboardViewProps {
   activeEvent?: ChurchEvent;
-  teams?: Team[];
-  attendanceLog?: AttendanceRecord[];
-  registrations: Registration[];
+  dashboardData?: IDashboardData;
+  isLoading?: boolean;
   onNavigate: (tab: NavTab) => void;
   onOpenQrScanner: () => void;
   onOpenCreateEvent?: () => void;
@@ -46,29 +38,23 @@ interface DashboardViewProps {
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   activeEvent,
-  registrations,
+  dashboardData,
+  isLoading = false,
   onNavigate,
   onOpenQrScanner,
   onOpenCreateEvent = () => {},
   onExportCsv = () => {},
 }) => {
-  const { events } = useDashboard();
-  const totalReg = registrations.length;
-  const checkedIn = registrations.filter(
-    (r) => r.status === "Checked-In",
-  ).length;
-  const attendancePct =
-    totalReg > 0 ? Math.round((checkedIn / totalReg) * 100) : 0;
-  const visitors = registrations.filter(
-    (r) => r.membershipStatus === "Visitor",
-  ).length;
-  const members = registrations.filter(
-    (r) => r.membershipStatus === "Member",
-  ).length;
-  const visitorPct =
-    totalReg > 0 ? ((visitors / totalReg) * 100).toFixed(1) : "0.0";
-  const memberPct =
-    totalReg > 0 ? ((members / totalReg) * 100).toFixed(1) : "0.0";
+  const overview = dashboardData?.overview;
+  const latestRegistrations = dashboardData?.latestRegistrations || [];
+  const upcomingEvents = dashboardData?.upcomingEvents || [];
+
+  const totalReg = overview?.totalRegistrations ?? 0;
+  const checkedIn = overview?.totalCheckInsToday ?? 0;
+  const attendancePct = overview?.attendanceRate ?? 0;
+  const visitors = overview?.totalVisitors ?? 0;
+  const members = overview?.totalMembers ?? 0;
+  const activeEventsCount = overview?.activeEvents ?? 0;
 
   const stats: Array<{
     title: string;
@@ -89,7 +75,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     {
       title: "Checked In Today",
       value: checkedIn.toLocaleString(),
-      change: `${attendancePct}% checked in`,
+      change: `${attendancePct}% attendance rate`,
       trend: "up",
       icon: UserCheck,
       color: "emerald",
@@ -97,7 +83,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     {
       title: "Visitors / First-Timers",
       value: visitors.toLocaleString(),
-      change: `${visitorPct}% of total attendees`,
+      change: `First-time guests`,
       trend: "neutral",
       icon: UserPlus,
       color: "amber",
@@ -105,7 +91,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     {
       title: "Church Members",
       value: members.toLocaleString(),
-      change: `${memberPct}% of total attendees`,
+      change: `Official members`,
       trend: "neutral",
       icon: Shield,
       color: "cyan",
@@ -113,15 +99,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     {
       title: "Attendance Rate",
       value: `${attendancePct}%`,
-      change: `${checkedIn} of ${totalReg} checked in`,
+      change: `${checkedIn} check-ins today`,
       trend: "up",
       icon: TrendingUp,
       color: "emerald",
     },
     {
-      title: "Active Event Capacity",
-      value: `${activeEvent?.registeredCount || totalReg} / ${activeEvent?.capacity || 0}`,
-      change: `${activeEvent?.status || "Upcoming"} Status`,
+      title: "Active Events",
+      value: `${activeEventsCount}`,
+      change: `Published events`,
       trend: "neutral",
       icon: Gamepad2,
       color: "rose",
@@ -146,8 +132,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             Operational Dashboard
           </h1>
           <p className="text-xs sm:text-sm text-indigo-200">
-            Real-time event check-ins, registration throughput, and team
-            tournament scores.
+            Real-time event check-ins, registration throughput, and overview
+            analytics.
           </p>
         </div>
 
@@ -174,7 +160,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Quick Action Bar (Minimal Clicks Operational SaaS Bar) */}
+      {/* Quick Action Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <button
           onClick={onOpenCreateEvent}
@@ -204,7 +190,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
               Assign Teams
             </p>
-            <p className="text-[11px] text-slate-400">Rebalance 4 teams</p>
+            <p className="text-[11px] text-slate-400">Rebalance teams</p>
           </div>
         </button>
 
@@ -249,7 +235,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <StatsCard
             key={idx}
             title={stat.title}
-            value={stat.value}
+            value={isLoading ? "..." : stat.value}
             change={stat.change}
             trend={stat.trend}
             icon={stat.icon}
@@ -266,7 +252,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div>
               <CardTitle>Latest Registrations</CardTitle>
               <CardDescription>
-                Real-time stream of incoming youth registrants
+                Real-time stream of incoming registrants
               </CardDescription>
             </div>
             <Button
@@ -279,63 +265,80 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </Button>
           </CardHeader>
           <CardContent className="space-y-3">
-            {registrations.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center p-6 text-sm text-slate-500">
+                Loading latest registrations...
+              </div>
+            ) : latestRegistrations.length === 0 ? (
               <div className="text-center p-6 text-sm text-slate-500">
                 No data available
               </div>
             ) : (
-              registrations.slice(0, 5).map((reg) => (
-                <div
-                  key={reg.id}
-                  className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center">
-                      {reg.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                          {reg.name}
-                        </p>
-                        <Badge
-                          variant={
-                            reg.membershipStatus === "Member"
-                              ? "emerald"
-                              : "amber"
-                          }
-                          size="sm"
-                        >
-                          {reg.membershipStatus}
-                        </Badge>
+              latestRegistrations.map((reg) => {
+                const name =
+                  `${reg.person?.firstName || ""} ${reg.person?.lastName || ""}`.trim() ||
+                  "Attendee";
+                const initials = name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase();
+                return (
+                  <div
+                    key={reg.id}
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center">
+                        {initials}
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                        Reg #:{" "}
-                        <span className="font-mono text-slate-700 dark:text-slate-300">
-                          {reg.registrationNumber}
-                        </span>{" "}
-                        • {reg.email}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                            {name}
+                          </p>
+                          <Badge
+                            variant={
+                              reg.person?.membershipStatus === "MEMBER"
+                                ? "emerald"
+                                : "amber"
+                            }
+                            size="sm"
+                          >
+                            {reg.person?.membershipStatus || "GUEST"}
+                          </Badge>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Reg #:{" "}
+                          <span className="font-mono text-slate-700 dark:text-slate-300">
+                            {reg.registrationNumber}
+                          </span>{" "}
+                          • {reg.person?.email || "No Email"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      {reg.team?.name && (
+                        <span
+                          className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold text-white mb-1"
+                          style={{
+                            backgroundColor: reg.team.color || "#6366f1",
+                          }}
+                        >
+                          {reg.team.name}
+                        </span>
+                      )}
+                      <p className="text-[10px] text-slate-400 flex items-center gap-1 justify-end">
+                        <Clock className="w-3 h-3" />
+                        {reg.status === "CHECKED_IN"
+                          ? "Checked In"
+                          : "Registered"}
                       </p>
                     </div>
                   </div>
-
-                  <div className="text-right">
-                    <span
-                      className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold text-white mb-1"
-                      style={{ backgroundColor: reg.assignedTeamColor }}
-                    >
-                      {reg.assignedTeamName}
-                    </span>
-                    <p className="text-[10px] text-slate-400 flex items-center gap-1 justify-end">
-                      <Clock className="w-3 h-3" />
-                      {reg.status === "Checked-In" ? "Checked In" : "Confirmed"}
-                    </p>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </CardContent>
         </Card>
@@ -354,19 +357,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </Button>
             </CardHeader>
             <CardContent className="space-y-3">
-              {!events || events.length === 0 ? (
+              {isLoading ? (
+                <div className="text-center p-6 text-sm text-slate-500">
+                  Loading upcoming events...
+                </div>
+              ) : upcomingEvents.length === 0 ? (
                 <div className="text-center p-6 text-sm text-slate-500">
                   No data available
                 </div>
               ) : (
-                events.slice(0, 3).map((event) => (
+                upcomingEvents.map((event) => (
                   <div
                     key={event.id}
                     className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40"
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                        {event.name}
+                        {event.title}
                       </span>
                       <Badge variant="indigo" size="sm">
                         {new Date(event.startDate).toLocaleDateString("en-US", {
@@ -376,17 +383,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </Badge>
                     </div>
                     <p className="text-[11px] text-slate-500 mb-2">
-                      {event.registeredCount} of {event.capacity} spots
-                      registered
+                      {event.totalRegistrations} registered • {event.totalTeams}{" "}
+                      teams
                     </p>
-                    <div className="w-full h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-indigo-600 rounded-full"
-                        style={{
-                          width: `${Math.min((event.registeredCount / Math.max(event.capacity, 1)) * 100, 100)}%`,
-                        }}
-                      />
-                    </div>
                   </div>
                 ))
               )}

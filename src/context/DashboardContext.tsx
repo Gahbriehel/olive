@@ -1,16 +1,16 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import confetti from "canvas-confetti";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
 import {
   UserRole,
   ChurchEvent,
-  Team,
-  Person,
   Registration,
-  AttendanceRecord,
-  Game,
-  AdminUser,
   ChurchSettings,
   CheckInMethod,
 } from "@/types/dashboard";
@@ -38,18 +38,11 @@ const DEFAULT_SETTINGS: ChurchSettings = {
     allowSelfRegistration: true,
   },
 };
+
 import { useEvents } from "@/hooks/useEvents";
-import { usePeople } from "@/hooks/usePeople";
-import { useTeams } from "@/hooks/useTeams";
-import { useRegistrations } from "@/hooks/useRegistrations";
 import { useAttendance } from "@/hooks/useAttendance";
-import { useGames } from "@/hooks/useGames";
 import { useAuth } from "@/hooks/useAuth";
 import { adaptApiEventToChurchEvent } from "@/models/event";
-import { adaptApiPersonToPerson } from "@/models/person";
-import { adaptApiTeamToTeam } from "@/models/team";
-import { adaptApiRegistrationToRegistration } from "@/models/registration";
-import { adaptApiGameToGame } from "@/models/game";
 
 interface DashboardContextType {
   // Theme & Layout
@@ -71,23 +64,12 @@ interface DashboardContextType {
   setSelectedEventId: (id: string) => void;
   activeEvent: ChurchEvent;
 
-  // Datasets
+  // Global lightweight datasets & settings
   events: ChurchEvent[];
-  teams: Team[];
-  people: Person[];
-  registrations: Registration[];
-  attendanceLog: AttendanceRecord[];
-  games: Game[];
-  adminUsers: AdminUser[];
   settings: ChurchSettings;
 
   // Handlers
   handleCheckIn: (regId: string, method: CheckInMethod) => void;
-  handleReassignTeam: (regId: string, newTeamId: string) => void;
-  handleUpdateGameScores: (
-    gameId: string,
-    updatedScores: { teamId: string; points: number }[],
-  ) => void;
   handleCreateEvent: (
     newEvent: Omit<
       ChurchEvent,
@@ -95,7 +77,7 @@ interface DashboardContextType {
     >,
   ) => void;
   handleUpdateSettings: (newSettings: ChurchSettings) => void;
-  handleExportCsv: () => void;
+  handleExportCsv: (registrations?: Registration[]) => void;
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(
@@ -112,100 +94,46 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
 
   const [currentRole, setCurrentRole] = useState<UserRole>("Super Admin");
-  const [selectedEventId, setSelectedEventId] = useState<string>("");
+  const [selectedEventIdState, setSelectedEventId] = useState<string>("");
 
-  // React Query Hooks
+  // React Query Hooks (Only events for active event selection)
   const { user } = useAuth();
   const { events: apiEvents, createEvent } = useEvents();
-  const { people: apiPeople } = usePeople();
-  const { teams: apiTeams } = useTeams(selectedEventId);
-  const registrationsParams = React.useMemo(
-    () => ({ eventId: selectedEventId }),
-    [selectedEventId],
-  );
-  const { registrations: apiRegistrations } =
-    useRegistrations(registrationsParams);
   const { checkIn: apiCheckIn } = useAttendance();
-  const { games: apiGames, recordScore: apiRecordScore } =
-    useGames(selectedEventId);
 
-  // Datasets state (zero mock fallbacks)
-  const [events, setEvents] = useState<ChurchEvent[]>([]);
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [people, setPeople] = useState<Person[]>([]);
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
-  const [attendanceLog, setAttendanceLog] = useState<AttendanceRecord[]>([]);
-  const [games, setGames] = useState<Game[]>([]);
-  const [adminUsers] = useState<AdminUser[]>([]);
+  // Settings
   const [settings, setSettings] = useState<ChurchSettings>(DEFAULT_SETTINGS);
 
-  // Sync API Events when available
-  useEffect(() => {
+  // Derived adapted events
+  const events = useMemo(() => {
     if (Array.isArray(apiEvents)) {
-      const adaptedEvents = apiEvents.map((e) => adaptApiEventToChurchEvent(e));
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setEvents(adaptedEvents);
-      if (
-        adaptedEvents.length > 0 &&
-        (!selectedEventId ||
-          !adaptedEvents.some((e) => e.id === selectedEventId))
-      ) {
-        setSelectedEventId(adaptedEvents[0].id);
-      }
+      return apiEvents.map((e) => adaptApiEventToChurchEvent(e));
     }
-  }, [apiEvents, selectedEventId]);
+    return [];
+  }, [apiEvents]);
 
-  // Sync API People when available
-  useEffect(() => {
-    if (Array.isArray(apiPeople)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPeople(apiPeople.map((p) => adaptApiPersonToPerson(p)));
+  // Derived active event ID (defaults to first event if unselected or missing)
+  const selectedEventId = useMemo(() => {
+    if (
+      selectedEventIdState &&
+      events.some((e) => e.id === selectedEventIdState)
+    ) {
+      return selectedEventIdState;
     }
-  }, [apiPeople]);
+    return events[0]?.id || "";
+  }, [selectedEventIdState, events]);
 
-  // Sync API Teams when available
-  useEffect(() => {
-    if (Array.isArray(apiTeams)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setTeams(apiTeams.map((t) => adaptApiTeamToTeam(t)));
-    }
-  }, [apiTeams]);
+  // Derived user role & church name
+  const userRole = user?.userRoles?.[0]?.role?.name as UserRole | undefined;
+  const effectiveRole = userRole || currentRole;
 
-  // Sync API Registrations when available
-  useEffect(() => {
-    if (Array.isArray(apiRegistrations)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setRegistrations(
-        apiRegistrations.map((r) => adaptApiRegistrationToRegistration(r)),
-      );
-    }
-  }, [apiRegistrations]);
-
-  // Sync API Games when available
-  useEffect(() => {
-    if (Array.isArray(apiGames)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setGames(apiGames.map((g, index) => adaptApiGameToGame(g, index + 1)));
-    }
-  }, [apiGames]);
-
-  // Sync User role if available from Redux auth
-  useEffect(() => {
-    if (user?.userRoles?.[0]?.role?.name) {
-      const roleName = user.userRoles[0].role.name as UserRole;
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCurrentRole(roleName);
-    }
-
-    // Sync dynamic church name from logged in user profile
-    const dynamicChurchName = user?.church?.name || user?.churchName;
+  const dynamicChurchName = user?.church?.name || user?.churchName;
+  const effectiveSettings = useMemo(() => {
     if (dynamicChurchName && settings.churchName === "Church Events") {
-      setSettings((prev) => ({
-        ...prev,
-        churchName: dynamicChurchName,
-      }));
+      return { ...settings, churchName: dynamicChurchName };
     }
-  }, [user, settings.churchName]);
+    return settings;
+  }, [dynamicChurchName, settings]);
 
   const fallbackEvent: ChurchEvent = {
     id: "none",
@@ -236,132 +164,12 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [darkMode]);
 
   // Handlers
-  const handleCheckIn = async (regId: string, method: CheckInMethod) => {
-    const reg = registrations.find(
-      (r) => r.id === regId || r.registrationNumber === regId,
-    );
-
-    if (reg) {
-      try {
-        await apiCheckIn({ token: reg.registrationNumber });
-      } catch {
-        // Handle error gracefully
-      }
-    }
-
-    if (!reg || reg.status === "Checked-In") return;
-
-    // 1. Update registration status
-    const updatedRegs = registrations.map((r) =>
-      r.id === reg.id
-        ? {
-            ...r,
-            status: "Checked-In" as const,
-            checkedInAt: new Date().toISOString(),
-          }
-        : r,
-    );
-    setRegistrations(updatedRegs);
-
-    // 2. Update active event checked-in count
-    setEvents(
-      events.map((e) =>
-        e.id === selectedEventId
-          ? { ...e, checkedInCount: e.checkedInCount + 1 }
-          : e,
-      ),
-    );
-
-    // 3. Add to live stream log
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    const newLog: AttendanceRecord = {
-      id: `log-${Date.now()}`,
-      registrationId: reg.id,
-      attendeeName: reg.name,
-      registrationNumber: reg.registrationNumber,
-      teamName: reg.assignedTeamName,
-      teamColor: reg.assignedTeamColor,
-      time: `${timeStr} Today`,
-      method,
-      checkedInBy: currentRole,
-    };
-    setAttendanceLog([newLog, ...attendanceLog]);
-  };
-
-  const handleReassignTeam = (regId: string, newTeamId: string) => {
-    const targetTeam = teams.find((t) => t.id === newTeamId);
-    if (!targetTeam) return;
-
-    setRegistrations(
-      registrations.map((r) => {
-        if (r.id === regId) {
-          return {
-            ...r,
-            assignedTeamId: targetTeam.id,
-            assignedTeamName: targetTeam.name,
-            assignedTeamColor: targetTeam.colorHex,
-          };
-        }
-        return r;
-      }),
-    );
-  };
-
-  const handleUpdateGameScores = async (
-    gameId: string,
-    updatedScores: { teamId: string; points: number }[],
-  ) => {
-    for (const score of updatedScores) {
-      try {
-        await apiRecordScore({
-          gameId,
-          teamId: score.teamId,
-          points: score.points,
-        });
-      } catch {
-        // Handle error
-      }
-    }
-
+  const handleCheckIn = async (token: string) => {
     try {
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
+      await apiCheckIn({ token });
     } catch {
-      // fallback
+      // Handle error gracefully
     }
-
-    const updatedGames = games.map((g) => {
-      if (g.id === gameId) {
-        const scores = g.scores.map((s) => {
-          const match = updatedScores.find((u) => u.teamId === s.teamId);
-          return match ? { ...s, points: match.points } : s;
-        });
-        return { ...g, scores, status: "Completed" as const };
-      }
-      return g;
-    });
-    setGames(updatedGames);
-
-    const teamPointsMap: Record<string, number> = {};
-    updatedGames.forEach((g) => {
-      g.scores.forEach((s) => {
-        teamPointsMap[s.teamId] = (teamPointsMap[s.teamId] || 0) + s.points;
-      });
-    });
-
-    setTeams(
-      teams.map((t) => ({
-        ...t,
-        totalPoints: teamPointsMap[t.id] ?? t.totalPoints,
-      })),
-    );
   };
 
   const handleCreateEvent = async (
@@ -380,7 +188,6 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
         status: "PUBLISHED",
       });
       const adapted = adaptApiEventToChurchEvent(created);
-      setEvents([adapted, ...events]);
       setSelectedEventId(adapted.id);
     } catch {
       // Fallback
@@ -391,7 +198,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
     setSettings(newSettings);
   };
 
-  const handleExportCsv = () => {
+  const handleExportCsv = (registrations: Registration[] = []) => {
     const headers = [
       "Registration Number",
       "Name",
@@ -440,22 +247,14 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsQrScannerOpen,
         isSearchOpen,
         setIsSearchOpen,
-        currentRole,
+        currentRole: effectiveRole,
         setCurrentRole,
         selectedEventId,
         setSelectedEventId,
         activeEvent,
         events,
-        teams,
-        people,
-        registrations,
-        attendanceLog,
-        games,
-        adminUsers,
-        settings,
+        settings: effectiveSettings,
         handleCheckIn,
-        handleReassignTeam,
-        handleUpdateGameScores,
         handleCreateEvent,
         handleUpdateSettings,
         handleExportCsv,
