@@ -1,3 +1,54 @@
+export type UserRole =
+  "Super Admin" | "Church Admin" | "Registration Desk" | "Games Coordinator";
+
+export type NavTab =
+  | "dashboard"
+  | "events"
+  | "event-detail"
+  | "people"
+  | "registrations"
+  | "teams"
+  | "attendance"
+  | "games"
+  | "leaderboard"
+  | "users"
+  | "settings";
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  status: "Active" | "Inactive";
+  lastActive: string;
+  avatarUrl?: string;
+}
+
+export interface ChurchSettings {
+  churchName: string;
+  campusName: string;
+  address: string;
+  phone: string;
+  email: string;
+  website: string;
+  branding: {
+    primaryColor: string;
+    logoText: string;
+    logoUrl?: string;
+  };
+  emailConfig: {
+    fromName: string;
+    fromEmail: string;
+    sendConfirmationEmails: boolean;
+    sendReminder24h: boolean;
+  };
+  preferences: {
+    autoAssignTeams: boolean;
+    requireQrCheckin: boolean;
+    allowSelfRegistration: boolean;
+  };
+}
+
 export interface IDashboardOverview {
   totalRegistrations: number;
   totalCheckInsToday: number;

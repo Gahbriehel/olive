@@ -5,7 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { CommandMenu } from "@/components/layout/CommandMenu";
-import { CreateEventModal } from "@/components/modals/CreateEventModal";
+import { SidebarModal } from "@/components/ui/SidebarModal";
+import { EventsForm } from "@/components/Forms/EventsForm";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { QrCode, CheckCircle2 } from "lucide-react";
@@ -78,13 +79,14 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
 
   // 3. Fallback redirecting UI if unauthenticated on protected route
   if (!isAuthenticated) {
+    // The router.push('/login') effect already fired — show a brief neutral
+    // spinner. Avoid "Redirecting to login..." since authenticated users can
+    // briefly land here during a reload before the token check resolves.
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
         <div className="text-center space-y-3">
           <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-slate-400 font-medium">
-            Redirecting to login...
-          </p>
+          <p className="text-sm text-slate-400 font-medium">Loading...</p>
         </div>
       </div>
     );
@@ -102,11 +104,30 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
       </div>
 
       {/* Global Modals */}
-      <CreateEventModal
-        isOpen={isCreateEventOpen}
-        onClose={() => setIsCreateEventOpen(false)}
-        onCreateEvent={handleCreateEvent}
-      />
+      <SidebarModal
+        title="Create New Event"
+        display={isCreateEventOpen}
+        close={() => setIsCreateEventOpen(false)}
+      >
+        <EventsForm
+          onCancel={() => setIsCreateEventOpen(false)}
+          onSubmit={async (data) => {
+            await handleCreateEvent({
+              name: data.title,
+              description: data.description || "",
+              location: data.location || "",
+              startDate: data.startDate,
+              endDate: data.endDate,
+              category: "General",
+              capacity: 500,
+              registrationDeadline: data.startDate,
+              teamAssignmentEnabled: true,
+              status: data.status || "DRAFT",
+            });
+            setIsCreateEventOpen(false);
+          }}
+        />
+      </SidebarModal>
 
       <CommandMenu />
 

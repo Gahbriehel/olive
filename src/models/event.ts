@@ -1,6 +1,21 @@
-import { ChurchEvent } from "@/types/dashboard";
+export type EventStatus = "CANCELLED" | "PUBLISHED" | "COMPLETED" | "DRAFT";
+export type ApiEventStatus = EventStatus;
 
-export type ApiEventStatus = "DRAFT" | "PUBLISHED" | "COMPLETED" | "CANCELLED";
+export interface ChurchEvent {
+  id: string;
+  name: string;
+  category: string;
+  startDate: string;
+  endDate: string;
+  location: string;
+  capacity: number;
+  registeredCount: number;
+  checkedInCount: number;
+  status: EventStatus;
+  registrationDeadline: string;
+  teamAssignmentEnabled: boolean;
+  description: string;
+}
 
 export interface IApiEvent {
   id: string;
@@ -27,31 +42,10 @@ export interface ICreateEventPayload {
 
 export type IUpdateEventPayload = Partial<ICreateEventPayload>;
 
-export interface IChurchEvent {
-  id: string;
-  name: string;
-  description: string;
-  startDate: string;
-  endDate: string;
-  location: string;
-  registeredCount: number;
-  checkedInCount: number;
-  status: "Upcoming" | "Live" | "Completed";
-}
+export type IChurchEvent = ChurchEvent;
 
 // Adapters
 export function adaptApiEventToChurchEvent(apiEvent: IApiEvent): ChurchEvent {
-  const now = new Date();
-  const start = new Date(apiEvent.startDate);
-  const end = new Date(apiEvent.endDate);
-
-  let status: "Upcoming" | "Live" | "Completed" = "Upcoming";
-  if (apiEvent.status === "COMPLETED" || now > end) {
-    status = "Completed";
-  } else if (now >= start && now <= end) {
-    status = "Live";
-  }
-
   return {
     id: apiEvent.id,
     name: apiEvent.title,
@@ -63,7 +57,7 @@ export function adaptApiEventToChurchEvent(apiEvent: IApiEvent): ChurchEvent {
     capacity: 500,
     registeredCount: 0,
     checkedInCount: 0,
-    status,
+    status: apiEvent.status || "DRAFT",
     registrationDeadline: apiEvent.startDate,
     teamAssignmentEnabled: true,
   };

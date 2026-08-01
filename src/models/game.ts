@@ -1,4 +1,27 @@
-import { Game } from "@/types/dashboard";
+export type GameStatus = "Upcoming" | "In Progress" | "Completed";
+
+export interface Game {
+  id: string;
+  title: string;
+  category: string;
+  maxPoints: number;
+  order: number;
+  status: GameStatus;
+  winnerTeamId?: string;
+  scores: { teamId: string; teamName: string; points: number }[];
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  teamId: string;
+  teamName: string;
+  teamColor: string;
+  colorHex: string;
+  totalPoints: number;
+  gamesPlayed: number;
+  rankChange: "up" | "down" | "same";
+  captain: string;
+}
 
 export interface IApiScore {
   id: string;
@@ -48,16 +71,7 @@ export interface IGameScore {
   points: number;
 }
 
-export interface IGame {
-  id: string;
-  roundNumber: number;
-  title: string;
-  type: string;
-  description: string;
-  maxPoints: number;
-  status: "Scheduled" | "In-Progress" | "Completed";
-  scores: IGameScore[];
-}
+export type IGame = Game;
 
 export function adaptApiGameToGame(
   apiGame: IApiGame,

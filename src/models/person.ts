@@ -1,7 +1,25 @@
-import { Person } from "@/types/dashboard";
-
+export type MembershipStatus = "Member" | "Visitor";
 export type ApiGender = "MALE" | "FEMALE" | "OTHER";
 export type ApiMembershipStatus = "VISITOR" | "MEMBER" | "WORKER" | "LEADER";
+
+export interface Person {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  gender: "Male" | "Female";
+  dob: string;
+  membershipStatus: MembershipStatus;
+  avatarUrl?: string;
+  registrationHistoryCount: number;
+  departmentsPlaceholder: string[];
+  attendanceHistoryPlaceholder: {
+    eventName: string;
+    date: string;
+    attended: boolean;
+  }[];
+  notesPlaceholder: string;
+}
 
 export interface IApiPerson {
   id: string;
@@ -32,24 +50,7 @@ export interface ICreatePersonPayload {
 
 export type IUpdatePersonPayload = Partial<ICreatePersonPayload>;
 
-export interface IPerson {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-  gender: "Male" | "Female";
-  dob: string;
-  membershipStatus: "Member" | "Visitor";
-  avatarUrl?: string;
-  registrationHistoryCount: number;
-  departmentsPlaceholder: string[];
-  attendanceHistoryPlaceholder: {
-    eventName: string;
-    date: string;
-    attended: boolean;
-  }[];
-  notesPlaceholder: string;
-}
+export type IPerson = Person;
 
 export function adaptApiPersonToPerson(apiPerson: IApiPerson): Person {
   const genderMap: Record<ApiGender, "Male" | "Female"> = {

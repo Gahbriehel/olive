@@ -6,6 +6,7 @@ import {
   UserCheck,
   Shield,
   Gamepad2,
+  Edit,
 } from "lucide-react";
 import {
   Card,
@@ -18,6 +19,9 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Tabs } from "@/components/ui/Tabs";
 import { StatsCard } from "@/components/ui/StatsCard";
+import { SidebarModal } from "@/components/ui/SidebarModal";
+import { EventsForm } from "@/components/Forms/EventsForm";
+import { useEvents } from "@/hooks/useEvents";
 import { ChurchEvent, Team, Registration, Game } from "@/types/dashboard";
 
 interface EventDetailViewProps {
@@ -38,6 +42,8 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
   onOpenQrScanner,
 }) => {
   const [activeTab, setActiveTab] = useState("overview");
+  const [isEditing, setIsEditing] = useState(false);
+  const { updateEvent, deleteEvent } = useEvents();
 
   const tabs = [
     { id: "overview", label: "Overview" },
@@ -76,7 +82,18 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
         </Button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <Badge variant="emerald" size="sm">
+            <Badge
+              variant={
+                event.status === "PUBLISHED"
+                  ? "emerald"
+                  : event.status === "DRAFT"
+                    ? "amber"
+                    : event.status === "COMPLETED"
+                      ? "indigo"
+                      : "rose"
+              }
+              size="sm"
+            >
               {event.status}
             </Badge>
             <span className="text-xs font-semibold text-slate-400">
@@ -87,6 +104,14 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
             {event.name}
           </h1>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsEditing(true)}
+          leftIcon={<Edit className="w-4 h-4 text-amber-500" />}
+        >
+          Edit Event
+        </Button>
       </div>
 
       {/* Navigation Sub-Tabs */}
@@ -331,6 +356,46 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {isEditing && (
+        <SidebarModal
+          title="Edit Event"
+          display={isEditing}
+          close={() => setIsEditing(false)}
+        >
+          <EventsForm
+            initialValues={{
+              id: event.id,
+              title: event.name,
+              description: event.description,
+              location: event.location,
+              startDate: event.startDate,
+              endDate: event.endDate,
+              status: event.status,
+            }}
+            onCancel={() => setIsEditing(false)}
+            onSubmit={async (data) => {
+              await updateEvent({
+                id: event.id,
+                dto: {
+                  title: data.title,
+                  description: data.description,
+                  location: data.location,
+                  startDate: data.startDate,
+                  endDate: data.endDate,
+                  status: data.status,
+                },
+              });
+              setIsEditing(false);
+            }}
+            onDelete={async () => {
+              await deleteEvent(event.id);
+              setIsEditing(false);
+              onBack();
+            }}
+          />
+        </SidebarModal>
       )}
     </div>
   );

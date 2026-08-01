@@ -10,6 +10,7 @@ import React, {
 import {
   UserRole,
   ChurchEvent,
+  EventStatus,
   Registration,
   ChurchSettings,
   CheckInMethod,
@@ -71,10 +72,9 @@ interface DashboardContextType {
   // Handlers
   handleCheckIn: (regId: string, method: CheckInMethod) => void;
   handleCreateEvent: (
-    newEvent: Omit<
-      ChurchEvent,
-      "id" | "registeredCount" | "checkedInCount" | "status"
-    >,
+    newEvent: Omit<ChurchEvent, "id" | "registeredCount" | "checkedInCount"> & {
+      status?: EventStatus;
+    },
   ) => void;
   handleUpdateSettings: (newSettings: ChurchSettings) => void;
   handleExportCsv: (registrations?: Registration[]) => void;
@@ -146,7 +146,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
     capacity: 500,
     registeredCount: 0,
     checkedInCount: 0,
-    status: "Upcoming",
+    status: "PUBLISHED",
     registrationDeadline: new Date().toISOString(),
     teamAssignmentEnabled: true,
   };
@@ -175,8 +175,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
   const handleCreateEvent = async (
     newEventData: Omit<
       ChurchEvent,
-      "id" | "registeredCount" | "checkedInCount" | "status"
-    >,
+      "id" | "registeredCount" | "checkedInCount"
+    > & { status?: EventStatus },
   ) => {
     try {
       const created = await createEvent({
@@ -185,7 +185,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
         location: newEventData.location,
         startDate: newEventData.startDate,
         endDate: newEventData.endDate,
-        status: "PUBLISHED",
+        status: newEventData.status || "DRAFT",
       });
       const adapted = adaptApiEventToChurchEvent(created);
       setSelectedEventId(adapted.id);

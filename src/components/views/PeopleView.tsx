@@ -123,7 +123,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               setSelectedPerson(row.original);
             }}

@@ -1,4 +1,14 @@
-import { Team } from "@/types/dashboard";
+export interface Team {
+  id: string;
+  name: string;
+  color: string;
+  colorHex: string;
+  captain: string;
+  captainPhone: string;
+  memberCount: number;
+  totalPoints: number;
+  badgeIcon: string;
+}
 
 export interface IApiTeam {
   id: string;
@@ -20,15 +30,7 @@ export interface ICreateTeamPayload {
 
 export type IUpdateTeamPayload = Partial<ICreateTeamPayload>;
 
-export interface ITeam {
-  id: string;
-  name: string;
-  colorHex: string;
-  memberCount: number;
-  capacity: number;
-  leaderName: string;
-  totalPoints: number;
-}
+export type ITeam = Team;
 
 export function adaptApiTeamToTeam(apiTeam: IApiTeam): Team {
   return {

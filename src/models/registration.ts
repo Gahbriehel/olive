@@ -1,6 +1,41 @@
-import { Registration } from "@/types/dashboard";
+import { MembershipStatus } from "./person";
 import { IApiPerson } from "./person";
 import { IApiTeam } from "./team";
+
+export type RegistrationStatus = "Confirmed" | "Checked-In" | "Cancelled";
+export type CheckInMethod = "QR Scan" | "Manual Search";
+
+export interface Registration {
+  id: string;
+  registrationNumber: string;
+  personId: string;
+  name: string;
+  phone: string;
+  email: string;
+  gender: "Male" | "Female";
+  membershipStatus: MembershipStatus;
+  assignedTeamId: string;
+  assignedTeamName: string;
+  assignedTeamColor: string;
+  qrCodeUrl: string;
+  qrGenerated: boolean;
+  status: RegistrationStatus;
+  confirmationSent: boolean;
+  registeredAt: string;
+  checkedInAt?: string;
+}
+
+export interface AttendanceRecord {
+  id: string;
+  registrationId: string;
+  registrationNumber: string;
+  attendeeName: string;
+  teamName: string;
+  teamColor: string;
+  time: string;
+  checkedInBy: string;
+  method: CheckInMethod;
+}
 
 export type ApiRegistrationStatus = "REGISTERED" | "CHECKED_IN" | "CANCELLED";
 
@@ -31,22 +66,7 @@ export interface ICheckInPayload {
   token: string; // QR code or Registration ID
 }
 
-export interface IRegistration {
-  id: string;
-  registrationNumber: string;
-  name: string;
-  email: string;
-  phone: string;
-  gender: "Male" | "Female";
-  membershipStatus: "Member" | "Visitor";
-  assignedTeamId: string;
-  assignedTeamName: string;
-  assignedTeamColor: string;
-  status: "Registered" | "Checked-In";
-  registeredAt: string;
-  checkedInAt?: string;
-  qrCodeUrl?: string;
-}
+export type IRegistration = Registration;
 
 export function adaptApiRegistrationToRegistration(
   apiReg: IApiRegistration,
