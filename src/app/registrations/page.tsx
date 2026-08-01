@@ -8,9 +8,10 @@ import { adaptApiRegistrationToRegistration } from "@/models/registration";
 import { adaptApiTeamToTeam } from "@/models/team";
 import { RegistrationsView } from "@/components/views/RegistrationsView";
 import { Registration } from "@/types/dashboard";
+import { exportToCsv } from "@/helpers/exportCsv";
 
 export default function RegistrationsPage() {
-  const { selectedEventId, handleExportCsv } = useDashboard();
+  const { selectedEventId } = useDashboard();
   const regParams = useMemo(
     () => ({ eventId: selectedEventId }),
     [selectedEventId],
@@ -61,7 +62,7 @@ export default function RegistrationsPage() {
       registrations={registrations}
       teams={teams}
       onReassignTeam={handleReassignTeam}
-      onExportCsv={() => handleExportCsv(registrations)}
+      onExportCsv={() => exportToCsv(registrations)}
     />
   );
 }

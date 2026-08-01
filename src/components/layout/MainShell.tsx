@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { QrCode, CheckCircle2 } from "lucide-react";
 import { useDashboard } from "@/context/DashboardContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useEvents } from "@/hooks/useEvents";
 
 export const MainShell: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -45,9 +46,9 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
     setIsCreateEventOpen,
     isQrScannerOpen,
     setIsQrScannerOpen,
-    handleCreateEvent,
     handleCheckIn,
   } = useDashboard();
+  const { createEvent } = useEvents();
 
   const [, setScannedRegId] = React.useState("");
   const [scanResult, setScanResult] = React.useState<string | null>(null);
@@ -112,16 +113,12 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
         <EventsForm
           onCancel={() => setIsCreateEventOpen(false)}
           onSubmit={async (data) => {
-            await handleCreateEvent({
-              name: data.title,
+            await createEvent({
+              title: data.title,
               description: data.description || "",
               location: data.location || "",
               startDate: data.startDate,
               endDate: data.endDate,
-              category: "General",
-              capacity: 500,
-              registrationDeadline: data.startDate,
-              teamAssignmentEnabled: true,
               status: data.status || "DRAFT",
             });
             setIsCreateEventOpen(false);

@@ -13,6 +13,7 @@ import {
   Users,
   Layers,
   Edit,
+  Trash2,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -22,6 +23,7 @@ import { cn } from "@/helpers/cn";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { EventsForm } from "@/components/Forms/EventsForm";
+import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { useEvents } from "@/hooks/useEvents";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { ChurchEvent } from "@/types/dashboard";
@@ -44,6 +46,7 @@ export const EventsView: React.FC<EventsViewProps> = ({
   const [statusFilter, setStatusFilter] = useState("All");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<ChurchEvent | null>(null);
+  const [deletingEvent, setDeletingEvent] = useState<ChurchEvent | null>(null);
   const { updateEvent, deleteEvent } = useEvents();
 
   useEffect(() => {
@@ -287,6 +290,16 @@ export const EventsView: React.FC<EventsViewProps> = ({
                               ? "Publish Event"
                               : "Unpublish"}
                           </button>
+                          <button
+                            onClick={() => {
+                              setDeletingEvent(evt);
+                              setActiveMenuId(null);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 font-medium text-left text-rose-600 dark:text-rose-400 border-t border-slate-100 dark:border-zinc-800/60 mt-1 pt-2 rounded-t-none"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                            Delete Event
+                          </button>
                         </div>
                       )}
                     </div>
@@ -392,6 +405,19 @@ export const EventsView: React.FC<EventsViewProps> = ({
             }}
           />
         </SidebarModal>
+      )}
+
+      {deletingEvent && (
+        <ConfirmActionModal
+          display={Boolean(deletingEvent)}
+          close={() => setDeletingEvent(null)}
+          actionName="delete"
+          title={`Are you sure you want to delete ${deletingEvent.name}?`}
+          fn={async () => {
+            await deleteEvent(deletingEvent.id);
+            setDeletingEvent(null);
+          }}
+        />
       )}
     </div>
   );

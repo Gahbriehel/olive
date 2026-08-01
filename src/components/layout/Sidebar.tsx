@@ -7,12 +7,14 @@ import { Sparkles, X, Church } from "lucide-react";
 import { clsx } from "clsx";
 import { useDashboard } from "@/context/DashboardContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useSettings } from "@/hooks/useSettings";
 import { mainNavItems } from "@/helpers/navlinks";
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
-  const { isMobileOpen, setIsMobileOpen, settings, events, selectedEventId } =
+  const { isMobileOpen, setIsMobileOpen, events, selectedEventId } =
     useDashboard();
+  const { settings } = useSettings();
   const { user } = useAuth();
 
   const churchName =

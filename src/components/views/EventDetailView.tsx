@@ -7,6 +7,7 @@ import {
   Shield,
   Gamepad2,
   Edit,
+  Trash2,
 } from "lucide-react";
 import {
   Card,
@@ -22,6 +23,7 @@ import { StatsCard } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { EventsForm } from "@/components/Forms/EventsForm";
 import { useEvents } from "@/hooks/useEvents";
+import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { ChurchEvent, Team, Registration, Game } from "@/types/dashboard";
 
 interface EventDetailViewProps {
@@ -43,6 +45,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditing, setIsEditing] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const { updateEvent, deleteEvent } = useEvents();
 
   const tabs = [
@@ -104,14 +107,25 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
             {event.name}
           </h1>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsEditing(true)}
-          leftIcon={<Edit className="w-4 h-4 text-amber-500" />}
-        >
-          Edit Event
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(true)}
+            leftIcon={<Edit className="w-4 h-4 text-amber-500" />}
+          >
+            Edit Event
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setConfirmDeleteOpen(true)}
+            leftIcon={<Trash2 className="w-4 h-4 text-rose-500" />}
+            className="hover:border-rose-500/30 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-600 dark:text-rose-400"
+          >
+            Delete Event
+          </Button>
+        </div>
       </div>
 
       {/* Navigation Sub-Tabs */}
@@ -396,6 +410,20 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
             }}
           />
         </SidebarModal>
+      )}
+
+      {confirmDeleteOpen && (
+        <ConfirmActionModal
+          display={confirmDeleteOpen}
+          close={() => setConfirmDeleteOpen(false)}
+          actionName="delete"
+          title={`Are you sure you want to delete ${event.name}?`}
+          fn={async () => {
+            await deleteEvent(event.id);
+            setConfirmDeleteOpen(false);
+            onBack();
+          }}
+        />
       )}
     </div>
   );
