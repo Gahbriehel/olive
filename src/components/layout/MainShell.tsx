@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
@@ -20,6 +20,13 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, isLoading, user, getProfile } = useAuth();
+  const [mounted, setMounted] = useState(false);
+
+  // Sync mount state to prevent SSR/client hydration mismatch
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const isAuthPage = pathname?.startsWith("/login");
 
@@ -32,14 +39,14 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
 
   // Route protection guard
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && mounted) {
       if (!isAuthenticated && !isAuthPage) {
         router.push("/login");
       } else if (isAuthenticated && isAuthPage) {
         router.push("/");
       }
     }
-  }, [isAuthenticated, isLoading, isAuthPage, router]);
+  }, [isAuthenticated, isLoading, isAuthPage, router, mounted]);
 
   const {
     isCreateEventOpen,
@@ -62,6 +69,18 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
   // 1. Standalone layout for Auth pages (Login)
   if (isAuthPage) {
     return <div className="min-h-screen bg-slate-950">{children}</div>;
+  }
+
+  // 2. Render same fallback state during SSR / initial hydration to prevent mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-slate-400 font-medium">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   // 2. Loading state while checking authentication

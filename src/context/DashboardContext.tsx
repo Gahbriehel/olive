@@ -50,7 +50,12 @@ const DashboardContext = createContext<DashboardContextType | undefined>(
 export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return document.documentElement.classList.contains("dark");
+    }
+    return false;
+  });
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
   const [isCreateEventOpen, setIsCreateEventOpen] = useState<boolean>(false);
   const [isQrScannerOpen, setIsQrScannerOpen] = useState<boolean>(false);
@@ -89,12 +94,14 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const activeEvent = events.find((e) => e.id === selectedEventId) || events[0];
 
-  // Sync dark class on root document
+  // Sync dark class on root document and persist theme choice
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
+      localStorage.setItem("olive_theme", "dark");
     } else {
       document.documentElement.classList.remove("dark");
+      localStorage.setItem("olive_theme", "light");
     }
   }, [darkMode]);
 
