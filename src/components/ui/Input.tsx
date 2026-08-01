@@ -1,5 +1,6 @@
 import React from "react";
 import { clsx } from "clsx";
+import { Eye, EyeOff } from "lucide-react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -7,21 +8,50 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   shortcutHint?: string;
+  countryCode?: string;
+  password?: boolean;
+  required?: boolean;
+  hidePassword?: () => void;
+  showPassword?: () => void;
+  icon?: React.ReactNode;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
-    { className, label, error, leftIcon, rightIcon, shortcutHint, ...props },
+    {
+      className,
+      label,
+      error,
+      leftIcon,
+      rightIcon,
+      icon,
+      shortcutHint,
+      countryCode,
+      password,
+      required,
+      hidePassword,
+      showPassword,
+      ...props
+    },
     ref,
   ) => {
+    const finalRightIcon = icon || rightIcon;
     return (
       <div className="flex flex-col gap-1.5 w-full">
         {label && (
           <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
             {label}
+            {required && <span className="text-rose-500 ml-1">*</span>}
           </label>
         )}
         <div className="relative flex items-center">
+          {countryCode && (
+            <div className="flex items-center justify-center min-h-[42px] rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3.5 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/50">
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                {countryCode}
+              </span>
+            </div>
+          )}
           {leftIcon && (
             <span className="absolute left-3 text-slate-400 dark:text-slate-500 pointer-events-none">
               {leftIcon}
@@ -30,23 +60,37 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             className={clsx(
-              "w-full text-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 min-h-[42px]",
-              leftIcon && "pl-10",
-              (rightIcon || shortcutHint) && "pr-12",
+              "w-full text-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 min-h-[42px]",
+              countryCode ? "rounded-r-xl" : "rounded-xl",
+              leftIcon ? "pl-10" : "px-3.5",
+              finalRightIcon || shortcutHint || password ? "pr-12" : "px-3.5",
               error &&
                 "border-rose-500 focus:ring-rose-500/30 focus:border-rose-500",
               className,
             )}
             {...props}
           />
-          {shortcutHint && (
+          {password && (
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              onClick={props.type === "password" ? showPassword : hidePassword}
+            >
+              {props.type === "password" ? (
+                <Eye className="h-4 w-4" />
+              ) : (
+                <EyeOff className="h-4 w-4" />
+              )}
+            </button>
+          )}
+          {shortcutHint && !password && (
             <span className="absolute right-3 px-1.5 py-0.5 text-[10px] font-mono bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-zinc-700 rounded pointer-events-none">
               {shortcutHint}
             </span>
           )}
-          {rightIcon && !shortcutHint && (
+          {finalRightIcon && !shortcutHint && !password && (
             <span className="absolute right-3 text-slate-400 dark:text-slate-500">
-              {rightIcon}
+              {finalRightIcon}
             </span>
           )}
         </div>

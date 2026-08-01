@@ -1,0 +1,5 @@
+src/components/ui/Select.tsx(160,31): error TS2322: Type '(selectedValue: ISelect) => void' is not assignable to type '(value: ISelect | null) => void'.
+  Types of parameters 'selectedValue' and 'value' are incompatible.
+    Type 'ISelect | null' is not assignable to type 'ISelect'.
+      Type 'null' is not assignable to type 'ISelect'.
+src/components/ui/Select.tsx(323,33): error TS1117: An object literal cannot have multiple properties with the same name.
