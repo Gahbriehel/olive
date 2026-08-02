@@ -1,12 +1,14 @@
+import { Team } from "@/models/team";
+
 export type GameStatus = "Upcoming" | "In Progress" | "Completed";
 
 export interface Game {
   id: string;
-  title: string;
-  category: string;
-  maxPoints: number;
-  order: number;
-  status: GameStatus;
+  eventId: string;
+  name: string;
+  description?: string;
+  maxScore: number;
+  status?: GameStatus;
   winnerTeamId?: string;
   scores: { teamId: string; teamName: string; points: number }[];
 }
@@ -35,7 +37,7 @@ export interface IApiScore {
 export interface IApiGame {
   id: string;
   eventId: string;
-  title: string;
+  name: string;
   description?: string;
   maxScore?: number;
   scores?: IApiScore[];
@@ -44,7 +46,7 @@ export interface IApiGame {
 
 export interface ICreateGamePayload {
   eventId: string;
-  title: string;
+  name: string;
   description?: string;
   maxScore?: number;
 }
@@ -73,23 +75,46 @@ export interface IGameScore {
 
 export type IGame = Game;
 
-export function adaptApiGameToGame(
-  apiGame: IApiGame,
-  orderIndex: number = 1,
-): Game {
+export function adaptApiGameToGame(apiGame: IApiGame, teams?: Team[]): Game {
+  if (!apiGame) {
+    return {
+      id: "",
+      eventId: "",
+      name: "Untitled Game",
+      maxScore: 100,
+      status: "Upcoming",
+      scores: [],
+    };
+  }
+
+  const rawGame = apiGame as unknown as Record<string, unknown>;
+  const name = apiGame.name || (rawGame.title as string) || "Untitled Game";
+  const maxScore = apiGame.maxScore ?? (rawGame.maxPoints as number) ?? 100;
+  const rawScores =
+    apiGame.scores ||
+    (rawGame.gameScores as Array<Record<string, unknown>>) ||
+    [];
+
   return {
-    id: apiGame.id,
-    title: apiGame.title,
-    category: "Tournament Activity",
-    maxPoints: apiGame.maxScore || 100,
-    order: orderIndex,
+    id: apiGame.id || (rawGame._id as string) || "",
+    eventId: apiGame.eventId || (rawGame.event_id as string) || "",
+    name,
+    description: apiGame.description || (rawGame.desc as string) || "",
+    maxScore,
     status:
-      apiGame.scores && apiGame.scores.length > 0 ? "Completed" : "Upcoming",
-    scores: (apiGame.scores || []).map((s) => ({
-      teamId: s.teamId,
-      teamName: "Team",
-      points: s.points,
-    })),
+      (rawGame.status as GameStatus) ||
+      (rawScores.length > 0 ? "Completed" : "Upcoming"),
+    scores: Array.isArray(rawScores)
+      ? rawScores.map((rawS: unknown) => {
+          const s = rawS as Record<string, unknown>;
+          const team = teams?.find((t) => t.id === s.teamId || t.id === s.team);
+          return {
+            teamId: (s.teamId as string) || (s.team as string) || "",
+            teamName: (s.teamName as string) || (team ? team.name : "Team"),
+            points: (s.points as number) ?? (s.score as number) ?? 0,
+          };
+        })
+      : [],
   };
 }
 

@@ -20,7 +20,8 @@ export default function EventDetailPage() {
   const regParams = React.useMemo(() => ({ eventId }), [eventId]);
   const { registrations: apiRegistrations } = useRegistrations(regParams);
   const { teams: apiTeams } = useTeams(eventId);
-  const { games: apiGames } = useGames(eventId);
+  const gamesParams = React.useMemo(() => ({ eventId }), [eventId]);
+  const { games: apiGames } = useGames(gamesParams);
 
   const selectedEvent = events.find((e) => e.id === eventId) || events[0];
 
@@ -40,9 +41,9 @@ export default function EventDetailPage() {
   const games = React.useMemo(
     () =>
       Array.isArray(apiGames)
-        ? apiGames.map((g, idx) => adaptApiGameToGame(g, idx + 1))
+        ? apiGames.map((g) => adaptApiGameToGame(g, teams))
         : [],
-    [apiGames],
+    [apiGames, teams],
   );
 
   return (

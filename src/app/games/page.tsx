@@ -8,12 +8,31 @@ import { useTeams } from "@/hooks/useTeams";
 import { adaptApiGameToGame } from "@/models/game";
 import { adaptApiTeamToTeam } from "@/models/team";
 import { GamesView } from "@/components/views/GamesView";
-import { Game } from "@/types/dashboard";
 
 export default function GamesPage() {
   const { selectedEventId } = useDashboard();
-  const { games: apiGames, recordScore: apiRecordScore } =
-    useGames(selectedEventId);
+
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  const {
+    games: apiGames,
+    meta,
+    recordScore: apiRecordScore,
+    createGame: apiCreateGame,
+    updateGame: apiUpdateGame,
+    deleteGame: apiDeleteGame,
+    isCreatingGame,
+    isUpdatingGame,
+    isDeletingGame,
+  } = useGames({
+    eventId: selectedEventId,
+    search,
+    page,
+    limit,
+  });
+
   const { teams: apiTeams } = useTeams(selectedEventId);
 
   const teams = useMemo(
@@ -21,22 +40,12 @@ export default function GamesPage() {
     [apiTeams],
   );
 
-  const initialGames = useMemo(
-    () =>
-      Array.isArray(apiGames)
-        ? apiGames.map((g, idx) => adaptApiGameToGame(g, idx + 1))
-        : [],
-    [apiGames],
-  );
-
-  const [overrides, setOverrides] = useState<Record<string, Partial<Game>>>({});
-
   const games = useMemo(
     () =>
-      initialGames.map((g) =>
-        overrides[g.id] ? { ...g, ...overrides[g.id] } : g,
-      ),
-    [initialGames, overrides],
+      Array.isArray(apiGames)
+        ? apiGames.map((g) => adaptApiGameToGame(g, teams))
+        : [],
+    [apiGames, teams],
   );
 
   const handleUpdateGameScores = async (
@@ -64,25 +73,76 @@ export default function GamesPage() {
     } catch {
       // fallback
     }
+  };
 
-    const currentGame = games.find((g) => g.id === gameId);
-    if (currentGame) {
-      const scores = currentGame.scores.map((s) => {
-        const match = updatedScores.find((u) => u.teamId === s.teamId);
-        return match ? { ...s, points: match.points } : s;
+  const handleCreateGame = async (data: {
+    name: string;
+    description?: string;
+    maxScore: number;
+  }) => {
+    if (!selectedEventId) return;
+    try {
+      await apiCreateGame({
+        eventId: selectedEventId,
+        ...data,
       });
-      setOverrides((prev) => ({
-        ...prev,
-        [gameId]: { scores, status: "Completed" },
-      }));
+    } catch (err) {
+      console.error("Failed to create game:", err);
     }
+  };
+
+  const handleUpdateGame = async (
+    id: string,
+    data: { name: string; description?: string; maxScore: number },
+  ) => {
+    if (!selectedEventId) return;
+    try {
+      await apiUpdateGame({
+        id,
+        payload: {
+          eventId: selectedEventId,
+          ...data,
+        },
+      });
+    } catch (err) {
+      console.error("Failed to update game:", err);
+    }
+  };
+
+  const handleDeleteGame = async (id: string) => {
+    try {
+      await apiDeleteGame(id);
+    } catch (err) {
+      console.error("Failed to delete game:", err);
+    }
+  };
+
+  const handleSearchChange = (newSearch: string) => {
+    setSearch(newSearch);
+    setPage(1); // Reset to first page on search
   };
 
   return (
     <GamesView
       games={games}
       teams={teams}
+      meta={meta}
+      search={search}
+      onSearchChange={handleSearchChange}
+      page={page}
+      onPageChange={setPage}
+      limit={limit}
+      onLimitChange={(newLimit) => {
+        setLimit(newLimit);
+        setPage(1); // Reset to first page when changing page limit
+      }}
+      onCreateGame={handleCreateGame}
+      onUpdateGame={handleUpdateGame}
+      onDeleteGame={handleDeleteGame}
       onAddScore={handleUpdateGameScores}
+      isCreating={isCreatingGame}
+      isUpdating={isUpdatingGame}
+      isDeleting={isDeletingGame}
     />
   );
 }

@@ -5,6 +5,7 @@ import {
   IRecordScorePayload,
   IApiScore,
   ILeaderboardEntry,
+  IUpdateGamePayload,
 } from "@/models/game";
 import {
   IBaseResponse,
@@ -14,12 +15,37 @@ import {
 } from "@/models/base";
 
 export const gamesService = {
-  async getGames(eventId?: string, params?: IQueryParams): Promise<IApiGame[]> {
-    const res = await apiClient.get<IBaseResponse<IApiGame[]> | IApiGame[]>(
-      "/games",
-      { params: { ...params, eventId } },
-    );
-    return extractArray<IApiGame>(res.data);
+  async getGames(
+    params?: IQueryParams,
+  ): Promise<{ games: IApiGame[]; meta?: IBaseResponse["meta"] }> {
+    const res = await apiClient.get<IBaseResponse<unknown>>("/games", {
+      params,
+    });
+    const responseData = res.data;
+
+    const games = extractArray<IApiGame>(responseData);
+
+    let meta: IBaseResponse["meta"] = undefined;
+    if (
+      responseData &&
+      typeof responseData === "object" &&
+      responseData !== null
+    ) {
+      const respObj = responseData as unknown as Record<string, unknown>;
+      if ("meta" in respObj && respObj.meta) {
+        meta = respObj.meta as IBaseResponse["meta"];
+      } else if (
+        "data" in respObj &&
+        respObj.data &&
+        typeof respObj.data === "object" &&
+        "meta" in (respObj.data as Record<string, unknown>)
+      ) {
+        meta = (respObj.data as Record<string, unknown>)
+          .meta as IBaseResponse["meta"];
+      }
+    }
+
+    return { games, meta };
   },
 
   async createGame(payload: ICreateGamePayload): Promise<IApiGame> {
@@ -28,6 +54,18 @@ export const gamesService = {
       payload,
     );
     return extractData<IApiGame>(res.data);
+  },
+
+  async updateGame(id: string, payload: IUpdateGamePayload): Promise<IApiGame> {
+    const res = await apiClient.patch<IBaseResponse<IApiGame> | IApiGame>(
+      `/games/${id}`,
+      payload,
+    );
+    return extractData<IApiGame>(res.data);
+  },
+
+  async deleteGame(id: string): Promise<void> {
+    await apiClient.delete(`/games/${id}`);
   },
 
   async recordScore(payload: IRecordScorePayload): Promise<IApiScore> {
@@ -41,7 +79,7 @@ export const gamesService = {
   async getLeaderboard(eventId: string): Promise<ILeaderboardEntry[]> {
     const res = await apiClient.get<
       IBaseResponse<ILeaderboardEntry[]> | ILeaderboardEntry[]
-    >(`/games/event/${eventId}/leaderboard`);
+    >(`/leaderboard/${eventId}`);
     return extractArray<ILeaderboardEntry>(res.data);
   },
 };

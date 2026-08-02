@@ -334,22 +334,17 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
       {/* Tab Content 5: Games */}
       {activeTab === "games" && (
         <div className="space-y-3">
-          {games.map((g) => (
+          {games.map((g, idx) => (
             <Card key={g.id}>
               <CardContent className="p-4 flex items-center justify-between text-xs">
                 <div>
-                  <Badge
-                    variant={g.status === "Completed" ? "emerald" : "amber"}
-                  >
-                    {g.status}
-                  </Badge>
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 mt-1">
-                    {g.title}
+                  <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                    {g.name}
                   </h4>
-                  <p className="text-slate-400">Max Points: {g.maxPoints}</p>
+                  <p className="text-slate-400">Max Score: {g.maxScore} pts</p>
                 </div>
                 <span className="font-mono text-xs text-indigo-600 font-bold">
-                  Game #{g.order}
+                  Game #{idx + 1}
                 </span>
               </CardContent>
             </Card>
