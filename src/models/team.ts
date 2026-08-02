@@ -1,47 +1,68 @@
 export interface Team {
   id: string;
+  eventId: string;
   name: string;
   color: string;
   colorHex: string;
-  captain: string;
-  captainPhone: string;
-  memberCount: number;
   totalPoints: number;
-  badgeIcon: string;
+  createdAt?: string;
+  updatedAt?: string;
+  captain?: string;
+  captainPhone?: string;
+  memberCount?: number;
+  badgeIcon?: string;
 }
 
 export interface IApiTeam {
   id: string;
   eventId: string;
   name: string;
+  color?: string;
   colorHex?: string;
-  capacity?: number;
   totalScore?: number;
+  totalPoints?: number;
   createdAt?: string;
   updatedAt?: string;
+  event?: {
+    id: string;
+    title?: string;
+    name?: string;
+  };
 }
 
 export interface ICreateTeamPayload {
   eventId: string;
   name: string;
+  color?: string;
   colorHex?: string;
-  capacity?: number;
 }
 
-export type IUpdateTeamPayload = Partial<ICreateTeamPayload>;
+export interface IUpdateTeamPayload {
+  id?: string;
+  eventId?: string;
+  name?: string;
+  color?: string;
+  colorHex?: string;
+}
 
 export type ITeam = Team;
 
 export function adaptApiTeamToTeam(apiTeam: IApiTeam): Team {
+  const rawColor = apiTeam.color || apiTeam.colorHex || "#6366F1";
+  const colorHex = rawColor.startsWith("#") ? rawColor : `#${rawColor}`;
+
   return {
     id: apiTeam.id,
+    eventId: apiTeam.eventId || "",
     name: apiTeam.name,
     color: apiTeam.name.toLowerCase().replace(/\s+/g, "-"),
-    colorHex: apiTeam.colorHex || "#6366F1",
+    colorHex,
+    totalPoints: apiTeam.totalScore ?? apiTeam.totalPoints ?? 0,
+    createdAt: apiTeam.createdAt,
+    updatedAt: apiTeam.updatedAt,
     memberCount: 0,
-    totalPoints: apiTeam.totalScore || 0,
-    captain: "Team Captain",
-    captainPhone: "+1 (555) 019-2834",
+    captain: "Team Lead",
+    captainPhone: "",
     badgeIcon: "Shield",
   };
 }

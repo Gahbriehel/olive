@@ -1,6 +1,6 @@
 import React from "react";
 import { clsx } from "clsx";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, X } from "lucide-react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -14,6 +14,8 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   hidePassword?: () => void;
   showPassword?: () => void;
   icon?: React.ReactNode;
+  isClearable?: boolean;
+  onClear?: () => void;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -31,11 +33,36 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       required,
       hidePassword,
       showPassword,
+      isClearable,
+      onClear,
       ...props
     },
     ref,
   ) => {
     const finalRightIcon = icon || rightIcon;
+    const hasValue =
+      props.value !== undefined && String(props.value).length > 0;
+    const showClear =
+      (isClearable ?? true) &&
+      hasValue &&
+      !password &&
+      !props.disabled &&
+      !props.readOnly;
+
+    const handleClear = () => {
+      if (onClear) {
+        onClear();
+      } else if (props.onChange) {
+        const e = {
+          target: { value: "" },
+          currentTarget: { value: "" },
+          preventDefault: () => {},
+          stopPropagation: () => {},
+        } as unknown as React.ChangeEvent<HTMLInputElement>;
+        props.onChange(e);
+      }
+    };
+
     return (
       <div className="flex flex-col gap-1.5 w-full">
         {label && (
@@ -63,7 +90,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               "w-full text-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 min-h-[42px]",
               countryCode ? "rounded-r-xl" : "rounded-xl",
               leftIcon ? "pl-10" : "px-3.5",
-              finalRightIcon || shortcutHint || password ? "pr-12" : "px-3.5",
+              (finalRightIcon || shortcutHint) && showClear
+                ? "pr-20"
+                : finalRightIcon || shortcutHint || password || showClear
+                  ? "pr-12"
+                  : "px-3.5",
               error &&
                 "border-rose-500 focus:ring-rose-500/30 focus:border-rose-500",
               className,
@@ -81,6 +112,18 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               ) : (
                 <EyeOff className="h-4 w-4" />
               )}
+            </button>
+          )}
+          {showClear && (
+            <button
+              type="button"
+              className={clsx(
+                "absolute top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors",
+                finalRightIcon || shortcutHint ? "right-10" : "right-3",
+              )}
+              onClick={handleClear}
+            >
+              <X className="h-4 w-4" />
             </button>
           )}
           {shortcutHint && !password && (

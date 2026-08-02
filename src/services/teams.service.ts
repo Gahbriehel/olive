@@ -12,12 +12,36 @@ import {
 } from "@/models/base";
 
 export const teamsService = {
-  async getTeams(eventId?: string, params?: IQueryParams): Promise<IApiTeam[]> {
-    const res = await apiClient.get<IBaseResponse<IApiTeam[]> | IApiTeam[]>(
-      "/teams",
-      { params: { ...params, eventId } },
-    );
-    return extractArray<IApiTeam>(res.data);
+  async getTeams(
+    params?: IQueryParams,
+  ): Promise<{ teams: IApiTeam[]; meta?: IBaseResponse["meta"] }> {
+    const res = await apiClient.get<IBaseResponse<unknown>>("/teams", {
+      params,
+    });
+    const responseData = res.data;
+    const teams = extractArray<IApiTeam>(responseData);
+
+    let meta: IBaseResponse["meta"] = undefined;
+    if (
+      responseData &&
+      typeof responseData === "object" &&
+      responseData !== null
+    ) {
+      const respObj = responseData as unknown as Record<string, unknown>;
+      if ("meta" in respObj && respObj.meta) {
+        meta = respObj.meta as IBaseResponse["meta"];
+      } else if (
+        "data" in respObj &&
+        respObj.data &&
+        typeof respObj.data === "object" &&
+        "meta" in (respObj.data as Record<string, unknown>)
+      ) {
+        meta = (respObj.data as Record<string, unknown>)
+          .meta as IBaseResponse["meta"];
+      }
+    }
+
+    return { teams, meta };
   },
 
   async createTeam(payload: ICreateTeamPayload): Promise<IApiTeam> {
@@ -34,5 +58,9 @@ export const teamsService = {
       payload,
     );
     return extractData<IApiTeam>(res.data);
+  },
+
+  async deleteTeam(id: string): Promise<void> {
+    await apiClient.delete(`/teams/${id}`);
   },
 };

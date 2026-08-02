@@ -11,7 +11,27 @@ import { Registration } from "@/types/dashboard";
 
 export default function TeamsPage() {
   const { selectedEventId } = useDashboard();
-  const { teams: apiTeams } = useTeams(selectedEventId);
+
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  const {
+    teams: apiTeams,
+    meta,
+    createTeam: apiCreateTeam,
+    updateTeam: apiUpdateTeam,
+    deleteTeam: apiDeleteTeam,
+    isCreatingTeam,
+    isUpdatingTeam,
+    isDeletingTeam,
+  } = useTeams({
+    eventId: selectedEventId,
+    search,
+    page,
+    limit,
+  });
+
   const registrationsParams = useMemo(
     () => ({ eventId: selectedEventId }),
     [selectedEventId],
@@ -44,6 +64,45 @@ export default function TeamsPage() {
     [initialRegistrations, overrides],
   );
 
+  const handleCreateTeam = async (data: { name: string; color: string }) => {
+    if (!selectedEventId) return;
+    try {
+      await apiCreateTeam({
+        eventId: selectedEventId,
+        name: data.name,
+        color: data.color,
+      });
+    } catch (err) {
+      console.error("Failed to create team:", err);
+    }
+  };
+
+  const handleUpdateTeam = async (
+    id: string,
+    data: { name: string; color: string },
+  ) => {
+    try {
+      await apiUpdateTeam({
+        id,
+        payload: {
+          eventId: selectedEventId,
+          name: data.name,
+          color: data.color,
+        },
+      });
+    } catch (err) {
+      console.error("Failed to update team:", err);
+    }
+  };
+
+  const handleDeleteTeam = async (id: string) => {
+    try {
+      await apiDeleteTeam(id);
+    } catch (err) {
+      console.error("Failed to delete team:", err);
+    }
+  };
+
   const handleReassignTeam = (regId: string, newTeamId: string) => {
     const targetTeam = teams.find((t) => t.id === newTeamId);
     if (!targetTeam) return;
@@ -57,11 +116,32 @@ export default function TeamsPage() {
     }));
   };
 
+  const handleSearchChange = (newSearch: string) => {
+    setSearch(newSearch);
+    setPage(1);
+  };
+
   return (
     <TeamsView
       teams={teams}
       registrations={registrations}
+      meta={meta}
+      search={search}
+      onSearchChange={handleSearchChange}
+      page={page}
+      onPageChange={setPage}
+      limit={limit}
+      onLimitChange={(newLimit) => {
+        setLimit(newLimit);
+        setPage(1);
+      }}
+      onCreateTeam={handleCreateTeam}
+      onUpdateTeam={handleUpdateTeam}
+      onDeleteTeam={handleDeleteTeam}
       onReassignTeam={handleReassignTeam}
+      isCreating={isCreatingTeam}
+      isUpdating={isUpdatingTeam}
+      isDeleting={isDeletingTeam}
     />
   );
 }

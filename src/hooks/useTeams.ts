@@ -1,30 +1,66 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ICreateTeamPayload, IApiTeam } from "@/models/team";
+import {
+  ICreateTeamPayload,
+  IUpdateTeamPayload,
+  IApiTeam,
+} from "@/models/team";
+import { IQueryParams } from "@/models/base";
 import { teamsService } from "@/services/teams.service";
 
 const EMPTY_TEAMS: IApiTeam[] = [];
 
-export function useTeams(eventId?: string) {
+export function useTeams(params?: IQueryParams | string) {
   const queryClient = useQueryClient();
+  const normalizedParams: IQueryParams =
+    typeof params === "string" ? { eventId: params } : params || {};
 
   const teamsQuery = useQuery({
-    queryKey: ["teams", eventId],
-    queryFn: () => teamsService.getTeams(eventId),
-    staleTime: 1000 * 60 * 2,
+    queryKey: ["teams", normalizedParams],
+    queryFn: () => teamsService.getTeams(normalizedParams),
+    staleTime: 1000 * 60,
   });
 
   const createTeamMutation = useMutation({
     mutationFn: (dto: ICreateTeamPayload) => teamsService.createTeam(dto),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["teams", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
+    },
+  });
+
+  const updateTeamMutation = useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: IUpdateTeamPayload;
+    }) => teamsService.updateTeam(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
+    },
+  });
+
+  const deleteTeamMutation = useMutation({
+    mutationFn: (id: string) => teamsService.deleteTeam(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
     },
   });
 
   return {
-    teams: teamsQuery.data || EMPTY_TEAMS,
+    teams: teamsQuery.data?.teams || EMPTY_TEAMS,
+    meta: teamsQuery.data?.meta,
     isLoading: teamsQuery.isLoading,
     isError: teamsQuery.isError,
     refetch: teamsQuery.refetch,
     createTeam: createTeamMutation.mutateAsync,
+    isCreatingTeam: createTeamMutation.isPending,
+    updateTeam: updateTeamMutation.mutateAsync,
+    isUpdatingTeam: updateTeamMutation.isPending,
+    deleteTeam: deleteTeamMutation.mutateAsync,
+    isDeletingTeam: deleteTeamMutation.isPending,
   };
 }

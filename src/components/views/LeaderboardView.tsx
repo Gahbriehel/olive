@@ -20,7 +20,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ teams }) => {
     totalPoints: t.totalPoints,
     gamesPlayed: 3,
     rankChange: idx === 0 ? "up" : "same",
-    captain: t.captain,
+    captain: t.captain || "Team Lead",
   }));
 
   const firstPlace = entries[0];
