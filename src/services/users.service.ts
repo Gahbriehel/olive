@@ -1,13 +1,24 @@
 import { apiClient } from "@/utils/api-client";
 import { AdminUser, IUpdateUserPayload } from "@/models/dashboard";
-import { IBaseResponse, extractArray, extractData } from "@/models/base";
+import {
+  IBaseResponse,
+  IQueryParams,
+  extractArray,
+  extractData,
+  extractMeta,
+} from "@/models/base";
 
 export const usersService = {
-  async getUsers(): Promise<AdminUser[]> {
-    const res = await apiClient.get<IBaseResponse<unknown>>("/users");
+  async getUsers(
+    params?: IQueryParams,
+  ): Promise<{ users: AdminUser[]; meta?: IBaseResponse["meta"] }> {
+    const res = await apiClient.get<IBaseResponse<unknown>>("/users", {
+      params,
+    });
     const rawUsers = extractArray<Record<string, unknown>>(res.data);
+    const meta = extractMeta(res.data);
 
-    return rawUsers.map((u) => {
+    const users = rawUsers.map((u) => {
       const userRoles =
         (u.userRoles as Array<{ role?: { name: string } }>) || [];
       const roleName =
@@ -30,12 +41,15 @@ export const usersService = {
         email: (u.email as string) || "",
         phone: (u.phone as string) || "",
         role: roleName,
-        status: u.isActive !== false ? "Active" : "Inactive",
+        status: (u.isActive !== false ? "Active" : "Inactive") as
+          "Active" | "Inactive",
         lastActive: u.updatedAt
           ? new Date(u.updatedAt as string).toLocaleDateString()
           : "Recently",
       };
     });
+
+    return { users, meta };
   },
 
   async updateUser(

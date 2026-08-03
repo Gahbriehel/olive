@@ -30,11 +30,30 @@ interface UsersViewProps {
     id: string,
     payload: IUpdateUserPayload,
   ) => Promise<unknown> | void;
+  meta?: {
+    total?: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
+  };
+  page?: number;
+  onPageChange?: (page: number) => void;
+  limit?: number;
+  onLimitChange?: (limit: number) => void;
+  search?: string;
+  onSearchChange?: (search: string) => void;
 }
 
 export const UsersView: React.FC<UsersViewProps> = ({
   users: propUsers,
   onUpdateUser: propOnUpdateUser,
+  meta,
+  page,
+  onPageChange,
+  limit,
+  onLimitChange,
+  search,
+  onSearchChange,
 }) => {
   const {
     users: hookUsers,
@@ -405,6 +424,13 @@ export const UsersView: React.FC<UsersViewProps> = ({
           enablePagination={true}
           defaultPageSize={10}
           emptyMessage="No users found"
+          meta={meta}
+          page={page}
+          onPageChange={onPageChange}
+          limit={limit}
+          onLimitChange={onLimitChange}
+          search={search}
+          onSearchChange={onSearchChange}
         />
       ) : (
         <div className="space-y-4">

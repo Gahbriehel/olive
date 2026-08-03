@@ -67,3 +67,27 @@ export function extractArray<T>(resData: unknown): T[] {
   }
   return [];
 }
+
+export function extractMeta(
+  resData: unknown,
+): IBaseResponse["meta"] | undefined {
+  if (!resData || typeof resData !== "object" || resData === null) {
+    return undefined;
+  }
+  const obj = resData as Record<string, unknown>;
+  if ("meta" in obj && obj.meta && typeof obj.meta === "object") {
+    return obj.meta as IBaseResponse["meta"];
+  }
+  if (
+    "data" in obj &&
+    obj.data &&
+    typeof obj.data === "object" &&
+    obj.data !== null
+  ) {
+    const dataObj = obj.data as Record<string, unknown>;
+    if ("meta" in dataObj && dataObj.meta && typeof dataObj.meta === "object") {
+      return dataObj.meta as IBaseResponse["meta"];
+    }
+  }
+  return undefined;
+}

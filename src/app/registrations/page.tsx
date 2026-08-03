@@ -12,11 +12,21 @@ import { exportToCsv } from "@/helpers/exportCsv";
 
 export default function RegistrationsPage() {
   const { selectedEventId } = useDashboard();
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
   const regParams = useMemo(
-    () => ({ eventId: selectedEventId }),
-    [selectedEventId],
+    () => ({
+      eventId: selectedEventId,
+      page,
+      limit,
+      search: search || undefined,
+    }),
+    [selectedEventId, page, limit, search],
   );
-  const { registrations: apiRegistrations } = useRegistrations(regParams);
+
+  const { registrations: apiRegistrations, meta } = useRegistrations(regParams);
   const { teams: apiTeams } = useTeams(selectedEventId);
 
   const teams = useMemo(
@@ -57,12 +67,29 @@ export default function RegistrationsPage() {
     }));
   };
 
+  const handleSearchChange = (newSearch: string) => {
+    setSearch(newSearch);
+    setPage(1);
+  };
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
+
   return (
     <RegistrationsView
       registrations={registrations}
       teams={teams}
       onReassignTeam={handleReassignTeam}
       onExportCsv={() => exportToCsv(registrations)}
+      meta={meta}
+      page={page}
+      onPageChange={setPage}
+      limit={limit}
+      onLimitChange={handleLimitChange}
+      search={search}
+      onSearchChange={handleSearchChange}
     />
   );
 }

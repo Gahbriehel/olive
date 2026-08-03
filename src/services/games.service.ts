@@ -6,6 +6,7 @@ import {
   IApiScore,
   ILeaderboardEntry,
   IUpdateGamePayload,
+  IUpdateScorePayload,
 } from "@/models/game";
 import {
   IBaseResponse,
@@ -76,10 +77,44 @@ export const gamesService = {
     return extractData<IApiScore>(res.data);
   },
 
+  async updateScore(
+    id: string,
+    payload: IUpdateScorePayload,
+  ): Promise<IApiScore> {
+    const res = await apiClient.patch<IBaseResponse<IApiScore> | IApiScore>(
+      `/scores/${id}`,
+      payload,
+    );
+    return extractData<IApiScore>(res.data);
+  },
+
+  async clearGameScores(gameId: string): Promise<void> {
+    await apiClient.delete(`/scores/game/${gameId}`);
+  },
+
   async getLeaderboard(eventId: string): Promise<ILeaderboardEntry[]> {
-    const res = await apiClient.get<
-      IBaseResponse<ILeaderboardEntry[]> | ILeaderboardEntry[]
-    >(`/leaderboard/${eventId}`);
+    const res = await apiClient.get<unknown>(`/leaderboard/${eventId}`);
+    const rawData = res.data as Record<string, unknown> | null;
+    let lbObj = rawData;
+
+    if (
+      rawData &&
+      typeof rawData === "object" &&
+      "data" in rawData &&
+      rawData.data
+    ) {
+      lbObj = rawData.data as Record<string, unknown>;
+    }
+
+    if (
+      lbObj &&
+      typeof lbObj === "object" &&
+      "leaderboard" in lbObj &&
+      Array.isArray(lbObj.leaderboard)
+    ) {
+      return lbObj.leaderboard as ILeaderboardEntry[];
+    }
+
     return extractArray<ILeaderboardEntry>(res.data);
   },
 };

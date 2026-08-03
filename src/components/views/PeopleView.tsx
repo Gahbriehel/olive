@@ -15,18 +15,52 @@ import { Drawer } from "@/components/ui/Drawer";
 import { Tabs } from "@/components/ui/Tabs";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
+import { SidebarModal } from "@/components/ui/SidebarModal";
+import { RegisterPersonForm } from "@/components/Forms/RegisterPersonForm";
+import { IRegisterPayload } from "@/models/registration";
 import { Person } from "@/types/dashboard";
 import { ColumnDef } from "@tanstack/react-table";
 
 interface PeopleViewProps {
   people: Person[];
+  events?: { id: string; title: string }[];
+  onRegisterPerson?: (
+    eventId: string,
+    payload: IRegisterPayload,
+  ) => void | Promise<void>;
+  isRegistering?: boolean;
+  meta?: {
+    total?: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
+  };
+  page?: number;
+  onPageChange?: (page: number) => void;
+  limit?: number;
+  onLimitChange?: (limit: number) => void;
+  search?: string;
+  onSearchChange?: (search: string) => void;
 }
 
-export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
+export const PeopleView: React.FC<PeopleViewProps> = ({
+  people,
+  events = [],
+  onRegisterPerson,
+  isRegistering = false,
+  meta,
+  page,
+  onPageChange,
+  limit,
+  onLimitChange,
+  search,
+  onSearchChange,
+}) => {
   const [membershipFilter, setMembershipFilter] = useState("All");
   const [genderFilter, setGenderFilter] = useState("All");
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [drawerTab, setDrawerTab] = useState("info");
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
 
   // Calculate dynamic stats from people
   const totalPeople = people.length;
@@ -99,8 +133,9 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
       cell: ({ row }) => (
         <Badge
           variant={
-            row.original.membershipStatus === "Member" ? "emerald" : "amber"
+            row.original.membershipStatus === "Member" ? "indigo" : "amber"
           }
+          size="sm"
         >
           {row.original.membershipStatus}
         </Badge>
@@ -108,25 +143,22 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
     },
     {
       accessorKey: "registrationHistoryCount",
-      header: "Events Attended",
+      header: "Events Registered",
       cell: ({ row }) => (
-        <span className="font-mono font-semibold">
+        <span className="font-semibold text-slate-700 dark:text-slate-300">
           {row.original.registrationHistoryCount} Events
         </span>
       ),
     },
     {
       id: "actions",
-      header: () => <div className="text-right">Actions</div>,
+      header: "Actions",
       cell: ({ row }) => (
-        <div className="text-right">
+        <div className="flex items-center gap-2">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              setSelectedPerson(row.original);
-            }}
+            onClick={() => setSelectedPerson(row.original)}
             leftIcon={<Eye className="w-3.5 h-3.5 text-indigo-500" />}
           >
             Details
@@ -141,12 +173,12 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
     {
       id: "departments",
       label: "Departments",
-      count: selectedPerson?.departmentsPlaceholder.length || 0,
+      count: selectedPerson?.departmentsPlaceholder?.length || 0,
     },
     {
       id: "attendance",
       label: "Attendance",
-      count: selectedPerson?.attendanceHistoryPlaceholder.length || 0,
+      count: selectedPerson?.attendanceHistory?.length || 0,
     },
     { id: "notes", label: "Notes" },
   ];
@@ -164,9 +196,15 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
             and first-time guests.
           </p>
         </div>
-        <Button variant="primary" leftIcon={<UserPlus className="w-4 h-4" />}>
-          Add New Person
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="primary"
+            leftIcon={<UserPlus className="w-4 h-4" />}
+            onClick={() => setIsRegisterOpen(true)}
+          >
+            Register Person for Event
+          </Button>
+        </div>
       </div>
 
       {/* Directory Stats Grid */}
@@ -238,6 +276,13 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
         enablePagination={true}
         defaultPageSize={10}
         emptyMessage="No people match your search criteria"
+        meta={meta}
+        page={page}
+        onPageChange={onPageChange}
+        limit={limit}
+        onLimitChange={onLimitChange}
+        search={search}
+        onSearchChange={onSearchChange}
       />
 
       {/* Person Details Slide-Over Drawer */}
@@ -325,11 +370,40 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
                   <p className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                     <History className="w-4 h-4 text-indigo-500" />
                     Registration History (
-                    {selectedPerson.registrationHistoryCount} Events)
+                    {selectedPerson.registrationHistoryCount || 0} Events)
                   </p>
-                  <p className="text-[11px] text-slate-500">
-                    Youth Conference 2026: IGNITE (Confirmed • Team Tempest)
-                  </p>
+                  {selectedPerson.registrations &&
+                  selectedPerson.registrations.length > 0 ? (
+                    <div className="space-y-2 pt-1">
+                      {selectedPerson.registrations.map((reg) => (
+                        <div
+                          key={reg.id}
+                          className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-50 dark:bg-zinc-800/60"
+                        >
+                          <div>
+                            <p className="font-semibold text-slate-800 dark:text-slate-200">
+                              {reg.eventTitle}
+                            </p>
+                            <p className="text-[10px] text-slate-400">
+                              {reg.eventDate} • Team: {reg.teamName}
+                            </p>
+                          </div>
+                          <Badge
+                            variant={
+                              reg.status === "REGISTERED" ? "indigo" : "slate"
+                            }
+                            size="sm"
+                          >
+                            {reg.status}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-slate-400 italic">
+                      No event registrations recorded.
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -357,12 +431,14 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
             {drawerTab === "attendance" && (
               <div className="space-y-2 text-xs">
                 <p className="text-slate-400 text-[11px]">
-                  Historical event check-in log:
+                  Historical event check-in log (
+                  {selectedPerson.eventsAttendedCount || 0} Attended):
                 </p>
-                {selectedPerson.attendanceHistoryPlaceholder?.map(
-                  (hist, idx) => (
+                {selectedPerson.attendanceHistory &&
+                selectedPerson.attendanceHistory.length > 0 ? (
+                  selectedPerson.attendanceHistory.map((hist) => (
                     <div
-                      key={idx}
+                      key={hist.id}
                       className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 flex items-center justify-between"
                     >
                       <div>
@@ -377,10 +453,14 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
                         variant={hist.attended ? "emerald" : "rose"}
                         size="sm"
                       >
-                        {hist.attended ? "Attended" : "Absent"}
+                        {hist.attended ? "Checked In" : "Not Checked In"}
                       </Badge>
                     </div>
-                  ),
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-slate-400 italic bg-slate-50 dark:bg-zinc-800/40 rounded-xl">
+                    No attendance records found.
+                  </div>
                 )}
               </div>
             )}
@@ -398,6 +478,25 @@ export const PeopleView: React.FC<PeopleViewProps> = ({ people }) => {
           </div>
         )}
       </Drawer>
+
+      {/* Register Person Sidebar Modal */}
+      <SidebarModal
+        title="Register Person for Event"
+        display={isRegisterOpen}
+        close={() => setIsRegisterOpen(false)}
+      >
+        <RegisterPersonForm
+          events={events}
+          onSubmit={async (eventId, payload) => {
+            if (onRegisterPerson) {
+              await onRegisterPerson(eventId, payload);
+            }
+            setIsRegisterOpen(false);
+          }}
+          onCancel={() => setIsRegisterOpen(false)}
+          isLoading={isRegistering}
+        />
+      </SidebarModal>
     </div>
   );
 };

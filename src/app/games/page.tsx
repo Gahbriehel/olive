@@ -20,12 +20,15 @@ export default function GamesPage() {
     games: apiGames,
     meta,
     recordScore: apiRecordScore,
+    updateScore: apiUpdateScore,
+    clearGameScores: apiClearGameScores,
     createGame: apiCreateGame,
     updateGame: apiUpdateGame,
     deleteGame: apiDeleteGame,
     isCreatingGame,
     isUpdatingGame,
     isDeletingGame,
+    isClearingScores,
   } = useGames({
     eventId: selectedEventId,
     search,
@@ -50,17 +53,35 @@ export default function GamesPage() {
 
   const handleUpdateGameScores = async (
     gameId: string,
-    updatedScores: { teamId: string; points: number }[],
+    updatedScores: {
+      teamId: string;
+      points: number;
+      scoreId?: string;
+      notes?: string;
+    }[],
   ) => {
     for (const score of updatedScores) {
       try {
-        await apiRecordScore({
-          gameId,
-          teamId: score.teamId,
-          points: score.points,
-        });
-      } catch {
-        // Handle error
+        if (score.scoreId) {
+          await apiUpdateScore({
+            id: score.scoreId,
+            payload: {
+              gameId,
+              teamId: score.teamId,
+              points: score.points,
+              notes: score.notes,
+            },
+          });
+        } else {
+          await apiRecordScore({
+            gameId,
+            teamId: score.teamId,
+            points: score.points,
+            notes: score.notes,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to submit score:", err);
       }
     }
 
@@ -72,6 +93,14 @@ export default function GamesPage() {
       });
     } catch {
       // fallback
+    }
+  };
+
+  const handleClearGameScores = async (gameId: string) => {
+    try {
+      await apiClearGameScores(gameId);
+    } catch (err) {
+      console.error("Failed to clear game scores:", err);
     }
   };
 
@@ -140,9 +169,11 @@ export default function GamesPage() {
       onUpdateGame={handleUpdateGame}
       onDeleteGame={handleDeleteGame}
       onAddScore={handleUpdateGameScores}
+      onClearScores={handleClearGameScores}
       isCreating={isCreatingGame}
       isUpdating={isUpdatingGame}
       isDeleting={isDeletingGame}
+      isClearingScores={isClearingScores}
     />
   );
 }

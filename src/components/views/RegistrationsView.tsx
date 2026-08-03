@@ -23,6 +23,18 @@ interface RegistrationsViewProps {
   teams: Team[];
   onExportCsv: () => void;
   onReassignTeam: (registrationId: string, newTeamId: string) => void;
+  meta?: {
+    total?: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
+  };
+  page?: number;
+  onPageChange?: (page: number) => void;
+  limit?: number;
+  onLimitChange?: (limit: number) => void;
+  search?: string;
+  onSearchChange?: (search: string) => void;
 }
 
 export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
@@ -30,6 +42,13 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
   teams,
   onExportCsv,
   onReassignTeam,
+  meta,
+  page,
+  onPageChange,
+  limit,
+  onLimitChange,
+  search,
+  onSearchChange,
 }) => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [teamFilter, setTeamFilter] = useState("All");
@@ -245,6 +264,13 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
         enablePagination={true}
         defaultPageSize={10}
         emptyMessage="No registrations found"
+        meta={meta}
+        page={page}
+        onPageChange={onPageChange}
+        limit={limit}
+        onLimitChange={onLimitChange}
+        search={search}
+        onSearchChange={onSearchChange}
       />
 
       {/* Reassign Team Modal */}

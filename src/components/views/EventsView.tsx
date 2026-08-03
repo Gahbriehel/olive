@@ -14,6 +14,10 @@ import {
   Layers,
   Edit,
   Trash2,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -33,6 +37,18 @@ interface EventsViewProps {
   onSelectEvent: (event: ChurchEvent) => void;
   onOpenCreateEvent: () => void;
   onPublishToggle?: (eventId: string) => void;
+  meta?: {
+    total?: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
+  };
+  page?: number;
+  onPageChange?: (page: number) => void;
+  limit?: number;
+  onLimitChange?: (limit: number) => void;
+  search?: string;
+  onSearchChange?: (search: string) => void;
 }
 
 export const EventsView: React.FC<EventsViewProps> = ({
@@ -40,14 +56,34 @@ export const EventsView: React.FC<EventsViewProps> = ({
   onSelectEvent,
   onOpenCreateEvent,
   onPublishToggle = () => {},
+  meta,
+  page = 1,
+  onPageChange,
+  limit = 10,
+  onLimitChange,
+  search: externalSearch,
+  onSearchChange,
 }) => {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(externalSearch || "");
+  const [prevExternalSearch, setPrevExternalSearch] = useState(externalSearch);
+
+  if (externalSearch !== undefined && externalSearch !== prevExternalSearch) {
+    setPrevExternalSearch(externalSearch);
+    setSearch(externalSearch);
+  }
+
   const debouncedSearchTerm = useDebouncedSearch(search, 1000);
   const [statusFilter, setStatusFilter] = useState("All");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<ChurchEvent | null>(null);
   const [deletingEvent, setDeletingEvent] = useState<ChurchEvent | null>(null);
   const { updateEvent, deleteEvent } = useEvents();
+
+  useEffect(() => {
+    if (onSearchChange) {
+      onSearchChange(debouncedSearchTerm);
+    }
+  }, [debouncedSearchTerm, onSearchChange]);
 
   useEffect(() => {
     if (!activeMenuId) return;
@@ -365,6 +401,97 @@ export const EventsView: React.FC<EventsViewProps> = ({
               </Card>
             );
           })}
+        </div>
+      )}
+
+      {/* Pagination Bar */}
+      {onPageChange && (
+        <div className="p-3.5 border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-4">
+            <span>
+              Showing{" "}
+              <span className="font-semibold text-slate-900 dark:text-slate-200">
+                {(page - 1) * limit + 1}
+              </span>{" "}
+              to{" "}
+              <span className="font-semibold text-slate-900 dark:text-slate-200">
+                {Math.min(page * limit, meta?.total ?? events.length)}
+              </span>{" "}
+              of{" "}
+              <span className="font-semibold text-slate-900 dark:text-slate-200">
+                {meta?.total ?? events.length}
+              </span>{" "}
+              results
+            </span>
+
+            {onLimitChange && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px]">Rows:</span>
+                <select
+                  value={limit}
+                  onChange={(e) => onLimitChange(Number(e.target.value))}
+                  className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs py-1 px-2 focus:ring-1 focus:ring-indigo-500 outline-none"
+                >
+                  {[5, 10, 20, 50].map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(1)}
+              disabled={page <= 1}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronsLeft className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(page - 1)}
+              disabled={page <= 1}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+
+            <span className="px-3 text-xs">
+              Page{" "}
+              <span className="font-semibold text-slate-900 dark:text-slate-100">
+                {page}
+              </span>{" "}
+              of{" "}
+              <span className="font-semibold text-slate-900 dark:text-slate-100">
+                {meta?.totalPages ?? 1}
+              </span>
+            </span>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(page + 1)}
+              disabled={page >= (meta?.totalPages ?? 1)}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(meta?.totalPages ?? 1)}
+              disabled={page >= (meta?.totalPages ?? 1)}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronsRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       )}
 

@@ -1,27 +1,56 @@
 import React from "react";
 import { Trophy, Shield, ChevronUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
+import { ILeaderboardEntry } from "@/models/game";
 import { Team, LeaderboardEntry } from "@/types/dashboard";
 
 interface LeaderboardViewProps {
-  teams: Team[];
+  teams?: Team[];
+  leaderboard?: ILeaderboardEntry[];
+  isLoading?: boolean;
 }
 
-export const LeaderboardView: React.FC<LeaderboardViewProps> = ({ teams }) => {
-  // Sort teams by total points descending
+export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
+  teams = [],
+  leaderboard = [],
+}) => {
+  // Sort teams by total points descending as fallback
   const sortedTeams = [...teams].sort((a, b) => b.totalPoints - a.totalPoints);
 
-  const entries: LeaderboardEntry[] = sortedTeams.map((t, idx) => ({
-    rank: idx + 1,
-    teamId: t.id,
-    teamName: t.name,
-    teamColor: t.color,
-    colorHex: t.colorHex,
-    totalPoints: t.totalPoints,
-    gamesPlayed: 3,
-    rankChange: idx === 0 ? "up" : "same",
-    captain: t.captain || "Team Lead",
-  }));
+  const entries: LeaderboardEntry[] =
+    leaderboard && leaderboard.length > 0
+      ? leaderboard.map((lb, idx) => {
+          const matchingTeam = teams.find((t) => t.id === lb.teamId);
+          const colorHex =
+            lb.colorHex || lb.color || matchingTeam?.colorHex || "#6366F1";
+          return {
+            rank: lb.rank || idx + 1,
+            teamId: lb.teamId,
+            teamName: lb.teamName,
+            teamColor: matchingTeam?.color || "Indigo",
+            colorHex,
+            totalPoints:
+              lb.totalScore ?? lb.totalPoints ?? matchingTeam?.totalPoints ?? 0,
+            gamesPlayed: lb.gamesPlayed || 3,
+            rankChange: idx === 0 ? "up" : "same",
+            captain:
+              matchingTeam?.captain ||
+              (lb.memberCount !== undefined
+                ? `${lb.memberCount} Members`
+                : "Team Lead"),
+          };
+        })
+      : sortedTeams.map((t, idx) => ({
+          rank: idx + 1,
+          teamId: t.id,
+          teamName: t.name,
+          teamColor: t.color,
+          colorHex: t.colorHex,
+          totalPoints: t.totalPoints,
+          gamesPlayed: 3,
+          rankChange: idx === 0 ? "up" : "same",
+          captain: t.captain || "Team Lead",
+        }));
 
   const firstPlace = entries[0];
   const secondPlace = entries[1];

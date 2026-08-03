@@ -9,15 +9,20 @@ import {
   IQueryParams,
   extractData,
   extractArray,
+  extractMeta,
 } from "@/models/base";
 
 export const peopleService = {
-  async getPeople(params?: IQueryParams): Promise<IApiPerson[]> {
-    const res = await apiClient.get<IBaseResponse<IApiPerson[]> | IApiPerson[]>(
-      "/people",
-      { params },
-    );
-    return extractArray<IApiPerson>(res.data);
+  async getPeople(
+    params?: IQueryParams,
+  ): Promise<{ people: IApiPerson[]; meta?: IBaseResponse["meta"] }> {
+    const res = await apiClient.get<IBaseResponse<unknown>>("/people", {
+      params,
+    });
+    return {
+      people: extractArray<IApiPerson>(res.data),
+      meta: extractMeta(res.data),
+    };
   },
 
   async getPersonById(id: string): Promise<IApiPerson> {

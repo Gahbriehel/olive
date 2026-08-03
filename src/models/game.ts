@@ -11,6 +11,7 @@ export interface Game {
   status?: GameStatus;
   winnerTeamId?: string;
   scores: {
+    id?: string;
     teamId: string;
     teamName: string;
     teamColor?: string;
@@ -69,14 +70,26 @@ export interface IRecordScorePayload {
   gameId: string;
   teamId: string;
   points: number;
+  notes?: string;
+}
+
+export interface IUpdateScorePayload {
+  gameId?: string;
+  teamId?: string;
+  points?: number;
+  notes?: string;
 }
 
 export interface ILeaderboardEntry {
-  rank: number;
+  rank?: number;
   teamId: string;
   teamName: string;
-  colorHex: string;
-  totalScore: number;
+  color?: string;
+  colorHex?: string;
+  totalScore?: number;
+  totalPoints?: number;
+  memberCount?: number;
+  gamesPlayed?: number;
 }
 
 export interface IGameScore {
@@ -127,6 +140,7 @@ export function adaptApiGameToGame(apiGame: IApiGame, teams?: Team[]): Game {
             "";
           const team = teams?.find((t) => t.id === teamId);
           return {
+            id: (s.id as string) || (s._id as string) || undefined,
             teamId,
             teamName:
               (s.teamName as string) ||

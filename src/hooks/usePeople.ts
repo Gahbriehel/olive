@@ -34,7 +34,8 @@ export function usePeople(params?: IQueryParams) {
   });
 
   return {
-    people: peopleQuery.data || EMPTY_PEOPLE,
+    people: peopleQuery.data?.people || EMPTY_PEOPLE,
+    meta: peopleQuery.data?.meta,
     isLoading: peopleQuery.isLoading,
     isError: peopleQuery.isError,
     refetch: peopleQuery.refetch,

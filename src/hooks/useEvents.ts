@@ -41,7 +41,8 @@ export function useEvents(params?: IQueryParams) {
   });
 
   return {
-    events: eventsQuery.data || EMPTY_EVENTS,
+    events: eventsQuery.data?.events || EMPTY_EVENTS,
+    meta: eventsQuery.data?.meta,
     isLoading: eventsQuery.isLoading,
     isError: eventsQuery.isError,
     error: eventsQuery.error,

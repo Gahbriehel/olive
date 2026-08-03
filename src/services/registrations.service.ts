@@ -5,14 +5,21 @@ import {
   IQueryParams,
   extractData,
   extractArray,
+  extractMeta,
 } from "@/models/base";
 
 export const registrationsService = {
-  async getRegistrations(params?: IQueryParams): Promise<IApiRegistration[]> {
-    const res = await apiClient.get<
-      IBaseResponse<IApiRegistration[]> | IApiRegistration[]
-    >("/registrations", { params });
-    return extractArray<IApiRegistration>(res.data);
+  async getRegistrations(params?: IQueryParams): Promise<{
+    registrations: IApiRegistration[];
+    meta?: IBaseResponse["meta"];
+  }> {
+    const res = await apiClient.get<IBaseResponse<unknown>>("/registrations", {
+      params,
+    });
+    return {
+      registrations: extractArray<IApiRegistration>(res.data),
+      meta: extractMeta(res.data),
+    };
   },
 
   async registerAttendee(

@@ -10,7 +10,20 @@ import { EventsView } from "@/components/views/EventsView";
 export default function EventsPage() {
   const router = useRouter();
   const { setIsCreateEventOpen } = useDashboard();
-  const { events: apiEvents } = useEvents();
+  const [search, setSearch] = React.useState("");
+  const [page, setPage] = React.useState(1);
+  const [limit, setLimit] = React.useState(10);
+
+  const queryParams = React.useMemo(
+    () => ({
+      page,
+      limit,
+      search: search || undefined,
+    }),
+    [page, limit, search],
+  );
+
+  const { events: apiEvents, meta } = useEvents(queryParams);
 
   const events = React.useMemo(
     () =>
@@ -18,11 +31,28 @@ export default function EventsPage() {
     [apiEvents],
   );
 
+  const handleSearchChange = (newSearch: string) => {
+    setSearch(newSearch);
+    setPage(1);
+  };
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
+
   return (
     <EventsView
       events={events}
       onOpenCreateEvent={() => setIsCreateEventOpen(true)}
       onSelectEvent={(evt) => router.push(`/events/${evt.id}`)}
+      meta={meta}
+      page={page}
+      onPageChange={setPage}
+      limit={limit}
+      onLimitChange={handleLimitChange}
+      search={search}
+      onSearchChange={handleSearchChange}
     />
   );
 }

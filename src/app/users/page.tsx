@@ -5,7 +5,30 @@ import { useUsers } from "@/hooks/useUsers";
 import { UsersView } from "@/components/views/UsersView";
 
 export default function UsersPage() {
-  const { users, isLoading } = useUsers();
+  const [search, setSearch] = React.useState("");
+  const [page, setPage] = React.useState(1);
+  const [limit, setLimit] = React.useState(10);
+
+  const queryParams = React.useMemo(
+    () => ({
+      page,
+      limit,
+      search: search || undefined,
+    }),
+    [page, limit, search],
+  );
+
+  const { users, meta, isLoading } = useUsers(queryParams);
+
+  const handleSearchChange = (newSearch: string) => {
+    setSearch(newSearch);
+    setPage(1);
+  };
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
 
   if (isLoading && (!users || users.length === 0)) {
     return (
@@ -15,5 +38,16 @@ export default function UsersPage() {
     );
   }
 
-  return <UsersView users={users} />;
+  return (
+    <UsersView
+      users={users}
+      meta={meta}
+      page={page}
+      onPageChange={setPage}
+      limit={limit}
+      onLimitChange={handleLimitChange}
+      search={search}
+      onSearchChange={handleSearchChange}
+    />
+  );
 }

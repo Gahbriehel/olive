@@ -2,6 +2,29 @@ export type MembershipStatus = "Member" | "Visitor";
 export type ApiGender = "MALE" | "FEMALE" | "OTHER";
 export type ApiMembershipStatus = "VISITOR" | "MEMBER" | "WORKER" | "LEADER";
 
+export interface IPersonRegistrationHistory {
+  id: string;
+  status: string;
+  createdAt?: string;
+  event?: {
+    id: string;
+    title: string;
+    startDate: string;
+    status: string;
+    location?: string;
+  };
+  team?: {
+    id: string;
+    name: string;
+    color?: string;
+  };
+  attendance?: {
+    id: string;
+    checkedInAt: string;
+    checkedInBy?: string;
+  } | null;
+}
+
 export interface Person {
   id: string;
   name: string;
@@ -12,11 +35,25 @@ export interface Person {
   membershipStatus: MembershipStatus;
   avatarUrl?: string;
   registrationHistoryCount: number;
+  eventsAttendedCount: number;
+  registrations: {
+    id: string;
+    eventId?: string;
+    eventTitle: string;
+    eventDate: string;
+    teamName: string;
+    teamColor: string;
+    status: string;
+    attended: boolean;
+    checkedInAt?: string;
+  }[];
   departmentsPlaceholder: string[];
-  attendanceHistoryPlaceholder: {
+  attendanceHistory: {
+    id: string;
     eventName: string;
     date: string;
     attended: boolean;
+    checkedInAt?: string;
   }[];
   notesPlaceholder: string;
 }
@@ -34,6 +71,9 @@ export interface IApiPerson {
   address?: string;
   createdAt?: string;
   updatedAt?: string;
+  eventsRegisteredCount?: number;
+  eventsAttendedCount?: number;
+  registrations?: IPersonRegistrationHistory[];
 }
 
 export interface ICreatePersonPayload {
@@ -66,6 +106,47 @@ export function adaptApiPersonToPerson(apiPerson: IApiPerson): Person {
     VISITOR: "Visitor",
   };
 
+  const rawRegistrations = apiPerson.registrations || [];
+
+  const registrations = rawRegistrations.map((reg) => {
+    const eventTitle = reg.event?.title || "Event";
+    const eventDate = reg.event?.startDate
+      ? new Date(reg.event.startDate).toLocaleDateString()
+      : "N/A";
+    const teamName = reg.team?.name || "Unassigned";
+    const teamColor = reg.team?.color || "#6366F1";
+    const attended = reg.attendance !== null && reg.attendance !== undefined;
+    const checkedInAt = reg.attendance?.checkedInAt
+      ? new Date(reg.attendance.checkedInAt).toLocaleString()
+      : undefined;
+
+    return {
+      id: reg.id,
+      eventId: reg.event?.id,
+      eventTitle,
+      eventDate,
+      teamName,
+      teamColor,
+      status: reg.status,
+      attended,
+      checkedInAt,
+    };
+  });
+
+  const attendanceHistory = registrations.map((r) => ({
+    id: r.id,
+    eventName: r.eventTitle,
+    date: r.checkedInAt || r.eventDate,
+    attended: r.attended,
+    checkedInAt: r.checkedInAt,
+  }));
+
+  const eventsRegisteredCount =
+    apiPerson.eventsRegisteredCount ?? registrations.length;
+  const eventsAttendedCount =
+    apiPerson.eventsAttendedCount ??
+    registrations.filter((r) => r.attended).length;
+
   return {
     id: apiPerson.id,
     name: `${apiPerson.firstName} ${apiPerson.lastName}`.trim(),
@@ -74,18 +155,14 @@ export function adaptApiPersonToPerson(apiPerson: IApiPerson): Person {
     gender: apiPerson.gender ? genderMap[apiPerson.gender] : "Male",
     dob: apiPerson.dateOfBirth
       ? new Date(apiPerson.dateOfBirth).toISOString().slice(0, 10)
-      : "1995-01-01",
+      : "N/A",
     membershipStatus: membershipMap[apiPerson.membershipStatus] || "Member",
     avatarUrl: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150`,
-    registrationHistoryCount: 1,
+    registrationHistoryCount: eventsRegisteredCount,
+    eventsAttendedCount,
+    registrations,
     departmentsPlaceholder: ["General Assembly"],
-    attendanceHistoryPlaceholder: [
-      {
-        eventName: "Youth Conference 2026",
-        date: "Today",
-        attended: true,
-      },
-    ],
+    attendanceHistory,
     notesPlaceholder: "No notes added yet.",
   };
 }

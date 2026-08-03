@@ -14,6 +14,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  RotateCcw,
 } from "lucide-react";
 import {
   Card,
@@ -60,11 +61,18 @@ interface GamesViewProps {
   onDeleteGame: (id: string) => void | Promise<void>;
   onAddScore: (
     gameId: string,
-    scores: { teamId: string; points: number }[],
+    scores: {
+      teamId: string;
+      points: number;
+      scoreId?: string;
+      notes?: string;
+    }[],
   ) => void;
+  onClearScores?: (gameId: string) => void | Promise<void>;
   isCreating?: boolean;
   isUpdating?: boolean;
   isDeleting?: boolean;
+  isClearingScores?: boolean;
 }
 
 export const GamesView: React.FC<GamesViewProps> = ({
@@ -81,14 +89,20 @@ export const GamesView: React.FC<GamesViewProps> = ({
   onUpdateGame,
   onDeleteGame,
   onAddScore,
+  onClearScores,
   isCreating = false,
   isUpdating = false,
   isDeleting = false,
+  isClearingScores = false,
 }) => {
   const [selectedGameForScore, setSelectedGameForScore] = useState<Game | null>(
     null,
   );
   const [scoreInputs, setScoreInputs] = useState<Record<string, number>>({});
+  const [scoreNotes, setScoreNotes] = useState<Record<string, string>>({});
+  const [scoreIds, setScoreIds] = useState<Record<string, string>>({});
+  const [isConfirmClearScoresOpen, setIsConfirmClearScoresOpen] =
+    useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedGameForEdit, setSelectedGameForEdit] = useState<Game | null>(
     null,
@@ -139,12 +153,20 @@ export const GamesView: React.FC<GamesViewProps> = ({
 
   const handleOpenScoreModal = (game: Game) => {
     setSelectedGameForScore(game);
-    const initial: Record<string, number> = {};
+    const initialPoints: Record<string, number> = {};
+    const initialNotes: Record<string, string> = {};
+    const initialIds: Record<string, string> = {};
     teams.forEach((t) => {
       const existing = game.scores.find((s) => s.teamId === t.id);
-      initial[t.id] = existing ? existing.points : 0;
+      initialPoints[t.id] = existing ? existing.points : 0;
+      initialNotes[t.id] = existing?.notes || "";
+      if (existing?.id) {
+        initialIds[t.id] = existing.id;
+      }
     });
-    setScoreInputs(initial);
+    setScoreInputs(initialPoints);
+    setScoreNotes(initialNotes);
+    setScoreIds(initialIds);
   };
 
   const handleSubmitScores = () => {
@@ -152,9 +174,19 @@ export const GamesView: React.FC<GamesViewProps> = ({
       const payload = Object.entries(scoreInputs).map(([teamId, points]) => ({
         teamId,
         points: Number(points),
+        scoreId: scoreIds[teamId],
+        notes: scoreNotes[teamId],
       }));
       onAddScore(selectedGameForScore.id, payload);
       setSelectedGameForScore(null);
+    }
+  };
+
+  const handlePerformClearScores = async () => {
+    if (selectedGameForScore && onClearScores) {
+      await onClearScores(selectedGameForScore.id);
+      setSelectedGameForScore(null);
+      setIsConfirmClearScoresOpen(false);
     }
   };
 
@@ -295,6 +327,24 @@ export const GamesView: React.FC<GamesViewProps> = ({
                               <Edit className="w-3.5 h-3.5 text-amber-500" />
                               Edit Game
                             </button>
+
+                            {onClearScores &&
+                              game.scores &&
+                              game.scores.length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedGameForScore(game);
+                                    setIsConfirmClearScoresOpen(true);
+                                    setActiveMenuId(null);
+                                  }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 font-medium text-left text-rose-600 dark:text-rose-400"
+                                >
+                                  <RotateCcw className="w-3.5 h-3.5 text-rose-500" />
+                                  Clear Scores
+                                </button>
+                              )}
+
                             <button
                               type="button"
                               onClick={() => {
@@ -444,56 +494,95 @@ export const GamesView: React.FC<GamesViewProps> = ({
       <Modal
         isOpen={!!selectedGameForScore}
         onClose={() => setSelectedGameForScore(null)}
-        title={`Submit Scores: ${selectedGameForScore?.name}`}
-        description={`Award team points for ${selectedGameForScore?.name} (Max Points: ${selectedGameForScore?.maxScore})`}
+        title={`Manage Scores: ${selectedGameForScore?.name}`}
+        description={`Award or update team points for ${selectedGameForScore?.name} (Max Points: ${selectedGameForScore?.maxScore})`}
       >
         <div className="space-y-4 text-xs">
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
             {teams.map((team) => (
               <div
                 key={team.id}
-                className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/50"
+                className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/50 space-y-2"
               >
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: team.colorHex }}
-                  />
-                  <span className="font-bold text-slate-900 dark:text-slate-100">
-                    {team.name}
-                  </span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: team.colorHex }}
+                    />
+                    <span className="font-bold text-slate-900 dark:text-slate-100">
+                      {team.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      value={scoreInputs[team.id] ?? 0}
+                      onChange={(e) =>
+                        setScoreInputs({
+                          ...scoreInputs,
+                          [team.id]: Number(e.target.value),
+                        })
+                      }
+                      className="w-24 text-right font-mono"
+                    />
+                    <span className="text-slate-400 font-mono">pts</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    value={scoreInputs[team.id] ?? 0}
-                    onChange={(e) =>
-                      setScoreInputs({
-                        ...scoreInputs,
-                        [team.id]: Number(e.target.value),
-                      })
-                    }
-                    className="w-24 text-right font-mono"
-                  />
-                  <span className="text-slate-400 font-mono">pts</span>
-                </div>
+                <Input
+                  placeholder="Score notes (optional)..."
+                  value={scoreNotes[team.id] || ""}
+                  onChange={(e) =>
+                    setScoreNotes({
+                      ...scoreNotes,
+                      [team.id]: e.target.value,
+                    })
+                  }
+                  className="text-xs"
+                />
               </div>
             ))}
           </div>
 
-          <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setSelectedGameForScore(null)}
-            >
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={handleSubmitScores}>
-              Save Game Scores
-            </Button>
+          <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between gap-2">
+            {onClearScores ? (
+              <Button
+                variant="outline"
+                color="danger"
+                size="sm"
+                onClick={() => setIsConfirmClearScoresOpen(true)}
+              >
+                Clear Scores
+              </Button>
+            ) : (
+              <div />
+            )}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setSelectedGameForScore(null)}
+              >
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleSubmitScores}>
+                Save Game Scores
+              </Button>
+            </div>
           </div>
         </div>
       </Modal>
+
+      {/* Clear Game Scores Confirmation Modal */}
+      {selectedGameForScore && (
+        <ConfirmActionModal
+          display={isConfirmClearScoresOpen}
+          close={() => setIsConfirmClearScoresOpen(false)}
+          fn={handlePerformClearScores}
+          actionName="Clear Scores"
+          title={`Are you sure you want to clear all recorded scores for "${selectedGameForScore.name}"?`}
+          loading={isClearingScores}
+        />
+      )}
 
       {/* Create Game Sidebar Modal */}
       <SidebarModal

@@ -25,11 +25,14 @@ export function useRegistrations(params?: IQueryParams) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["registrations"] });
       queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["people"] });
     },
   });
 
   return {
-    registrations: registrationsQuery.data || EMPTY_REGISTRATIONS,
+    registrations:
+      registrationsQuery.data?.registrations || EMPTY_REGISTRATIONS,
+    meta: registrationsQuery.data?.meta,
     isLoading: registrationsQuery.isLoading,
     isError: registrationsQuery.isError,
     refetch: registrationsQuery.refetch,

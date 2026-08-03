@@ -9,15 +9,20 @@ import {
   IQueryParams,
   extractData,
   extractArray,
+  extractMeta,
 } from "@/models/base";
 
 export const eventsService = {
-  async getEvents(params?: IQueryParams): Promise<IApiEvent[]> {
-    const res = await apiClient.get<IBaseResponse<IApiEvent[]> | IApiEvent[]>(
-      "/events",
-      { params },
-    );
-    return extractArray<IApiEvent>(res.data);
+  async getEvents(
+    params?: IQueryParams,
+  ): Promise<{ events: IApiEvent[]; meta?: IBaseResponse["meta"] }> {
+    const res = await apiClient.get<IBaseResponse<unknown>>("/events", {
+      params,
+    });
+    return {
+      events: extractArray<IApiEvent>(res.data),
+      meta: extractMeta(res.data),
+    };
   },
 
   async getEventById(id: string): Promise<IApiEvent> {

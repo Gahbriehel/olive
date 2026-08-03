@@ -70,6 +70,30 @@ export function useGames(params?: IQueryParams | string) {
     },
   });
 
+  const updateScoreMutation = useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: Partial<IRecordScorePayload>;
+    }) => gamesService.updateScore(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+    },
+  });
+
+  const clearGameScoresMutation = useMutation({
+    mutationFn: (gameId: string) => gamesService.clearGameScores(gameId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["games"] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+    },
+  });
+
   return {
     games: gamesQuery.data?.games || EMPTY_GAMES,
     meta: gamesQuery.data?.meta,
@@ -84,5 +108,9 @@ export function useGames(params?: IQueryParams | string) {
     isDeletingGame: deleteGameMutation.isPending,
     recordScore: recordScoreMutation.mutateAsync,
     isRecordingScore: recordScoreMutation.isPending,
+    updateScore: updateScoreMutation.mutateAsync,
+    isUpdatingScore: updateScoreMutation.isPending,
+    clearGameScores: clearGameScoresMutation.mutateAsync,
+    isClearingScores: clearGameScoresMutation.isPending,
   };
 }
