@@ -51,6 +51,7 @@ export const TeamsForm: React.FC<TeamsFormProps> = ({
       },
     });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const currentColor = watch("color");
 
   const onFormSubmit = async (data: TeamFormValues) => {

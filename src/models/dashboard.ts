@@ -18,31 +18,65 @@ export interface AdminUser {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
+  phone?: string;
+  role: string;
   status: "Active" | "Inactive";
   lastActive: string;
   avatarUrl?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+export interface IUpdateUserPayload {
+  role?: string;
+  phone?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  membershipStatus?: string;
+}
+
+export interface IUserProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  churchId?: string | null;
+  roles?: string[];
+}
+
+export interface IUpdateProfilePayload {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  currentPassword?: string;
+  newPassword?: string;
 }
 
 export interface ChurchSettings {
+  id?: string;
   churchName: string;
+  branchName?: string;
   campusName: string;
   address: string;
   phone: string;
   email: string;
   website: string;
-  branding: {
+  websiteUrl?: string;
+  branding?: {
     primaryColor: string;
     logoText: string;
     logoUrl?: string;
   };
-  emailConfig: {
+  emailConfig?: {
     fromName: string;
     fromEmail: string;
     sendConfirmationEmails: boolean;
     sendReminder24h: boolean;
   };
-  preferences: {
+  preferences?: {
     autoAssignTeams: boolean;
     requireQrCheckin: boolean;
     allowSelfRegistration: boolean;

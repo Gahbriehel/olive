@@ -10,7 +10,13 @@ export interface Game {
   maxScore: number;
   status?: GameStatus;
   winnerTeamId?: string;
-  scores: { teamId: string; teamName: string; points: number }[];
+  scores: {
+    teamId: string;
+    teamName: string;
+    teamColor?: string;
+    points: number;
+    notes?: string;
+  }[];
 }
 
 export interface LeaderboardEntry {
@@ -30,8 +36,14 @@ export interface IApiScore {
   gameId: string;
   teamId: string;
   points: number;
+  notes?: string | null;
   recordedBy?: string;
   createdAt?: string;
+  team?: {
+    id: string;
+    name: string;
+    color?: string | null;
+  };
 }
 
 export interface IApiGame {
@@ -107,11 +119,23 @@ export function adaptApiGameToGame(apiGame: IApiGame, teams?: Team[]): Game {
     scores: Array.isArray(rawScores)
       ? rawScores.map((rawS: unknown) => {
           const s = rawS as Record<string, unknown>;
-          const team = teams?.find((t) => t.id === s.teamId || t.id === s.team);
+          const teamObj = s.team as Record<string, unknown> | undefined;
+          const teamId =
+            (s.teamId as string) ||
+            (teamObj?.id as string) ||
+            (typeof s.team === "string" ? s.team : "") ||
+            "";
+          const team = teams?.find((t) => t.id === teamId);
           return {
-            teamId: (s.teamId as string) || (s.team as string) || "",
-            teamName: (s.teamName as string) || (team ? team.name : "Team"),
+            teamId,
+            teamName:
+              (s.teamName as string) ||
+              (teamObj?.name as string) ||
+              (team ? team.name : "Team"),
+            teamColor:
+              (teamObj?.color as string) || (team ? team.color : undefined),
             points: (s.points as number) ?? (s.score as number) ?? 0,
+            notes: (s.notes as string) || undefined,
           };
         })
       : [],

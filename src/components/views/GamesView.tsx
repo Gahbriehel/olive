@@ -326,10 +326,18 @@ export const GamesView: React.FC<GamesViewProps> = ({
                         {game.scores.map((s) => (
                           <div
                             key={s.teamId}
-                            className="flex items-center justify-between p-1.5 rounded bg-white dark:bg-zinc-700 font-semibold"
+                            className="flex items-center justify-between p-1.5 rounded-xl bg-white dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700/60 font-semibold"
                           >
-                            <span className="truncate">{s.teamName}</span>
-                            <span className="font-mono text-indigo-600 dark:text-indigo-400">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              {s.teamColor && (
+                                <span
+                                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                                  style={{ backgroundColor: s.teamColor }}
+                                />
+                              )}
+                              <span className="truncate">{s.teamName}</span>
+                            </div>
+                            <span className="font-mono text-indigo-600 dark:text-indigo-400 shrink-0 ml-1">
                               +{s.points}
                             </span>
                           </div>

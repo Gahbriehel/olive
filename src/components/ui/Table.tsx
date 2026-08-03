@@ -59,6 +59,7 @@ export function Table<TData, TValue>({
     setGlobalFilter(debouncedSearch);
   }, [debouncedSearch]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,

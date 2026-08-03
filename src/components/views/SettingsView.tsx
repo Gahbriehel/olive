@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Check, Save } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Check, Save, User, Building2, Key, AlertCircle } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -10,32 +10,154 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Tabs } from "@/components/ui/Tabs";
-import { ChurchSettings } from "@/types/dashboard";
+import { ChurchSettings, IUpdateProfilePayload } from "@/models/dashboard";
+import { useSettings } from "@/hooks/useSettings";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SettingsViewProps {
-  settings: ChurchSettings;
-  onSaveSettings: (updated: ChurchSettings) => void;
+  settings?: ChurchSettings;
+  onSaveSettings?: (updated: ChurchSettings) => Promise<unknown> | void;
+  defaultTab?: string;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
-  settings,
-  onSaveSettings,
+  settings: propSettings,
+  onSaveSettings: propOnSaveSettings,
+  defaultTab = "church-info",
 }) => {
+  const { user } = useAuth();
+  const {
+    settings: hookSettings,
+    updateSettings: hookUpdateSettings,
+    profile,
+    updateProfile,
+    isUpdatingSettings,
+    isUpdatingProfile,
+  } = useSettings();
+
+  const settings = propSettings ||
+    hookSettings || {
+      churchName: "Church Events",
+      branchName: "",
+      campusName: "Main Campus",
+      address: "",
+      phone: "",
+      email: "",
+      website: "",
+      websiteUrl: "",
+      branding: { primaryColor: "#6366f1", logoText: "GRACE CITY EVENTS" },
+      emailConfig: {
+        fromName: "Grace City Youth Events",
+        fromEmail: "events@gracecity.org",
+        sendConfirmationEmails: true,
+        sendReminder24h: true,
+      },
+      preferences: {
+        autoAssignTeams: true,
+        requireQrCheckin: true,
+        allowSelfRegistration: true,
+      },
+    };
+
   const [formData, setFormData] = useState<ChurchSettings>(settings);
-  const [activeTab, setActiveTab] = useState("church-info");
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Profile Form state
+  const [profileData, setProfileData] = useState<IUpdateProfilePayload>({
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    email: user?.email || "",
+    phone: "",
+    currentPassword: "",
+    newPassword: "",
+  });
+
+  useEffect(() => {
+    if (hookSettings) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFormData(hookSettings);
+    }
+  }, [hookSettings]);
+
+  useEffect(() => {
+    if (profile || user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setProfileData((prev) => ({
+        ...prev,
+        firstName: profile?.firstName || user?.firstName || "",
+        lastName: profile?.lastName || user?.lastName || "",
+        email: profile?.email || user?.email || "",
+        phone: profile?.phone || "",
+      }));
+    }
+  }, [profile, user]);
 
   const tabs = [
     { id: "church-info", label: "Church Information" },
+    { id: "profile", label: "My Profile & Security" },
     { id: "branding", label: "Branding & Theme" },
     { id: "email", label: "Email Configuration" },
     { id: "preferences", label: "General Preferences" },
   ];
 
-  const handleSave = () => {
-    onSaveSettings(formData);
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 3000);
+  const handleSaveChurchSettings = async () => {
+    try {
+      setErrorMessage(null);
+      if (propOnSaveSettings) {
+        await propOnSaveSettings(formData);
+      } else {
+        await hookUpdateSettings(formData);
+      }
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: unknown }).message)
+          : "Failed to update church settings.";
+      setErrorMessage(msg);
+    }
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setErrorMessage(null);
+      const payload: IUpdateProfilePayload = {
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+        email: profileData.email,
+        phone: profileData.phone,
+      };
+
+      if (profileData.newPassword) {
+        if (!profileData.currentPassword) {
+          setErrorMessage(
+            "Current password is required to update your password.",
+          );
+          return;
+        }
+        payload.currentPassword = profileData.currentPassword;
+        payload.newPassword = profileData.newPassword;
+      }
+
+      await updateProfile(payload);
+      setProfileData((prev) => ({
+        ...prev,
+        currentPassword: "",
+        newPassword: "",
+      }));
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: unknown }).message)
+          : "Failed to update profile. Please verify your current password.";
+      setErrorMessage(msg);
+    }
   };
 
   return (
@@ -47,18 +169,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             Platform Settings
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Configure church metadata, multi-campus branding, email confirmation
-            dispatches, and event defaults.
+            Configure church metadata, user profile credentials, multi-campus
+            branding, and system defaults.
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={handleSave}
-          leftIcon={<Save className="w-4 h-4" />}
-          className="bg-indigo-600 hover:bg-indigo-500"
-        >
-          Save Configuration
-        </Button>
+        {activeTab === "church-info" && (
+          <Button
+            variant="primary"
+            onClick={handleSaveChurchSettings}
+            disabled={isUpdatingSettings}
+            leftIcon={<Save className="w-4 h-4" />}
+            className="bg-indigo-600 hover:bg-indigo-500"
+          >
+            {isUpdatingSettings ? "Saving..." : "Save Configuration"}
+          </Button>
+        )}
       </div>
 
       {savedSuccess && (
@@ -69,6 +194,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
       )}
 
+      {errorMessage && (
+        <div className="p-4 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-300 font-bold text-xs flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-rose-500" />
+          {errorMessage}
+        </div>
+      )}
+
       {/* Settings Navigation Tabs */}
       <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
 
@@ -76,10 +208,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {activeTab === "church-info" && (
         <Card>
           <CardHeader>
-            <CardTitle>Church & Organization Information</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-indigo-500" />
+              Church & Organization Information
+            </CardTitle>
             <CardDescription>
-              Primary organization details displayed on attendee invoices and
-              tickets
+              Primary organization details displayed on attendee invitations,
+              invoices, and tickets
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-xs">
@@ -89,6 +224,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 value={formData.churchName}
                 onChange={(e) =>
                   setFormData({ ...formData, churchName: e.target.value })
+                }
+              />
+              <Input
+                label="Branch / Division Name"
+                value={formData.branchName || ""}
+                placeholder="e.g. Grace City HQ / North Division"
+                onChange={(e) =>
+                  setFormData({ ...formData, branchName: e.target.value })
                 }
               />
               <Input
@@ -121,9 +264,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               />
               <Input
                 label="Website URL"
-                value={formData.website}
+                value={formData.websiteUrl || formData.website}
+                placeholder="https://gracecity.org"
                 onChange={(e) =>
-                  setFormData({ ...formData, website: e.target.value })
+                  setFormData({
+                    ...formData,
+                    website: e.target.value,
+                    websiteUrl: e.target.value,
+                  })
                 }
               />
             </div>
@@ -131,7 +279,110 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </Card>
       )}
 
-      {/* Tab 2: Branding */}
+      {/* Tab 2: User Profile Self-Service */}
+      {activeTab === "profile" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="w-5 h-5 text-indigo-500" />
+              User Profile Self-Service
+            </CardTitle>
+            <CardDescription>
+              Update your personal credentials, contact numbers, and security
+              password
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSaveProfile} className="space-y-6 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="First Name"
+                  value={profileData.firstName}
+                  onChange={(e) =>
+                    setProfileData({
+                      ...profileData,
+                      firstName: e.target.value,
+                    })
+                  }
+                  required
+                />
+                <Input
+                  label="Last Name"
+                  value={profileData.lastName}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, lastName: e.target.value })
+                  }
+                  required
+                />
+                <Input
+                  label="Email Address"
+                  type="email"
+                  value={profileData.email}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, email: e.target.value })
+                  }
+                  required
+                />
+                <Input
+                  label="Phone Number"
+                  value={profileData.phone || ""}
+                  placeholder="+1 (555) 000-1234"
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, phone: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="pt-4 border-t border-slate-200 dark:border-zinc-800 space-y-4">
+                <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <Key className="w-4 h-4 text-indigo-500" />
+                  Change Security Password
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    label="Current Password"
+                    type="password"
+                    placeholder="Enter current password to authorize changes"
+                    value={profileData.currentPassword}
+                    onChange={(e) =>
+                      setProfileData({
+                        ...profileData,
+                        currentPassword: e.target.value,
+                      })
+                    }
+                  />
+                  <Input
+                    label="New Password"
+                    type="password"
+                    placeholder="Enter new strong password"
+                    value={profileData.newPassword}
+                    onChange={(e) =>
+                      setProfileData({
+                        ...profileData,
+                        newPassword: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={isUpdatingProfile}
+                  leftIcon={<Save className="w-4 h-4" />}
+                  className="bg-indigo-600 hover:bg-indigo-500"
+                >
+                  {isUpdatingProfile ? "Updating Profile..." : "Update Profile"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tab 3: Branding */}
       {activeTab === "branding" && (
         <Card>
           <CardHeader>
@@ -148,11 +399,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <div className="flex items-center gap-3">
                 <input
                   type="color"
-                  value={formData.branding.primaryColor}
+                  value={formData.branding?.primaryColor || "#6366f1"}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
                       branding: {
+                        logoText: formData.branding?.logoText || "",
                         ...formData.branding,
                         primaryColor: e.target.value,
                       },
@@ -161,18 +413,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   className="w-10 h-10 rounded-xl cursor-pointer border border-slate-200"
                 />
                 <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
-                  {formData.branding.primaryColor}
+                  {formData.branding?.primaryColor || "#6366f1"}
                 </span>
               </div>
             </div>
 
             <Input
               label="Logo Text Brand Header"
-              value={formData.branding.logoText}
+              value={formData.branding?.logoText || ""}
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  branding: { ...formData.branding, logoText: e.target.value },
+                  branding: {
+                    primaryColor: formData.branding?.primaryColor || "#6366f1",
+                    ...formData.branding,
+                    logoText: e.target.value,
+                  },
                 })
               }
             />
@@ -180,7 +436,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </Card>
       )}
 
-      {/* Tab 3: Email Config */}
+      {/* Tab 4: Email Config */}
       {activeTab === "email" && (
         <Card>
           <CardHeader>
@@ -193,11 +449,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Sender Display Name"
-                value={formData.emailConfig.fromName}
+                value={formData.emailConfig?.fromName || ""}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
                     emailConfig: {
+                      fromEmail: formData.emailConfig?.fromEmail || "",
+                      sendConfirmationEmails: true,
+                      sendReminder24h: true,
                       ...formData.emailConfig,
                       fromName: e.target.value,
                     },
@@ -206,11 +465,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               />
               <Input
                 label="Sender Email Address"
-                value={formData.emailConfig.fromEmail}
+                value={formData.emailConfig?.fromEmail || ""}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
                     emailConfig: {
+                      fromName: formData.emailConfig?.fromName || "",
+                      sendConfirmationEmails: true,
+                      sendReminder24h: true,
                       ...formData.emailConfig,
                       fromEmail: e.target.value,
                     },
@@ -222,7 +484,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </Card>
       )}
 
-      {/* Tab 4: Preferences */}
+      {/* Tab 5: Preferences */}
       {activeTab === "preferences" && (
         <Card>
           <CardHeader>
@@ -238,17 +500,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   Auto-Assign Teams on Registration
                 </p>
                 <p className="text-[11px] text-slate-400">
-                  Balance attendee allocation across the 4 event teams upon
-                  signup
+                  Balance attendee allocation across the event teams upon signup
                 </p>
               </div>
               <input
                 type="checkbox"
-                checked={formData.preferences.autoAssignTeams}
+                checked={formData.preferences?.autoAssignTeams ?? true}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
                     preferences: {
+                      requireQrCheckin: true,
+                      allowSelfRegistration: true,
                       ...formData.preferences,
                       autoAssignTeams: e.target.checked,
                     },
@@ -269,11 +532,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </div>
               <input
                 type="checkbox"
-                checked={formData.preferences.requireQrCheckin}
+                checked={formData.preferences?.requireQrCheckin ?? true}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
                     preferences: {
+                      autoAssignTeams: true,
+                      allowSelfRegistration: true,
                       ...formData.preferences,
                       requireQrCheckin: e.target.checked,
                     },

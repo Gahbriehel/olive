@@ -69,6 +69,7 @@ export const EventsForm: React.FC<EventsFormProps> = ({
     },
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const startDateValue = watch("startDate");
 
   const onFormSubmit = async (data: EventFormValues) => {
