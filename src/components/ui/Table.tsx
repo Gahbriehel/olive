@@ -23,7 +23,6 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
 export interface TableProps<TData, TValue> {
@@ -36,7 +35,6 @@ export interface TableProps<TData, TValue> {
   pageSizeOptions?: number[];
   emptyMessage?: string;
   className?: string;
-  // Server-side pagination & search props
   meta?: {
     total?: number;
     page?: number;
@@ -314,25 +312,25 @@ export function Table<TData, TValue>({
             </div>
 
             {/* Page Navigation Controls */}
-            <div className="flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
                 onClick={() => handlePageChange(1)}
                 disabled={!canGoPrevious}
-                className="h-8 w-8 p-0"
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                title="First Page"
               >
                 <ChevronsLeft className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
+              </button>
+              <button
+                type="button"
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={!canGoPrevious}
-                className="h-8 w-8 p-0"
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                title="Previous Page"
               >
                 <ChevronLeft className="w-4 h-4" />
-              </Button>
+              </button>
 
               <span className="px-3 text-xs">
                 Page{" "}
@@ -345,24 +343,24 @@ export function Table<TData, TValue>({
                 </span>
               </span>
 
-              <Button
-                variant="outline"
-                size="sm"
+              <button
+                type="button"
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={!canGoNext}
-                className="h-8 w-8 p-0"
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                title="Next Page"
               >
                 <ChevronRight className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
+              </button>
+              <button
+                type="button"
                 onClick={() => handlePageChange(totalPages)}
                 disabled={!canGoNext}
-                className="h-8 w-8 p-0"
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                title="Last Page"
               >
                 <ChevronsRight className="w-4 h-4" />
-              </Button>
+              </button>
             </div>
           </div>
         )}

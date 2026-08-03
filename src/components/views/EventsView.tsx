@@ -442,25 +442,25 @@ export const EventsView: React.FC<EventsViewProps> = ({
             )}
           </div>
 
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
               onClick={() => onPageChange(1)}
               disabled={page <= 1}
-              className="h-8 w-8 p-0"
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              title="First Page"
             >
               <ChevronsLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+            <button
+              type="button"
               onClick={() => onPageChange(page - 1)}
               disabled={page <= 1}
-              className="h-8 w-8 p-0"
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              title="Previous Page"
             >
               <ChevronLeft className="w-4 h-4" />
-            </Button>
+            </button>
 
             <span className="px-3 text-xs">
               Page{" "}
@@ -473,24 +473,24 @@ export const EventsView: React.FC<EventsViewProps> = ({
               </span>
             </span>
 
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={() => onPageChange(page + 1)}
               disabled={page >= (meta?.totalPages ?? 1)}
-              className="h-8 w-8 p-0"
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              title="Next Page"
             >
               <ChevronRight className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+            <button
+              type="button"
               onClick={() => onPageChange(meta?.totalPages ?? 1)}
               disabled={page >= (meta?.totalPages ?? 1)}
-              className="h-8 w-8 p-0"
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              title="Last Page"
             >
               <ChevronsRight className="w-4 h-4" />
-            </Button>
+            </button>
           </div>
         </div>
       )}

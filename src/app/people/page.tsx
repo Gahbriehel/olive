@@ -4,7 +4,7 @@ import React from "react";
 import { usePeople } from "@/hooks/usePeople";
 import { useEvents } from "@/hooks/useEvents";
 import { useRegistrations } from "@/hooks/useRegistrations";
-import { adaptApiPersonToPerson } from "@/models/person";
+import { adaptApiPersonToPerson, ICreatePersonPayload } from "@/models/person";
 import { PeopleView } from "@/components/views/PeopleView";
 import { IRegisterPayload } from "@/models/registration";
 
@@ -22,7 +22,12 @@ export default function PeoplePage() {
     [page, limit, search],
   );
 
-  const { people: apiPeople, meta } = usePeople(queryParams);
+  const {
+    people: apiPeople,
+    meta,
+    createPerson,
+    isCreating,
+  } = usePeople(queryParams);
   const { events: apiEvents } = useEvents();
   const { registerAttendee, isRegistering } = useRegistrations();
 
@@ -47,6 +52,10 @@ export default function PeoplePage() {
     await registerAttendee({ eventId, dto: payload });
   };
 
+  const handleAddPerson = async (payload: ICreatePersonPayload) => {
+    await createPerson(payload);
+  };
+
   const handleSearchChange = (newSearch: string) => {
     setSearch(newSearch);
     setPage(1);
@@ -63,6 +72,8 @@ export default function PeoplePage() {
       events={events}
       onRegisterPerson={handleRegisterPerson}
       isRegistering={isRegistering}
+      onAddPerson={handleAddPerson}
+      isAddingPerson={isCreating}
       meta={meta}
       page={page}
       onPageChange={setPage}

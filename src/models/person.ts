@@ -47,7 +47,7 @@ export interface Person {
     attended: boolean;
     checkedInAt?: string;
   }[];
-  departmentsPlaceholder: string[];
+  departments?: string[];
   attendanceHistory: {
     id: string;
     eventName: string;
@@ -55,7 +55,7 @@ export interface Person {
     attended: boolean;
     checkedInAt?: string;
   }[];
-  notesPlaceholder: string;
+  notes?: string;
 }
 
 export interface IApiPerson {
@@ -74,6 +74,10 @@ export interface IApiPerson {
   eventsRegisteredCount?: number;
   eventsAttendedCount?: number;
   registrations?: IPersonRegistrationHistory[];
+  department?: string;
+  departments?: string[];
+  notes?: string;
+  avatarUrl?: string;
 }
 
 export interface ICreatePersonPayload {
@@ -147,6 +151,10 @@ export function adaptApiPersonToPerson(apiPerson: IApiPerson): Person {
     apiPerson.eventsAttendedCount ??
     registrations.filter((r) => r.attended).length;
 
+  const departments =
+    apiPerson.departments ||
+    (apiPerson.department ? [apiPerson.department] : []);
+
   return {
     id: apiPerson.id,
     name: `${apiPerson.firstName} ${apiPerson.lastName}`.trim(),
@@ -157,13 +165,13 @@ export function adaptApiPersonToPerson(apiPerson: IApiPerson): Person {
       ? new Date(apiPerson.dateOfBirth).toISOString().slice(0, 10)
       : "N/A",
     membershipStatus: membershipMap[apiPerson.membershipStatus] || "Member",
-    avatarUrl: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150`,
+    avatarUrl: apiPerson.avatarUrl || undefined,
     registrationHistoryCount: eventsRegisteredCount,
     eventsAttendedCount,
     registrations,
-    departmentsPlaceholder: ["General Assembly"],
+    departments,
     attendanceHistory,
-    notesPlaceholder: "No notes added yet.",
+    notes: apiPerson.notes || "",
   };
 }
 

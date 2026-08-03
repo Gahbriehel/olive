@@ -40,6 +40,7 @@ export function usePeople(params?: IQueryParams) {
     isError: peopleQuery.isError,
     refetch: peopleQuery.refetch,
     createPerson: createPersonMutation.mutateAsync,
+    isCreating: createPersonMutation.isPending,
     updatePerson: updatePersonMutation.mutateAsync,
   };
 }

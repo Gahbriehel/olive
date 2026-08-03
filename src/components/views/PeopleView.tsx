@@ -11,14 +11,15 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
-import { Drawer } from "@/components/ui/Drawer";
+
 import { Tabs } from "@/components/ui/Tabs";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { RegisterPersonForm } from "@/components/Forms/RegisterPersonForm";
+import { AddPersonForm } from "@/components/Forms/AddPersonForm";
 import { IRegisterPayload } from "@/models/registration";
-import { Person } from "@/types/dashboard";
+import { Person, ICreatePersonPayload } from "@/models/person";
 import { ColumnDef } from "@tanstack/react-table";
 
 interface PeopleViewProps {
@@ -29,6 +30,8 @@ interface PeopleViewProps {
     payload: IRegisterPayload,
   ) => void | Promise<void>;
   isRegistering?: boolean;
+  onAddPerson?: (payload: ICreatePersonPayload) => void | Promise<void>;
+  isAddingPerson?: boolean;
   meta?: {
     total?: number;
     page?: number;
@@ -48,6 +51,8 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
   events = [],
   onRegisterPerson,
   isRegistering = false,
+  onAddPerson,
+  isAddingPerson = false,
   meta,
   page,
   onPageChange,
@@ -61,6 +66,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [drawerTab, setDrawerTab] = useState("info");
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
 
   // Calculate dynamic stats from people
   const totalPeople = people.length;
@@ -173,7 +179,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
     {
       id: "departments",
       label: "Departments",
-      count: selectedPerson?.departmentsPlaceholder?.length || 0,
+      count: selectedPerson?.departments?.length || 0,
     },
     {
       id: "attendance",
@@ -196,10 +202,17 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
             and first-time guests.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <Button
+            variant="outline"
+            leftIcon={<UserPlus className="w-4 h-4" />}
+            onClick={() => setIsAddPersonOpen(true)}
+          >
+            Add Person
+          </Button>
           <Button
             variant="primary"
-            leftIcon={<UserPlus className="w-4 h-4" />}
+            leftIcon={<Calendar className="w-4 h-4" />}
             onClick={() => setIsRegisterOpen(true)}
           >
             Register Person for Event
@@ -285,15 +298,17 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
         onSearchChange={onSearchChange}
       />
 
-      {/* Person Details Slide-Over Drawer */}
-      <Drawer
-        isOpen={!!selectedPerson}
-        onClose={() => setSelectedPerson(null)}
+      {/* Person Details Sidebar Modal */}
+      <SidebarModal
+        display={!!selectedPerson}
+        close={() => setSelectedPerson(null)}
         title={selectedPerson?.name || ""}
-        subtitle={`Member Profile • ID: ${selectedPerson?.id || ""}`}
       >
         {selectedPerson && (
           <div className="space-y-6">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-[-1rem] mb-2">
+              Member Profile • ID: {selectedPerson?.id || ""}
+            </p>
             {/* Header Badge Card */}
             <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -408,23 +423,30 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
               </div>
             )}
 
-            {/* Placeholder Tabs for Scalability */}
+            {/* Departments Tab */}
             {drawerTab === "departments" && (
               <div className="space-y-2 text-xs">
                 <p className="text-slate-400 text-[11px]">
                   Church ministry department memberships:
                 </p>
-                {selectedPerson.departmentsPlaceholder?.map((dept, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 font-semibold text-slate-800 dark:text-slate-200 flex items-center justify-between"
-                  >
-                    <span>{dept}</span>
-                    <Badge variant="indigo" size="sm">
-                      Active
-                    </Badge>
+                {selectedPerson.departments &&
+                selectedPerson.departments.length > 0 ? (
+                  selectedPerson.departments.map((dept, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 font-semibold text-slate-800 dark:text-slate-200 flex items-center justify-between"
+                    >
+                      <span>{dept}</span>
+                      <Badge variant="indigo" size="sm">
+                        Active
+                      </Badge>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-slate-400 italic bg-slate-50 dark:bg-zinc-800/40 rounded-xl">
+                    No department assigned.
                   </div>
-                ))}
+                )}
               </div>
             )}
 
@@ -470,14 +492,38 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
                 <p className="text-slate-400 text-[11px]">
                   Administrator & Pastoral Notes:
                 </p>
-                <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/50 text-amber-900 dark:text-amber-200 font-medium">
-                  {selectedPerson.notesPlaceholder || "No notes available."}
-                </div>
+                {selectedPerson.notes ? (
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-800 text-slate-800 dark:text-slate-200 font-medium">
+                    {selectedPerson.notes}
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-slate-400 italic bg-slate-50 dark:bg-zinc-800/40 rounded-xl">
+                    No notes recorded.
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
-      </Drawer>
+      </SidebarModal>
+
+      {/* Add Person Sidebar Modal */}
+      <SidebarModal
+        title="Add New Person"
+        display={isAddPersonOpen}
+        close={() => setIsAddPersonOpen(false)}
+      >
+        <AddPersonForm
+          onSubmit={async (payload) => {
+            if (onAddPerson) {
+              await onAddPerson(payload);
+            }
+            setIsAddPersonOpen(false);
+          }}
+          onCancel={() => setIsAddPersonOpen(false)}
+          isLoading={isAddingPerson}
+        />
+      </SidebarModal>
 
       {/* Register Person Sidebar Modal */}
       <SidebarModal

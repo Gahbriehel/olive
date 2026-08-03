@@ -53,7 +53,7 @@ export function adaptApiEventToChurchEvent(apiEvent: IApiEvent): ChurchEvent {
     description: apiEvent.description || "",
     startDate: apiEvent.startDate,
     endDate: apiEvent.endDate,
-    location: apiEvent.location || "Main Sanctuary",
+    location: apiEvent.location || "N/A",
     capacity: 500,
     registeredCount: 0,
     checkedInCount: 0,
