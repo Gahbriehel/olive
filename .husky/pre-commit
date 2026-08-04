@@ -1,24 +1,10 @@
 
 echo '🏗️👷 Styling, testing and building your project before committing'
 
-# Check Prettier standards
-bun check-format ||
+# Run all checks via Turbo
+bun check-all ||
     (
-        echo 'Prettier Check Failed. Run bun format, add changes and try commit again.'
-        false
-    )
-
-# Check ESLint Standards
-bun check-lint ||
-    (
-        echo 'ESLint Check Failed. Make the required changes listed above, add changes and try to commit again.'
-        false
-    )
-
-# Check tsconfig standards
-bun check-types ||
-    (
-        echo 'Failed Type check. Make the changes required above.'
+        echo 'Checks failed. Please review errors and try to commit again.'
         false
     )
 
