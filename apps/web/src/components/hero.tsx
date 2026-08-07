@@ -3,16 +3,26 @@
 import React from "react";
 import Link from "next/link";
 import { Play } from "lucide-react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 export function Hero() {
   return (
     <section className="relative min-h-screen overflow-hidden text-white flex flex-col items-center justify-center">
-      {/* Deep blue gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1A3A63] via-[#2A5090] to-[#1A3A63]" />
-
-      {/* Radial ambient glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(80,128,208,0.3)_0%,transparent_70%)]" />
+      {/* Hero Background Image & Overlay */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/images/hero-img.jpg"
+          alt="Amazing Grace Bible Church background"
+          fill
+          priority
+          className="object-cover"
+        />
+        {/* Linear gradient overlay: darker at the bottom for text contrast, lighter at the top to let the photo breathe */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/40" />
+        {/* Soft amber radial glow to complement the gold typography */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(184, 103, 10, 0.15)_0%,transparent_75%)]" />
+      </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center flex flex-col items-center">
         {/* Hebrews 13:8 pill badge */}
@@ -25,45 +35,37 @@ export function Hero() {
           Hebrews 13:8
         </motion.div>
 
-        {/* Main Church Name — large serif */}
+        {/* Main Church Name — display font for the name */}
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className="text-5xl sm:text-7xl lg:text-8xl font-serif font-bold text-white tracking-wide leading-[1.05] uppercase"
-          style={{ fontVariant: "small-caps" }}
         >
           Amazing Grace
+          <span className="block text-2xl sm:text-4xl lg:text-5xl mt-3 text-amber-400 font-serif font-semibold tracking-widest uppercase">
+            Bible Church
+          </span>
         </motion.h1>
 
-        {/* Subtitle — gold tracked */}
-        <motion.p
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mt-4 text-sm sm:text-base font-bold uppercase tracking-[0.35em] text-amber-400/90"
-        >
-          Bible Church
-        </motion.p>
-
-        {/* Tagline */}
+        {/* Tagline — clean sans for supporting tagline */}
         <motion.p
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-5 text-lg sm:text-2xl font-serif text-white/90 tracking-wide"
+          className="mt-8 text-lg sm:text-2xl font-sans text-slate-200/95 tracking-wide font-normal max-w-2xl"
         >
           Salvation, Healing and Miracles
         </motion.p>
 
-        {/* Scripture quote */}
+        {/* Scripture quote — clean sans for supporting text */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-6 text-sm sm:text-base italic text-white/60 font-serif max-w-lg"
+          className="mt-5 text-sm sm:text-base italic text-slate-400 font-sans max-w-lg"
         >
-          &ldquo;Jesus Christ the same yesterday, and today, and forever.&rdquo;
+          &ldquo;A touch from God will change your life forever!&rdquo;
         </motion.p>
 
         {/* CTA Buttons */}
@@ -88,23 +90,6 @@ export function Hero() {
           </Link>
         </motion.div>
       </div>
-
-      {/* Scroll indicator at bottom */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.8 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
-      >
-        <span className="text-[10px] uppercase tracking-[0.3em] text-white/40 font-semibold">
-          Scroll
-        </span>
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-          className="w-px h-8 bg-gradient-to-b from-white/40 to-transparent"
-        />
-      </motion.div>
     </section>
   );
 }

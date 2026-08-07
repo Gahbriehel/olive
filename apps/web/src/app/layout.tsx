@@ -1,8 +1,20 @@
 import type { Metadata } from "next";
+import { Outfit, Abhaya_Libre } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/context/query-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
+
+const abhayaLibre = Abhaya_Libre({
+  weight: ["400", "500", "600", "700", "800"],
+  subsets: ["latin"],
+  variable: "--font-serif",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -18,6 +30,15 @@ export const metadata: Metadata = {
     siteName: "Amazing Grace Bible Church",
     type: "website",
   },
+  icons: {
+    icon: [
+      {
+        url: "/images/icon-gold.png",
+        sizes: "any",
+        type: "image/png",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -27,7 +48,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased selection:bg-amber-500 selection:text-white flex flex-col min-h-screen bg-[#0B1426] text-white">
+      <body
+        className={`${outfit.variable} ${abhayaLibre.variable} antialiased selection:bg-amber-500 selection:text-white flex flex-col min-h-screen bg-[#0B1426] text-white`}
+      >
         <QueryProvider>
           <Navbar />
           <main className="flex-grow">{children}</main>

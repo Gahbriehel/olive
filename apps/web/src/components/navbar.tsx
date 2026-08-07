@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, Clock, MapPin } from "lucide-react";
@@ -10,6 +10,29 @@ import Image from "next/image";
 export function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const isHome = pathname === "/";
+  const headerClass = isHome
+    ? "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out"
+    : "sticky top-0 z-50 transition-all duration-300 ease-in-out";
+
+  const bgClass = scrolled
+    ? "bg-[#1A3A63]/95 backdrop-blur-md border-b border-white/10 shadow-lg shadow-black/20"
+    : "bg-transparent border-b border-transparent";
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -20,16 +43,16 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50">
+    <header className={headerClass}>
       {/* MAIN NAVBAR */}
-      <div className="bg-[#1A3A63]/95 backdrop-blur-md border-b border-white/10">
+      <div className={`transition-all duration-300 ease-in-out ${bgClass}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo / Branding */}
             <Link href="/" className="flex items-center space-x-3 group">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center">
                 <Image
-                  src="/images/logo_gold.png"
+                  src="/images/logo-gold.png"
                   alt="Logo"
                   width={100}
                   height={100}
@@ -68,12 +91,12 @@ export function Navbar() {
             {/* Right Action Controls */}
             <div className="hidden md:flex items-center space-x-3">
               {/* CTA Button */}
-              <Link
+              {/* <Link
                 href="/contact"
                 className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-sm shadow-md shadow-amber-900/20 transition-all duration-200 border border-amber-500/50"
               >
                 Watch Live
-              </Link>
+              </Link> */}
             </div>
 
             {/* Mobile Menu Toggle Button */}
@@ -116,7 +139,7 @@ export function Navbar() {
                 <div className="flex items-center justify-between pb-6 border-b border-white/10">
                   <div className="flex items-center space-x-2.5">
                     <Image
-                      src="/images/logo_gold.png"
+                      src="/images/logo-gold.png"
                       alt="Logo"
                       width={32}
                       height={32}
@@ -162,11 +185,13 @@ export function Navbar() {
                 <div className="text-xs text-slate-400 space-y-1.5">
                   <p className="flex items-center space-x-2">
                     <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-                    <span>Sun: 9:00 AM & 11:30 AM</span>
+                    <span>Sun: 7:30 AM & 9:00 AM</span>
                   </p>
                   <p className="flex items-center space-x-2">
                     <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
-                    <span>123 Hope Boulevard, Cityville</span>
+                    <span>
+                      No 1, Makanjuola Street, Adifase, Dogo, Apata, Ibadan
+                    </span>
                   </p>
                 </div>
 
