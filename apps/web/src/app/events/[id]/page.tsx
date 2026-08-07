@@ -82,7 +82,7 @@ export default function EventRegistrationPage({
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20">
-        <div className="h-96 rounded-3xl bg-slate-100 dark:bg-slate-800/50 animate-pulse" />
+        <div className="h-96 rounded-3xl bg-white/5 animate-pulse" />
       </div>
     );
   }
@@ -93,9 +93,7 @@ export default function EventRegistrationPage({
         <div className="w-16 h-16 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto">
           <AlertCircle className="w-8 h-8" />
         </div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-          Event Not Found
-        </h1>
+        <h1 className="text-2xl font-bold text-white">Event Not Found</h1>
         <p className="text-sm text-slate-500">
           The event you are looking for may have been removed or is unavailable.
         </p>
@@ -115,7 +113,7 @@ export default function EventRegistrationPage({
       {/* Back Button */}
       <Link
         href="/events"
-        className="inline-flex items-center space-x-2 text-sm font-semibold text-slate-500 hover:text-emerald-500 transition-colors"
+        className="inline-flex items-center space-x-2 text-sm font-semibold text-slate-500 hover:text-amber-400 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>Back to All Events</span>
@@ -124,29 +122,27 @@ export default function EventRegistrationPage({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         {/* LEFT COL: Event Information */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="glass-card p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 space-y-6">
-            <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-bold uppercase tracking-wider">
+          <div className="rounded-3xl p-8 border border-white/10 bg-[#0F1D33] space-y-6 shadow-sm">
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-amber-500/15 text-amber-400 text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-4 h-4" />
               <span>Event Details</span>
             </div>
 
-            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+            <h1 className="text-3xl font-extrabold text-white tracking-tight leading-tight">
               {event.title}
             </h1>
 
-            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            <p className="text-sm text-slate-400 leading-relaxed">
               {event.description ||
                 "Join us for this inspiring event. Registration is free and open to everyone."}
             </p>
 
-            <div className="space-y-4 pt-4 border-t border-slate-200/80 dark:border-slate-800/80 text-sm">
+            <div className="space-y-4 pt-4 border-t border-white/10 text-sm">
               <div className="flex items-start space-x-3">
-                <Calendar className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                <Calendar className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-slate-900 dark:text-white">
-                    Start Date & Time
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="font-semibold text-white">Start Date & Time</p>
+                  <p className="text-xs text-slate-500">
                     {new Date(event.startDate).toLocaleString(undefined, {
                       dateStyle: "full",
                       timeStyle: "short",
@@ -156,12 +152,10 @@ export default function EventRegistrationPage({
               </div>
 
               <div className="flex items-start space-x-3">
-                <MapPin className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                <MapPin className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-slate-900 dark:text-white">
-                    Location
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="font-semibold text-white">Location</p>
+                  <p className="text-xs text-slate-500">
                     {event.location || "Main Campus Sanctuary"}
                   </p>
                 </div>
@@ -177,31 +171,31 @@ export default function EventRegistrationPage({
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="glass-card p-8 sm:p-10 rounded-3xl border border-emerald-500/40 dark:border-emerald-500/30 text-center space-y-6"
+              className="rounded-3xl p-8 sm:p-10 border border-amber-500/30 bg-[#0F1D33] text-center space-y-6 shadow-sm"
             >
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto">
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/15 text-amber-400 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
 
               <div className="space-y-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-500">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
                   Registration Successful!
                 </span>
-                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">
+                <h2 className="text-2xl font-extrabold text-white">
                   You are registered for {event.title}
                 </h2>
-                <p className="text-sm text-slate-600 dark:text-slate-300">
+                <p className="text-sm text-slate-400">
                   We look forward to welcoming you! A confirmation message has
                   been processed.
                 </p>
               </div>
 
-              <div className="p-6 rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-left space-y-3">
+              <div className="p-6 rounded-2xl bg-white/5 border border-white/10 text-left space-y-3">
                 <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500">
-                  <QrCode className="w-4 h-4 text-emerald-500" />
+                  <QrCode className="w-4 h-4 text-amber-400" />
                   <span>Ticket Details</span>
                 </div>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                <p className="text-sm font-bold text-white">
                   Event: {event.title}
                 </p>
                 <p className="text-xs text-slate-500">
@@ -212,13 +206,13 @@ export default function EventRegistrationPage({
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button
                   onClick={() => setSuccessRegistration(null)}
-                  className="w-full sm:w-auto px-6 py-3 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-semibold"
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl border border-white/10 text-white text-xs font-semibold"
                 >
                   Register Another Person
                 </button>
                 <Link
                   href="/events"
-                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-500/20"
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md shadow-amber-900/20"
                 >
                   View All Events
                 </Link>
@@ -226,12 +220,12 @@ export default function EventRegistrationPage({
             </motion.div>
           ) : (
             /* REGISTRATION FORM */
-            <div className="glass-card p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 space-y-6">
+            <div className="rounded-3xl p-8 border border-white/10 bg-[#0F1D33] space-y-6 shadow-sm">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <h2 className="text-2xl font-bold text-white">
                   Reserve Your Spot
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Please complete the form below to register for this event.
                 </p>
               </div>
@@ -254,7 +248,7 @@ export default function EventRegistrationPage({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* First Name */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <label className="text-xs font-semibold text-slate-300">
                       First Name *
                     </label>
                     <div className="relative">
@@ -263,7 +257,7 @@ export default function EventRegistrationPage({
                         {...register("firstName")}
                         type="text"
                         placeholder="John"
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                       />
                     </div>
                     {errors.firstName && (
@@ -275,7 +269,7 @@ export default function EventRegistrationPage({
 
                   {/* Last Name */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <label className="text-xs font-semibold text-slate-300">
                       Last Name *
                     </label>
                     <div className="relative">
@@ -284,7 +278,7 @@ export default function EventRegistrationPage({
                         {...register("lastName")}
                         type="text"
                         placeholder="Doe"
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                       />
                     </div>
                     {errors.lastName && (
@@ -297,7 +291,7 @@ export default function EventRegistrationPage({
 
                 {/* Email */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  <label className="text-xs font-semibold text-slate-300">
                     Email Address
                   </label>
                   <div className="relative">
@@ -306,7 +300,7 @@ export default function EventRegistrationPage({
                       {...register("email")}
                       type="email"
                       placeholder="john.doe@example.com"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                   </div>
                   {errors.email && (
@@ -318,7 +312,7 @@ export default function EventRegistrationPage({
 
                 {/* Phone */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  <label className="text-xs font-semibold text-slate-300">
                     Phone Number
                   </label>
                   <div className="relative">
@@ -327,7 +321,7 @@ export default function EventRegistrationPage({
                       {...register("phone")}
                       type="tel"
                       placeholder="+1 (555) 000-0000"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                   </div>
                 </div>
@@ -335,12 +329,12 @@ export default function EventRegistrationPage({
                 {/* Gender & DOB */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <label className="text-xs font-semibold text-slate-300">
                       Gender
                     </label>
                     <select
                       {...register("gender")}
-                      className="w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                     >
                       <option value="MALE">Male</option>
                       <option value="FEMALE">Female</option>
@@ -348,13 +342,13 @@ export default function EventRegistrationPage({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <label className="text-xs font-semibold text-slate-300">
                       Date of Birth
                     </label>
                     <input
                       {...register("dateOfBirth")}
                       type="date"
-                      className="w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                   </div>
                 </div>
@@ -363,7 +357,7 @@ export default function EventRegistrationPage({
                   <button
                     type="submit"
                     disabled={registerMutation.isPending}
-                    className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-bold text-sm shadow-lg shadow-emerald-500/25 transition-all duration-200"
+                    className="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold text-sm shadow-lg shadow-amber-900/25 transition-all duration-200"
                   >
                     {registerMutation.isPending
                       ? "Submitting Registration..."

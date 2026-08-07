@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeProvider } from "@/context/theme-context";
 import { QueryProvider } from "@/context/query-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: {
-    default: "Grace City Church | Faith, Hope & Community",
-    template: "%s | Grace City Church",
+    default:
+      "Amazing Grace Bible Church | Salvation, Healing & Miracles",
+    template: "%s | Amazing Grace Bible Church",
   },
   description:
-    "Welcome home to Grace City Church. Join us for Sunday worship, connect with a vibrant community, and explore our upcoming events and registrations.",
+    "Welcome to Amazing Grace Bible Church. Join us for Sunday worship, experience salvation, healing and miracles, and connect with our vibrant community.",
   openGraph: {
-    title: "Grace City Church",
+    title: "Amazing Grace Bible Church",
     description:
       "Join us this Sunday for worship, connection, and community events.",
-    siteName: "Grace City Church",
+    siteName: "Amazing Grace Bible Church",
     type: "website",
   },
 };
@@ -27,14 +27,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark suppressHydrationWarning">
-      <body className="antialiased selection:bg-emerald-500 selection:text-white flex flex-col min-h-screen">
+    <html lang="en" suppressHydrationWarning>
+      <body className="antialiased selection:bg-amber-500 selection:text-white flex flex-col min-h-screen bg-[#0B1426] text-white">
         <QueryProvider>
-          <ThemeProvider>
-            <Navbar />
-            <main className="flex-grow">{children}</main>
-            <Footer />
-          </ThemeProvider>
+          <Navbar />
+          <main className="flex-grow">{children}</main>
+          <Footer />
         </QueryProvider>
       </body>
     </html>
