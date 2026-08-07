@@ -23,10 +23,9 @@ export default function AboutPage() {
           Who We Are
         </h1>
         <p className="text-lg text-slate-300 leading-relaxed">
-          Amazing Grace Bible Church was founded with a singular
-          conviction: to cultivate an inclusive, spirit-filled community where
-          lives are restored by Christ&apos;s love and sent out to impact the
-          world.
+          Amazing Grace Bible Church was founded with a singular conviction: to
+          cultivate an inclusive, spirit-filled community where lives are
+          restored by Christ&apos;s love and sent out to impact the world.
         </p>
       </div>
 

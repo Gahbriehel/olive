@@ -6,8 +6,7 @@ import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: {
-    default:
-      "Amazing Grace Bible Church | Salvation, Healing & Miracles",
+    default: "Amazing Grace Bible Church | Salvation, Healing & Miracles",
     template: "%s | Amazing Grace Bible Church",
   },
   description:
