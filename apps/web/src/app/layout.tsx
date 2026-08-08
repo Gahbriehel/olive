@@ -24,8 +24,7 @@ export const metadata: Metadata = {
     "Welcome to Amazing Grace Bible Church (registered as Abiding Word Of Grace Missions). Join us for Sunday worship, experience salvation, healing and miracles, and connect with our vibrant community.",
   openGraph: {
     title: "Amazing Grace Bible Church",
-    description:
-      "Join us this Sunday for worship, connection, and community events. Amazing Grace Bible Church is a ministry of Abiding Word Of Grace Missions.",
+    description: "Join us this Sunday for worship and connection. ",
     siteName: "Amazing Grace Bible Church",
     type: "website",
   },

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { loginUser } from "@/store/slices/authSlice";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -49,13 +50,18 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl relative z-10">
         {/* Header Branding */}
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 p-0.5 shadow-lg shadow-indigo-500/30 mb-4 flex items-center justify-center">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-yellow-400 to-amber-600 p-0.5 shadow-lg shadow-indigo-500/30 mb-4 flex items-center justify-center">
             <div className="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center">
-              <Church className="w-7 h-7 text-cyan-400" />
+              <Image
+                src="/icon-gold.png"
+                alt="Abwog Logo"
+                width={50}
+                height={50}
+              />
             </div>
           </div>
           <h1 className="text-2xl font-extrabold text-white tracking-tight">
-            Olive Admin
+            Abwog Admin
           </h1>
           <p className="text-slate-400 text-xs mt-1">
             Sign in to access event management & attendance controls
