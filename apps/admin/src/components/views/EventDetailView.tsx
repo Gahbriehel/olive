@@ -171,7 +171,17 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className="overflow-hidden">
+              {event.imageUrl && (
+                <div className="relative w-full h-48 bg-slate-100 dark:bg-zinc-800 overflow-hidden border-b border-slate-100 dark:border-zinc-800">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={event.imageUrl}
+                    alt={event.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               <CardHeader>
                 <CardTitle>Event Details & Schedule</CardTitle>
                 <CardDescription>
@@ -382,6 +392,8 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
               startDate: event.startDate,
               endDate: event.endDate,
               status: event.status,
+              imageUrl: event.imageUrl,
+              googleCalendarSync: event.googleCalendarSync,
             }}
             onCancel={() => setIsEditing(false)}
             onSubmit={async (data) => {
@@ -394,6 +406,8 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                   startDate: data.startDate,
                   endDate: data.endDate,
                   status: data.status,
+                  imageUrl: data.imageUrl,
+                  googleCalendarSync: data.googleCalendarSync,
                 },
               });
               setIsEditing(false);

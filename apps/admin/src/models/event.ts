@@ -15,6 +15,8 @@ export interface ChurchEvent {
   registrationDeadline: string;
   teamAssignmentEnabled: boolean;
   description: string;
+  imageUrl?: string;
+  googleCalendarSync?: boolean;
 }
 
 export interface IApiEvent {
@@ -26,6 +28,8 @@ export interface IApiEvent {
   endDate: string;
   location?: string;
   status: ApiEventStatus;
+  imageUrl?: string;
+  googleCalendarSync?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -38,6 +42,8 @@ export interface ICreateEventPayload {
   endDate: string;
   location?: string;
   status?: ApiEventStatus;
+  imageUrl?: string;
+  googleCalendarSync?: boolean;
 }
 
 export type IUpdateEventPayload = Partial<ICreateEventPayload>;
@@ -60,6 +66,8 @@ export function adaptApiEventToChurchEvent(apiEvent: IApiEvent): ChurchEvent {
     status: apiEvent.status || "DRAFT",
     registrationDeadline: apiEvent.startDate,
     teamAssignmentEnabled: true,
+    imageUrl: apiEvent.imageUrl,
+    googleCalendarSync: apiEvent.googleCalendarSync ?? false,
   };
 }
 

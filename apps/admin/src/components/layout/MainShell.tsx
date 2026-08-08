@@ -128,6 +128,8 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
               startDate: data.startDate,
               endDate: data.endDate,
               status: data.status || "DRAFT",
+              imageUrl: data.imageUrl,
+              googleCalendarSync: data.googleCalendarSync,
             });
             setIsCreateEventOpen(false);
           }}

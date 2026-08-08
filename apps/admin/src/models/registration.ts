@@ -20,6 +20,7 @@ export interface Registration {
   qrCodeUrl: string;
   qrGenerated: boolean;
   status: RegistrationStatus;
+  googleCalendarSync?: boolean;
   confirmationSent: boolean;
   registeredAt: string;
   checkedInAt?: string;
@@ -46,6 +47,7 @@ export interface IApiRegistration {
   teamId?: string;
   qrCode?: string;
   status: ApiRegistrationStatus;
+  googleCalendarSync?: boolean;
   checkedInAt?: string;
   person?: IApiPerson;
   team?: IApiTeam;
@@ -60,6 +62,7 @@ export interface IRegisterPayload {
   gender?: string;
   dateOfBirth?: string;
   teamId?: string;
+  googleCalendarSync?: boolean;
 }
 
 export interface ICheckInPayload {
@@ -90,6 +93,7 @@ export function adaptApiRegistrationToRegistration(
     qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(apiReg.qrCode || apiReg.id)}`,
     qrGenerated: true,
     status: apiReg.status === "CHECKED_IN" ? "Checked-In" : "Confirmed",
+    googleCalendarSync: apiReg.googleCalendarSync ?? false,
     confirmationSent: true,
     registeredAt: apiReg.createdAt
       ? new Date(apiReg.createdAt).toLocaleTimeString([], {

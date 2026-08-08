@@ -116,6 +116,16 @@ export default function EventsListPage() {
                 transition={{ duration: 0.3, delay: idx * 0.05 }}
                 className="rounded-sm border border-white/10 bg-[#1F1F1F] hover:border-[#B18A4A]/50 transition-colors duration-300 flex flex-col justify-between overflow-hidden group"
               >
+                {event.imageUrl && (
+                  <div className="relative w-full h-48 bg-[#141414] overflow-hidden border-b border-white/10">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={event.imageUrl}
+                      alt={event.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                )}
                 <div className="p-8 space-y-5">
                   {/* Status & Date Tag */}
                   <div className="flex items-center justify-between">

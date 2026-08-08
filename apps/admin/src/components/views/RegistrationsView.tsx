@@ -8,6 +8,7 @@ import {
   UserCheck,
   Shield,
   Mail,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Input";
@@ -139,6 +140,19 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
           </span>
         ) : (
           <span className="text-slate-400">Queued</span>
+        ),
+    },
+    {
+      accessorKey: "googleCalendarSync",
+      header: "Calendar Sync",
+      cell: ({ row }) =>
+        row.original.googleCalendarSync ? (
+          <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+            <Calendar className="w-3.5 h-3.5" />
+            Opted In
+          </span>
+        ) : (
+          <span className="text-slate-400">Off</span>
         ),
     },
     {

@@ -266,6 +266,16 @@ export const EventsView: React.FC<EventsViewProps> = ({
                 )}
               >
                 <div>
+                  {evt.imageUrl && (
+                    <div className="relative w-full h-36 bg-slate-100 dark:bg-zinc-800 overflow-hidden border-b border-slate-100 dark:border-zinc-800">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={evt.imageUrl}
+                        alt={evt.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
                   <CardHeader className="flex flex-row items-start justify-between pb-2">
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
@@ -510,6 +520,8 @@ export const EventsView: React.FC<EventsViewProps> = ({
               startDate: editingEvent.startDate,
               endDate: editingEvent.endDate,
               status: editingEvent.status,
+              imageUrl: editingEvent.imageUrl,
+              googleCalendarSync: editingEvent.googleCalendarSync,
             }}
             onCancel={() => setEditingEvent(null)}
             onSubmit={async (data) => {
@@ -522,6 +534,8 @@ export const EventsView: React.FC<EventsViewProps> = ({
                   startDate: data.startDate,
                   endDate: data.endDate,
                   status: data.status,
+                  imageUrl: data.imageUrl,
+                  googleCalendarSync: data.googleCalendarSync,
                 },
               });
               setEditingEvent(null);

@@ -3,9 +3,10 @@
 import React, { useState, use } from "react";
 import Link from "next/link";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { Switch } from "@headlessui/react";
 import { webService } from "@/services/api";
 import { IRegisterPayload } from "@olive/types";
 import {
@@ -30,6 +31,7 @@ const registrationSchema = yup.object().shape({
   phone: yup.string().optional(),
   gender: yup.string().optional(),
   dateOfBirth: yup.string().optional(),
+  googleCalendarSync: yup.boolean().optional(),
 });
 
 export default function EventRegistrationPage({
@@ -53,6 +55,7 @@ export default function EventRegistrationPage({
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<IRegisterPayload>({
@@ -65,6 +68,7 @@ export default function EventRegistrationPage({
       phone: "",
       gender: "MALE",
       dateOfBirth: "",
+      googleCalendarSync: false,
     },
   });
 
@@ -123,42 +127,56 @@ export default function EventRegistrationPage({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         {/* LEFT COL: Event Information */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="rounded-3xl p-8 border border-white/10 bg-[#0F1D33] space-y-6 shadow-sm">
-            <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-amber-500/15 text-amber-400 text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-4 h-4" />
-              <span>Event Details</span>
-            </div>
-
-            <h1 className="text-3xl font-extrabold text-white tracking-tight leading-tight">
-              {event.title}
-            </h1>
-
-            <p className="text-sm text-slate-400 leading-relaxed">
-              {event.description ||
-                "Join us for this inspiring event. Registration is free and open to everyone."}
-            </p>
-
-            <div className="space-y-4 pt-4 border-t border-white/10 text-sm">
-              <div className="flex items-start space-x-3">
-                <Calendar className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-white">Start Date & Time</p>
-                  <p className="text-xs text-slate-500">
-                    {new Date(event.startDate).toLocaleString(undefined, {
-                      dateStyle: "full",
-                      timeStyle: "short",
-                    })}
-                  </p>
-                </div>
+          <div className="rounded-3xl border border-white/10 bg-[#1F1F1F] overflow-hidden shadow-sm">
+            {event.imageUrl && (
+              <div className="relative w-full h-56 bg-[#141414] overflow-hidden border-b border-white/10">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={event.imageUrl}
+                  alt={event.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            <div className="p-8 space-y-6">
+              <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-amber-500/15 text-amber-400 text-xs font-bold uppercase tracking-wider">
+                <Sparkles className="w-4 h-4" />
+                <span>Event Details</span>
               </div>
 
-              <div className="flex items-start space-x-3">
-                <MapPin className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-white">Location</p>
-                  <p className="text-xs text-slate-500">
-                    {event.location || "Main Campus Sanctuary"}
-                  </p>
+              <h1 className="text-3xl font-extrabold text-white tracking-tight leading-tight">
+                {event.title}
+              </h1>
+
+              <p className="text-sm text-slate-400 leading-relaxed">
+                {event.description ||
+                  "Join us for this inspiring event. Registration is free and open to everyone."}
+              </p>
+
+              <div className="space-y-4 pt-4 border-t border-white/10 text-sm">
+                <div className="flex items-start space-x-3">
+                  <Calendar className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-white">
+                      Start Date & Time
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {new Date(event.startDate).toLocaleString(undefined, {
+                        dateStyle: "full",
+                        timeStyle: "short",
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <MapPin className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-white">Location</p>
+                    <p className="text-xs text-slate-500">
+                      {event.location || "Main Campus Sanctuary"}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -172,7 +190,7 @@ export default function EventRegistrationPage({
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="rounded-3xl p-8 sm:p-10 border border-amber-500/30 bg-[#0F1D33] text-center space-y-6 shadow-sm"
+              className="rounded-3xl p-8 sm:p-10 border border-amber-500/30 bg-[#1F1F1F] text-center space-y-6 shadow-sm"
             >
               <div className="w-16 h-16 rounded-2xl bg-amber-500/15 text-amber-400 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-10 h-10" />
@@ -221,7 +239,7 @@ export default function EventRegistrationPage({
             </motion.div>
           ) : (
             /* REGISTRATION FORM */
-            <div className="rounded-3xl p-8 border border-white/10 bg-[#0F1D33] space-y-6 shadow-sm">
+            <div className="rounded-3xl p-8 border border-white/10 bg-[#1F1F1F] space-y-6 shadow-sm">
               <div>
                 <h2 className="text-2xl font-bold text-white">
                   Reserve Your Spot
@@ -335,10 +353,20 @@ export default function EventRegistrationPage({
                     </label>
                     <select
                       {...register("gender")}
-                      className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-white"
                     >
-                      <option value="MALE">Male</option>
-                      <option value="FEMALE">Female</option>
+                      <option
+                        value="MALE"
+                        className="bg-[#1F1F1F] text-[#F7F5F0]"
+                      >
+                        Male
+                      </option>
+                      <option
+                        value="FEMALE"
+                        className="bg-[#1F1F1F] text-[#F7F5F0]"
+                      >
+                        Female
+                      </option>
                     </select>
                   </div>
 
@@ -353,6 +381,42 @@ export default function EventRegistrationPage({
                     />
                   </div>
                 </div>
+
+                {/* Google Calendar Sync Switch */}
+                <Controller
+                  name="googleCalendarSync"
+                  control={control}
+                  defaultValue={false}
+                  render={({ field: { value, onChange } }) => (
+                    <div className="flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 mt-2">
+                      <div className="space-y-0.5">
+                        <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5 cursor-pointer">
+                          <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Add to Google Calendar</span>
+                        </label>
+                        <p className="text-[11px] text-slate-400">
+                          Sync this event directly to your personal Google
+                          Calendar upon registration.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={Boolean(value)}
+                        onChange={onChange}
+                        className={`${
+                          value ? "bg-amber-600" : "bg-slate-700"
+                        } relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75`}
+                      >
+                        <span className="sr-only">Google Calendar Sync</span>
+                        <span
+                          aria-hidden="true"
+                          className={`${
+                            value ? "translate-x-5" : "translate-x-0"
+                          } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out`}
+                        />
+                      </Switch>
+                    </div>
+                  )}
+                />
 
                 <div className="pt-4">
                   <button

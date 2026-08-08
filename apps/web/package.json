@@ -14,6 +14,7 @@
     "check-all": "bun format && bun check-format && bun check-lint && bun check-types"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.10",
     "@hookform/resolvers": "^5.6.0",
     "@olive/types": "workspace:*",
     "@olive/ui": "workspace:*",
