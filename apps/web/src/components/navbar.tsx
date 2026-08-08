@@ -132,7 +132,7 @@ export function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 z-50 w-4/5 max-w-xs bg-[#0F1D33] text-white shadow-2xl flex flex-col justify-between p-6 md:hidden border-l border-white/10"
+              className="fixed top-0 right-0 bottom-0 z-50 w-4/5 max-w-xs bg-[#0b0f19]/95 backdrop-blur-md text-white shadow-2xl flex flex-col justify-between p-6 md:hidden border-l border-white/10"
             >
               {/* Drawer Top Header */}
               <div>
@@ -185,7 +185,7 @@ export function Navbar() {
                 <div className="text-xs text-slate-400 space-y-1.5">
                   <p className="flex items-center space-x-2">
                     <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-                    <span>Sun: 7:30 AM & 9:00 AM</span>
+                    <span>Sun: 8:00 AM & 9:00 AM</span>
                   </p>
                   <p className="flex items-center space-x-2">
                     <MapPin className="w-4 h-4 text-amber-400 shrink-0" />

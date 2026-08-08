@@ -72,4 +72,5 @@ body {
   background: var(--text-muted);
   border-radius: 9999px;
   opacity: 0.5;
+  see: #3a6cd8;
 }

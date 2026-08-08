@@ -51,10 +51,9 @@ export default function AboutPage() {
           </div>
           <h2 className="text-2xl font-bold text-white">Our Vision</h2>
           <p className="text-slate-300 text-base leading-relaxed">
-            A thriving, multi-generational church movement known for
-            unconditional love, impactful community initiatives, spirit-led
-            worship, and raising up servant-leaders across all spheres of
-            society.
+            To reach the lost with the gospel of Jesus Christ through evangelism
+            and Bible-based discipleship principles, and to prepare a people fit
+            for heaven.
           </p>
         </div>
       </div>
@@ -119,9 +118,9 @@ export default function AboutPage() {
       </div>
 
       {/* LEADERSHIP SECTION */}
-      <div className="pt-10 border-t border-white/10">
+      {/* <div className="pt-10 border-t border-white/10">
         <LeadershipSection />
-      </div>
+      </div> */}
     </div>
   );
 }

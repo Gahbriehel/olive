@@ -153,7 +153,7 @@ export default function ContactPage() {
                     </li>
                     <li className="flex justify-between">
                       <span className="font-semibold">Thursday Prayer:</span>
-                      <span>6:00 PM – 7:30 PM</span>
+                      <span>6:00 PM – 8:00 PM</span>
                     </li>
                   </ul>
                 </div>
