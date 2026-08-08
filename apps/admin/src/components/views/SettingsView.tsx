@@ -177,11 +177,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <Button
             variant="primary"
             onClick={handleSaveChurchSettings}
+            isLoading={isUpdatingSettings}
             disabled={isUpdatingSettings}
             leftIcon={<Save className="w-4 h-4" />}
             className="bg-indigo-600 hover:bg-indigo-500"
           >
-            {isUpdatingSettings ? "Saving..." : "Save Configuration"}
+            Save Configuration
           </Button>
         )}
       </div>
@@ -326,7 +327,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <Input
                   label="Phone Number"
                   value={profileData.phone || ""}
-                  placeholder="+1 (555) 000-1234"
+                  placeholder="+234 123 4567 890"
                   onChange={(e) =>
                     setProfileData({ ...profileData, phone: e.target.value })
                   }
@@ -370,11 +371,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <Button
                   type="submit"
                   variant="primary"
+                  isLoading={isUpdatingProfile}
                   disabled={isUpdatingProfile}
                   leftIcon={<Save className="w-4 h-4" />}
                   className="bg-indigo-600 hover:bg-indigo-500"
                 >
-                  {isUpdatingProfile ? "Updating Profile..." : "Update Profile"}
+                  Update Profile
                 </Button>
               </div>
             </form>

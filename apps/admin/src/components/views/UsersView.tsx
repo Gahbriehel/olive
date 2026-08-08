@@ -500,7 +500,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                 label="Phone Number"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1 (555) 000-1234"
+                placeholder="+234 123 4567 890"
               />
 
               <div>
@@ -530,10 +530,11 @@ export const UsersView: React.FC<UsersViewProps> = ({
                 <Button
                   type="submit"
                   variant="primary"
+                  isLoading={isUpdating}
                   disabled={isUpdating}
                   className="bg-indigo-600 hover:bg-indigo-500"
                 >
-                  {isUpdating ? "Saving..." : "Save Role Changes"}
+                  Save Role Changes
                 </Button>
               </div>
             </form>

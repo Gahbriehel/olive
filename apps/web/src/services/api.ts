@@ -1,4 +1,5 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 import {
   ChurchSettings,
   IApiEvent,
@@ -16,6 +17,29 @@ export const webApiClient = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+webApiClient.interceptors.response.use(
+  (response) => {
+    const method = response.config.method?.toUpperCase();
+    if (method && ["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+      const serverMessage =
+        response.data?.message || "Operation completed successfully";
+      toast.success(serverMessage);
+    }
+    return response;
+  },
+  (error) => {
+    const errorMessage =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      "Request failed";
+    toast.error(
+      typeof errorMessage === "string" ? errorMessage : "Request failed",
+    );
+    return Promise.reject(error);
+  },
+);
 
 export const webService = {
   // Fetch Church Public Settings

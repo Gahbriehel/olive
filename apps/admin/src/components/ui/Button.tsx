@@ -110,13 +110,22 @@ export const BaseButton = forwardRef<
 
   return (
     <motion.button
-      {...(!(props as BaseButtonTypeProps).disabled && motionProps)}
+      {...(!((props as BaseButtonTypeProps).disabled || loading) &&
+        motionProps)}
       {...(props as BaseButtonTypeProps)}
+      disabled={(props as BaseButtonTypeProps).disabled || loading}
       ref={ref as ForwardedRef<HTMLButtonElement>}
       type={type as "button" | "submit" | "reset" | undefined}
       className={classNames}
     >
-      {!loading && (
+      {loading ? (
+        <div className="flex items-center justify-center py-0.5">
+          <ClipLoader
+            size={16}
+            color={["white", "outline"].includes(color) ? "#6366f1" : "#ffffff"}
+          />
+        </div>
+      ) : (
         <>
           {!hideText && displayText}
           {badgeNumber && (
@@ -126,12 +135,6 @@ export const BaseButton = forwardRef<
           )}
           {icon}
         </>
-      )}
-      {loading && (
-        <ClipLoader
-          size={12}
-          color={["white", "outline"].includes(color) ? "#6366f1" : "#ffffff"}
-        />
       )}
       {hideText && typeof displayText === "string" && (
         <span className="pointer-events-none absolute bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black px-3 py-2 text-sm text-white opacity-0 transition-opacity duration-300">

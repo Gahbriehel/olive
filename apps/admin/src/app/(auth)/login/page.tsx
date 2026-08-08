@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
+  Loader2,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { loginUser } from "@/store/slices/authSlice";
@@ -27,83 +28,85 @@ export default function LoginPage() {
     e.preventDefault();
     setLocalError(null);
 
-    if (!email || !password) {
-      setLocalError("Please enter both email and password");
-      return;
-    }
-
-    const result = await login({ email, password });
-    if (loginUser.fulfilled.match(result)) {
-      router.push("/");
-    } else {
-      setLocalError(
-        (result.payload as string) || "Invalid credentials. Please try again.",
-      );
+    try {
+      const res = await login({ email, password });
+      if (loginUser.fulfilled.match(res)) {
+        router.push("/");
+      } else if (loginUser.rejected.match(res)) {
+        setLocalError((res.payload as string) || "Invalid email or password");
+      }
+    } catch {
+      setLocalError("An unexpected error occurred. Please try again.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 sm:p-6 lg:p-8 relative overflow-hidden">
-      {/* Background Decorative Gradients */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen w-full bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden font-sans">
+      {/* Ambient background glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-cyan-600/15 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-8 shadow-2xl relative z-10">
-        <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-gradient-to-tr from-cyan-500 to-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cyan-500/20">
-            <Church className="w-8 h-8 text-white" />
+      <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl relative z-10">
+        {/* Header Branding */}
+        <div className="flex flex-col items-center text-center mb-8">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 p-0.5 shadow-lg shadow-indigo-500/30 mb-4 flex items-center justify-center">
+            <div className="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center">
+              <Church className="w-7 h-7 text-cyan-400" />
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
-            Events Platform
+          <h1 className="text-2xl font-extrabold text-white tracking-tight">
+            Olive Admin
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
-            Sign in to access your administrative dashboard
+          <p className="text-slate-400 text-xs mt-1">
+            Sign in to access event management & attendance controls
           </p>
         </div>
 
-        {(error || localError) && (
-          <div className="mb-6 p-3.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-sm flex items-start gap-2.5">
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+        {/* Error Alert */}
+        {(localError || error) && (
+          <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-3 text-rose-400 text-xs">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
             <span>{localError || error}</span>
           </div>
         )}
 
+        {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-slate-300 mb-2">
               Email Address
             </label>
             <div className="relative">
-              <Mail className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+              <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@church.org"
-                className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl pl-11 pr-4 py-3 text-slate-100 placeholder-slate-600 outline-none transition-all text-sm"
+                placeholder="admin@olive.church"
                 required
+                className="w-full bg-slate-950/60 border border-slate-800 focus:border-cyan-500 rounded-xl py-3 pl-10 pr-4 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-slate-300 mb-2">
               Password
             </label>
-            <div className="relative flex items-center">
-              <Lock className="w-5 h-5 absolute left-3.5 text-slate-500" />
+            <div className="relative">
+              <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl pl-11 pr-11 py-3 text-slate-100 placeholder-slate-600 outline-none transition-all text-sm"
                 required
+                className="w-full bg-slate-950/60 border border-slate-800 focus:border-cyan-500 rounded-xl py-3 pl-10 pr-10 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 text-slate-500 hover:text-slate-300 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
               >
                 {showPassword ? (
                   <EyeOff className="w-5 h-5" />
@@ -117,10 +120,10 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3.5 px-4 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-medium text-sm rounded-xl transition-all shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 group disabled:opacity-50 cursor-pointer"
+            className="w-full py-3.5 px-4 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-medium text-sm rounded-xl transition-all shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 group disabled:opacity-50 cursor-pointer min-h-[48px]"
           >
             {isLoading ? (
-              <span>Authenticating...</span>
+              <Loader2 className="w-5 h-5 animate-spin text-white" />
             ) : (
               <>
                 <span>Sign In to Dashboard</span>

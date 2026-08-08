@@ -1,6 +1,6 @@
 "use client";
 
-import type { JSX } from "react";
+import { useState, type JSX } from "react";
 import { AlertTriangle, HelpCircle } from "lucide-react";
 
 import { capitalizeFirstLetter } from "@/helpers/capitalizeFirstLetter";
@@ -9,7 +9,7 @@ import { Modal } from "@/components/ui/Modal";
 
 export interface ConfirmActionModalProps {
   close: () => void;
-  fn: () => void;
+  fn: () => void | Promise<void>;
   display: boolean;
   actionName?: string;
   title?: string;
@@ -26,9 +26,23 @@ export function ConfirmActionModal({
   loading,
   closeAfterAction = true,
 }: ConfirmActionModalProps): JSX.Element {
+  const [internalLoading, setInternalLoading] = useState(false);
+  const isLoadingState = loading ?? internalLoading;
   const isDestructive = ["delete", "logout"].includes(
     actionName?.toLowerCase(),
   );
+
+  const handleAction = async () => {
+    try {
+      setInternalLoading(true);
+      await fn();
+      if (closeAfterAction) {
+        close();
+      }
+    } finally {
+      setInternalLoading(false);
+    }
+  };
 
   return (
     <Modal isOpen={display} onClose={close}>
@@ -71,19 +85,15 @@ export function ConfirmActionModal({
             text={isDestructive ? "Cancel" : "No"}
             color="white"
             onClick={close}
+            disabled={isLoadingState}
           />
           <BaseButton
             text={
               isDestructive ? capitalizeFirstLetter(actionName) : "Yes, proceed"
             }
             color={isDestructive ? "danger" : "primary"}
-            onClick={() => {
-              fn();
-              if (closeAfterAction) {
-                close();
-              }
-            }}
-            loading={loading}
+            onClick={handleAction}
+            loading={isLoadingState}
           />
         </div>
       </div>

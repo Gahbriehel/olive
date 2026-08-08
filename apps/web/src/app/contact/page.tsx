@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 import {
   MapPin,
   Phone,
@@ -10,12 +11,14 @@ import {
   Send,
   CheckCircle2,
   MessageSquare,
+  Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function ContactPage() {
   const [activeTab, setActiveTab] = useState<"prayer" | "inquiry">("prayer");
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -25,9 +28,17 @@ export default function ContactPage() {
     isPrivate: false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    setIsSubmitting(false);
     setSubmitted(true);
+    toast.success(
+      activeTab === "prayer"
+        ? "Your prayer request has been submitted successfully."
+        : "Your message has been sent to our team.",
+    );
   };
 
   const handleReset = () => {
@@ -381,14 +392,21 @@ export default function ContactPage() {
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-base shadow-lg shadow-amber-900/25 transition-all duration-200 flex items-center justify-center space-x-2"
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold text-base shadow-lg shadow-amber-900/25 transition-all duration-200 flex items-center justify-center space-x-2 min-h-[48px]"
                 >
-                  <Send className="w-4 h-4" />
-                  <span>
-                    {activeTab === "prayer"
-                      ? "Submit Prayer Request"
-                      : "Send Message"}
-                  </span>
+                  {isSubmitting ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-white" />
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>
+                        {activeTab === "prayer"
+                          ? "Submit Prayer Request"
+                          : "Send Message"}
+                      </span>
+                    </>
+                  )}
                 </button>
               </form>
             )}

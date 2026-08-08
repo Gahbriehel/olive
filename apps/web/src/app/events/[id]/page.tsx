@@ -19,6 +19,7 @@ import {
   Phone,
   QrCode,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -320,7 +321,7 @@ export default function EventRegistrationPage({
                     <input
                       {...register("phone")}
                       type="tel"
-                      placeholder="+1 (555) 000-0000"
+                      placeholder="+234 123 4567 890"
                       className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                   </div>
@@ -357,11 +358,13 @@ export default function EventRegistrationPage({
                   <button
                     type="submit"
                     disabled={registerMutation.isPending}
-                    className="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold text-sm shadow-lg shadow-amber-900/25 transition-all duration-200"
+                    className="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold text-sm shadow-lg shadow-amber-900/25 transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px]"
                   >
-                    {registerMutation.isPending
-                      ? "Submitting Registration..."
-                      : "Complete Registration"}
+                    {registerMutation.isPending ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-white" />
+                    ) : (
+                      <span>Complete Registration</span>
+                    )}
                   </button>
                 </div>
               </form>

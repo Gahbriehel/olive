@@ -1,4 +1,5 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 import {
   clearTokens,
   getAccessToken,
@@ -38,15 +39,51 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor to handle token refresh / 401 redirect
+// Response interceptor to handle token refresh / 401 redirect & toasts for server responses
 let isRefreshing = false;
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const method = response.config.method?.toUpperCase();
+    const url = response.config.url || "";
+    const isMutation =
+      method && ["POST", "PUT", "PATCH", "DELETE"].includes(method);
+
+    if (
+      isMutation &&
+      !url.includes("/auth/refresh") &&
+      !url.includes("/auth/me")
+    ) {
+      const serverMessage =
+        response.data?.message ||
+        (method === "POST"
+          ? "Successfully created"
+          : method === "DELETE"
+            ? "Successfully deleted"
+            : "Successfully saved changes");
+      toast.success(serverMessage);
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
+    const url = originalRequest?.url || "";
 
-    // Ignore login requests
+    // Show red error toast for server response failures
+    if (!url.includes("/auth/refresh")) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Server request failed";
+      toast.error(
+        typeof errorMessage === "string"
+          ? errorMessage
+          : "Server request failed",
+      );
+    }
+
+    // Ignore login requests for refresh handling
     if (originalRequest?.url?.includes("/auth/login")) {
       return Promise.reject(error);
     }
