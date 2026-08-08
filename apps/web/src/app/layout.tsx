@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
-import { Outfit, Abhaya_Libre } from "next/font/google";
+import { Manrope, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/context/query-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
-const outfit = Outfit({
+const manrope = Manrope({
   subsets: ["latin"],
   variable: "--font-sans",
 });
 
-const abhayaLibre = Abhaya_Libre({
-  weight: ["400", "500", "600", "700", "800"],
+const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-serif",
 });
@@ -22,11 +21,11 @@ export const metadata: Metadata = {
     template: "%s | Amazing Grace Bible Church",
   },
   description:
-    "Welcome to Amazing Grace Bible Church. Join us for Sunday worship, experience salvation, healing and miracles, and connect with our vibrant community.",
+    "Welcome to Amazing Grace Bible Church (registered as Abiding Word Of Grace Missions). Join us for Sunday worship, experience salvation, healing and miracles, and connect with our vibrant community.",
   openGraph: {
     title: "Amazing Grace Bible Church",
     description:
-      "Join us this Sunday for worship, connection, and community events.",
+      "Join us this Sunday for worship, connection, and community events. Amazing Grace Bible Church is a ministry of Abiding Word Of Grace Missions.",
     siteName: "Amazing Grace Bible Church",
     type: "website",
   },
@@ -49,7 +48,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${outfit.variable} ${abhayaLibre.variable} antialiased selection:bg-amber-500 selection:text-white flex flex-col min-h-screen bg-[#0B1426] text-white`}
+        className={`${manrope.variable} ${playfair.variable} antialiased selection:bg-[#B18A4A] selection:text-white flex flex-col min-h-screen bg-[#171717] text-[#F7F5F0]`}
       >
         <QueryProvider>
           <Navbar />

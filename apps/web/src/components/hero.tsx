@@ -8,84 +8,82 @@ import { motion } from "framer-motion";
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen overflow-hidden text-white flex flex-col items-center justify-center">
+    <section className="relative min-h-[90vh] lg:min-h-screen overflow-hidden text-[#F7F5F0] flex flex-col items-center justify-center py-20 lg:py-32">
       {/* Hero Background Image & Overlay */}
       <div className="absolute inset-0 z-0">
         <Image
           src="/images/hero-img.jpg"
-          alt="Amazing Grace Bible Church background"
+          alt="Amazing Grace Bible Church auditorium congregation"
           fill
           priority
-          className="object-cover"
+          className="object-cover object-center grayscale contrast-[1.05] brightness-[0.85]"
         />
-        {/* Linear gradient overlay: darker at the bottom for text contrast, lighter at the top to let the photo breathe */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/40" />
-        {/* Soft amber radial glow to complement the gold typography */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(184, 103, 10, 0.15)_0%,transparent_75%)]" />
+        {/* Subtle dark vignette overlay for legibility without obscuring the photograph */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#171717] via-[#171717]/65 to-[#171717]/40" />
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center flex flex-col items-center">
-        {/* Hebrews 13:8 pill badge */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center flex flex-col items-center">
+        {/* Hebrews 13:8 metadata label */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center px-5 py-1.5 rounded-full border border-amber-500/40 text-amber-300/90 text-xs font-semibold uppercase tracking-[0.2em] mb-10"
+          transition={{ duration: 0.5 }}
+          className="inline-flex items-center text-[#B18A4A] text-xs font-medium uppercase tracking-[0.25em] mb-6"
         >
           Hebrews 13:8
         </motion.div>
 
-        {/* Main Church Name — display font for the name */}
+        {/* Main Church Name — Editorial Display Serif */}
         <motion.h1
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-5xl sm:text-7xl lg:text-8xl font-serif font-bold text-white tracking-wide leading-[1.05] uppercase"
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="text-5xl sm:text-7xl lg:text-8xl font-serif font-medium text-[#F7F5F0] tracking-tight leading-[1.05] uppercase"
         >
           Amazing Grace
-          <span className="block text-2xl sm:text-4xl lg:text-5xl mt-3 text-amber-400 font-serif font-semibold tracking-widest uppercase">
+          <span className="block text-2xl sm:text-4xl lg:text-5xl mt-3 text-[#B18A4A] font-serif font-normal tracking-[0.15em] uppercase">
             Bible Church
           </span>
         </motion.h1>
 
-        {/* Tagline — clean sans for supporting tagline */}
+        {/* Tagline — clean sans body */}
         <motion.p
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-8 text-lg sm:text-2xl font-sans text-slate-200/95 tracking-wide font-normal max-w-2xl"
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mt-6 text-lg sm:text-2xl font-sans text-[#D4D0C7] font-light max-w-2xl leading-relaxed"
         >
           Salvation, Healing and Miracles
         </motion.p>
 
-        {/* Scripture quote — clean sans for supporting text */}
+        {/* Scripture quote */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-5 text-sm sm:text-base italic text-slate-400 font-sans max-w-lg"
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-4 text-sm sm:text-base italic text-[#77736B] font-sans max-w-lg"
         >
           &ldquo;A touch from God will change your life forever!&rdquo;
         </motion.p>
 
         {/* CTA Buttons */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
           className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <Link
             href="/events"
-            className="px-8 py-3.5 rounded-md bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm uppercase tracking-wider shadow-lg shadow-amber-900/30 transition-all duration-200 border border-amber-500/50"
+            className="px-8 py-3.5 rounded-sm bg-[#B18A4A] hover:bg-[#9C773B] text-white font-medium text-xs uppercase tracking-wider transition-colors duration-200"
           >
             Join Us This Sunday
           </Link>
           <Link
             href="/contact"
-            className="px-8 py-3.5 rounded-md border border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-white font-semibold text-sm transition-all duration-200 flex items-center space-x-2.5"
+            className="px-8 py-3.5 rounded-sm border border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-[#F7F5F0] font-medium text-xs uppercase tracking-wider transition-colors duration-200 flex items-center space-x-2"
           >
-            <Play className="w-4 h-4 fill-white" />
+            <Play className="w-3.5 h-3.5 fill-[#F7F5F0]" />
             <span>Watch Live</span>
           </Link>
         </motion.div>
