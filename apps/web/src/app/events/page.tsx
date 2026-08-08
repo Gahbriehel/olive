@@ -40,10 +40,10 @@ export default function EventsListPage() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-3">
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-amber-500/15 text-amber-400 text-xs font-bold uppercase tracking-wider">
+          {/* <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-amber-500/15 text-amber-400 text-xs font-bold uppercase tracking-wider">
             <Sparkles className="w-4 h-4" />
             <span>Community Events</span>
-          </div>
+          </div> */}
           <h1 className="text-4xl font-extrabold text-white tracking-tight">
             Upcoming Church Events
           </h1>
