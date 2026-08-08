@@ -14,7 +14,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { webService } from "@/services/api";
 import { WeeklyServices } from "@/components/weekly-services";
-import { LeadershipSection } from "@/components/leadership-section";
 import { Hero } from "@/components/hero";
 
 export default function HomePage() {
@@ -29,6 +28,96 @@ export default function HomePage() {
     <div className="pb-20">
       {/* HERO SECTION */}
       <Hero />
+
+      {/* MISSION & VISION EXCERPT SECTION */}
+      <section className="w-full bg-[#0B1426] py-24 border-b border-white/5 relative overflow-hidden">
+        {/* Soft radial glow */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,119,6,0.08)_0%,transparent_70%)] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            {/* Left side: Heading */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold uppercase tracking-widest">
+                <span>Our Divine Mandate</span>
+              </div>
+              <h2 className="text-4xl sm:text-5xl font-serif font-semibold text-white tracking-wide leading-tight">
+                Our Mission <br />& Vision
+              </h2>
+              <p className="text-slate-300 text-base leading-relaxed font-sans max-w-md">
+                We are committed to making heaven, raising an army of believers,
+                and taking the message of salvation, healing, and miracles to
+                the ends of the earth.
+              </p>
+              <div className="pt-2">
+                <Link
+                  href="/about"
+                  className="inline-flex items-center space-x-2 px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm tracking-wider shadow-lg shadow-amber-900/20 transition-all duration-200 group border border-amber-500/50"
+                >
+                  <span>Read Our Full Story</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Right side: Excerpt Cards */}
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {/* Mission Card */}
+              <div className="relative group flex flex-col rounded-2xl overflow-hidden border border-white/10 bg-[#0F1D33] hover:border-amber-500/30 transition-all duration-300 shadow-xl">
+                <div className="bg-[#162744] p-6 pt-8 pb-6 text-center border-b border-white/5">
+                  <h3 className="text-xl font-serif font-semibold text-amber-400">
+                    Our Mission
+                  </h3>
+                </div>
+                <div className="p-6 flex-grow flex flex-col justify-between space-y-4">
+                  <ul className="space-y-3 text-sm text-slate-300">
+                    <li className="flex items-start space-x-2.5">
+                      <span className="text-amber-500 font-bold shrink-0 mt-0.5">
+                        •
+                      </span>
+                      <span>To make heaven.</span>
+                    </li>
+                    <li className="flex items-start space-x-2.5">
+                      <span className="text-amber-500 font-bold shrink-0 mt-0.5">
+                        •
+                      </span>
+                      <span>To raise an army of believers to glorify God.</span>
+                    </li>
+                    <li className="flex items-start space-x-2.5">
+                      <span className="text-amber-500 font-bold shrink-0 mt-0.5">
+                        •
+                      </span>
+                      <span>To make holiness our lifestyle.</span>
+                    </li>
+                  </ul>
+                  <div className="text-xs text-amber-400 font-semibold pt-2 text-right group-hover:text-amber-300 transition-colors">
+                    And more...
+                  </div>
+                </div>
+              </div>
+
+              {/* Vision Card */}
+              <div className="relative group flex flex-col rounded-2xl overflow-hidden border border-white/10 bg-[#0F1D33] hover:border-amber-500/30 transition-all duration-300 shadow-xl">
+                <div className="bg-[#162744] p-6 pt-8 pb-6 text-center border-b border-white/5">
+                  <h3 className="text-xl font-serif font-semibold text-amber-400">
+                    Our Vision
+                  </h3>
+                </div>
+                <div className="p-6 flex-grow flex flex-col justify-between space-y-4">
+                  <p className="text-sm text-slate-300 leading-relaxed font-sans">
+                    To reach the lost with the gospel of Jesus Christ through
+                    evangelism and Bible-based discipleship principles, and to
+                    prepare a people fit for heaven.
+                  </p>
+                  <p className="text-xs italic text-slate-400 pt-2">
+                    Mark 16:15, Matthew 28:19-20
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* WEEKLY SERVICES SECTION */}
       <section className="w-full bg-[#EFECE6] py-24 border-b border-slate-200/50">
