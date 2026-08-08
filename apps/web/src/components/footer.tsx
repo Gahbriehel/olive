@@ -102,7 +102,7 @@ export function Footer() {
                 <MapPin className="w-4 h-4 text-[#B18A4A] shrink-0 mt-0.5" />
                 <span className="leading-relaxed">
                   No 1, Makanjuola Layout, Sawmill, Dogo, Apata, Ibadan, Oyo
-                    State, Nigeria 
+                  State, Nigeria
                 </span>
               </li>
               <li className="flex items-center space-x-3">

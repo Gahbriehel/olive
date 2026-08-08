@@ -109,7 +109,7 @@ export default function ContactPage() {
                   </h3>
                   <p className="text-[#D4D0C7] font-light leading-relaxed">
                     No 1, Makanjuola Layout, Sawmill, Dogo, Apata, Ibadan, Oyo
-                    State, Nigeria 
+                    State, Nigeria
                   </p>
                 </div>
               </div>
