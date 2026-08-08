@@ -7,9 +7,7 @@ import { Topbar } from "@/components/layout/Topbar";
 import { CommandMenu } from "@/components/layout/CommandMenu";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { EventsForm } from "@/components/Forms/EventsForm";
-import { Modal } from "@/components/ui/Modal";
-import { Button } from "@/components/ui/Button";
-import { QrCode, CheckCircle2 } from "lucide-react";
+import { QrScannerModal } from "@/components/modals/QrScannerModal";
 import { useDashboard } from "@/context/DashboardContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useEvents } from "@/hooks/useEvents";
@@ -56,15 +54,6 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
     handleCheckIn,
   } = useDashboard();
   const { createEvent } = useEvents();
-
-  const [, setScannedRegId] = React.useState("");
-  const [scanResult, setScanResult] = React.useState<string | null>(null);
-
-  const simulateScan = (regNum: string) => {
-    setScannedRegId(regNum);
-    handleCheckIn(regNum, "QR Scan");
-    setScanResult(`Checked in Registration #${regNum}`);
-  };
 
   // 1. Standalone layout for Auth pages (Login)
   if (isAuthPage) {
@@ -147,69 +136,16 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
 
       <CommandMenu />
 
-      {/* Global Quick QR Scanner Modal */}
-      <Modal
+      {/* Global Functional QR Scanner Modal */}
+      <QrScannerModal
         isOpen={isQrScannerOpen}
-        onClose={() => {
-          setIsQrScannerOpen(false);
-          setScanResult(null);
+        onClose={() => setIsQrScannerOpen(false)}
+        onScanSuccess={(token, method) => {
+          handleCheckIn(token, method);
         }}
-        title="Quick Live QR Camera Check-in"
-        description="Simulate camera scanning or quick-type registration numbers for instant gate arrival"
-      >
-        <div className="space-y-4 text-xs">
-          <div className="relative aspect-video rounded-2xl bg-zinc-900 overflow-hidden flex flex-col items-center justify-center text-white border border-zinc-800 shadow-inner">
-            <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/40 via-transparent to-transparent" />
-            <div className="w-36 h-36 border-2 border-dashed border-indigo-400 rounded-2xl flex items-center justify-center relative animate-pulse">
-              <QrCode className="w-12 h-12 text-indigo-400" />
-            </div>
-            <p className="mt-3 text-zinc-400 font-mono text-[11px]">
-              Camera active • Aiming at Badge QR
-            </p>
-          </div>
-
-          {scanResult ? (
-            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-              <span className="font-semibold">{scanResult}</span>
-            </div>
-          ) : (
-            <div>
-              <p className="font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                Simulate Badge Scan:
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => simulateScan("YC26-1001")}
-                >
-                  Scan #YC26-1001 (Jordan)
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => simulateScan("YC26-1002")}
-                >
-                  Scan #YC26-1002 (Chloe)
-                </Button>
-              </div>
-            </div>
-          )}
-
-          <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 flex justify-end">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsQrScannerOpen(false);
-                setScanResult(null);
-              }}
-            >
-              Close Camera
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        title="Gate Attendance Quick QR Scanner"
+        description="Scan badge QR codes via live camera feed, handheld USB/Bluetooth hardware scanner, image upload, or manual code input."
+      />
     </div>
   );
 };

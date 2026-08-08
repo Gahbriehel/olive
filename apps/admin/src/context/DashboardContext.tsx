@@ -40,7 +40,7 @@ interface DashboardContextType {
   events: ChurchEvent[];
 
   // Handlers
-  handleCheckIn: (regId: string, method: CheckInMethod) => void;
+  handleCheckIn: (regId: string, method?: CheckInMethod) => void;
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(
@@ -106,7 +106,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [darkMode]);
 
   // Handlers
-  const handleCheckIn = async (token: string) => {
+  const handleCheckIn = async (token: string, _method?: CheckInMethod) => {
+    void _method;
     try {
       await apiCheckIn({ token });
     } catch {

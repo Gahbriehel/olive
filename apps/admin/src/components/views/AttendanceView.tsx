@@ -4,7 +4,6 @@ import {
   Search,
   CheckCircle2,
   Clock,
-  Camera,
   UserCheck,
   Users,
   UserX,
@@ -20,9 +19,13 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
-import { Modal } from "@/components/ui/Modal";
 import { StatsCard } from "@/components/ui/StatsCard";
-import { Registration, AttendanceRecord } from "@/types/dashboard";
+import { QrScannerModal } from "@/components/modals/QrScannerModal";
+import {
+  Registration,
+  AttendanceRecord,
+  CheckInMethod,
+} from "@/types/dashboard";
 
 interface AttendanceViewProps {
   registrations: Registration[];
@@ -61,9 +64,14 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
     (r) => r.status !== "Checked-In",
   );
 
-  const handleSimulateScan = (regId: string) => {
-    onCheckInAttendee(regId, "QR Scan");
-    const target = registrations.find((r) => r.id === regId);
+  const handleSimulateScan = (
+    regId: string,
+    method: CheckInMethod = "QR Scan",
+  ) => {
+    onCheckInAttendee(regId, method);
+    const target = registrations.find(
+      (r) => r.id === regId || r.registrationNumber === regId,
+    );
     if (target) {
       setScanSuccessMessage(
         `SUCCESSFULLY CHECKED IN: ${target.name} (${target.assignedTeamName})`,
@@ -104,7 +112,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           leftIcon={<QrCode className="w-5 h-5" />}
           className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-3 shadow-lg"
         >
-          Launch Interactive QR Camera Simulator
+          Launch Gate QR Scanner
         </Button>
       </div>
 
@@ -299,60 +307,17 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
         </Card>
       </div>
 
-      {/* Interactive QR Camera Simulator Modal */}
-      <Modal
+      {/* Functional Gate QR Scanner Modal */}
+      <QrScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
-        title="QR Code Camera Scanner Simulator"
-        description="Simulate scanning attendee digital QR tickets at the registration desk"
-      >
-        <div className="space-y-4 text-xs">
-          {/* Simulated Viewfinder View */}
-          <div className="relative aspect-video rounded-2xl bg-black flex flex-col items-center justify-center text-white border-2 border-indigo-500/50 overflow-hidden">
-            <Camera className="w-10 h-10 text-indigo-400 mb-2 animate-bounce" />
-            <p className="font-bold text-sm">Targeting Badge QR Code</p>
-            <p className="text-[11px] text-slate-400">
-              Align attendee mobile pass inside viewfinder
-            </p>
-
-            {/* Viewfinder crosshairs */}
-            <div className="absolute inset-8 border-2 border-dashed border-emerald-400/80 rounded-xl pointer-events-none" />
-          </div>
-
-          <div>
-            <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
-              Simulate Scan for Pending Registrants:
-            </label>
-            <div className="space-y-1.5 max-h-48 overflow-y-auto">
-              {unCheckedInRegistrations.map((r) => (
-                <button
-                  key={r.id}
-                  onClick={() => {
-                    handleSimulateScan(r.id);
-                    setIsScannerOpen(false);
-                  }}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-left flex items-center justify-between transition-all"
-                >
-                  <div>
-                    <span className="font-bold text-slate-900 dark:text-slate-100">
-                      {r.name}
-                    </span>
-                    <span className="text-[10px] text-slate-400 ml-2">
-                      ({r.registrationNumber})
-                    </span>
-                  </div>
-                  <span
-                    className="px-2 py-0.5 rounded text-[10px] font-bold text-white"
-                    style={{ backgroundColor: r.assignedTeamColor }}
-                  >
-                    {r.assignedTeamName}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </Modal>
+        onScanSuccess={(token, method) => {
+          handleSimulateScan(token, method);
+        }}
+        title="Gate Attendance QR Scanner"
+        description="Scan attendee digital QR passes via camera, hardware barcode scanner, image upload, or manual code input."
+        pendingRegistrations={unCheckedInRegistrations}
+      />
     </div>
   );
 };

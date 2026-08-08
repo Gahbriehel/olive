@@ -13,7 +13,7 @@ export const attendanceService = {
   async checkInAttendee(payload: ICheckInPayload): Promise<IApiRegistration> {
     const res = await apiClient.post<
       IBaseResponse<IApiRegistration> | IApiRegistration
-    >("/attendance/check-in", payload);
+    >("/attendance/checkin", payload);
     return extractData(res.data);
   },
 
