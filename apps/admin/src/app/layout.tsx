@@ -5,9 +5,11 @@ import { DashboardProvider } from "@/context/DashboardContext";
 import { MainShell } from "@/components/layout/MainShell";
 
 export const metadata: Metadata = {
-  title: "Church Events Platform",
-  description:
-    "Modern SaaS Admin Platform for Church Events, Attendance & Tournaments",
+  title: "Church Platform",
+  description: "Platform for Church Administration, Events & Attendance",
+  icons: {
+    icon: "/icon1.png",
+  },
 };
 
 export default function RootLayout({
