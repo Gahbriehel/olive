@@ -9,6 +9,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Select } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 
@@ -44,6 +45,7 @@ interface PeopleViewProps {
   onLimitChange?: (limit: number) => void;
   search?: string;
   onSearchChange?: (search: string) => void;
+  onRefetch?: () => void;
 }
 
 export const PeopleView: React.FC<PeopleViewProps> = ({
@@ -60,6 +62,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
   onLimitChange,
   search,
   onSearchChange,
+  onRefetch,
 }) => {
   const [membershipFilter, setMembershipFilter] = useState("All");
   const [genderFilter, setGenderFilter] = useState("All");
@@ -203,20 +206,23 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <Button
-            variant="outline"
-            leftIcon={<UserPlus className="w-4 h-4" />}
-            onClick={() => setIsAddPersonOpen(true)}
-          >
-            Add Person
-          </Button>
-          <Button
-            variant="primary"
-            leftIcon={<Calendar className="w-4 h-4" />}
-            onClick={() => setIsRegisterOpen(true)}
-          >
-            Register Person for Event
-          </Button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <RefreshButton onRefetch={onRefetch} />
+            <Button
+              variant="outline"
+              leftIcon={<UserPlus className="w-4 h-4" />}
+              onClick={() => setIsAddPersonOpen(true)}
+            >
+              Add Person
+            </Button>
+            <Button
+              variant="primary"
+              leftIcon={<Calendar className="w-4 h-4" />}
+              onClick={() => setIsRegisterOpen(true)}
+            >
+              Register Person for Event
+            </Button>
+          </div>
         </div>
       </div>
 

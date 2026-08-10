@@ -1,5 +1,6 @@
 import React from "react";
 import { Trophy, Shield, ChevronUp } from "lucide-react";
+import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Card, CardContent } from "@/components/ui/Card";
 import { ILeaderboardEntry } from "@/models/game";
 import { Team, LeaderboardEntry } from "@/types/dashboard";
@@ -8,11 +9,13 @@ interface LeaderboardViewProps {
   teams?: Team[];
   leaderboard?: ILeaderboardEntry[];
   isLoading?: boolean;
+  onRefetch?: () => void;
 }
 
 export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   teams = [],
   leaderboard = [],
+  onRefetch,
 }) => {
   // Sort teams by total points descending as fallback
   const sortedTeams = [...teams].sort((a, b) => b.totalPoints - a.totalPoints);
@@ -75,6 +78,10 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
             obstacle relays.
           </p>
         </div>
+        <RefreshButton
+          onRefetch={onRefetch}
+          className="px-3 bg-white/10 hover:bg-white/20 border-white/20 text-white"
+        />
       </div>
 
       {teams.length === 0 ? (

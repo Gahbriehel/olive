@@ -70,5 +70,6 @@ export function useSettings() {
     isLoading: settingsQuery.isLoading,
     isError: settingsQuery.isError,
     isUpdating: updateSettingsMutation.isPending,
+    refetch: settingsQuery.refetch,
   };
 }

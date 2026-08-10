@@ -16,11 +16,12 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
-  ChevronsLeft,
   ChevronsRight,
+  ChevronsLeft,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Input, Select } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/helpers/cn";
@@ -49,6 +50,7 @@ interface EventsViewProps {
   onLimitChange?: (limit: number) => void;
   search?: string;
   onSearchChange?: (search: string) => void;
+  onRefetch?: () => void;
 }
 
 export const EventsView: React.FC<EventsViewProps> = ({
@@ -63,6 +65,7 @@ export const EventsView: React.FC<EventsViewProps> = ({
   onLimitChange,
   search: externalSearch,
   onSearchChange,
+  onRefetch,
 }) => {
   const [search, setSearch] = useState(externalSearch || "");
   const [prevExternalSearch, setPrevExternalSearch] = useState(externalSearch);
@@ -175,13 +178,16 @@ export const EventsView: React.FC<EventsViewProps> = ({
             community events.
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={onOpenCreateEvent}
-          leftIcon={<Plus className="w-4 h-4" />}
-        >
-          Create Event
-        </Button>
+        <div className="flex gap-2">
+          <RefreshButton onRefetch={onRefetch} />
+          <Button
+            variant="primary"
+            onClick={onOpenCreateEvent}
+            leftIcon={<Plus className="w-4 h-4" />}
+          >
+            Create Event
+          </Button>
+        </div>
       </div>
 
       {/* Metrics Cards */}

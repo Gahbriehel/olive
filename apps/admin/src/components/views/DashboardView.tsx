@@ -21,6 +21,7 @@ import {
   CardContent,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Badge } from "@/components/ui/Badge";
 import { NavTab, ChurchEvent } from "@/types/dashboard";
 import { StatsCard, StatsCardColor } from "@/components/ui/StatsCard";
@@ -34,6 +35,7 @@ interface DashboardViewProps {
   onOpenQrScanner: () => void;
   onOpenCreateEvent?: () => void;
   onExportCsv?: () => void;
+  onRefetch?: () => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -44,6 +46,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenQrScanner,
   onOpenCreateEvent = () => {},
   onExportCsv = () => {},
+  onRefetch,
 }) => {
   const overview = dashboardData?.overview;
   const latestRegistrations = dashboardData?.latestRegistrations || [];
@@ -139,6 +142,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         {/* Action Group */}
         <div className="flex flex-wrap items-center gap-2.5 z-10">
+          <RefreshButton
+            onRefetch={onRefetch}
+            size="sm"
+            className="px-2.5 border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
+          />
           <Button
             variant="primary"
             size="sm"

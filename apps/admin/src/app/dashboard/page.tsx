@@ -11,7 +11,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { activeEvent, setIsQrScannerOpen, setIsCreateEventOpen } =
     useDashboard();
-  const { dashboardData, isLoading } = useDashboardData();
+  const { dashboardData, isLoading, refetch } = useDashboardData();
 
   return (
     <DashboardView
@@ -22,6 +22,7 @@ export default function DashboardPage() {
       onOpenQrScanner={() => setIsQrScannerOpen(true)}
       onOpenCreateEvent={() => setIsCreateEventOpen(true)}
       onExportCsv={() => exportToCsv()}
+      onRefetch={refetch}
     />
   );
 }

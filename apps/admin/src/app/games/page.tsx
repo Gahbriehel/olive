@@ -29,6 +29,7 @@ export default function GamesPage() {
     isUpdatingGame,
     isDeletingGame,
     isClearingScores,
+    refetch,
   } = useGames({
     eventId: selectedEventId,
     search,
@@ -174,6 +175,7 @@ export default function GamesPage() {
       isUpdating={isUpdatingGame}
       isDeleting={isDeletingGame}
       isClearingScores={isClearingScores}
+      onRefetch={refetch}
     />
   );
 }

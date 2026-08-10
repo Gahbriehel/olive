@@ -18,7 +18,7 @@ export default function UsersPage() {
     [page, limit, search],
   );
 
-  const { users, meta, isLoading } = useUsers(queryParams);
+  const { users, meta, isLoading, refetch } = useUsers(queryParams);
 
   const handleSearchChange = (newSearch: string) => {
     setSearch(newSearch);
@@ -48,6 +48,7 @@ export default function UsersPage() {
       onLimitChange={handleLimitChange}
       search={search}
       onSearchChange={handleSearchChange}
+      onRefetch={refetch}
     />
   );
 }

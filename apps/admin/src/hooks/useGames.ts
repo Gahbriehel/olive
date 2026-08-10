@@ -112,5 +112,8 @@ export function useGames(params?: IQueryParams | string) {
     isUpdatingScore: updateScoreMutation.isPending,
     clearGameScores: clearGameScoresMutation.mutateAsync,
     isClearingScores: clearGameScoresMutation.isPending,
+    refetch: async () => {
+      await Promise.all([gamesQuery.refetch(), leaderboardQuery.refetch()]);
+    },
   };
 }

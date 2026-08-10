@@ -17,6 +17,7 @@ import {
   CardContent,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { StatsCard } from "@/components/ui/StatsCard";
@@ -36,6 +37,7 @@ interface AttendanceViewProps {
   ) => void;
   isScannerOpen: boolean;
   setIsScannerOpen: (open: boolean) => void;
+  onRefetch?: () => void;
 }
 
 export const AttendanceView: React.FC<AttendanceViewProps> = ({
@@ -44,6 +46,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   onCheckInAttendee,
   isScannerOpen,
   setIsScannerOpen,
+  onRefetch,
 }) => {
   const [manualQuery, setManualQuery] = useState("");
   const [scanSuccessMessage, setScanSuccessMessage] = useState<string | null>(
@@ -106,14 +109,20 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          onClick={() => setIsScannerOpen(true)}
-          leftIcon={<QrCode className="w-5 h-5" />}
-          className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-3 shadow-lg"
-        >
-          Launch Gate QR Scanner
-        </Button>
+        <div className="flex gap-2">
+          <RefreshButton
+            onRefetch={onRefetch}
+            className="px-3 bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
+          />
+          <Button
+            variant="primary"
+            onClick={() => setIsScannerOpen(true)}
+            leftIcon={<QrCode className="w-5 h-5" />}
+            className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-3 shadow-lg"
+          >
+            Launch Gate QR Scanner
+          </Button>
+        </div>
       </div>
 
       {/* Success Notification Alert */}

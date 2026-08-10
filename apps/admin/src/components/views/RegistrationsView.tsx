@@ -3,14 +3,15 @@ import {
   Download,
   QrCode,
   Send,
-  RefreshCw,
   Users,
   UserCheck,
   Shield,
+  RefreshCw,
   Mail,
   Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Select } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
@@ -36,6 +37,7 @@ interface RegistrationsViewProps {
   onLimitChange?: (limit: number) => void;
   search?: string;
   onSearchChange?: (search: string) => void;
+  onRefetch?: () => void;
 }
 
 export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
@@ -50,6 +52,7 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
   onLimitChange,
   search,
   onSearchChange,
+  onRefetch,
 }) => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [teamFilter, setTeamFilter] = useState("All");
@@ -196,13 +199,16 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
             assigned tournament teams.
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={onExportCsv}
-          leftIcon={<Download className="w-4 h-4" />}
-        >
-          Export CSV Roster
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <RefreshButton onRefetch={onRefetch} />
+          <Button
+            variant="primary"
+            onClick={onExportCsv}
+            leftIcon={<Download className="w-4 h-4" />}
+          >
+            Export CSV Roster
+          </Button>
+        </div>
       </div>
 
       {/* Metrics Grid */}

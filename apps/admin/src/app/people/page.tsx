@@ -27,6 +27,7 @@ export default function PeoplePage() {
     meta,
     createPerson,
     isCreating,
+    refetch,
   } = usePeople(queryParams);
   const { events: apiEvents } = useEvents();
   const { registerAttendee, isRegistering } = useRegistrations();
@@ -81,6 +82,7 @@ export default function PeoplePage() {
       onLimitChange={handleLimitChange}
       search={search}
       onSearchChange={handleSearchChange}
+      onRefetch={refetch}
     />
   );
 }

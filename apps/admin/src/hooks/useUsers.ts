@@ -33,5 +33,6 @@ export function useUsers(params?: IQueryParams) {
     isError: usersQuery.isError,
     updateUser: updateUserMutation.mutateAsync,
     isUpdating: updateUserMutation.isPending,
+    refetch: usersQuery.refetch,
   };
 }

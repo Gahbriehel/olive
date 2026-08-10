@@ -26,7 +26,11 @@ export default function RegistrationsPage() {
     [selectedEventId, page, limit, search],
   );
 
-  const { registrations: apiRegistrations, meta } = useRegistrations(regParams);
+  const {
+    registrations: apiRegistrations,
+    meta,
+    refetch,
+  } = useRegistrations(regParams);
   const { teams: apiTeams } = useTeams(selectedEventId);
 
   const teams = useMemo(
@@ -90,6 +94,7 @@ export default function RegistrationsPage() {
       onLimitChange={handleLimitChange}
       search={search}
       onSearchChange={handleSearchChange}
+      onRefetch={refetch}
     />
   );
 }

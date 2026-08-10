@@ -10,7 +10,8 @@ import { LeaderboardView } from "@/components/views/LeaderboardView";
 export default function LeaderboardPage() {
   const { selectedEventId } = useDashboard();
   const { teams: apiTeams } = useTeams(selectedEventId);
-  const { leaderboard, isLoadingLeaderboard } = useGames(selectedEventId);
+  const { leaderboard, isLoadingLeaderboard, refetch } =
+    useGames(selectedEventId);
 
   const teams = React.useMemo(
     () => (Array.isArray(apiTeams) ? apiTeams.map(adaptApiTeamToTeam) : []),
@@ -22,6 +23,7 @@ export default function LeaderboardPage() {
       teams={teams}
       leaderboard={leaderboard}
       isLoading={isLoadingLeaderboard}
+      onRefetch={refetch}
     />
   );
 }

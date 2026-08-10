@@ -23,6 +23,7 @@ import {
   CardContent,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Input } from "@/components/ui/Input";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
@@ -57,6 +58,7 @@ interface TeamsViewProps {
   isCreating?: boolean;
   isUpdating?: boolean;
   isDeleting?: boolean;
+  onRefetch?: () => void;
 }
 
 export const TeamsView: React.FC<TeamsViewProps> = ({
@@ -76,6 +78,7 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
   isCreating = false,
   isUpdating = false,
   isDeleting = false,
+  onRefetch,
 }) => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedTeamForEdit, setSelectedTeamForEdit] = useState<Team | null>(
@@ -152,13 +155,16 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
             member allocations.
           </p>
         </div>
-        <Button
-          variant="primary"
-          leftIcon={<Plus className="w-4 h-4" />}
-          onClick={() => setIsCreateOpen(true)}
-        >
-          Create New Team
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <RefreshButton onRefetch={onRefetch} />
+          <Button
+            variant="primary"
+            leftIcon={<Plus className="w-4 h-4" />}
+            onClick={() => setIsCreateOpen(true)}
+          >
+            Create New Team
+          </Button>
+        </div>
       </div>
 
       {/* Metrics Grid */}

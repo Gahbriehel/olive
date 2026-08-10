@@ -16,6 +16,7 @@ import {
   CardDescription,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Badge } from "@/components/ui/Badge";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
@@ -42,6 +43,7 @@ interface UsersViewProps {
   onLimitChange?: (limit: number) => void;
   search?: string;
   onSearchChange?: (search: string) => void;
+  onRefetch?: () => void;
 }
 
 export const UsersView: React.FC<UsersViewProps> = ({
@@ -54,6 +56,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
   onLimitChange,
   search,
   onSearchChange,
+  onRefetch,
 }) => {
   const {
     users: hookUsers,
@@ -343,9 +346,12 @@ export const UsersView: React.FC<UsersViewProps> = ({
             and synchronize user contact directory.
           </p>
         </div>
-        <Button variant="primary" leftIcon={<UserPlus className="w-4 h-4" />}>
-          Invite User
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <RefreshButton onRefetch={onRefetch} />
+          <Button variant="primary" leftIcon={<UserPlus className="w-4 h-4" />}>
+            Invite User
+          </Button>
+        </div>
       </div>
 
       {savedSuccess && (

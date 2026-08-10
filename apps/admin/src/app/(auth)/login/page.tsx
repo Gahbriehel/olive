@@ -6,7 +6,6 @@ import {
   Lock,
   Mail,
   ArrowRight,
-  Church,
   AlertCircle,
   Eye,
   EyeOff,

@@ -25,6 +25,7 @@ export default function TeamsPage() {
     isCreatingTeam,
     isUpdatingTeam,
     isDeletingTeam,
+    refetch,
   } = useTeams({
     eventId: selectedEventId,
     search,
@@ -142,6 +143,7 @@ export default function TeamsPage() {
       isCreating={isCreatingTeam}
       isUpdating={isUpdatingTeam}
       isDeleting={isDeletingTeam}
+      onRefetch={refetch}
     />
   );
 }

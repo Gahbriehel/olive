@@ -8,7 +8,8 @@ import { SettingsView } from "@/components/views/SettingsView";
 function SettingsContent() {
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") || "church-info";
-  const { settings, updateSettings, isLoadingSettings } = useSettings();
+  const { settings, updateSettings, isLoadingSettings, refetch } =
+    useSettings();
 
   if (isLoadingSettings && !settings) {
     return (
@@ -23,6 +24,7 @@ function SettingsContent() {
       settings={settings}
       onSaveSettings={updateSettings}
       defaultTab={tab}
+      onRefetch={refetch}
     />
   );
 }

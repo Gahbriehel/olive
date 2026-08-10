@@ -24,7 +24,8 @@ export default function AttendancePage() {
     () => ({ eventId: selectedEventId }),
     [selectedEventId],
   );
-  const { registrations: apiRegistrations } = useRegistrations(regParams);
+  const { registrations: apiRegistrations, refetch } =
+    useRegistrations(regParams);
 
   const initialRegistrations = useMemo(
     () =>
@@ -95,6 +96,7 @@ export default function AttendancePage() {
       onCheckInAttendee={handleCheckInAttendee}
       isScannerOpen={isQrScannerOpen}
       setIsScannerOpen={setIsQrScannerOpen}
+      onRefetch={refetch}
     />
   );
 }

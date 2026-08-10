@@ -23,7 +23,7 @@ export default function EventsPage() {
     [page, limit, search],
   );
 
-  const { events: apiEvents, meta } = useEvents(queryParams);
+  const { events: apiEvents, meta, refetch } = useEvents(queryParams);
 
   const events = React.useMemo(
     () =>
@@ -53,6 +53,7 @@ export default function EventsPage() {
       onLimitChange={handleLimitChange}
       search={search}
       onSearchChange={handleSearchChange}
+      onRefetch={refetch}
     />
   );
 }

@@ -24,6 +24,7 @@ import {
   CardContent,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { StatsCard } from "@/components/ui/StatsCard";
@@ -73,6 +74,7 @@ interface GamesViewProps {
   isUpdating?: boolean;
   isDeleting?: boolean;
   isClearingScores?: boolean;
+  onRefetch?: () => void;
 }
 
 export const GamesView: React.FC<GamesViewProps> = ({
@@ -94,6 +96,7 @@ export const GamesView: React.FC<GamesViewProps> = ({
   isUpdating = false,
   isDeleting = false,
   isClearingScores = false,
+  onRefetch,
 }) => {
   const [selectedGameForScore, setSelectedGameForScore] = useState<Game | null>(
     null,
@@ -203,13 +206,16 @@ export const GamesView: React.FC<GamesViewProps> = ({
             score submissions.
           </p>
         </div>
-        <Button
-          variant="primary"
-          leftIcon={<Plus className="w-4 h-4" />}
-          onClick={() => setIsCreateOpen(true)}
-        >
-          Create New Game
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <RefreshButton onRefetch={onRefetch} />
+          <Button
+            variant="primary"
+            leftIcon={<Plus className="w-4 h-4" />}
+            onClick={() => setIsCreateOpen(true)}
+          >
+            Create New Game
+          </Button>
+        </div>
       </div>
 
       {/* Metrics Grid */}

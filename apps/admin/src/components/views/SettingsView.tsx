@@ -8,6 +8,7 @@ import {
   CardContent,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Input } from "@/components/ui/Input";
 import { Tabs } from "@/components/ui/Tabs";
 import { ChurchSettings, IUpdateProfilePayload } from "@/models/dashboard";
@@ -18,12 +19,14 @@ interface SettingsViewProps {
   settings?: ChurchSettings;
   onSaveSettings?: (updated: ChurchSettings) => Promise<unknown> | void;
   defaultTab?: string;
+  onRefetch?: () => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
   settings: propSettings,
   onSaveSettings: propOnSaveSettings,
   defaultTab = "church-info",
+  onRefetch,
 }) => {
   const { user } = useAuth();
   const {
@@ -174,16 +177,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </p>
         </div>
         {activeTab === "church-info" && (
-          <Button
-            variant="primary"
-            onClick={handleSaveChurchSettings}
-            isLoading={isUpdatingSettings}
-            disabled={isUpdatingSettings}
-            leftIcon={<Save className="w-4 h-4" />}
-            className="bg-indigo-600 hover:bg-indigo-500"
-          >
-            Save Configuration
-          </Button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <RefreshButton onRefetch={onRefetch} />
+            <Button
+              variant="primary"
+              onClick={handleSaveChurchSettings}
+              isLoading={isUpdatingSettings}
+              disabled={isUpdatingSettings}
+              leftIcon={<Save className="w-4 h-4" />}
+              className="bg-indigo-600 hover:bg-indigo-500"
+            >
+              Save Configuration
+            </Button>
+          </div>
         )}
       </div>
 
