@@ -18,10 +18,7 @@ export const webApiClient = axios.create({
   },
 });
 
-function extractServerMessage(
-  resData: unknown,
-  defaultMsg: string,
-): string {
+function extractServerMessage(resData: unknown, defaultMsg: string): string {
   if (!resData || typeof resData !== "object") return defaultMsg;
   const dataObj = resData as Record<string, unknown>;
 
