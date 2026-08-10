@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   QrCode,
   Search,
-  CheckCircle2,
   Clock,
   UserCheck,
   Users,
@@ -34,7 +33,7 @@ interface AttendanceViewProps {
   onCheckInAttendee: (
     regId: string,
     method: "QR Scan" | "Manual Search",
-  ) => void;
+  ) => Promise<void>;
   isScannerOpen: boolean;
   setIsScannerOpen: (open: boolean) => void;
   onRefetch?: () => void;
@@ -49,9 +48,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   onRefetch,
 }) => {
   const [manualQuery, setManualQuery] = useState("");
-  const [scanSuccessMessage, setScanSuccessMessage] = useState<string | null>(
-    null,
-  );
+  const [checkingInId, setCheckingInId] = useState<string | null>(null);
 
   const totalReg = registrations.length;
   const checkedInCount = registrations.filter(
@@ -67,26 +64,40 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
     (r) => r.status !== "Checked-In",
   );
 
-  const handleSimulateScan = (
+  const handleSimulateScan = async (
     regId: string,
     method: CheckInMethod = "QR Scan",
   ) => {
-    onCheckInAttendee(regId, method);
     const target = registrations.find(
       (r) => r.id === regId || r.registrationNumber === regId,
     );
     if (target) {
-      setScanSuccessMessage(
-        `SUCCESSFULLY CHECKED IN: ${target.name} (${target.assignedTeamName})`,
-      );
-      setTimeout(() => setScanSuccessMessage(null), 3000);
+      setCheckingInId(target.id);
+      try {
+        await onCheckInAttendee(target.id, method);
+      } catch (error) {
+        console.error("Failed to check in simulated scan:", error);
+      } finally {
+        setCheckingInId(null);
+      }
+    } else {
+      try {
+        await onCheckInAttendee(regId, method);
+      } catch (error) {
+        console.error("Failed to check in simulated scan:", error);
+      }
     }
   };
 
-  const handleManualCheckInSubmit = (reg: Registration) => {
-    onCheckInAttendee(reg.id, "Manual Search");
-    setScanSuccessMessage(`MANUALLY CHECKED IN: ${reg.name}`);
-    setTimeout(() => setScanSuccessMessage(null), 3000);
+  const handleManualCheckInSubmit = async (reg: Registration) => {
+    setCheckingInId(reg.id);
+    try {
+      await onCheckInAttendee(reg.id, "Manual Search");
+    } catch (error) {
+      console.error("Failed to check in manually:", error);
+    } finally {
+      setCheckingInId(null);
+    }
   };
 
   return (
@@ -124,14 +135,6 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           </Button>
         </div>
       </div>
-
-      {/* Success Notification Alert */}
-      {scanSuccessMessage && (
-        <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-3 animate-fade-in shadow-md">
-          <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-          <span>{scanSuccessMessage}</span>
-        </div>
-      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -254,6 +257,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                           variant="primary"
                           size="sm"
                           onClick={() => handleManualCheckInSubmit(r)}
+                          isLoading={checkingInId === r.id}
                           className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
                         >
                           Check-In

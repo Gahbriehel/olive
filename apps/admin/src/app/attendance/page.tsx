@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useDashboard } from "@/context/DashboardContext";
 import { useRegistrations } from "@/hooks/useRegistrations";
 import { adaptApiRegistrationToRegistration } from "@/models/registration";
@@ -57,7 +57,7 @@ export default function AttendancePage() {
     );
 
     if (reg) {
-      await apiCheckIn(reg.registrationNumber, method);
+      await apiCheckIn(reg.token, method);
     }
 
     if (!reg || reg.status === "Checked-In") return;

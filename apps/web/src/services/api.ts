@@ -18,25 +18,122 @@ export const webApiClient = axios.create({
   },
 });
 
+function extractServerMessage(
+  resData: unknown,
+  defaultMsg: string,
+): string {
+  if (!resData || typeof resData !== "object") return defaultMsg;
+  const dataObj = resData as Record<string, unknown>;
+
+  if (typeof dataObj.message === "string" && dataObj.message.trim()) {
+    return dataObj.message.trim();
+  }
+
+  if (
+    dataObj.data &&
+    typeof dataObj.data === "object" &&
+    dataObj.data !== null
+  ) {
+    const innerData = dataObj.data as Record<string, unknown>;
+    if (typeof innerData.message === "string" && innerData.message.trim()) {
+      return innerData.message.trim();
+    }
+
+    if (
+      innerData.data &&
+      typeof innerData.data === "object" &&
+      innerData.data !== null
+    ) {
+      const deepInnerData = innerData.data as Record<string, unknown>;
+      if (
+        typeof deepInnerData.message === "string" &&
+        deepInnerData.message.trim()
+      ) {
+        return deepInnerData.message.trim();
+      }
+    }
+  }
+
+  return defaultMsg;
+}
+
+function extractErrorMessage(
+  error: unknown,
+  defaultMsg = "Request failed",
+): string {
+  if (!error || typeof error !== "object") return defaultMsg;
+  const errObj = error as { message?: string; response?: { data?: unknown } };
+  const resData = errObj.response?.data;
+
+  if (resData && typeof resData === "object") {
+    const dataObj = resData as Record<string, unknown>;
+
+    if (Array.isArray(dataObj.message) && dataObj.message.length > 0) {
+      const validMsgs = dataObj.message.filter(
+        (m): m is string => typeof m === "string" && m.trim().length > 0,
+      );
+      if (validMsgs.length > 0) return validMsgs.join(", ");
+    }
+
+    if (
+      dataObj.data &&
+      typeof dataObj.data === "object" &&
+      dataObj.data !== null
+    ) {
+      const innerData = dataObj.data as Record<string, unknown>;
+      if (Array.isArray(innerData.message) && innerData.message.length > 0) {
+        const validMsgs = innerData.message.filter(
+          (m): m is string => typeof m === "string" && m.trim().length > 0,
+        );
+        if (validMsgs.length > 0) return validMsgs.join(", ");
+      }
+      if (typeof innerData.message === "string" && innerData.message.trim()) {
+        return innerData.message.trim();
+      }
+    }
+
+    if (typeof dataObj.message === "string" && dataObj.message.trim()) {
+      return dataObj.message.trim();
+    }
+
+    if (typeof dataObj.error === "string" && dataObj.error.trim()) {
+      return dataObj.error.trim();
+    }
+
+    if (
+      dataObj.error &&
+      typeof dataObj.error === "object" &&
+      dataObj.error !== null
+    ) {
+      const errProp = dataObj.error as Record<string, unknown>;
+      if (typeof errProp.message === "string" && errProp.message.trim()) {
+        return errProp.message.trim();
+      }
+    }
+  }
+
+  if (typeof errObj.message === "string" && errObj.message.trim()) {
+    return errObj.message.trim();
+  }
+
+  return defaultMsg;
+}
+
 webApiClient.interceptors.response.use(
   (response) => {
     const method = response.config.method?.toUpperCase();
     if (method && ["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-      const serverMessage =
-        response.data?.message || "Operation completed successfully";
+      const serverMessage = extractServerMessage(
+        response.data,
+        "Operation completed successfully",
+      );
       toast.success(serverMessage);
     }
     return response;
   },
   (error) => {
-    const errorMessage =
-      error.response?.data?.message ||
-      error.response?.data?.error ||
-      error.message ||
-      "Request failed";
-    toast.error(
-      typeof errorMessage === "string" ? errorMessage : "Request failed",
-    );
+    const errorMessage = extractErrorMessage(error, "Request failed");
+    toast.error(errorMessage);
     return Promise.reject(error);
   },
 );

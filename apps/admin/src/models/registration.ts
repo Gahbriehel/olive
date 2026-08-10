@@ -19,6 +19,7 @@ export interface Registration {
   assignedTeamColor: string;
   qrCodeUrl: string;
   qrGenerated: boolean;
+  token: string;
   status: RegistrationStatus;
   googleCalendarSync?: boolean;
   confirmationSent: boolean;
@@ -46,6 +47,8 @@ export interface IApiRegistration {
   personId: string;
   teamId?: string;
   qrCode?: string;
+  token: string;
+  registrationNumber: string;
   status: ApiRegistrationStatus;
   googleCalendarSync?: boolean;
   checkedInAt?: string;
@@ -79,7 +82,8 @@ export function adaptApiRegistrationToRegistration(
 
   return {
     id: apiReg.id,
-    registrationNumber: apiReg.qrCode || `REG-${apiReg.id.slice(0, 8)}`,
+    registrationNumber:
+      apiReg.qrCode || apiReg.registrationNumber || apiReg.token,
     personId: apiReg.personId,
     name: person ? `${person.firstName} ${person.lastName}`.trim() : "Attendee",
     email: person?.email || "N/A",
@@ -95,6 +99,7 @@ export function adaptApiRegistrationToRegistration(
     status: apiReg.status === "CHECKED_IN" ? "Checked-In" : "Confirmed",
     googleCalendarSync: apiReg.googleCalendarSync ?? false,
     confirmationSent: true,
+    token: apiReg.token,
     registeredAt: apiReg.createdAt
       ? new Date(apiReg.createdAt).toLocaleTimeString([], {
           hour: "2-digit",
