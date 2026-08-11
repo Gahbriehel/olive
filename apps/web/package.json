@@ -11,7 +11,7 @@
     "format": "prettier --ignore-path ../../.prettierignore --write .",
     "check-format": "prettier --ignore-path ../../.prettierignore --check .",
     "check-lint": "eslint .",
-    "check-all": "bun format && bun check-format && bun check-lint && bun check-types"
+    "check-all": "bun check-format && bun check-lint && bun check-types"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.10",

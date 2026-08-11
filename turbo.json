@@ -7,6 +7,9 @@
     },
     "lint": {},
     "check-types": {},
+    "format": {
+      "cache": false
+    },
     "check-all": {},
     "dev": {
       "cache": false,
