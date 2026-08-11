@@ -15,10 +15,7 @@ export const settingsService = {
 
       return {
         id: (data.id as string) || "",
-        churchName:
-          (data.name as string) ||
-          (data.churchName as string) ||
-          "",
+        churchName: (data.name as string) || (data.churchName as string) || "",
         branchName: (data.branchName as string) || "",
         campusName: (data.campusName as string) || "",
         address: (data.address as string) || "",
@@ -31,9 +28,7 @@ export const settingsService = {
           primaryColor:
             (data.branding as Record<string, string>)?.primaryColor ||
             "#6366f1",
-          logoText:
-            (data.branding as Record<string, string>)?.logoText ||
-            "",
+          logoText: (data.branding as Record<string, string>)?.logoText || "",
         },
         emailConfig: {
           fromName: "",

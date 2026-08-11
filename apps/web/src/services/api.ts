@@ -144,28 +144,21 @@ export const webService = {
         (res.data?.data as Record<string, unknown>) || res.data || {};
 
       return {
-        churchName:
-          (data.name as string) ||
-          (data.churchName as string) ||
-          "",
+        churchName: (data.name as string) || (data.churchName as string) || "",
         branchName: (data.branchName as string) || "",
         campusName: (data.campusName as string) || "",
         address: (data.address as string) || "",
         phone: (data.phone as string) || "",
         email: (data.email as string) || "",
-        website:
-          (data.websiteUrl as string) ||
-          (data.website as string) || "",
+        website: (data.websiteUrl as string) || (data.website as string) || "",
         branding: {
-          primaryColor: (data.branding as Record<string, string>)?.primaryColor || "",
-          logoText:
-            (data.branding as Record<string, string>)?.logoText || "",
+          primaryColor:
+            (data.branding as Record<string, string>)?.primaryColor || "",
+          logoText: (data.branding as Record<string, string>)?.logoText || "",
           heroHeadline:
-            (data.branding as Record<string, string>)?.heroHeadline ||
-            "",
+            (data.branding as Record<string, string>)?.heroHeadline || "",
           heroSubtitle:
-            (data.branding as Record<string, string>)?.heroSubtitle ||
-            "",
+            (data.branding as Record<string, string>)?.heroSubtitle || "",
         },
       };
     } catch {
@@ -180,8 +173,7 @@ export const webService = {
           primaryColor: "",
           logoText: "",
           heroHeadline: "",
-          heroSubtitle:
-            "",
+          heroSubtitle: "",
         },
       };
     }

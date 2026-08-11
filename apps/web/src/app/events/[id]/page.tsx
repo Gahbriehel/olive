@@ -173,9 +173,7 @@ export default function EventRegistrationPage({
                   <MapPin className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-semibold text-white">Location</p>
-                    <p className="text-xs text-slate-500">
-                      {event.location}
-                    </p>
+                    <p className="text-xs text-slate-500">{event.location}</p>
                   </div>
                 </div>
               </div>
