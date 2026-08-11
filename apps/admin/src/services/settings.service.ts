@@ -18,9 +18,9 @@ export const settingsService = {
         churchName:
           (data.name as string) ||
           (data.churchName as string) ||
-          "Church Events",
+          "",
         branchName: (data.branchName as string) || "",
-        campusName: (data.campusName as string) || "Main Campus",
+        campusName: (data.campusName as string) || "",
         address: (data.address as string) || "",
         phone: (data.phone as string) || "",
         email: (data.email as string) || "",
@@ -33,11 +33,11 @@ export const settingsService = {
             "#6366f1",
           logoText:
             (data.branding as Record<string, string>)?.logoText ||
-            "GRACE CITY EVENTS",
+            "",
         },
         emailConfig: {
-          fromName: "Grace City Youth Events",
-          fromEmail: "events@gracecity.org",
+          fromName: "",
+          fromEmail: "",
           sendConfirmationEmails: true,
           sendReminder24h: true,
         },
@@ -50,16 +50,16 @@ export const settingsService = {
     } catch {
       // Fallback if settings endpoint error
       return {
-        churchName: "Church Events",
+        churchName: "",
         branchName: "",
-        campusName: "Main Campus",
+        campusName: "",
         address: "",
         phone: "",
         email: "",
         website: "",
         branding: {
           primaryColor: "#6366f1",
-          logoText: "GRACE CITY EVENTS",
+          logoText: "",
         },
       };
     }

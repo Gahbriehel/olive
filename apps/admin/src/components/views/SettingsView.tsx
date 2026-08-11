@@ -40,27 +40,27 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   const settings = propSettings ||
     hookSettings || {
-      churchName: "Church Events",
-      branchName: "",
-      campusName: "Main Campus",
-      address: "",
-      phone: "",
-      email: "",
-      website: "",
-      websiteUrl: "",
-      branding: { primaryColor: "#6366f1", logoText: "GRACE CITY EVENTS" },
-      emailConfig: {
-        fromName: "Grace City Youth Events",
-        fromEmail: "events@gracecity.org",
-        sendConfirmationEmails: true,
-        sendReminder24h: true,
-      },
-      preferences: {
-        autoAssignTeams: true,
-        requireQrCheckin: true,
-        allowSelfRegistration: true,
-      },
-    };
+    churchName: "",
+    branchName: "",
+    campusName: "",
+    address: "",
+    phone: "",
+    email: "",
+    website: "",
+    websiteUrl: "",
+    branding: { primaryColor: "#6366f1", logoText: "" },
+    emailConfig: {
+      fromName: "",
+      fromEmail: "",
+      sendConfirmationEmails: true,
+      sendReminder24h: true,
+    },
+    preferences: {
+      autoAssignTeams: true,
+      requireQrCheckin: true,
+      allowSelfRegistration: true,
+    },
+  };
 
   const [formData, setFormData] = useState<ChurchSettings>(settings);
   const [activeTab, setActiveTab] = useState(defaultTab);
@@ -172,8 +172,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             Platform Settings
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Configure church metadata, user profile credentials, multi-campus
-            branding, and system defaults.
+            Configure church metadata, user profile credentials, branding, and system defaults.
           </p>
         </div>
         {activeTab === "church-info" && (
@@ -236,7 +235,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <Input
                 label="Branch / Division Name"
                 value={formData.branchName || ""}
-                placeholder="e.g. Grace City HQ / North Division"
+                placeholder="e.g. Grace City HQ"
                 onChange={(e) =>
                   setFormData({ ...formData, branchName: e.target.value })
                 }

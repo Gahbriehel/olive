@@ -174,7 +174,7 @@ export default function EventRegistrationPage({
                   <div>
                     <p className="font-semibold text-white">Location</p>
                     <p className="text-xs text-slate-500">
-                      {event.location || "Main Campus Sanctuary"}
+                      {event.location}
                     </p>
                   </div>
                 </div>

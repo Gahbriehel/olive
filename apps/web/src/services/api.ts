@@ -147,44 +147,41 @@ export const webService = {
         churchName:
           (data.name as string) ||
           (data.churchName as string) ||
-          "Grace City Church",
+          "",
         branchName: (data.branchName as string) || "",
-        campusName: (data.campusName as string) || "Main Campus",
-        address: (data.address as string) || "123 Hope Boulevard, Cityville",
-        phone: (data.phone as string) || "+1 (555) 234-5678",
-        email: (data.email as string) || "contact@gracecity.org",
+        campusName: (data.campusName as string) || "",
+        address: (data.address as string) || "",
+        phone: (data.phone as string) || "",
+        email: (data.email as string) || "",
         website:
           (data.websiteUrl as string) ||
-          (data.website as string) ||
-          "https://gracecity.org",
+          (data.website as string) || "",
         branding: {
-          primaryColor:
-            (data.branding as Record<string, string>)?.primaryColor ||
-            "#10b981",
+          primaryColor: (data.branding as Record<string, string>)?.primaryColor || "",
           logoText:
-            (data.branding as Record<string, string>)?.logoText || "GRACE CITY",
+            (data.branding as Record<string, string>)?.logoText || "",
           heroHeadline:
             (data.branding as Record<string, string>)?.heroHeadline ||
-            "Welcome Home to Grace City",
+            "",
           heroSubtitle:
             (data.branding as Record<string, string>)?.heroSubtitle ||
-            "A vibrant community dedicated to worship, growth, and loving our neighbors.",
+            "",
         },
       };
     } catch {
       return {
-        churchName: "Grace City Church",
-        campusName: "Main Campus",
-        address: "123 Hope Boulevard, Cityville",
-        phone: "+1 (555) 234-5678",
-        email: "contact@gracecity.org",
-        website: "https://gracecity.org",
+        churchName: "",
+        campusName: "",
+        address: "",
+        phone: "",
+        email: "",
+        website: "",
         branding: {
-          primaryColor: "#10b981",
-          logoText: "GRACE CITY",
-          heroHeadline: "Welcome Home to Grace City",
+          primaryColor: "",
+          logoText: "",
+          heroHeadline: "",
           heroSubtitle:
-            "A vibrant community dedicated to worship, growth, and loving our neighbors.",
+            "",
         },
       };
     }
