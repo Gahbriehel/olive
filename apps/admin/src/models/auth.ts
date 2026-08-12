@@ -33,6 +33,8 @@ export interface IUser {
     name: string;
   };
   userRoles?: IUserRole[];
+  roles?: string[];
+  role?: string;
   createdAt?: string;
 }
 

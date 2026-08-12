@@ -215,7 +215,13 @@ apiClient.interceptors.response.use(
     const url = originalRequest?.url || "";
 
     // Show red error toast for server response failures
-    if (!url.includes("/auth/refresh")) {
+    if (error.response?.status === 403) {
+      const errorMessage = extractErrorMessage(
+        error,
+        "You do not have administrative permission to perform this action.",
+      );
+      toast.error(errorMessage);
+    } else if (!url.includes("/auth/refresh")) {
       const errorMessage = extractErrorMessage(error, "Server request failed");
       toast.error(errorMessage);
     }

@@ -32,6 +32,8 @@ import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { useEvents } from "@/hooks/useEvents";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { ChurchEvent } from "@/types/dashboard";
+import { AuthorityGuard } from "@/components/auth/AuthorityGuard";
+import { ROLES } from "@/utils/rbac";
 
 interface EventsViewProps {
   events: ChurchEvent[];
@@ -180,13 +182,17 @@ export const EventsView: React.FC<EventsViewProps> = ({
         </div>
         <div className="flex gap-2">
           <RefreshButton onRefetch={onRefetch} />
-          <Button
-            variant="primary"
-            onClick={onOpenCreateEvent}
-            leftIcon={<Plus className="w-4 h-4" />}
+          <AuthorityGuard
+            roles={[ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR]}
           >
-            Create Event
-          </Button>
+            <Button
+              variant="primary"
+              onClick={onOpenCreateEvent}
+              leftIcon={<Plus className="w-4 h-4" />}
+            >
+              Create Event
+            </Button>
+          </AuthorityGuard>
         </div>
       </div>
 

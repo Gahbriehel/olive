@@ -11,6 +11,7 @@ import {
   Settings,
   LucideIcon,
 } from "lucide-react";
+import { ROLES } from "@/utils/rbac";
 
 export interface NavItem {
   href: string;
@@ -18,6 +19,7 @@ export interface NavItem {
   icon: LucideIcon;
   badge?: string;
   highlight?: boolean;
+  allowedRoles?: string[];
 }
 
 export interface FutureModule {
@@ -27,24 +29,77 @@ export interface FutureModule {
 }
 
 export const mainNavItems: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/events", label: "Events", icon: Calendar },
-  { href: "/people", label: "People", icon: Users },
+  {
+    href: "/dashboard",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
+  {
+    href: "/events",
+    label: "Events",
+    icon: Calendar,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+  },
+  {
+    href: "/people",
+    label: "People",
+    icon: Users,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+  },
   {
     href: "/registrations",
     label: "Registrations",
     icon: Ticket,
+    allowedRoles: [
+      ROLES.SUPER_ADMIN,
+      ROLES.ADMIN,
+      ROLES.COORDINATOR,
+      ROLES.REGISTRATION_DESK,
+      "MEMBER",
+    ],
   },
-  { href: "/teams", label: "Teams", icon: Shield },
-  { href: "/attendance", label: "Attendance", icon: QrCode, highlight: true },
-  { href: "/games", label: "Games", icon: Gamepad2 },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/users", label: "Users & Roles", icon: UserCheck },
-  { href: "/settings", label: "Settings", icon: Settings },
+  {
+    href: "/teams",
+    label: "Teams",
+    icon: Shield,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+  },
+  {
+    href: "/attendance",
+    label: "Attendance",
+    icon: QrCode,
+    highlight: true,
+    allowedRoles: [
+      ROLES.SUPER_ADMIN,
+      ROLES.ADMIN,
+      ROLES.COORDINATOR,
+      ROLES.REGISTRATION_DESK,
+      "MEMBER",
+    ],
+  },
+  {
+    href: "/games",
+    label: "Games",
+    icon: Gamepad2,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+  },
+  {
+    href: "/leaderboard",
+    label: "Leaderboard",
+    icon: Trophy,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+  },
+  {
+    href: "/users",
+    label: "Users & Roles",
+    icon: UserCheck,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
+  {
+    href: "/settings",
+    label: "Settings",
+    icon: Settings,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
 ];
-
-// export const futureModules: FutureModule[] = [
-//   { id: "small-groups", label: "Small Groups", icon: Layers },
-//   { id: "giving", label: "Giving & Tithes", icon: HeartHandshake },
-//   { id: "facilities", label: "Facilities & Rooms", icon: DoorClosed },
-// ];

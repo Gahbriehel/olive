@@ -9,6 +9,7 @@ import { useDashboard } from "@/context/DashboardContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useSettings } from "@/hooks/useSettings";
 import { mainNavItems } from "@/helpers/navlinks";
+import { getUserRoles, hasAuthority } from "@/utils/rbac";
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
@@ -16,6 +17,11 @@ export const Sidebar: React.FC = () => {
     useDashboard();
   const { settings } = useSettings();
   const { user } = useAuth();
+
+  const userRoles = getUserRoles(user);
+  const visibleNavItems = mainNavItems.filter((item) =>
+    hasAuthority(userRoles, item.allowedRoles || []),
+  );
 
   const churchName =
     settings?.churchName || user?.church?.name || "Church Events";
@@ -69,11 +75,12 @@ export const Sidebar: React.FC = () => {
             Core Modules
           </p>
           <nav className="space-y-1">
-            {mainNavItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const Icon = item.icon;
               const isActive =
                 pathname === item.href ||
-                (item.href === "/events" && pathname.startsWith("/events"));
+                (item.href !== "/dashboard" &&
+                  pathname.startsWith(`${item.href}/`));
               return (
                 <Link
                   key={item.href}

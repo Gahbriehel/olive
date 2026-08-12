@@ -11,6 +11,12 @@ import { QrScannerModal } from "@/components/modals/QrScannerModal";
 import { useDashboard } from "@/context/DashboardContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useEvents } from "@/hooks/useEvents";
+import {
+  getUserRoles,
+  hasAuthority,
+  getDefaultRouteForUser,
+  ROUTE_PERMISSIONS,
+} from "@/utils/rbac";
 
 export const MainShell: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -40,11 +46,31 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
     if (!isLoading && mounted) {
       if (!isAuthenticated && !isAuthPage) {
         router.push("/login");
-      } else if (isAuthenticated && isAuthPage) {
-        router.push("/");
+      } else if (isAuthenticated) {
+        if (isAuthPage) {
+          const defaultRoute = getDefaultRouteForUser(user);
+          router.push(defaultRoute);
+          return;
+        }
+
+        // Check path permissions against RBAC matrix
+        const userRoles = getUserRoles(user);
+        const matchedPermission = Object.entries(ROUTE_PERMISSIONS).find(
+          ([route]) => pathname === route || pathname.startsWith(`${route}/`),
+        );
+
+        if (matchedPermission) {
+          const allowedRoles = matchedPermission[1];
+          if (!hasAuthority(userRoles, allowedRoles)) {
+            const fallbackRoute = getDefaultRouteForUser(user);
+            if (pathname !== fallbackRoute) {
+              router.push(fallbackRoute);
+            }
+          }
+        }
       }
     }
-  }, [isAuthenticated, isLoading, isAuthPage, router, mounted]);
+  }, [isAuthenticated, isLoading, isAuthPage, router, mounted, user, pathname]);
 
   const {
     isCreateEventOpen,

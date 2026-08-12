@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { loginUser } from "@/store/slices/authSlice";
+import { getDefaultRouteForUser } from "@/utils/rbac";
 import Image from "next/image";
 
 export default function LoginPage() {
@@ -31,7 +32,8 @@ export default function LoginPage() {
     try {
       const res = await login({ email, password });
       if (loginUser.fulfilled.match(res)) {
-        router.push("/");
+        const defaultRoute = getDefaultRouteForUser(res.payload.user);
+        router.push(defaultRoute);
       } else if (loginUser.rejected.match(res)) {
         setLocalError((res.payload as string) || "Invalid email or password");
       }

@@ -24,6 +24,8 @@ import { Input } from "@/components/ui/Input";
 import { AdminUser, IUpdateUserPayload } from "@/models/dashboard";
 import { ColumnDef } from "@tanstack/react-table";
 import { useUsers } from "@/hooks/useUsers";
+import { AuthorityGuard } from "@/components/auth/AuthorityGuard";
+import { ROLES } from "@/utils/rbac";
 
 interface UsersViewProps {
   users?: AdminUser[];
@@ -348,9 +350,14 @@ export const UsersView: React.FC<UsersViewProps> = ({
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <RefreshButton onRefetch={onRefetch} />
-          <Button variant="primary" leftIcon={<UserPlus className="w-4 h-4" />}>
-            Invite User
-          </Button>
+          <AuthorityGuard roles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]}>
+            <Button
+              variant="primary"
+              leftIcon={<UserPlus className="w-4 h-4" />}
+            >
+              Invite User
+            </Button>
+          </AuthorityGuard>
         </div>
       </div>
 
