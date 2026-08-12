@@ -30,7 +30,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         "(prefers-color-scheme: dark)",
       ).matches;
       const defaultTheme = prefersDark ? "dark" : "light";
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setThemeState(defaultTheme);
       document.documentElement.classList.toggle(
         "dark",

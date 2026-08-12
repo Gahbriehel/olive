@@ -11,7 +11,7 @@
     "check-types": "tsc --pretty --noEmit",
     "check-format": "prettier --ignore-path ../../.prettierignore --check .",
     "check-lint": "eslint .",
-    "check-all": "bun check-format && bun check-lint && bun check-types",
+    "check-all": "bun format && bun check-format && bun check-lint && bun check-types",
     "prepare": "husky"
   },
   "dependencies": {

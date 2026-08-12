@@ -11,10 +11,15 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useDashboard } from "@/context/DashboardContext";
+import { useAuth } from "@/hooks/useAuth";
+import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
+import { User } from "lucide-react";
 
 export const CommandMenu: React.FC = () => {
   const router = useRouter();
   const { isSearchOpen, setIsSearchOpen } = useDashboard();
+  const { user } = useAuth();
+  const userRoles = getUserRoles(user);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
@@ -38,21 +43,63 @@ export const CommandMenu: React.FC = () => {
       label: "Go to Attendance Live Check-in",
       href: "/attendance",
       icon: Search,
+      allowedRoles: [
+        ROLES.SUPER_ADMIN,
+        ROLES.ADMIN,
+        ROLES.COORDINATOR,
+        ROLES.REGISTRATION_DESK,
+        "MEMBER",
+      ],
     },
     {
       label: "View Registrations Directory",
       href: "/registrations",
       icon: Ticket,
+      allowedRoles: [
+        ROLES.SUPER_ADMIN,
+        ROLES.ADMIN,
+        ROLES.COORDINATOR,
+        ROLES.REGISTRATION_DESK,
+        "MEMBER",
+      ],
     },
-    { label: "Open Team Management & Drag-Drop", href: "/teams", icon: Shield },
+    {
+      label: "Open Team Management & Drag-Drop",
+      href: "/teams",
+      icon: Shield,
+      allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+    },
     {
       label: "Check Leaderboard Standings",
       href: "/leaderboard",
       icon: Gamepad2,
+      allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
     },
-    { label: "Manage Games & Enter Scores", href: "/games", icon: Gamepad2 },
-    { label: "Church Settings & Branding", href: "/settings", icon: Calendar },
-  ];
+    {
+      label: "Manage Games & Enter Scores",
+      href: "/games",
+      icon: Gamepad2,
+      allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+    },
+    {
+      label: "Church Settings & Branding",
+      href: "/settings?tab=church-info",
+      icon: Calendar,
+      allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+    },
+    {
+      label: "My Profile & Security Settings",
+      href: "/settings?tab=profile",
+      icon: User,
+      allowedRoles: [
+        ROLES.SUPER_ADMIN,
+        ROLES.ADMIN,
+        ROLES.COORDINATOR,
+        ROLES.REGISTRATION_DESK,
+        "MEMBER",
+      ],
+    },
+  ].filter((act) => hasAuthority(userRoles, act.allowedRoles));
 
   const searchResults = [
     {

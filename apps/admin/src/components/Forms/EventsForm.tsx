@@ -80,7 +80,6 @@ export const EventsForm: React.FC<EventsFormProps> = ({
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const startDateValue = watch("startDate");
-  // eslint-disable-next-line react-hooks/incompatible-library
   const imageUrlValue = watch("imageUrl");
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

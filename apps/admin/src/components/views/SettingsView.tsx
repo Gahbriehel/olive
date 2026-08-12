@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Check, Save, User, Building2, Key, AlertCircle } from "lucide-react";
 import {
   Card,
@@ -14,6 +14,7 @@ import { Tabs } from "@/components/ui/Tabs";
 import { ChurchSettings, IUpdateProfilePayload } from "@/models/dashboard";
 import { useSettings } from "@/hooks/useSettings";
 import { useAuth } from "@/hooks/useAuth";
+import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
 
 interface SettingsViewProps {
   settings?: ChurchSettings;
@@ -29,6 +30,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onRefetch,
 }) => {
   const { user } = useAuth();
+  const userRoles = getUserRoles(user);
+  const isAdmin = hasAuthority(userRoles, [ROLES.SUPER_ADMIN, ROLES.ADMIN]);
   const {
     settings: hookSettings,
     updateSettings: hookUpdateSettings,
@@ -67,6 +70,36 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const tabs = useMemo(
+    () => [
+      ...(isAdmin ? [{ id: "church-info", label: "Church Information" }] : []),
+      { id: "profile", label: "My Profile & Security" },
+      ...(isAdmin
+        ? [
+            { id: "branding", label: "Branding & Theme" },
+            { id: "email", label: "Email Configuration" },
+            { id: "preferences", label: "General Preferences" },
+          ]
+        : []),
+    ],
+    [isAdmin],
+  );
+
+  useEffect(() => {
+    if (defaultTab) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActiveTab(defaultTab);
+    }
+  }, [defaultTab]);
+
+  useEffect(() => {
+    const allowedTabIds = tabs.map((t) => t.id);
+    if (!allowedTabIds.includes(activeTab) && allowedTabIds.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActiveTab(allowedTabIds[0]);
+    }
+  }, [activeTab, tabs]);
+
   // Profile Form state
   const [profileData, setProfileData] = useState<IUpdateProfilePayload>({
     firstName: user?.firstName || "",
@@ -96,14 +129,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       }));
     }
   }, [profile, user]);
-
-  const tabs = [
-    { id: "church-info", label: "Church Information" },
-    { id: "profile", label: "My Profile & Security" },
-    { id: "branding", label: "Branding & Theme" },
-    { id: "email", label: "Email Configuration" },
-    { id: "preferences", label: "General Preferences" },
-  ];
 
   const handleSaveChurchSettings = async () => {
     try {
