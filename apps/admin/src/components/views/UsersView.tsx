@@ -118,12 +118,16 @@ export const UsersView: React.FC<UsersViewProps> = ({
     (u) =>
       u.role === "SUPER_ADMIN" ||
       u.role === "ADMIN" ||
-      u.role === "Super Admin",
+      u.role === "Super Admin" ||
+      u.role === "Church Admin",
   ).length;
   const deskStaff = users.filter(
     (u) =>
+      u.role === "COORDINATOR" ||
+      u.role === "REGISTRATION_DESK" ||
       u.role === "WORKER" ||
       u.role === "LEADER" ||
+      u.role === "Event Coordinator" ||
       u.role === "Registration Desk",
   ).length;
 
@@ -133,130 +137,186 @@ export const UsersView: React.FC<UsersViewProps> = ({
   );
 
   interface PermissionMatrixItem {
-    feature: string;
+    item: string;
+    route: string;
     superAdmin: boolean;
     churchAdmin: boolean;
+    coordinator: boolean;
     regDesk: boolean;
-    gamesCoord: boolean;
   }
 
   const permissionsMatrix: PermissionMatrixItem[] = [
     {
-      feature: "Create & Edit Events",
+      item: "📊 Dashboard",
+      route: "/dashboard",
       superAdmin: true,
       churchAdmin: true,
+      coordinator: false,
       regDesk: false,
-      gamesCoord: false,
     },
     {
-      feature: "Publish / Delete Events",
+      item: "🗓️ Events",
+      route: "/events",
       superAdmin: true,
       churchAdmin: true,
+      coordinator: true,
       regDesk: false,
-      gamesCoord: false,
     },
     {
-      feature: "Manage Registrations & Export CSV",
+      item: "🛡️ Teams",
+      route: "/teams",
       superAdmin: true,
       churchAdmin: true,
+      coordinator: true,
+      regDesk: false,
+    },
+    {
+      item: "🎮 Games",
+      route: "/games",
+      superAdmin: true,
+      churchAdmin: true,
+      coordinator: true,
+      regDesk: false,
+    },
+    {
+      item: "🏆 Scores & Leaderboard",
+      route: "/scores",
+      superAdmin: true,
+      churchAdmin: true,
+      coordinator: true,
+      regDesk: false,
+    },
+    {
+      item: "📋 Registrations",
+      route: "/registrations",
+      superAdmin: true,
+      churchAdmin: true,
+      coordinator: true,
       regDesk: true,
-      gamesCoord: false,
     },
     {
-      feature: "Reassign Attendee Teams",
+      item: "📱 Attendance Check-In",
+      route: "/attendance",
       superAdmin: true,
       churchAdmin: true,
+      coordinator: true,
       regDesk: true,
-      gamesCoord: false,
     },
     {
-      feature: "Scan QR Badges & Manual Check-in",
+      item: "👥 Users & Roles",
+      route: "/users",
       superAdmin: true,
       churchAdmin: true,
-      regDesk: true,
-      gamesCoord: true,
+      coordinator: false,
+      regDesk: false,
     },
     {
-      feature: "Submit Game Scores & Update Points",
+      item: "⚙️ Church Settings",
+      route: "/settings",
       superAdmin: true,
       churchAdmin: true,
+      coordinator: false,
       regDesk: false,
-      gamesCoord: true,
-    },
-    {
-      feature: "Manage Admin Users & Roles",
-      superAdmin: true,
-      churchAdmin: false,
-      regDesk: false,
-      gamesCoord: false,
-    },
-    {
-      feature: "System Settings & Branding",
-      superAdmin: true,
-      churchAdmin: true,
-      regDesk: false,
-      gamesCoord: false,
     },
   ];
 
   const permissionColumns: ColumnDef<PermissionMatrixItem>[] = [
     {
-      accessorKey: "feature",
-      header: "Feature Capability",
+      accessorKey: "item",
+      header: "Sidebar Navigation & Route",
       cell: ({ row }) => (
-        <span className="font-semibold text-slate-900 dark:text-slate-100">
-          {row.original.feature}
-        </span>
+        <div>
+          <p className="font-bold text-slate-900 dark:text-slate-100">
+            {row.original.item}
+          </p>
+          <p className="text-[11px] font-mono text-slate-400">
+            {row.original.route}
+          </p>
+        </div>
       ),
     },
     {
       accessorKey: "superAdmin",
-      header: () => <div className="text-center">Super Admin / Admin</div>,
+      header: () => (
+        <div className="text-center">
+          <p className="font-bold text-slate-900 dark:text-slate-100">
+            Super Admin
+          </p>
+          <span className="text-[10px] font-mono text-indigo-500">
+            SUPER_ADMIN
+          </span>
+        </div>
+      ),
       cell: ({ row }) => (
         <div className="text-center">
           {row.original.superAdmin ? (
             <Check className="w-4 h-4 text-emerald-500 mx-auto" />
           ) : (
-            <X className="w-4 h-4 text-slate-300 mx-auto" />
+            <X className="w-4 h-4 text-slate-300 dark:text-zinc-700 mx-auto" />
           )}
         </div>
       ),
     },
     {
       accessorKey: "churchAdmin",
-      header: () => <div className="text-center">Leader</div>,
+      header: () => (
+        <div className="text-center">
+          <p className="font-bold text-slate-900 dark:text-slate-100">
+            Church Admin
+          </p>
+          <span className="text-[10px] font-mono text-indigo-500">ADMIN</span>
+        </div>
+      ),
       cell: ({ row }) => (
         <div className="text-center">
           {row.original.churchAdmin ? (
             <Check className="w-4 h-4 text-emerald-500 mx-auto" />
           ) : (
-            <X className="w-4 h-4 text-slate-300 mx-auto" />
+            <X className="w-4 h-4 text-slate-300 dark:text-zinc-700 mx-auto" />
+          )}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "coordinator",
+      header: () => (
+        <div className="text-center">
+          <p className="font-bold text-slate-900 dark:text-slate-100">
+            Event Coordinator
+          </p>
+          <span className="text-[10px] font-mono text-indigo-500">
+            COORDINATOR
+          </span>
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="text-center">
+          {row.original.coordinator ? (
+            <Check className="w-4 h-4 text-emerald-500 mx-auto" />
+          ) : (
+            <X className="w-4 h-4 text-slate-300 dark:text-zinc-700 mx-auto" />
           )}
         </div>
       ),
     },
     {
       accessorKey: "regDesk",
-      header: () => <div className="text-center">Worker</div>,
+      header: () => (
+        <div className="text-center">
+          <p className="font-bold text-slate-900 dark:text-slate-100">
+            Registration Desk
+          </p>
+          <span className="text-[10px] font-mono text-indigo-500">
+            REGISTRATION_DESK
+          </span>
+        </div>
+      ),
       cell: ({ row }) => (
         <div className="text-center">
           {row.original.regDesk ? (
             <Check className="w-4 h-4 text-emerald-500 mx-auto" />
           ) : (
-            <X className="w-4 h-4 text-slate-300 mx-auto" />
-          )}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "gamesCoord",
-      header: () => <div className="text-center">Member</div>,
-      cell: ({ row }) => (
-        <div className="text-center">
-          {row.original.gamesCoord ? (
-            <Check className="w-4 h-4 text-emerald-500 mx-auto" />
-          ) : (
-            <X className="w-4 h-4 text-slate-300 mx-auto" />
+            <X className="w-4 h-4 text-slate-300 dark:text-zinc-700 mx-auto" />
           )}
         </div>
       ),
@@ -272,8 +332,8 @@ export const UsersView: React.FC<UsersViewProps> = ({
             Users & Permission Control
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Manage system access, assign roles (ADMIN, LEADER, WORKER, MEMBER),
-            and synchronize user contact directory.
+            Manage system access, assign roles (SUPER_ADMIN, ADMIN, COORDINATOR,
+            REGISTRATION_DESK), and synchronize user contact directory.
           </p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
@@ -315,17 +375,17 @@ export const UsersView: React.FC<UsersViewProps> = ({
           color="emerald"
         />
         <StatsCard
-          title="Admins & Leaders"
+          title="System Administrators"
           value={superAdmins.toLocaleString()}
-          change="Management access"
+          change="SUPER_ADMIN & ADMIN"
           trend="neutral"
           icon={Shield}
           color="cyan"
         />
         <StatsCard
-          title="Workers & Members"
+          title="Coordinators & Desk Staff"
           value={deskStaff.toLocaleString()}
-          change="Directory members"
+          change="COORDINATOR & REG_DESK"
           trend="neutral"
           icon={Lock}
           color="amber"
@@ -453,10 +513,18 @@ export const UsersView: React.FC<UsersViewProps> = ({
                   onChange={(e) => setRole(e.target.value)}
                   className="w-full text-xs bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 cursor-pointer"
                 >
-                  <option value="ADMIN">ADMIN - Full Control</option>
-                  <option value="LEADER">LEADER - Event Manager</option>
-                  <option value="WORKER">WORKER - Registration & Desk</option>
-                  <option value="MEMBER">MEMBER - Member Account</option>
+                  <option value="SUPER_ADMIN">
+                    SUPER_ADMIN - Super Admin (System-Wide)
+                  </option>
+                  <option value="ADMIN">
+                    ADMIN - Church Admin (Full Access)
+                  </option>
+                  <option value="COORDINATOR">
+                    COORDINATOR - Event Coordinator
+                  </option>
+                  <option value="REGISTRATION_DESK">
+                    REGISTRATION_DESK - Registration Desk
+                  </option>
                 </select>
               </div>
 

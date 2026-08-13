@@ -33,17 +33,31 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const isAuthPage = pathname?.startsWith("/login");
+  const isKnownRoute =
+    pathname === "/" ||
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/dashboard") ||
+    pathname?.startsWith("/events") ||
+    pathname?.startsWith("/people") ||
+    pathname?.startsWith("/registrations") ||
+    pathname?.startsWith("/teams") ||
+    pathname?.startsWith("/attendance") ||
+    pathname?.startsWith("/games") ||
+    pathname?.startsWith("/scores") ||
+    pathname?.startsWith("/leaderboard") ||
+    pathname?.startsWith("/users") ||
+    pathname?.startsWith("/settings");
 
   // Fetch user profile on startup / session restore
   useEffect(() => {
-    if (isAuthenticated && !user && !isAuthPage) {
+    if (isAuthenticated && !user && !isAuthPage && isKnownRoute) {
       getProfile();
     }
-  }, [isAuthenticated, user, isAuthPage, getProfile]);
+  }, [isAuthenticated, user, isAuthPage, isKnownRoute, getProfile]);
 
   // Route protection guard
   useEffect(() => {
-    if (!isLoading && mounted) {
+    if (!isLoading && mounted && isKnownRoute) {
       if (!isAuthenticated && !isAuthPage) {
         router.push("/login");
       } else if (isAuthenticated) {
@@ -70,7 +84,16 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
         }
       }
     }
-  }, [isAuthenticated, isLoading, isAuthPage, router, mounted, user, pathname]);
+  }, [
+    isAuthenticated,
+    isLoading,
+    isAuthPage,
+    isKnownRoute,
+    router,
+    mounted,
+    user,
+    pathname,
+  ]);
 
   const {
     isCreateEventOpen,
@@ -81,8 +104,8 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
   } = useDashboard();
   const { createEvent } = useEvents();
 
-  // 1. Standalone layout for Auth pages (Login)
-  if (isAuthPage) {
+  // 1. Standalone layout for Auth pages (Login) or unknown 404 routes
+  if (isAuthPage || !isKnownRoute) {
     return <div className="min-h-screen bg-slate-950">{children}</div>;
   }
 

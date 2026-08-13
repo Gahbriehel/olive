@@ -56,7 +56,6 @@ export const mainNavItems: NavItem[] = [
       ROLES.ADMIN,
       ROLES.COORDINATOR,
       ROLES.REGISTRATION_DESK,
-      "MEMBER",
     ],
   },
   {
@@ -75,7 +74,6 @@ export const mainNavItems: NavItem[] = [
       ROLES.ADMIN,
       ROLES.COORDINATOR,
       ROLES.REGISTRATION_DESK,
-      "MEMBER",
     ],
   },
   {
