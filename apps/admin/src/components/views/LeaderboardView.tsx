@@ -62,7 +62,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-amber-600 via-indigo-700 to-purple-800 text-white shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-slate-900 border border-slate-800 text-white shadow-xl">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Trophy className="w-5 h-5 text-amber-300 animate-bounce" />
@@ -129,7 +129,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                 <span className="text-xs font-mono font-black text-amber-600 dark:text-amber-400">
                   {firstPlace.totalPoints} pts
                 </span>
-                <div className="w-full h-36 sm:h-48 bg-gradient-to-t from-amber-500/20 to-amber-500/40 border border-amber-500/30 rounded-t-2xl mt-2 flex items-center justify-center font-black text-amber-600 dark:text-amber-300 text-2xl shadow-lg">
+                <div className="w-full h-36 sm:h-48 bg-amber-500/20 border border-amber-500/30 rounded-t-2xl mt-2 flex items-center justify-center font-black text-amber-600 dark:text-amber-300 text-2xl shadow-lg">
                   1st
                 </div>
               </div>

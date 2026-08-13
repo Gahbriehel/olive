@@ -77,11 +77,11 @@ export const BaseButton = forwardRef<
     {
       "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:disabled:bg-slate-800 dark:disabled:border-slate-700 dark:disabled:text-slate-500":
         color === "outline",
-      "border-indigo-600 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white hover:from-indigo-600 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-500 disabled:border-slate-400 dark:disabled:from-slate-700 dark:disabled:to-slate-800 dark:disabled:border-slate-700 dark:disabled:text-slate-500":
+      "border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-slate-400 disabled:border-slate-400 dark:disabled:bg-slate-700 dark:disabled:border-slate-700 dark:disabled:text-slate-500":
         color === "primary",
-      "border-rose-600 bg-gradient-to-r from-rose-500 to-rose-600 text-white hover:from-rose-600 hover:to-rose-700 disabled:from-slate-400 disabled:to-slate-500 disabled:border-slate-400 dark:disabled:from-slate-700 dark:disabled:to-slate-800 dark:disabled:border-slate-700 dark:disabled:text-slate-500":
+      "border-rose-600 bg-rose-600 text-white hover:bg-rose-700 disabled:bg-slate-400 disabled:border-slate-400 dark:disabled:bg-slate-700 dark:disabled:border-slate-700 dark:disabled:text-slate-500":
         color === "danger",
-      "border-slate-800 bg-gradient-to-r from-slate-700 to-slate-800 text-white hover:from-slate-800 hover:to-slate-900 disabled:from-slate-400 disabled:to-slate-500 disabled:border-slate-400 dark:disabled:from-slate-700 dark:disabled:to-slate-800 dark:disabled:border-slate-700 dark:disabled:text-slate-500":
+      "border-slate-800 bg-slate-800 text-white hover:bg-slate-900 disabled:bg-slate-400 disabled:border-slate-400 dark:disabled:bg-slate-700 dark:disabled:border-slate-700 dark:disabled:text-slate-500":
         color === "secondary",
       "border-indigo-600 bg-white text-indigo-600 hover:bg-indigo-50 disabled:text-slate-400 disabled:border-slate-300 disabled:bg-slate-50 dark:bg-transparent dark:hover:bg-indigo-900/40 dark:disabled:text-slate-500 dark:disabled:border-slate-700 dark:disabled:bg-slate-800":
         color === "white",
@@ -129,7 +129,7 @@ export const BaseButton = forwardRef<
         <>
           {!hideText && displayText}
           {badgeNumber && (
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-indigo-600 text-xs text-white">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs text-white">
               {badgeNumber}
             </span>
           )}

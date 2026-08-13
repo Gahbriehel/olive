@@ -51,7 +51,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl relative z-10">
         {/* Header Branding */}
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-yellow-400 to-amber-600 p-0.5 shadow-lg shadow-indigo-500/30 mb-4 flex items-center justify-center">
+          <div className="w-14 h-14 rounded-2xl bg-amber-500 p-0.5 shadow-lg shadow-amber-500/20 mb-4 flex items-center justify-center">
             <div className="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center">
               <Image
                 src="/icon-gold.png"
@@ -127,7 +127,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3.5 px-4 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-medium text-sm rounded-xl transition-all shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 group disabled:opacity-50 cursor-pointer min-h-[48px]"
+            className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-xl transition-all shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 group disabled:opacity-50 cursor-pointer min-h-[48px]"
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin text-white" />

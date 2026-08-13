@@ -193,7 +193,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           </div>
           <div className="w-full h-3 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-emerald-500 to-indigo-500 rounded-full transition-all duration-500"
+              className="h-full bg-emerald-500 rounded-full transition-all duration-500"
               style={{ width: `${checkinPct}%` }}
             />
           </div>

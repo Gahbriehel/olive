@@ -167,7 +167,7 @@ export const Topbar: React.FC = () => {
               size="sm"
               onClick={() => setIsQrScannerOpen(true)}
               leftIcon={<QrCode className="w-4 h-4" />}
-              className="bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600"
+              className="bg-indigo-600 hover:bg-indigo-700"
             >
               Scan QR
             </Button>
@@ -237,7 +237,7 @@ export const Topbar: React.FC = () => {
               }}
               className="flex items-center gap-1.5 p-1 sm:p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors min-h-[38px] sm:min-h-[44px]"
             >
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white font-bold text-[11px] sm:text-xs flex items-center justify-center shadow-sm shrink-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-indigo-600 text-white font-bold text-[11px] sm:text-xs flex items-center justify-center shadow-sm shrink-0">
                 {userInitials}
               </div>
               <div className="hidden sm:block text-left">

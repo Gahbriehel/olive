@@ -69,15 +69,15 @@ export const EventsView: React.FC<EventsViewProps> = ({
   onSearchChange,
   onRefetch,
 }) => {
-  const [search, setSearch] = useState(externalSearch || "");
   const [prevExternalSearch, setPrevExternalSearch] = useState(externalSearch);
+  const [search, setSearch] = useState(externalSearch ?? "");
 
   if (externalSearch !== undefined && externalSearch !== prevExternalSearch) {
     setPrevExternalSearch(externalSearch);
     setSearch(externalSearch);
   }
 
-  const debouncedSearchTerm = useDebouncedSearch(search, 1000);
+  const debouncedSearchTerm = useDebouncedSearch(search, 500);
   const [statusFilter, setStatusFilter] = useState("All");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<ChurchEvent | null>(null);
@@ -124,7 +124,7 @@ export const EventsView: React.FC<EventsViewProps> = ({
     switch (status) {
       case "PUBLISHED":
         return {
-          card: "border-t-4 border-t-emerald-500 dark:border-t-emerald-400 bg-gradient-to-b from-emerald-500/[0.04] to-transparent hover:border-emerald-500/50 dark:hover:border-emerald-400/50 hover:shadow-emerald-500/10",
+          card: "border-t-4 border-t-emerald-500 dark:border-t-emerald-400 bg-white dark:bg-zinc-900 hover:border-emerald-500/50 dark:hover:border-emerald-400/50",
           progress: "bg-emerald-500 dark:bg-emerald-400",
           badge: (
             <Badge variant="emerald">
@@ -138,7 +138,7 @@ export const EventsView: React.FC<EventsViewProps> = ({
         };
       case "DRAFT":
         return {
-          card: "border-t-4 border-t-amber-500 dark:border-t-amber-400 bg-gradient-to-b from-amber-500/[0.04] to-transparent hover:border-amber-500/50 dark:hover:border-amber-400/50 hover:shadow-amber-500/10",
+          card: "border-t-4 border-t-amber-500 dark:border-t-amber-400 bg-white dark:bg-zinc-900 hover:border-amber-500/50 dark:hover:border-amber-400/50",
           progress: "bg-amber-500 dark:bg-amber-400",
           badge: (
             <Badge variant="amber" dot>
@@ -148,19 +148,19 @@ export const EventsView: React.FC<EventsViewProps> = ({
         };
       case "COMPLETED":
         return {
-          card: "border-t-4 border-t-indigo-500 dark:border-t-indigo-400 bg-gradient-to-b from-indigo-500/[0.03] to-transparent opacity-90 hover:opacity-100 hover:border-indigo-500/50",
+          card: "border-t-4 border-t-indigo-500 dark:border-t-indigo-400 bg-white dark:bg-zinc-900 opacity-90 hover:opacity-100 hover:border-indigo-500/50",
           progress: "bg-indigo-600 dark:bg-indigo-500",
           badge: <Badge variant="indigo">Completed</Badge>,
         };
       case "CANCELLED":
         return {
-          card: "border-t-4 border-t-rose-500 dark:border-t-rose-400 bg-gradient-to-b from-rose-500/[0.04] to-transparent opacity-75 hover:opacity-100 hover:border-rose-500/50",
+          card: "border-t-4 border-t-rose-500 dark:border-t-rose-400 bg-white dark:bg-zinc-900 opacity-75 hover:opacity-100 hover:border-rose-500/50",
           progress: "bg-rose-500 dark:bg-rose-400",
           badge: <Badge variant="rose">Cancelled</Badge>,
         };
       default:
         return {
-          card: "border-t-4 border-t-slate-400 dark:border-t-slate-600 bg-gradient-to-b from-slate-500/[0.03] to-transparent",
+          card: "border-t-4 border-t-slate-400 dark:border-t-slate-600 bg-white dark:bg-zinc-900",
           progress: "bg-slate-400 dark:bg-slate-500",
           badge: <Badge variant="slate">{status}</Badge>,
         };

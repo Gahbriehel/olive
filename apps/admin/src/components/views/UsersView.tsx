@@ -7,7 +7,6 @@ import {
   Users as UsersIcon,
   ShieldCheck,
   Lock,
-  Edit2,
 } from "lucide-react";
 import {
   Card,
@@ -17,15 +16,15 @@ import {
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
-import { Badge } from "@/components/ui/Badge";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
 import { Input } from "@/components/ui/Input";
-import { AdminUser, IUpdateUserPayload } from "@/models/dashboard";
 import { ColumnDef } from "@tanstack/react-table";
-import { useUsers } from "@/hooks/useUsers";
+import { getUserColumns } from "./users/users-columns";
 import { AuthorityGuard } from "@/components/auth/AuthorityGuard";
 import { ROLES } from "@/utils/rbac";
+import { AdminUser, IUpdateUserPayload } from "@/models/dashboard";
+import { useUsers } from "@/hooks/useUsers";
 
 interface UsersViewProps {
   users?: AdminUser[];
@@ -128,81 +127,10 @@ export const UsersView: React.FC<UsersViewProps> = ({
       u.role === "Registration Desk",
   ).length;
 
-  const userColumns: ColumnDef<AdminUser>[] = [
-    {
-      accessorKey: "name",
-      header: "Administrator / User",
-      cell: ({ row }) => {
-        const user = row.original;
-        const initials = user.name
-          ? user.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase()
-          : "U";
-        return (
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
-              {initials}
-            </div>
-            <div>
-              <p className="font-bold text-slate-900 dark:text-slate-100">
-                {user.name}
-              </p>
-              <p className="text-[11px] text-slate-400">{user.email}</p>
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "role",
-      header: "Assigned Role",
-      cell: ({ row }) => (
-        <Badge variant="indigo" className="uppercase text-[10px] font-bold">
-          {row.original.role}
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: "Account Status",
-      cell: ({ row }) => (
-        <Badge
-          variant={row.original.status === "Active" ? "emerald" : "slate"}
-          dot
-        >
-          {row.original.status}
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: "lastActive",
-      header: "Last Activity",
-      cell: ({ row }) => (
-        <span className="text-slate-500 text-xs">
-          {row.original.lastActive}
-        </span>
-      ),
-    },
-    {
-      id: "actions",
-      header: () => <div className="text-right">Actions</div>,
-      cell: ({ row }) => (
-        <div className="text-right">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => openEditModal(row.original)}
-            leftIcon={<Edit2 className="w-3.5 h-3.5" />}
-          >
-            Edit Role & Info
-          </Button>
-        </div>
-      ),
-    },
-  ];
+  const userColumns = React.useMemo(
+    () => getUserColumns({ onEditUser: openEditModal }),
+    [],
+  );
 
   interface PermissionMatrixItem {
     feature: string;

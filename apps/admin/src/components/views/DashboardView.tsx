@@ -120,7 +120,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       {/* Top Banner / Welcome */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 text-white shadow-xl relative overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-indigo-900 text-white shadow-xl relative overflow-hidden border border-indigo-800">
         <div className="absolute right-0 top-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
         <div className="space-y-1 z-10">
           <div className="flex items-center gap-2">
@@ -401,7 +401,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </Card>
 
           {/* Quick System Readiness */}
-          <Card className="bg-gradient-to-br from-slate-900 to-zinc-900 text-white p-5 rounded-2xl">
+          <Card className="bg-slate-900 border border-slate-800 text-white p-5 rounded-2xl">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-4 h-4 text-amber-400" />
               <span className="text-xs font-bold tracking-wide uppercase text-slate-300">

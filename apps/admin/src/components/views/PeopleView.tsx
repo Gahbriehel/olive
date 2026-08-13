@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   UserPlus,
-  Eye,
   History,
   Users,
   Shield,
@@ -21,7 +20,8 @@ import { RegisterPersonForm } from "@/components/Forms/RegisterPersonForm";
 import { AddPersonForm } from "@/components/Forms/AddPersonForm";
 import { IRegisterPayload } from "@/models/registration";
 import { Person, ICreatePersonPayload } from "@/models/person";
-import { ColumnDef } from "@tanstack/react-table";
+import { getPeopleColumns } from "./people/people-columns";
+import { getInitials } from "@/utils/formatters";
 
 interface PeopleViewProps {
   people: Person[];
@@ -90,92 +90,10 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
     return matchesMember && matchesGender;
   });
 
-  const columns: ColumnDef<Person>[] = [
-    {
-      accessorKey: "name",
-      header: "Person",
-      cell: ({ row }) => {
-        const person = row.original;
-        return (
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
-              {person.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
-            </div>
-            <div>
-              <p className="font-bold text-slate-900 dark:text-slate-100">
-                {person.name}
-              </p>
-              <p className="text-[11px] text-slate-400">ID: {person.id}</p>
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "email",
-      header: "Contact Info",
-      cell: ({ row }) => (
-        <div>
-          <p className="font-medium text-slate-900 dark:text-slate-200">
-            {row.original.email}
-          </p>
-          <p className="text-[11px] text-slate-400">{row.original.phone}</p>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "gender",
-      header: "Gender / DOB",
-      cell: ({ row }) => (
-        <div>
-          <p className="font-medium">{row.original.gender}</p>
-          <p className="text-[11px] text-slate-400">DOB: {row.original.dob}</p>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "membershipStatus",
-      header: "Membership",
-      cell: ({ row }) => (
-        <Badge
-          variant={
-            row.original.membershipStatus === "Member" ? "indigo" : "amber"
-          }
-          size="sm"
-        >
-          {row.original.membershipStatus}
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: "registrationHistoryCount",
-      header: "Events Registered",
-      cell: ({ row }) => (
-        <span className="font-semibold text-slate-700 dark:text-slate-300">
-          {row.original.registrationHistoryCount} Events
-        </span>
-      ),
-    },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSelectedPerson(row.original)}
-            leftIcon={<Eye className="w-3.5 h-3.5 text-indigo-500" />}
-          >
-            Details
-          </Button>
-        </div>
-      ),
-    },
-  ];
+  const columns = React.useMemo(
+    () => getPeopleColumns({ onSelectPerson: setSelectedPerson }),
+    [],
+  );
 
   const drawerTabs = [
     { id: "info", label: "Details" },
@@ -319,10 +237,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
             <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-base flex items-center justify-center">
-                  {selectedPerson.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
+                  {getInitials(selectedPerson.name)}
                 </div>
                 <div>
                   <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
