@@ -117,10 +117,14 @@ export default function TeamsPage() {
     }));
   };
 
-  const handleSearchChange = (newSearch: string) => {
-    setSearch(newSearch);
-    setPage(1);
-  };
+  const handleSearchChange = React.useCallback((newSearch: string) => {
+    setSearch((prevSearch) => {
+      if (prevSearch !== newSearch) {
+        setPage(1);
+      }
+      return newSearch;
+    });
+  }, []);
 
   return (
     <TeamsView

@@ -76,6 +76,12 @@ export function Table<TData, TValue>({
   const isServerSearch = Boolean(onSearchChange);
 
   const prevSearchRef = React.useRef(search);
+  const onSearchChangeRef = React.useRef(onSearchChange);
+  useEffect(() => {
+    onSearchChangeRef.current = onSearchChange;
+  });
+
+  const prevDebouncedSearchRef = React.useRef(debouncedSearch);
 
   useEffect(() => {
     if (search !== undefined && search !== prevSearchRef.current) {
@@ -86,12 +92,15 @@ export function Table<TData, TValue>({
 
   // Sync debounced search to server callback or TanStack global filter
   useEffect(() => {
-    if (isServerSearch && onSearchChange) {
-      onSearchChange(debouncedSearch);
-    } else {
+    if (isServerSearch && onSearchChangeRef.current) {
+      if (prevDebouncedSearchRef.current !== debouncedSearch) {
+        prevDebouncedSearchRef.current = debouncedSearch;
+        onSearchChangeRef.current(debouncedSearch);
+      }
+    } else if (!isServerSearch) {
       setGlobalFilter(debouncedSearch);
     }
-  }, [debouncedSearch, isServerSearch, onSearchChange]);
+  }, [debouncedSearch, isServerSearch]);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({

@@ -37,6 +37,10 @@ interface RegistrationsViewProps {
   onLimitChange?: (limit: number) => void;
   search?: string;
   onSearchChange?: (search: string) => void;
+  statusFilter?: string;
+  onStatusFilterChange?: (status: string) => void;
+  teamFilter?: string;
+  onTeamFilterChange?: (teamId: string) => void;
   onRefetch?: () => void;
 }
 
@@ -52,10 +56,12 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
   onLimitChange,
   search,
   onSearchChange,
+  statusFilter = "All",
+  onStatusFilterChange,
+  teamFilter = "All",
+  onTeamFilterChange,
   onRefetch,
 }) => {
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [teamFilter, setTeamFilter] = useState("All");
   const [reassignModalTarget, setReassignModalTarget] =
     useState<Registration | null>(null);
   const [selectedNewTeamId, setSelectedNewTeamId] = useState("");
@@ -66,12 +72,6 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
   ).length;
   const assignedTeams = registrations.filter((r) => r.assignedTeamId).length;
   const confirmedSent = registrations.filter((r) => r.confirmationSent).length;
-
-  const filteredRegistrations = registrations.filter((r) => {
-    const matchesStatus = statusFilter === "All" || r.status === statusFilter;
-    const matchesTeam = teamFilter === "All" || r.assignedTeamId === teamFilter;
-    return matchesStatus && matchesTeam;
-  });
 
   const columns: ColumnDef<Registration>[] = [
     {
@@ -252,7 +252,9 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
         <div className="w-full sm:w-44">
           <Select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) =>
+              onStatusFilterChange && onStatusFilterChange(e.target.value)
+            }
           >
             <option value="All">All Statuses</option>
             <option value="Checked-In">Checked-In</option>
@@ -263,7 +265,9 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
         <div className="w-full sm:w-48">
           <Select
             value={teamFilter}
-            onChange={(e) => setTeamFilter(e.target.value)}
+            onChange={(e) =>
+              onTeamFilterChange && onTeamFilterChange(e.target.value)
+            }
           >
             <option value="All">All Teams</option>
             {teams.map((t) => (
@@ -278,7 +282,7 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
       {/* Data Table */}
       <Table
         columns={columns}
-        data={filteredRegistrations}
+        data={registrations}
         searchPlaceholder="Search by name, reg # (e.g. YC26-1001), or email..."
         enableSearch={true}
         enablePagination={true}

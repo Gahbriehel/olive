@@ -116,9 +116,21 @@ export const GamesView: React.FC<GamesViewProps> = ({
   const [searchInput, setSearchInput] = useState(search);
   const debouncedSearch = useDebouncedSearch(searchInput, 500);
 
+  const onSearchChangeRef = React.useRef(onSearchChange);
+  const prevDebouncedSearchRef = React.useRef(debouncedSearch);
   useEffect(() => {
-    onSearchChange(debouncedSearch);
-  }, [debouncedSearch, onSearchChange]);
+    onSearchChangeRef.current = onSearchChange;
+  });
+
+  useEffect(() => {
+    if (
+      onSearchChangeRef.current &&
+      prevDebouncedSearchRef.current !== debouncedSearch
+    ) {
+      prevDebouncedSearchRef.current = debouncedSearch;
+      onSearchChangeRef.current(debouncedSearch);
+    }
+  }, [debouncedSearch]);
 
   useEffect(() => {
     if (!activeMenuId) return;
@@ -134,19 +146,10 @@ export const GamesView: React.FC<GamesViewProps> = ({
     };
   }, [activeMenuId]);
 
-  // Hybrid pagination: Use server meta if provided, otherwise compute client fallback
+  // Pagination calculation
   const totalItems = meta?.total ?? games.length;
-  const isServerPaginated = Boolean(
-    meta && meta.total !== undefined && meta.totalPages !== undefined,
-  );
-
-  const totalPages = isServerPaginated
-    ? meta?.totalPages || 1
-    : Math.max(1, Math.ceil(games.length / limit));
-
-  const displayedGames = isServerPaginated
-    ? games
-    : games.slice((page - 1) * limit, page * limit);
+  const totalPages = meta?.totalPages ?? 1;
+  const displayedGames = games;
 
   const gamesWithScoresCount = games.filter(
     (g) => g.scores && g.scores.length > 0,

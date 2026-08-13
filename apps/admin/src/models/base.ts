@@ -22,6 +22,7 @@ export interface IQueryParams {
   eventId?: string;
   teamId?: string;
   membershipStatus?: string;
+  gender?: string;
 }
 
 export function extractData<T>(resData: unknown): T {

@@ -52,6 +52,8 @@ interface EventsViewProps {
   onLimitChange?: (limit: number) => void;
   search?: string;
   onSearchChange?: (search: string) => void;
+  statusFilter?: string;
+  onStatusFilterChange?: (status: string) => void;
   onRefetch?: () => void;
 }
 
@@ -67,6 +69,8 @@ export const EventsView: React.FC<EventsViewProps> = ({
   onLimitChange,
   search: externalSearch,
   onSearchChange,
+  statusFilter = "All",
+  onStatusFilterChange,
   onRefetch,
 }) => {
   const [prevExternalSearch, setPrevExternalSearch] = useState(externalSearch);
@@ -78,17 +82,26 @@ export const EventsView: React.FC<EventsViewProps> = ({
   }
 
   const debouncedSearchTerm = useDebouncedSearch(search, 500);
-  const [statusFilter, setStatusFilter] = useState("All");
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<ChurchEvent | null>(null);
   const [deletingEvent, setDeletingEvent] = useState<ChurchEvent | null>(null);
   const { updateEvent, deleteEvent } = useEvents();
 
+  const onSearchChangeRef = React.useRef(onSearchChange);
+  const prevDebouncedSearchRef = React.useRef(debouncedSearchTerm);
   useEffect(() => {
-    if (onSearchChange) {
-      onSearchChange(debouncedSearchTerm);
+    onSearchChangeRef.current = onSearchChange;
+  });
+
+  useEffect(() => {
+    if (
+      onSearchChangeRef.current &&
+      prevDebouncedSearchRef.current !== debouncedSearchTerm
+    ) {
+      prevDebouncedSearchRef.current = debouncedSearchTerm;
+      onSearchChangeRef.current(debouncedSearchTerm);
     }
-  }, [debouncedSearchTerm, onSearchChange]);
+  }, [debouncedSearchTerm]);
 
   useEffect(() => {
     if (!activeMenuId) return;
@@ -111,14 +124,6 @@ export const EventsView: React.FC<EventsViewProps> = ({
     (sum, e) => sum + e.registeredCount,
     0,
   );
-
-  const filteredEvents = events.filter((evt) => {
-    const matchesSearch =
-      evt.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-      evt.location.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "All" || evt.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
 
   const getCardStatusStyles = (status: ChurchEvent["status"]) => {
     switch (status) {
@@ -245,7 +250,9 @@ export const EventsView: React.FC<EventsViewProps> = ({
         <div className="w-full sm:w-48">
           <Select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) =>
+              onStatusFilterChange && onStatusFilterChange(e.target.value)
+            }
             leftIcon={<Filter className="w-4 h-4" />}
           >
             <option value="All">All Statuses</option>
@@ -258,13 +265,13 @@ export const EventsView: React.FC<EventsViewProps> = ({
       </div>
 
       {/* Events Grid */}
-      {filteredEvents.length === 0 ? (
+      {events.length === 0 ? (
         <div className="p-12 text-center text-slate-500 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
           No data available
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredEvents.map((evt) => {
+          {events.map((evt) => {
             const statusStyle = getCardStatusStyles(evt.status);
             const capPct = Math.round(
               (evt.registeredCount / Math.max(evt.capacity, 1)) * 100,

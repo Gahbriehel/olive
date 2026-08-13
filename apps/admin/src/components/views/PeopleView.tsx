@@ -45,6 +45,10 @@ interface PeopleViewProps {
   onLimitChange?: (limit: number) => void;
   search?: string;
   onSearchChange?: (search: string) => void;
+  membershipFilter?: string;
+  onMembershipFilterChange?: (membership: string) => void;
+  genderFilter?: string;
+  onGenderFilterChange?: (gender: string) => void;
   onRefetch?: () => void;
 }
 
@@ -62,10 +66,12 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
   onLimitChange,
   search,
   onSearchChange,
+  membershipFilter = "All",
+  onMembershipFilterChange,
+  genderFilter = "All",
+  onGenderFilterChange,
   onRefetch,
 }) => {
-  const [membershipFilter, setMembershipFilter] = useState("All");
-  const [genderFilter, setGenderFilter] = useState("All");
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [drawerTab, setDrawerTab] = useState("info");
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
@@ -82,13 +88,6 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
   const activeAttendees = people.filter(
     (p) => p.registrationHistoryCount > 0,
   ).length;
-
-  const filteredPeople = people.filter((p) => {
-    const matchesMember =
-      membershipFilter === "All" || p.membershipStatus === membershipFilter;
-    const matchesGender = genderFilter === "All" || p.gender === genderFilter;
-    return matchesMember && matchesGender;
-  });
 
   const columns = React.useMemo(
     () => getPeopleColumns({ onSelectPerson: setSelectedPerson }),
@@ -185,7 +184,10 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
         <div className="w-full sm:w-44">
           <Select
             value={membershipFilter}
-            onChange={(e) => setMembershipFilter(e.target.value)}
+            onChange={(e) =>
+              onMembershipFilterChange &&
+              onMembershipFilterChange(e.target.value)
+            }
           >
             <option value="All">All Statuses</option>
             <option value="Member">Member</option>
@@ -195,7 +197,9 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
         <div className="w-full sm:w-44">
           <Select
             value={genderFilter}
-            onChange={(e) => setGenderFilter(e.target.value)}
+            onChange={(e) =>
+              onGenderFilterChange && onGenderFilterChange(e.target.value)
+            }
           >
             <option value="All">All Genders</option>
             <option value="Male">Male</option>
@@ -207,7 +211,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
       {/* People TanStack Data Table */}
       <Table
         columns={columns}
-        data={filteredPeople}
+        data={people}
         searchPlaceholder="Search by name, email, or phone"
         enableSearch={true}
         enablePagination={true}

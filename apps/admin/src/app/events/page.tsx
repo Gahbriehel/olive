@@ -11,6 +11,7 @@ export default function EventsPage() {
   const router = useRouter();
   const { setIsCreateEventOpen } = useDashboard();
   const [search, setSearch] = React.useState("");
+  const [status, setStatus] = React.useState("All");
   const [page, setPage] = React.useState(1);
   const [limit, setLimit] = React.useState(10);
 
@@ -19,8 +20,9 @@ export default function EventsPage() {
       page,
       limit,
       search: search || undefined,
+      status: status !== "All" ? status : undefined,
     }),
-    [page, limit, search],
+    [page, limit, search, status],
   );
 
   const { events: apiEvents, meta, refetch } = useEvents(queryParams);
@@ -31,13 +33,22 @@ export default function EventsPage() {
     [apiEvents],
   );
 
-  const handleSearchChange = (newSearch: string) => {
-    setSearch(newSearch);
-    setPage(1);
-  };
+  const handleSearchChange = React.useCallback((newSearch: string) => {
+    setSearch((prevSearch) => {
+      if (prevSearch !== newSearch) {
+        setPage(1);
+      }
+      return newSearch;
+    });
+  }, []);
 
   const handleLimitChange = (newLimit: number) => {
     setLimit(newLimit);
+    setPage(1);
+  };
+
+  const handleStatusChange = (newStatus: string) => {
+    setStatus(newStatus);
     setPage(1);
   };
 
@@ -53,6 +64,8 @@ export default function EventsPage() {
       onLimitChange={handleLimitChange}
       search={search}
       onSearchChange={handleSearchChange}
+      statusFilter={status}
+      onStatusFilterChange={handleStatusChange}
       onRefetch={refetch}
     />
   );

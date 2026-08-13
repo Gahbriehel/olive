@@ -13,6 +13,8 @@ import { exportToCsv } from "@/helpers/exportCsv";
 export default function RegistrationsPage() {
   const { selectedEventId } = useDashboard();
   const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("All");
+  const [teamId, setTeamId] = useState("All");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
@@ -22,8 +24,10 @@ export default function RegistrationsPage() {
       page,
       limit,
       search: search || undefined,
+      status: status !== "All" ? status : undefined,
+      teamId: teamId !== "All" ? teamId : undefined,
     }),
-    [selectedEventId, page, limit, search],
+    [selectedEventId, page, limit, search, status, teamId],
   );
 
   const {
@@ -71,13 +75,27 @@ export default function RegistrationsPage() {
     }));
   };
 
-  const handleSearchChange = (newSearch: string) => {
-    setSearch(newSearch);
-    setPage(1);
-  };
+  const handleSearchChange = React.useCallback((newSearch: string) => {
+    setSearch((prevSearch) => {
+      if (prevSearch !== newSearch) {
+        setPage(1);
+      }
+      return newSearch;
+    });
+  }, []);
 
   const handleLimitChange = (newLimit: number) => {
     setLimit(newLimit);
+    setPage(1);
+  };
+
+  const handleStatusChange = (newStatus: string) => {
+    setStatus(newStatus);
+    setPage(1);
+  };
+
+  const handleTeamChange = (newTeamId: string) => {
+    setTeamId(newTeamId);
     setPage(1);
   };
 
@@ -94,6 +112,10 @@ export default function RegistrationsPage() {
       onLimitChange={handleLimitChange}
       search={search}
       onSearchChange={handleSearchChange}
+      statusFilter={status}
+      onStatusFilterChange={handleStatusChange}
+      teamFilter={teamId}
+      onTeamFilterChange={handleTeamChange}
       onRefetch={refetch}
     />
   );

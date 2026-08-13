@@ -10,6 +10,8 @@ import { IRegisterPayload } from "@/models/registration";
 
 export default function PeoplePage() {
   const [search, setSearch] = React.useState("");
+  const [membershipStatus, setMembershipStatus] = React.useState("All");
+  const [gender, setGender] = React.useState("All");
   const [page, setPage] = React.useState(1);
   const [limit, setLimit] = React.useState(10);
 
@@ -18,8 +20,11 @@ export default function PeoplePage() {
       page,
       limit,
       search: search || undefined,
+      membershipStatus:
+        membershipStatus !== "All" ? membershipStatus : undefined,
+      gender: gender !== "All" ? gender : undefined,
     }),
-    [page, limit, search],
+    [page, limit, search, membershipStatus, gender],
   );
 
   const {
@@ -57,13 +62,27 @@ export default function PeoplePage() {
     await createPerson(payload);
   };
 
-  const handleSearchChange = (newSearch: string) => {
-    setSearch(newSearch);
-    setPage(1);
-  };
+  const handleSearchChange = React.useCallback((newSearch: string) => {
+    setSearch((prevSearch) => {
+      if (prevSearch !== newSearch) {
+        setPage(1);
+      }
+      return newSearch;
+    });
+  }, []);
 
   const handleLimitChange = (newLimit: number) => {
     setLimit(newLimit);
+    setPage(1);
+  };
+
+  const handleMembershipChange = (newStatus: string) => {
+    setMembershipStatus(newStatus);
+    setPage(1);
+  };
+
+  const handleGenderChange = (newGender: string) => {
+    setGender(newGender);
     setPage(1);
   };
 
@@ -82,6 +101,10 @@ export default function PeoplePage() {
       onLimitChange={handleLimitChange}
       search={search}
       onSearchChange={handleSearchChange}
+      membershipFilter={membershipStatus}
+      onMembershipFilterChange={handleMembershipChange}
+      genderFilter={gender}
+      onGenderFilterChange={handleGenderChange}
       onRefetch={refetch}
     />
   );

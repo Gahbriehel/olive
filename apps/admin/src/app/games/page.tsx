@@ -147,10 +147,14 @@ export default function GamesPage() {
     }
   };
 
-  const handleSearchChange = (newSearch: string) => {
-    setSearch(newSearch);
-    setPage(1); // Reset to first page on search
-  };
+  const handleSearchChange = React.useCallback((newSearch: string) => {
+    setSearch((prevSearch) => {
+      if (prevSearch !== newSearch) {
+        setPage(1);
+      }
+      return newSearch;
+    });
+  }, []);
 
   return (
     <GamesView

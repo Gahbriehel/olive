@@ -90,9 +90,21 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
   const [searchInput, setSearchInput] = useState(search);
   const debouncedSearch = useDebouncedSearch(searchInput, 500);
 
+  const onSearchChangeRef = React.useRef(onSearchChange);
+  const prevDebouncedSearchRef = React.useRef(debouncedSearch);
   useEffect(() => {
-    onSearchChange(debouncedSearch);
-  }, [debouncedSearch, onSearchChange]);
+    onSearchChangeRef.current = onSearchChange;
+  });
+
+  useEffect(() => {
+    if (
+      onSearchChangeRef.current &&
+      prevDebouncedSearchRef.current !== debouncedSearch
+    ) {
+      prevDebouncedSearchRef.current = debouncedSearch;
+      onSearchChangeRef.current(debouncedSearch);
+    }
+  }, [debouncedSearch]);
 
   useEffect(() => {
     if (!activeMenuId) return;
@@ -108,19 +120,10 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
     };
   }, [activeMenuId]);
 
-  // Hybrid pagination calculation
+  // Pagination calculation
   const totalItems = meta?.total ?? teams.length;
-  const isServerPaginated = Boolean(
-    meta && meta.total !== undefined && meta.totalPages !== undefined,
-  );
-
-  const totalPages = isServerPaginated
-    ? meta?.totalPages || 1
-    : Math.max(1, Math.ceil(teams.length / limit));
-
-  const displayedTeams = isServerPaginated
-    ? teams
-    : teams.slice((page - 1) * limit, page * limit);
+  const totalPages = meta?.totalPages ?? 1;
+  const displayedTeams = teams;
 
   const totalAllocated = registrations.length;
   const highestPointsTeam = teams.reduce(

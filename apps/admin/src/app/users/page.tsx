@@ -20,10 +20,14 @@ export default function UsersPage() {
 
   const { users, meta, isLoading, refetch } = useUsers(queryParams);
 
-  const handleSearchChange = (newSearch: string) => {
-    setSearch(newSearch);
-    setPage(1);
-  };
+  const handleSearchChange = React.useCallback((newSearch: string) => {
+    setSearch((prevSearch) => {
+      if (prevSearch !== newSearch) {
+        setPage(1);
+      }
+      return newSearch;
+    });
+  }, []);
 
   const handleLimitChange = (newLimit: number) => {
     setLimit(newLimit);
