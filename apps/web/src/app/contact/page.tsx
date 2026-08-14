@@ -105,7 +105,7 @@ export default function ContactPage() {
                 <MapPin className="w-5 h-5 text-[#B18A4A] shrink-0 mt-1" />
                 <div className="space-y-1">
                   <h3 className="font-medium text-[#F7F5F0] text-base font-serif">
-                    Church Campus Address
+                    Church Address
                   </h3>
                   <p className="text-[#D4D0C7] font-light leading-relaxed">
                     No 1, Makanjuola Layout, Sawmill, Dogo, Apata, Ibadan, Oyo

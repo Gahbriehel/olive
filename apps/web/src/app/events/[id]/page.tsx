@@ -68,7 +68,7 @@ export default function EventRegistrationPage({
       phone: "",
       gender: "MALE",
       dateOfBirth: "",
-      googleCalendarSync: false,
+      googleCalendarSync: true,
     },
   });
 
