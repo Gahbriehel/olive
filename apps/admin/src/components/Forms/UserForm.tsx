@@ -30,7 +30,7 @@ interface UserFormProps {
 
 const ROLE_OPTIONS: ISelect[] = [
   // { value: { _id: "SUPER_ADMIN" }, label: "Super Admin (System-Wide)" },
-  { value: { _id: "ADMIN" }, label: "Church Admin (Full Access)" },
+  { value: { _id: "ADMIN" }, label: "Church Admin" },
   { value: { _id: "COORDINATOR" }, label: "Event Coordinator" },
   { value: { _id: "REGISTRATION_DESK" }, label: "Registration Desk" },
   { value: { _id: "MEMBER" }, label: "Member" },

@@ -3,15 +3,20 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { settingsService } from "@/services/settings.service";
 import { ChurchSettings, IUpdateProfilePayload } from "@/models/dashboard";
 import { useAuth } from "@/hooks/useAuth";
+import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
 
 export function useSettings() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
+  const userRoles = getUserRoles(user);
+  const isAdmin = hasAuthority(userRoles, [ROLES.SUPER_ADMIN, ROLES.ADMIN]);
+
   const settingsQuery = useQuery({
     queryKey: ["settings"],
     queryFn: () => settingsService.getSettings(),
     staleTime: 1000 * 60 * 15,
+    enabled: isAdmin,
   });
 
   const updateSettingsMutation = useMutation({

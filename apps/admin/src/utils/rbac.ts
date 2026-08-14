@@ -29,7 +29,20 @@ export const ROUTE_PERMISSIONS: Record<string, string[]> = {
     ROLES.REGISTRATION_DESK,
   ],
   "/users": [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-  "/settings": [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  "/settings": [
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.COORDINATOR,
+    ROLES.REGISTRATION_DESK,
+    "MEMBER",
+  ],
+  "/profile": [
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.COORDINATOR,
+    ROLES.REGISTRATION_DESK,
+    "MEMBER",
+  ],
   "/people": [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
 };
 
