@@ -20,13 +20,13 @@ export function WeeklyServices({ dark = false }: WeeklyServicesProps) {
   const services: ServiceItem[] = [
     {
       number: "01",
-      title: "SUNDAY SCHOOL & CELEBRATION SERVICE",
+      title: "FOUNDATION CLASS & CELEBRATION SERVICE",
       day: "EVERY SUNDAY",
       time: "8:00 AM – 11:30 AM",
       description:
         "Our main weekly gathering for uplifting praise, biblical teaching, prayer, and warm Christian fellowship.",
       highlights: [
-        "8:00 AM – 8:55 AM: Sunday School",
+        "8:00 AM – 8:55 AM: Foundation Class",
         "9:00 AM – 11:30 AM: Praise, Worship & Word",
       ],
     },

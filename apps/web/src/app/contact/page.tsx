@@ -148,7 +148,7 @@ export default function ContactPage() {
                   <ul className="space-y-2 text-xs font-light text-[#D4D0C7]">
                     <li className="flex justify-between border-b border-white/5 pb-2">
                       <span className="font-medium text-[#F7F5F0]">
-                        Sunday School:
+                        Foundation Class:
                       </span>
                       <span>8:00 AM – 8:55 AM</span>
                     </li>

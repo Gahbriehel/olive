@@ -44,7 +44,7 @@ export default function HomePage() {
               </h2>
               <p className="text-[#D4D0C7] text-base leading-relaxed font-sans font-light max-w-md">
                 We are committed to making heaven, raising an army of believers,
-                and taking the message of salvation, healing, and miracles to
+                and taking the message of salvation, healing, and deliverance to
                 the ends of the earth.
               </p>
               <div className="pt-2">

@@ -47,9 +47,9 @@ export const usersService = {
         role: roleName,
         status: (u.isActive !== false ? "Active" : "Inactive") as
           "Active" | "Inactive",
-        lastActive: u.updatedAt
-          ? new Date(u.updatedAt as string).toLocaleDateString()
-          : "Recently",
+        lastActive: u.lastActive
+          ? new Date(u.lastActive as string).toLocaleDateString()
+          : "",
       };
     });
 
@@ -80,7 +80,9 @@ export const usersService = {
       phone: (u.phone as string) || payload.phone || "",
       role: roleName,
       status: u.isActive !== false ? "Active" : "Inactive",
-      lastActive: "Just now",
+      lastActive: u.lastActive
+        ? new Date(u.lastActive as string).toLocaleDateString()
+        : "",
     };
   },
 
@@ -127,7 +129,9 @@ export const usersService = {
       phone: (u.phone as string) || payload.phone || "",
       role: roleName,
       status: u.isActive !== false ? "Active" : "Inactive",
-      lastActive: "Just now",
+      lastActive: u.lastActive
+        ? new Date(u.lastActive as string).toLocaleDateString()
+        : "",
     };
   },
 

@@ -24,6 +24,7 @@ export function getUserColumns({
       header: "Administrator / User",
       cell: ({ row }) => {
         const user = row.original;
+        console.log({ user });
         return (
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
