@@ -17,15 +17,17 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: "Amazing Grace Bible Church | Salvation, Healing & Miracles",
-    template: "%s | Amazing Grace Bible Church",
+    default:
+      "Abiding Word Of Grace Missions | Salvation, Healing & Deliverance",
+    template: "%s | Abiding Word Of Grace Missions",
   },
   description:
-    "Welcome to Amazing Grace Bible Church (registered as Abiding Word Of Grace Missions). Join us for Sunday worship, experience salvation, healing and miracles, and connect with our vibrant community.",
+    "Welcome to Abiding Word Of Grace Missions (a.k.a. Amazing Grace Bible Church). Join us for Sunday worship, experience salvation, healing and deliverance, and connect with our vibrant community.",
   openGraph: {
-    title: "Amazing Grace Bible Church",
-    description: "Join us this Sunday for worship and connection. ",
-    siteName: "Amazing Grace Bible Church",
+    title: "Abiding Word Of Grace Missions",
+    description: "Join us this Sunday for worship and connection.",
+    siteName:
+      "Abiding Word Of Grace Missions (a.k.a. Amazing Grace Bible Church)",
     type: "website",
   },
   icons: {

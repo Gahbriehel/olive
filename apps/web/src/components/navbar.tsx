@@ -60,11 +60,11 @@ export function Navbar() {
                 />
               </div>
               <div>
-                <span className="font-serif font-bold text-xl tracking-tight text-[#F7F5F0] group-hover:text-[#B18A4A] transition-colors">
-                  Amazing Grace
+                <span className="font-serif font-bold text-lg sm:text-xl tracking-tight text-[#F7F5F0] group-hover:text-[#B18A4A] transition-colors block leading-tight">
+                  Abiding Word
                 </span>
-                <span className="block text-[10px] font-sans font-medium text-[#77736B] tracking-[0.2em] uppercase">
-                  Bible Church
+                <span className="block text-[10px] font-sans font-medium text-[#77736B] tracking-[0.18em] uppercase mt-0.5">
+                  Of Grace Missions
                 </span>
               </div>
             </Link>
@@ -145,9 +145,14 @@ export function Navbar() {
                       height={32}
                       className="rounded-sm"
                     />
-                    <span className="font-serif font-bold text-lg text-[#F7F5F0] tracking-tight">
-                      Amazing Grace
-                    </span>
+                    <div>
+                      <span className="font-serif font-bold text-base text-[#F7F5F0] tracking-tight block leading-tight">
+                        Abiding Word
+                      </span>
+                      <span className="block text-[9px] font-sans font-medium text-[#77736B] tracking-[0.15em] uppercase mt-0.5">
+                        Of Grace Missions
+                      </span>
+                    </div>
                   </div>
                   <button
                     onClick={() => setMobileOpen(false)}

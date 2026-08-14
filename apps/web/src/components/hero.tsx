@@ -1,8 +1,6 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
-import { Play } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
@@ -13,7 +11,7 @@ export function Hero() {
       <div className="absolute inset-0 z-0">
         <Image
           src="/images/hero-img.jpg"
-          alt="Amazing Grace Bible Church auditorium congregation"
+          alt="Abiding Word Of Grace Missions (a.k.a. Amazing Grace Bible Church) auditorium congregation"
           fill
           priority
           className="object-cover object-center grayscale contrast-[1.05] brightness-[0.85]"
@@ -38,11 +36,14 @@ export function Hero() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-5xl sm:text-7xl lg:text-8xl font-serif font-medium text-[#F7F5F0] tracking-tight leading-[1.05] uppercase"
+          className="text-4xl sm:text-6xl lg:text-7xl font-serif font-medium text-[#F7F5F0] tracking-tight leading-[1.08] uppercase"
         >
-          Amazing Grace
+          Abiding Word
           <span className="block text-2xl sm:text-4xl lg:text-5xl mt-3 text-[#B18A4A] font-serif font-normal tracking-[0.15em] uppercase">
-            Bible Church
+            Of Grace Missions
+          </span>
+          <span className="block text-sm sm:text-lg lg:text-xl mt-3 text-[#D4D0C7] font-sans font-light tracking-[0.2em] normal-case">
+            (a.k.a. Amazing Grace Bible Church)
           </span>
         </motion.h1>
 
@@ -53,7 +54,7 @@ export function Hero() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mt-6 text-lg sm:text-2xl font-sans text-[#D4D0C7] font-light max-w-2xl leading-relaxed"
         >
-          Salvation, Healing and Miracles
+          Salvation, Healing and Deliverance
         </motion.p>
 
         {/* Scripture quote */}
@@ -79,12 +80,18 @@ export function Hero() {
           >
             Join Us This Sunday
           </Link>
-          <Link
+          {/* <Link
             href="/contact"
             className="px-8 py-3.5 rounded-sm border border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-[#F7F5F0] font-medium text-xs uppercase tracking-wider transition-colors duration-200 flex items-center space-x-2"
           >
             <Play className="w-3.5 h-3.5 fill-[#F7F5F0]" />
             <span>Watch Live</span>
+          </Link> */}
+          <Link
+            href="/contact"
+            className="px-8 py-3.5 rounded-sm border border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-[#F7F5F0] font-medium text-xs uppercase tracking-wider transition-colors duration-200 flex items-center space-x-2"
+          >
+            <span>Contact Us</span>
           </Link>
         </motion.div>
       </div>

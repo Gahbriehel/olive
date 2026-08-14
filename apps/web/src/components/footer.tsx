@@ -12,17 +12,17 @@ export function Footer() {
             <div className="flex items-center space-x-3">
               <Image
                 src="/images/logo-gold.png"
-                alt="Amazing Grace Logo"
+                alt="Abiding Word Of Grace Missions Logo"
                 width={40}
                 height={40}
                 className="rounded-sm shrink-0"
               />
               <div>
-                <span className="font-serif font-medium text-xl tracking-tight text-[#F7F5F0] block leading-none">
-                  Amazing Grace
+                <span className="font-serif font-medium text-lg tracking-tight text-[#F7F5F0] block leading-tight">
+                  Abiding Word Of Grace
                 </span>
-                <span className="text-[10px] font-sans font-medium text-[#B18A4A] tracking-[0.2em] uppercase block mt-1">
-                  Bible Church
+                <span className="text-[10px] font-sans font-medium text-[#B18A4A] tracking-[0.18em] uppercase block mt-0.5">
+                  Missions
                 </span>
               </div>
             </div>
@@ -130,11 +130,11 @@ export function Footer() {
         {/* Legal / Copyright Bottom Bar */}
         <div className="mt-16 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-light text-[#77736B]">
           <p>
-            © {new Date().getFullYear()} Abiding Word Of Grace Missions (Amazing
-            Grace Bible Church). All rights reserved.
+            © {new Date().getFullYear()} Abiding Word Of Grace Missions (a.k.a.
+            Amazing Grace Bible Church). All rights reserved.
           </p>
           <p className="tracking-wider uppercase text-[10px] text-[#B18A4A]">
-            Salvation • Healing • Miracles
+            Salvation • Healing • Deliverance
           </p>
         </div>
       </div>

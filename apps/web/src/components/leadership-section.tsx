@@ -18,7 +18,7 @@ export function LeadershipSection({ compact = false }: { compact?: boolean }) {
       id: "1",
       name: "Pastor Timothy Kolawole",
       role: "Lead Pastor & General Overseer",
-      bio: "Dedicated man of God passionate about salvation, healing, and revival. Leading Grace City with over 20 years of faithful ministry experience.",
+      bio: "Dedicated man of God passionate about salvation, healing, and deliverance. Leading Abiding Word Of Grace Missions with over 20 years of faithful ministry experience.",
       initials: "TK",
     },
     {
