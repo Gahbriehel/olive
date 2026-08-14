@@ -6,7 +6,6 @@ import {
   Users,
   UserCheck,
   Shield,
-  RefreshCw,
   Mail,
   Calendar,
 } from "lucide-react";
@@ -17,6 +16,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
+import { ActionsList } from "@/components/ui/ActionsList";
 import { Registration, Team } from "@/types/dashboard";
 import { ColumnDef } from "@tanstack/react-table";
 
@@ -160,20 +160,20 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
     },
     {
       id: "actions",
-      header: () => <div className="text-right">Reassign</div>,
+      header: () => <div className="text-right">Actions</div>,
       cell: ({ row }) => (
-        <div className="text-right">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setReassignModalTarget(row.original);
-              setSelectedNewTeamId(row.original.assignedTeamId);
-            }}
-            leftIcon={<RefreshCw className="w-3.5 h-3.5 text-indigo-500" />}
-          >
-            Change Team
-          </Button>
+        <div className="flex justify-end">
+          <ActionsList
+            actions={[
+              {
+                title: "Change Team",
+                fn: () => {
+                  setReassignModalTarget(row.original);
+                  setSelectedNewTeamId(row.original.assignedTeamId);
+                },
+              },
+            ]}
+          />
         </div>
       ),
     },

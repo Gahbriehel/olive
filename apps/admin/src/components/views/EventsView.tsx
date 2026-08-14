@@ -3,17 +3,12 @@ import {
   Plus,
   Search,
   Filter,
-  MoreVertical,
   MapPin,
   Clock,
-  CheckCircle2,
-  Eye,
   Calendar,
   Radio,
   Users,
   Layers,
-  Edit,
-  Trash2,
   ChevronLeft,
   ChevronRight,
   ChevronsRight,
@@ -25,6 +20,7 @@ import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Input, Select } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/helpers/cn";
+import { ActionsList } from "@/components/ui/ActionsList";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { EventsForm } from "@/components/Forms/EventsForm";
@@ -82,7 +78,6 @@ export const EventsView: React.FC<EventsViewProps> = ({
   }
 
   const debouncedSearchTerm = useDebouncedSearch(search, 500);
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<ChurchEvent | null>(null);
   const [deletingEvent, setDeletingEvent] = useState<ChurchEvent | null>(null);
   const { updateEvent, deleteEvent } = useEvents();
@@ -102,20 +97,6 @@ export const EventsView: React.FC<EventsViewProps> = ({
       onSearchChangeRef.current(debouncedSearchTerm);
     }
   }, [debouncedSearchTerm]);
-
-  useEffect(() => {
-    if (!activeMenuId) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest("[data-event-menu]")) {
-        setActiveMenuId(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [activeMenuId]);
 
   const totalEvents = events.length;
   const publishedEvents = events.filter((e) => e.status === "PUBLISHED").length;
@@ -309,65 +290,30 @@ export const EventsView: React.FC<EventsViewProps> = ({
                     </div>
 
                     {/* Options menu dropdown */}
-                    <div className="relative" data-event-menu>
-                      <button
-                        onClick={() =>
-                          setActiveMenuId(
-                            activeMenuId === evt.id ? null : evt.id,
-                          )
-                        }
-                        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-
-                      {activeMenuId === evt.id && (
-                        <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-lg p-1.5 z-30 animate-fade-in text-xs">
-                          <button
-                            onClick={() => {
-                              onSelectEvent(evt);
-                              setActiveMenuId(null);
-                            }}
-                            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium text-left"
-                          >
-                            <Eye className="w-3.5 h-3.5 text-indigo-500" />
-                            View Event Details
-                          </button>
-                          <button
-                            onClick={() => {
-                              setEditingEvent(evt);
-                              setActiveMenuId(null);
-                            }}
-                            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium text-left text-slate-700 dark:text-slate-300"
-                          >
-                            <Edit className="w-3.5 h-3.5 text-amber-500" />
-                            Edit Event
-                          </button>
-                          <button
-                            onClick={() => {
-                              onPublishToggle(evt.id);
-                              setActiveMenuId(null);
-                            }}
-                            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium text-left text-slate-700 dark:text-slate-300"
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                            {evt.status === "DRAFT"
+                    <ActionsList
+                      actions={[
+                        {
+                          title: "View Event Details",
+                          fn: () => onSelectEvent(evt),
+                        },
+                        {
+                          title: "Edit Event",
+                          fn: () => setEditingEvent(evt),
+                        },
+                        {
+                          title:
+                            evt.status === "DRAFT"
                               ? "Publish Event"
-                              : "Unpublish"}
-                          </button>
-                          <button
-                            onClick={() => {
-                              setDeletingEvent(evt);
-                              setActiveMenuId(null);
-                            }}
-                            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 font-medium text-left text-rose-600 dark:text-rose-400 border-t border-slate-100 dark:border-zinc-800/60 mt-1 pt-2 rounded-t-none"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-rose-500" />
-                            Delete Event
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                              : "Unpublish",
+                          fn: () => onPublishToggle(evt.id),
+                        },
+                        {
+                          title: "Delete Event",
+                          fn: () => setDeletingEvent(evt),
+                          destructive: true,
+                        },
+                      ]}
+                    />
                   </CardHeader>
 
                   <CardContent className="space-y-3 pt-0">

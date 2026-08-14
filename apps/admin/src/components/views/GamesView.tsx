@@ -2,9 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   Plus,
   Edit3,
-  Edit,
-  Trash2,
-  MoreVertical,
   Gamepad2,
   Award,
   Trophy,
@@ -14,7 +11,6 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  RotateCcw,
 } from "lucide-react";
 import {
   Card,
@@ -27,6 +23,7 @@ import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
+import { ActionsList } from "@/components/ui/ActionsList";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
@@ -111,7 +108,6 @@ export const GamesView: React.FC<GamesViewProps> = ({
     null,
   );
   const [deletingGame, setDeletingGame] = useState<Game | null>(null);
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   const [searchInput, setSearchInput] = useState(search);
   const debouncedSearch = useDebouncedSearch(searchInput, 500);
@@ -131,20 +127,6 @@ export const GamesView: React.FC<GamesViewProps> = ({
       onSearchChangeRef.current(debouncedSearch);
     }
   }, [debouncedSearch]);
-
-  useEffect(() => {
-    if (!activeMenuId) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest("[data-game-menu]")) {
-        setActiveMenuId(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [activeMenuId]);
 
   // Pagination calculation
   const totalItems = meta?.total ?? games.length;
@@ -309,65 +291,33 @@ export const GamesView: React.FC<GamesViewProps> = ({
                         Max {game.maxScore} pts
                       </span>
 
-                      {/* Options menu dropdown */}
-                      <div className="relative" data-game-menu>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setActiveMenuId(
-                              activeMenuId === game.id ? null : game.id,
-                            )
-                          }
-                          className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-
-                        {activeMenuId === game.id && (
-                          <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-lg p-1.5 z-30 animate-fade-in text-xs">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedGameForEdit(game);
-                                setActiveMenuId(null);
-                              }}
-                              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium text-left text-slate-700 dark:text-slate-300"
-                            >
-                              <Edit className="w-3.5 h-3.5 text-amber-500" />
-                              Edit Game
-                            </button>
-
-                            {onClearScores &&
-                              game.scores &&
-                              game.scores.length > 0 && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
+                      <ActionsList
+                        actions={[
+                          {
+                            title: "Edit Game",
+                            fn: () => setSelectedGameForEdit(game),
+                          },
+                          ...(onClearScores &&
+                          game.scores &&
+                          game.scores.length > 0
+                            ? [
+                                {
+                                  title: "Clear Scores",
+                                  fn: () => {
                                     setSelectedGameForScore(game);
                                     setIsConfirmClearScoresOpen(true);
-                                    setActiveMenuId(null);
-                                  }}
-                                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 font-medium text-left text-rose-600 dark:text-rose-400"
-                                >
-                                  <RotateCcw className="w-3.5 h-3.5 text-rose-500" />
-                                  Clear Scores
-                                </button>
-                              )}
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDeletingGame(game);
-                                setActiveMenuId(null);
-                              }}
-                              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 font-medium text-left text-rose-600 dark:text-rose-400 border-t border-slate-100 dark:border-zinc-800/60 mt-1 pt-2 rounded-t-none"
-                            >
-                              <Trash2 className="w-3.5 h-3.5 text-rose-500" />
-                              Delete Game
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                                  },
+                                  destructive: true,
+                                },
+                              ]
+                            : []),
+                          {
+                            title: "Delete Game",
+                            fn: () => setDeletingGame(game),
+                            destructive: true,
+                          },
+                        ]}
+                      />
                     </div>
                   </div>
                   {game.description && (

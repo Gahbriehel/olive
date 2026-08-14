@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Plus,
-  Edit,
-  Trash2,
-  MoreVertical,
   Shield,
   Users,
   Trophy,
@@ -25,6 +22,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Input } from "@/components/ui/Input";
+import { ActionsList } from "@/components/ui/ActionsList";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
@@ -85,7 +83,6 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
     null,
   );
   const [deletingTeam, setDeletingTeam] = useState<Team | null>(null);
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   const [searchInput, setSearchInput] = useState(search);
   const debouncedSearch = useDebouncedSearch(searchInput, 500);
@@ -105,20 +102,6 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
       onSearchChangeRef.current(debouncedSearch);
     }
   }, [debouncedSearch]);
-
-  useEffect(() => {
-    if (!activeMenuId) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest("[data-team-menu]")) {
-        setActiveMenuId(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [activeMenuId]);
 
   // Pagination calculation
   const totalItems = meta?.total ?? teams.length;
@@ -272,47 +255,19 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
                           {team.totalPoints} pts
                         </span>
 
-                        {/* Options Menu */}
-                        <div className="relative" data-team-menu>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setActiveMenuId(
-                                activeMenuId === team.id ? null : team.id,
-                              )
-                            }
-                            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-
-                          {activeMenuId === team.id && (
-                            <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-lg p-1.5 z-30 animate-fade-in text-xs">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedTeamForEdit(team);
-                                  setActiveMenuId(null);
-                                }}
-                                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 font-medium text-left text-slate-700 dark:text-slate-300"
-                              >
-                                <Edit className="w-3.5 h-3.5 text-amber-500" />
-                                Edit Team
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setDeletingTeam(team);
-                                  setActiveMenuId(null);
-                                }}
-                                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 font-medium text-left text-rose-600 dark:text-rose-400 border-t border-slate-100 dark:border-zinc-800/60 mt-1 pt-2 rounded-t-none"
-                              >
-                                <Trash2 className="w-3.5 h-3.5 text-rose-500" />
-                                Delete Team
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                        <ActionsList
+                          actions={[
+                            {
+                              title: "Edit Team",
+                              fn: () => setSelectedTeamForEdit(team),
+                            },
+                            {
+                              title: "Delete Team",
+                              fn: () => setDeletingTeam(team),
+                              destructive: true,
+                            },
+                          ]}
+                        />
                       </div>
                     </div>
                   </CardHeader>

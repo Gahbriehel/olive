@@ -83,6 +83,9 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
         >
           Back
         </Button>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight truncate">
+          {event.name}
+        </h1>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <Badge
@@ -103,10 +106,8 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
               {event.category}
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight truncate">
-            {event.name}
-          </h1>
         </div>
+
         <div className="flex gap-2">
           <Button
             variant="outline"

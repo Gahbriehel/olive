@@ -1,8 +1,7 @@
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit2, Trash2 } from "lucide-react";
 import { AdminUser } from "@/models/dashboard";
-import { Button } from "@/components/ui/Button";
+import { ActionsList } from "@/components/ui/ActionsList";
 import { Badge } from "@/components/ui/Badge";
 import {
   getInitials,
@@ -75,29 +74,30 @@ export function getUserColumns({
     {
       id: "actions",
       header: () => <div className="text-right">Actions</div>,
-      cell: ({ row }) => (
-        <div className="flex items-center justify-end gap-1.5">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onEditUser(row.original)}
-            leftIcon={<Edit2 className="w-3.5 h-3.5" />}
-          >
-            Edit
-          </Button>
-          {onDeleteUser && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDeleteUser(row.original)}
-              className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/20"
-              leftIcon={<Trash2 className="w-3.5 h-3.5" />}
-            >
-              Delete
-            </Button>
-          )}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const user = row.original;
+        return (
+          <div className="flex">
+            <ActionsList
+              actions={[
+                {
+                  title: "Edit User",
+                  fn: () => onEditUser(user),
+                },
+                ...(onDeleteUser
+                  ? [
+                      {
+                        title: "Delete User",
+                        fn: () => onDeleteUser(user),
+                        destructive: true,
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+          </div>
+        );
+      },
     },
   ];
 }

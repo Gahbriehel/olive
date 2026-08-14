@@ -1,8 +1,7 @@
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye } from "lucide-react";
 import { Person } from "@/models/person";
-import { Button } from "@/components/ui/Button";
+import { ActionsList } from "@/components/ui/ActionsList";
 import { Badge } from "@/components/ui/Badge";
 import {
   getInitials,
@@ -90,16 +89,14 @@ export function getPeopleColumns({
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onSelectPerson(row.original)}
-            leftIcon={<Eye className="w-3.5 h-3.5 text-indigo-500" />}
-          >
-            Details
-          </Button>
-        </div>
+        <ActionsList
+          actions={[
+            {
+              title: "View Details",
+              fn: () => onSelectPerson(row.original),
+            },
+          ]}
+        />
       ),
     },
   ];
