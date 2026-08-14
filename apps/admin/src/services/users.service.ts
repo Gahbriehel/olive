@@ -1,5 +1,9 @@
 import { apiClient } from "@/utils/api-client";
-import { AdminUser, IUpdateUserPayload } from "@/models/dashboard";
+import {
+  AdminUser,
+  ICreateUserPayload,
+  IUpdateUserPayload,
+} from "@/models/dashboard";
 import {
   IBaseResponse,
   IQueryParams,
@@ -52,13 +56,51 @@ export const usersService = {
     return { users, meta };
   },
 
+  async createUser(payload: ICreateUserPayload): Promise<AdminUser> {
+    const res = await apiClient.post<IBaseResponse<unknown>>("/users", payload);
+    const u = extractData<Record<string, unknown>>(res.data);
+
+    const userRoles = (u.userRoles as Array<{ role?: { name: string } }>) || [];
+    const roleName =
+      userRoles.length > 0 && userRoles[0].role
+        ? userRoles[0].role.name
+        : (u.role as string) || payload.role || "MEMBER";
+
+    const firstName = (u.firstName as string) || payload.firstName || "";
+    const lastName = (u.lastName as string) || payload.lastName || "";
+    const fullName =
+      `${firstName} ${lastName}`.trim() || (u.name as string) || payload.email;
+
+    return {
+      id: (u.id as string) || "",
+      name: fullName,
+      firstName,
+      lastName,
+      email: (u.email as string) || payload.email,
+      phone: (u.phone as string) || payload.phone || "",
+      role: roleName,
+      status: u.isActive !== false ? "Active" : "Inactive",
+      lastActive: "Just now",
+    };
+  },
+
   async updateUser(
     id: string,
     payload: IUpdateUserPayload,
   ): Promise<AdminUser> {
+    const { status, ...restPayload } = payload;
+    const bodyPayload = {
+      ...restPayload,
+      isActive:
+        payload.isActive !== undefined
+          ? payload.isActive
+          : status !== undefined
+            ? status === "Active"
+            : undefined,
+    };
     const res = await apiClient.patch<IBaseResponse<unknown>>(
       `/users/${id}`,
-      payload,
+      bodyPayload,
     );
     const u = extractData<Record<string, unknown>>(res.data);
 
@@ -87,5 +129,9 @@ export const usersService = {
       status: u.isActive !== false ? "Active" : "Inactive",
       lastActive: "Just now",
     };
+  },
+
+  async deleteUser(id: string): Promise<void> {
+    await apiClient.delete(`/users/${id}`);
   },
 };

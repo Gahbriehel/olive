@@ -3,6 +3,7 @@
 import React from "react";
 import { useUsers } from "@/hooks/useUsers";
 import { UsersView } from "@/components/views/UsersView";
+import { ICreateUserPayload, IUpdateUserPayload } from "@/models/dashboard";
 
 export default function UsersPage() {
   const [search, setSearch] = React.useState("");
@@ -18,7 +19,30 @@ export default function UsersPage() {
     [page, limit, search],
   );
 
-  const { users, meta, isLoading, refetch } = useUsers(queryParams);
+  const {
+    users,
+    meta,
+    isLoading,
+    refetch,
+    createUser,
+    updateUser,
+    deleteUser,
+    isCreating,
+    isUpdating,
+    isDeleting,
+  } = useUsers(queryParams);
+
+  const handleCreateUser = async (payload: ICreateUserPayload) => {
+    await createUser(payload);
+  };
+
+  const handleUpdateUser = async (id: string, payload: IUpdateUserPayload) => {
+    await updateUser({ id, payload });
+  };
+
+  const handleDeleteUser = async (id: string) => {
+    await deleteUser(id);
+  };
 
   const handleSearchChange = React.useCallback((newSearch: string) => {
     setSearch((prevSearch) => {
@@ -53,6 +77,12 @@ export default function UsersPage() {
       search={search}
       onSearchChange={handleSearchChange}
       onRefetch={refetch}
+      onCreateUser={handleCreateUser}
+      onUpdateUser={handleUpdateUser}
+      onDeleteUser={handleDeleteUser}
+      isCreating={isCreating}
+      isUpdating={isUpdating}
+      isDeleting={isDeleting}
     />
   );
 }

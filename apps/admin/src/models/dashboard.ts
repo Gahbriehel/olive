@@ -27,6 +27,15 @@ export interface AdminUser {
   lastName?: string;
 }
 
+export interface ICreateUserPayload {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  role: string;
+  password?: string;
+}
+
 export interface IUpdateUserPayload {
   role?: string;
   phone?: string;
@@ -34,6 +43,8 @@ export interface IUpdateUserPayload {
   firstName?: string;
   lastName?: string;
   membershipStatus?: string;
+  status?: "Active" | "Inactive";
+  isActive?: boolean;
 }
 
 export interface IUserProfile {

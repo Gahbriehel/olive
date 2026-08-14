@@ -1,6 +1,6 @@
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { Edit2 } from "lucide-react";
+import { Edit2, Trash2 } from "lucide-react";
 import { AdminUser } from "@/models/dashboard";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -12,10 +12,12 @@ import {
 
 interface GetUserColumnsProps {
   onEditUser: (user: AdminUser) => void;
+  onDeleteUser?: (user: AdminUser) => void;
 }
 
 export function getUserColumns({
   onEditUser,
+  onDeleteUser,
 }: GetUserColumnsProps): ColumnDef<AdminUser>[] {
   return [
     {
@@ -74,15 +76,26 @@ export function getUserColumns({
       id: "actions",
       header: () => <div className="text-right">Actions</div>,
       cell: ({ row }) => (
-        <div className="text-right">
+        <div className="flex items-center justify-end gap-1.5">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onEditUser(row.original)}
             leftIcon={<Edit2 className="w-3.5 h-3.5" />}
           >
-            Edit Role & Info
+            Edit
           </Button>
+          {onDeleteUser && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDeleteUser(row.original)}
+              className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/20"
+              leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+            >
+              Delete
+            </Button>
+          )}
         </div>
       ),
     },

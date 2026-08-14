@@ -18,20 +18,31 @@ import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
-import { Input } from "@/components/ui/Input";
 import { ColumnDef } from "@tanstack/react-table";
 import { getUserColumns } from "./users/users-columns";
 import { AuthorityGuard } from "@/components/auth/AuthorityGuard";
 import { ROLES } from "@/utils/rbac";
-import { AdminUser, IUpdateUserPayload } from "@/models/dashboard";
+import {
+  AdminUser,
+  ICreateUserPayload,
+  IUpdateUserPayload,
+} from "@/models/dashboard";
 import { useUsers } from "@/hooks/useUsers";
+import { SidebarModal } from "@/components/ui/SidebarModal";
+import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
+import { UserForm, UserFormValues } from "@/components/Forms/UserForm";
 
 interface UsersViewProps {
   users?: AdminUser[];
+  onCreateUser?: (payload: ICreateUserPayload) => Promise<unknown> | void;
   onUpdateUser?: (
     id: string,
     payload: IUpdateUserPayload,
   ) => Promise<unknown> | void;
+  onDeleteUser?: (id: string) => Promise<unknown> | void;
+  isCreating?: boolean;
+  isUpdating?: boolean;
+  isDeleting?: boolean;
   meta?: {
     total?: number;
     page?: number;
@@ -49,7 +60,12 @@ interface UsersViewProps {
 
 export const UsersView: React.FC<UsersViewProps> = ({
   users: propUsers,
+  onCreateUser: propOnCreateUser,
   onUpdateUser: propOnUpdateUser,
+  onDeleteUser: propOnDeleteUser,
+  isCreating: propIsCreating = false,
+  isUpdating: propIsUpdating = false,
+  isDeleting: propIsDeleting = false,
   meta,
   page,
   onPageChange,
@@ -61,41 +77,63 @@ export const UsersView: React.FC<UsersViewProps> = ({
 }) => {
   const {
     users: hookUsers,
+    createUser: hookCreateUser,
     updateUser: hookUpdateUser,
-    isUpdating,
+    deleteUser: hookDeleteUser,
+    isCreating: hookIsCreating,
+    isUpdating: hookIsUpdating,
+    isDeleting: hookIsDeleting,
   } = useUsers();
+
   const users = propUsers && propUsers.length > 0 ? propUsers : hookUsers;
+  const isCreating = propIsCreating || hookIsCreating;
+  const isUpdating = propIsUpdating || hookIsUpdating;
+  const isDeleting = propIsDeleting || hookIsDeleting;
 
   const [activeTab, setActiveTab] = useState<"users" | "permissions">("users");
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
+  const [deletingUser, setDeletingUser] = useState<AdminUser | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Edit form state
-  const [role, setRole] = useState("MEMBER");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [savedSuccess, setSavedSuccess] = useState(false);
-
-  const openEditModal = (user: AdminUser) => {
-    setEditingUser(user);
-    setRole(user.role || "MEMBER");
-    setFirstName(user.firstName || user.name.split(" ")[0] || "");
-    setLastName(user.lastName || user.name.split(" ").slice(1).join(" ") || "");
-    setEmail(user.email || "");
-    setPhone(user.phone || "");
+  const showNotification = (msg: string) => {
+    setSuccessMessage(msg);
+    setTimeout(() => setSuccessMessage(null), 3000);
   };
 
-  const handleSaveUser = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateSubmit = async (data: UserFormValues) => {
+    const payload: ICreateUserPayload = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      phone: data.phone || undefined,
+      role: data.role,
+      password: data.password || undefined,
+    };
+
+    try {
+      if (propOnCreateUser) {
+        await propOnCreateUser(payload);
+      } else {
+        await hookCreateUser(payload);
+      }
+      setIsCreateOpen(false);
+      showNotification("New user account created successfully!");
+    } catch (err) {
+      console.error("Failed to create user:", err);
+    }
+  };
+
+  const handleEditSubmit = async (data: UserFormValues) => {
     if (!editingUser) return;
 
     const payload: IUpdateUserPayload = {
-      role,
-      firstName,
-      lastName,
-      email,
-      phone,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      phone: data.phone || undefined,
+      role: data.role,
+      isActive: data.status === "Active",
     };
 
     try {
@@ -104,11 +142,29 @@ export const UsersView: React.FC<UsersViewProps> = ({
       } else {
         await hookUpdateUser({ id: editingUser.id, payload });
       }
-      setSavedSuccess(true);
       setEditingUser(null);
-      setTimeout(() => setSavedSuccess(false), 3000);
+      showNotification("User account & roles updated successfully!");
     } catch (err) {
       console.error("Failed to update user:", err);
+    }
+  };
+
+  const handleDeletePerform = async () => {
+    if (!deletingUser) return;
+
+    try {
+      if (propOnDeleteUser) {
+        await propOnDeleteUser(deletingUser.id);
+      } else {
+        await hookDeleteUser(deletingUser.id);
+      }
+      setDeletingUser(null);
+      if (editingUser?.id === deletingUser.id) {
+        setEditingUser(null);
+      }
+      showNotification("User account deleted successfully.");
+    } catch (err) {
+      console.error("Failed to delete user:", err);
     }
   };
 
@@ -132,7 +188,11 @@ export const UsersView: React.FC<UsersViewProps> = ({
   ).length;
 
   const userColumns = React.useMemo(
-    () => getUserColumns({ onEditUser: openEditModal }),
+    () =>
+      getUserColumns({
+        onEditUser: (user) => setEditingUser(user),
+        onDeleteUser: (user) => setDeletingUser(user),
+      }),
     [],
   );
 
@@ -342,6 +402,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
             <Button
               variant="primary"
               leftIcon={<UserPlus className="w-4 h-4" />}
+              onClick={() => setIsCreateOpen(true)}
             >
               Invite User
             </Button>
@@ -349,10 +410,10 @@ export const UsersView: React.FC<UsersViewProps> = ({
         </div>
       </div>
 
-      {savedSuccess && (
-        <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-3">
+      {successMessage && (
+        <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-3 animate-fade-in">
           <Check className="w-5 h-5 text-emerald-500" />
-          User role and directory synchronized successfully!
+          {successMessage}
         </div>
       )}
 
@@ -452,103 +513,47 @@ export const UsersView: React.FC<UsersViewProps> = ({
         </div>
       )}
 
-      {/* Edit User Modal */}
-      {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                  Update User & Role Transition
-                </h2>
-                <p className="text-xs text-slate-500">
-                  Modifying role updates directory sync automatically
-                </p>
-              </div>
-              <button
-                onClick={() => setEditingUser(null)}
-                className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {/* Create User Sidebar Modal */}
+      <SidebarModal
+        title="Invite & Create System User"
+        display={isCreateOpen}
+        close={() => setIsCreateOpen(false)}
+      >
+        <UserForm
+          onSubmit={handleCreateSubmit}
+          onCancel={() => setIsCreateOpen(false)}
+          isLoading={isCreating}
+        />
+      </SidebarModal>
 
-            <form onSubmit={handleSaveUser} className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                <Input
-                  label="First Name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                />
-                <Input
-                  label="Last Name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                />
-              </div>
+      {/* Edit User Sidebar Modal */}
+      <SidebarModal
+        title="Edit User & System Role"
+        display={!!editingUser}
+        close={() => setEditingUser(null)}
+      >
+        {editingUser && (
+          <UserForm
+            initialValues={editingUser}
+            onSubmit={handleEditSubmit}
+            onDelete={() => setDeletingUser(editingUser)}
+            onCancel={() => setEditingUser(null)}
+            isLoading={isUpdating}
+            isDeleting={isDeleting}
+          />
+        )}
+      </SidebarModal>
 
-              <Input
-                label="Email Address"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-
-              <Input
-                label="Phone Number"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+234 123 4567 890"
-              />
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Assign System Role
-                </label>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="w-full text-xs bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 cursor-pointer"
-                >
-                  <option value="SUPER_ADMIN">
-                    SUPER_ADMIN - Super Admin (System-Wide)
-                  </option>
-                  <option value="ADMIN">
-                    ADMIN - Church Admin (Full Access)
-                  </option>
-                  <option value="COORDINATOR">
-                    COORDINATOR - Event Coordinator
-                  </option>
-                  <option value="REGISTRATION_DESK">
-                    REGISTRATION_DESK - Registration Desk
-                  </option>
-                </select>
-              </div>
-
-              <div className="pt-4 flex justify-end gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setEditingUser(null)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  isLoading={isUpdating}
-                  disabled={isUpdating}
-                  className="bg-indigo-600 hover:bg-indigo-500"
-                >
-                  Save Role Changes
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {/* Delete User Confirmation Modal */}
+      {deletingUser && (
+        <ConfirmActionModal
+          display={Boolean(deletingUser)}
+          close={() => setDeletingUser(null)}
+          actionName="delete"
+          title={`Are you sure you want to delete user account "${deletingUser.name}"?`}
+          fn={handleDeletePerform}
+          loading={isDeleting}
+        />
       )}
     </div>
   );

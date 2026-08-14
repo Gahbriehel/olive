@@ -45,31 +45,31 @@ export function ConfirmActionModal({
   };
 
   return (
-    <Modal isOpen={display} onClose={close}>
-      <div className="flex flex-col items-center gap-5 p-6 pb-2 text-center">
+    <Modal isOpen={display} onClose={close} maxWidth="sm">
+      <div className="flex flex-col items-center gap-4 p-2 text-center">
         {/* Icon */}
         <div
-          className={`flex h-16 w-16 items-center justify-center rounded-2xl ${
+          className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
             isDestructive
               ? "bg-rose-100 dark:bg-rose-950/50"
               : "bg-indigo-100 dark:bg-indigo-950/50"
           }`}
         >
           {isDestructive ? (
-            <AlertTriangle className="h-8 w-8 text-rose-600 dark:text-rose-400" />
+            <AlertTriangle className="h-7 w-7 text-rose-600 dark:text-rose-400" />
           ) : (
-            <HelpCircle className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+            <HelpCircle className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
           )}
         </div>
 
         {/* Text content */}
         <div className="space-y-1.5">
-          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 leading-snug">
             {title ??
               `Are you sure you want to ${capitalizeFirstLetter(actionName)}?`}
           </h2>
           {isDestructive && (
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               This action is permanent and{" "}
               <span className="font-semibold text-rose-600 dark:text-rose-400">
                 cannot be undone
