@@ -115,8 +115,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             Event Attendance Terminal
           </h1>
           <p className="text-xs text-slate-300">
-            Scanning terminal active at Registration Desks 1 & 2. Fast badge
-            scanning and manual attendee search.
+            Scanning terminal active at Registration Desks. Fast badge scanning
+            and manual attendee search.
           </p>
         </div>
 

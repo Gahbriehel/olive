@@ -135,8 +135,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             Operational Dashboard
           </h1>
           <p className="text-xs sm:text-sm text-indigo-200">
-            Real-time event check-ins, registration throughput, and overview
-            analytics.
+            Real-time check-ins, registration, and overview analytics.
           </p>
         </div>
 

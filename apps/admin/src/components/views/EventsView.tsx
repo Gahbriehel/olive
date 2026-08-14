@@ -181,7 +181,7 @@ export const EventsView: React.FC<EventsViewProps> = ({
             Event Management
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Organize youth conferences, worship nights, leadership retreats, and
+            Organize conferences, worship nights, leadership retreats, and
             community events.
           </p>
         </div>

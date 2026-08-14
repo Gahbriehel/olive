@@ -332,8 +332,8 @@ export const UsersView: React.FC<UsersViewProps> = ({
             Users & Permission Control
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Manage system access, assign roles (SUPER_ADMIN, ADMIN, COORDINATOR,
-            REGISTRATION_DESK), and synchronize user contact directory.
+            Manage system access, assign roles, and synchronize user contact
+            directory.
           </p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">

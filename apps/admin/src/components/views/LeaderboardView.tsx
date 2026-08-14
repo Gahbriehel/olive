@@ -74,8 +74,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
             Team Tournament Leaderboard
           </h1>
           <p className="text-xs text-amber-100">
-            Live scores calculated automatically from arena games, trivia, and
-            obstacle relays.
+            Live scores calculated automatically from games, and trivia.
           </p>
         </div>
         <RefreshButton

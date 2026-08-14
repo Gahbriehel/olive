@@ -118,8 +118,8 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
             People Directory
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Central repository of church members, youth conference attendees,
-            and first-time guests.
+            Central repository of church members, conference attendees, and
+            first-time guests.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
