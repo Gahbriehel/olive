@@ -26,6 +26,7 @@ import {
   AttendanceRecord,
   CheckInMethod,
 } from "@/types/dashboard";
+import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 
 interface AttendanceViewProps {
   registrations: Registration[];
@@ -244,8 +245,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         <p className="font-bold text-slate-900 dark:text-slate-100">
                           {r.name}
                         </p>
-                        <p className="text-[10px] text-slate-400">
-                          {r.registrationNumber} • {r.email}
+                        <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                          <span>{r.registrationNumber} •</span>
+                          <TruncatedTextWithCopy
+                            text={r.email}
+                            maxLength={24}
+                            textClassName="text-[10px] text-slate-400"
+                          />
                         </p>
                       </div>
                       {r.status === "Checked-In" ? (

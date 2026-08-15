@@ -22,6 +22,7 @@ import { IRegisterPayload } from "@/models/registration";
 import { Person, ICreatePersonPayload } from "@/models/person";
 import { getPeopleColumns } from "./people/people-columns";
 import { getInitials } from "@/utils/formatters";
+import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 
 interface PeopleViewProps {
   people: Person[];
@@ -284,9 +285,13 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
                     <p className="text-[10px] text-slate-400 font-bold uppercase">
                       Email Address
                     </p>
-                    <p className="font-semibold text-slate-800 dark:text-slate-200 mt-1 truncate">
-                      {selectedPerson.email}
-                    </p>
+                    <div className="mt-1">
+                      <TruncatedTextWithCopy
+                        text={selectedPerson.email}
+                        maxLength={24}
+                        textClassName="font-semibold text-slate-800 dark:text-slate-200"
+                      />
+                    </div>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60">
                     <p className="text-[10px] text-slate-400 font-bold uppercase">

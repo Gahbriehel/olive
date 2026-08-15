@@ -3,11 +3,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Person } from "@/models/person";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { Badge } from "@/components/ui/Badge";
-import {
-  getInitials,
-  truncateString,
-  capitalizeWords,
-} from "@/utils/formatters";
+import { getInitials, capitalizeWords } from "@/utils/formatters";
+import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 
 interface GetPeopleColumnsProps {
   onSelectPerson: (person: Person) => void;
@@ -42,12 +39,11 @@ export function getPeopleColumns({
       header: "Contact Info",
       cell: ({ row }) => (
         <div>
-          <p
-            className="font-medium text-slate-900 dark:text-slate-200"
-            title={row.original.email}
-          >
-            {truncateString(row.original.email, 28)}
-          </p>
+          <TruncatedTextWithCopy
+            text={row.original.email}
+            maxLength={28}
+            textClassName="font-medium text-slate-900 dark:text-slate-200"
+          />
           <p className="text-[11px] text-slate-400">{row.original.phone}</p>
         </div>
       ),

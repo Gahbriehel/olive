@@ -1,5 +1,5 @@
 import axios from "axios";
-import toast from "react-hot-toast";
+import { customToast } from "../helpers/customToast";
 import {
   ChurchSettings,
   IApiEvent,
@@ -124,13 +124,13 @@ webApiClient.interceptors.response.use(
         response.data,
         "Operation completed successfully",
       );
-      toast.success(serverMessage);
+      customToast.success(serverMessage);
     }
     return response;
   },
   (error) => {
     const errorMessage = extractErrorMessage(error, "Request failed");
-    toast.error(errorMessage);
+    customToast.error(errorMessage);
     return Promise.reject(error);
   },
 );

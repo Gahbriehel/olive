@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import toast from "react-hot-toast";
+import { customToast } from "@/helpers/customToast";
+import { TruncatedTextWithCopy } from "@/components/ui/TruncatedTextWithCopy";
 import {
   MapPin,
   Phone,
@@ -34,7 +35,7 @@ export default function ContactPage() {
     await new Promise((resolve) => setTimeout(resolve, 600));
     setIsSubmitting(false);
     setSubmitted(true);
-    toast.success(
+    customToast.success(
       activeTab === "prayer"
         ? "Your prayer request has been submitted successfully."
         : "Your message has been sent to our team.",
@@ -132,9 +133,11 @@ export default function ContactPage() {
                   <h3 className="font-medium text-[#F7F5F0] text-base font-serif">
                     Email Address
                   </h3>
-                  <p className="text-[#B18A4A] font-light">
-                    abidingwordofgracemissions@gmail.com
-                  </p>
+                  <TruncatedTextWithCopy
+                    text="abidingwordofgracemissions@gmail.com"
+                    maxLength={0}
+                    textClassName="text-[#B18A4A] font-light"
+                  />
                 </div>
               </div>
 

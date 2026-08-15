@@ -1,5 +1,5 @@
 import axios from "axios";
-import toast from "react-hot-toast";
+import { customToast } from "@/helpers/customToast";
 import {
   clearTokens,
   getAccessToken,
@@ -206,7 +206,7 @@ apiClient.interceptors.response.use(
         response.data,
         defaultFallback,
       );
-      toast.success(serverMessage);
+      customToast.success(serverMessage);
     }
     return response;
   },
@@ -220,10 +220,10 @@ apiClient.interceptors.response.use(
         error,
         "You do not have administrative permission to perform this action.",
       );
-      toast.error(errorMessage);
+      customToast.error(errorMessage);
     } else if (!url.includes("/auth/refresh")) {
       const errorMessage = extractErrorMessage(error, "Server request failed");
-      toast.error(errorMessage);
+      customToast.error(errorMessage);
     }
 
     // Ignore login requests for refresh handling

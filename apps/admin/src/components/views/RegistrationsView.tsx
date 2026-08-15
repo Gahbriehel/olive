@@ -19,6 +19,7 @@ import { Table } from "@/components/ui/Table";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { Registration, Team } from "@/types/dashboard";
 import { ColumnDef } from "@tanstack/react-table";
+import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 
 interface RegistrationsViewProps {
   registrations: Registration[];
@@ -91,7 +92,11 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
           <p className="font-bold text-slate-900 dark:text-slate-100">
             {row.original.name}
           </p>
-          <p className="text-[11px] text-slate-400">{row.original.email}</p>
+          <TruncatedTextWithCopy
+            text={row.original.email}
+            maxLength={28}
+            textClassName="text-[11px] text-slate-400"
+          />
         </div>
       ),
     },

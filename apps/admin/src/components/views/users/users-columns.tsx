@@ -3,11 +3,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { AdminUser } from "@/models/dashboard";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { Badge } from "@/components/ui/Badge";
-import {
-  getInitials,
-  truncateString,
-  capitalizeWords,
-} from "@/utils/formatters";
+import { getInitials, capitalizeWords } from "@/utils/formatters";
+import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 
 interface GetUserColumnsProps {
   onEditUser: (user: AdminUser) => void;
@@ -33,9 +30,11 @@ export function getUserColumns({
               <p className="font-bold text-slate-900 dark:text-slate-100">
                 {capitalizeWords(user.name)}
               </p>
-              <p className="text-[11px] text-slate-400" title={user.email}>
-                {truncateString(user.email, 28)}
-              </p>
+              <TruncatedTextWithCopy
+                text={user.email}
+                maxLength={28}
+                textClassName="text-[11px] text-slate-400"
+              />
             </div>
           </div>
         );

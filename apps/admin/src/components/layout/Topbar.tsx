@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
+import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 
 const getInitials = (firstName?: string, lastName?: string, email?: string) => {
   if (firstName && lastName)
@@ -257,9 +258,11 @@ export const Topbar: React.FC = () => {
                   <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                     {displayName}
                   </p>
-                  <p className="text-[11px] text-slate-400 truncate">
-                    {user?.email || ""}
-                  </p>
+                  <TruncatedTextWithCopy
+                    text={user?.email || ""}
+                    maxLength={24}
+                    textClassName="text-[11px] text-slate-400"
+                  />
                 </div>
 
                 <div className="py-1 border-b border-slate-100 dark:border-zinc-800 text-xs space-y-0.5">
