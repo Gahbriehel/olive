@@ -125,7 +125,8 @@ function extractErrorMessage(
     }
   }
 
-  const rawMsg = typeof errObj.message === "string" ? errObj.message.trim() : "";
+  const rawMsg =
+    typeof errObj.message === "string" ? errObj.message.trim() : "";
   const isStatusMessage = /^Request failed with status code/i.test(rawMsg);
 
   if (status === 401 || (isStatusMessage && rawMsg.includes("401"))) {
@@ -143,7 +144,10 @@ function extractErrorMessage(
   if (status === 422 || (isStatusMessage && rawMsg.includes("422"))) {
     return "Validation error. Please check your submission details.";
   }
-  if ((status && status >= 500) || (isStatusMessage && /50[0-9]/.test(rawMsg))) {
+  if (
+    (status && status >= 500) ||
+    (isStatusMessage && /50[0-9]/.test(rawMsg))
+  ) {
     return "Internal server error. Please try again later.";
   }
 
