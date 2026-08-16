@@ -167,7 +167,7 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                 className="hover:shadow-md transition-all"
               >
                 <CardContent className="p-4 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 mt-2">
                     <span className="w-8 h-8 rounded-xl font-black text-sm flex items-center justify-center bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300">
                       #{entry.rank}
                     </span>

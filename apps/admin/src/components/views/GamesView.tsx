@@ -187,8 +187,8 @@ export const GamesView: React.FC<GamesViewProps> = ({
             Youth Conference Games
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Tournament competition list, point allocations, and game master
-            score submissions.
+            Tournament competition list, point allocations, and score
+            submissions.
           </p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">

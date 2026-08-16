@@ -221,7 +221,7 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
         <StatsCard
           title="Total Registrations"
           value={totalReg.toLocaleString()}
-          change="Event total roster"
+          change=""
           trend="neutral"
           icon={Users}
           color="indigo"
@@ -237,7 +237,7 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
         <StatsCard
           title="Team Assignments"
           value={assignedTeams.toLocaleString()}
-          change="Balanced to 4 teams"
+          change="teams"
           trend="neutral"
           icon={Shield}
           color="cyan"

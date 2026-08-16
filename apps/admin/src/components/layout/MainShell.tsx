@@ -155,9 +155,9 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans antialiased text-slate-900 dark:text-slate-100 flex flex-col transition-colors">
       <Sidebar />
-      <div className="flex-1 lg:pl-72 flex flex-col min-w-0 overflow-x-hidden">
+      <div className="flex-1 lg:pl-72 flex flex-col min-w-0">
         <Topbar />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full space-y-6">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full space-y-6 overflow-x-hidden">
           {children}
         </main>
       </div>

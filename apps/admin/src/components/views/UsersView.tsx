@@ -422,7 +422,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
         <StatsCard
           title="Total System Users"
           value={totalUsers.toLocaleString()}
-          change="Configured accounts"
+          change="Admin accounts"
           trend="neutral"
           icon={UsersIcon}
           color="indigo"
@@ -438,7 +438,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
         <StatsCard
           title="System Administrators"
           value={superAdmins.toLocaleString()}
-          change="SUPER_ADMIN & ADMIN"
+          change="ADMINS"
           trend="neutral"
           icon={Shield}
           color="cyan"
@@ -446,7 +446,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
         <StatsCard
           title="Coordinators & Desk Staff"
           value={deskStaff.toLocaleString()}
-          change="COORDINATOR & REG_DESK"
+          change="COORDINATORS"
           trend="neutral"
           icon={Lock}
           color="amber"

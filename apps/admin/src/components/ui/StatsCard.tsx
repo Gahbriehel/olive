@@ -82,7 +82,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
       className={clsx("hover:shadow-md transition-all duration-200", className)}
     >
       <CardContent className="p-5">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 py-2">
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
             {title}
           </span>
