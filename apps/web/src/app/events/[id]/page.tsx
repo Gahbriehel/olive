@@ -247,20 +247,6 @@ export default function EventRegistrationPage({
                 </p>
               </div>
 
-              {registerMutation.isError && (
-                <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs flex items-center space-x-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>
-                    {(
-                      registerMutation.error as {
-                        response?: { data?: { message?: string } };
-                      }
-                    )?.response?.data?.message ||
-                      "Registration failed. You may have already registered for this event."}
-                  </span>
-                </div>
-              )}
-
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* First Name */}

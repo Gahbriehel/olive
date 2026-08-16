@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Check, Save, User, Building2, Key, AlertCircle } from "lucide-react";
+import { Check, Save, User, Building2, Key } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -15,6 +15,7 @@ import { ChurchSettings, IUpdateProfilePayload } from "@/models/dashboard";
 import { useSettings } from "@/hooks/useSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
+import { customToast } from "@/helpers/customToast";
 
 interface SettingsViewProps {
   settings?: ChurchSettings;
@@ -37,8 +38,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     updateSettings: hookUpdateSettings,
     profile,
     updateProfile,
+    changePassword,
     isUpdatingSettings,
     isUpdatingProfile,
+    isChangingPassword,
   } = useSettings();
 
   const settings = propSettings ||
@@ -68,7 +71,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [formData, setFormData] = useState<ChurchSettings>(settings);
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [savedSuccess, setSavedSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const tabs = useMemo(
     () => [
@@ -106,9 +108,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     lastName: user?.lastName || "",
     email: user?.email || "",
     phone: "",
+  });
+
+  // Change Password state
+  const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
   });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [passwordSavedSuccess, setPasswordSavedSuccess] = useState(false);
 
   useEffect(() => {
     if (hookSettings) {
@@ -132,7 +141,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   const handleSaveChurchSettings = async () => {
     try {
-      setErrorMessage(null);
       if (propOnSaveSettings) {
         await propOnSaveSettings(formData);
       } else {
@@ -141,18 +149,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
     } catch (err: unknown) {
-      const msg =
-        err && typeof err === "object" && "message" in err
-          ? String((err as { message: unknown }).message)
-          : "Failed to update church settings.";
-      setErrorMessage(msg);
+      console.error("Failed to update church settings:", err);
     }
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      setErrorMessage(null);
       const payload: IUpdateProfilePayload = {
         firstName: profileData.firstName,
         lastName: profileData.lastName,
@@ -160,31 +163,37 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         phone: profileData.phone,
       };
 
-      if (profileData.newPassword) {
-        if (!profileData.currentPassword) {
-          setErrorMessage(
-            "Current password is required to update your password.",
-          );
-          return;
-        }
-        payload.currentPassword = profileData.currentPassword;
-        payload.newPassword = profileData.newPassword;
-      }
-
       await updateProfile(payload);
-      setProfileData((prev) => ({
-        ...prev,
-        currentPassword: "",
-        newPassword: "",
-      }));
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
     } catch (err: unknown) {
-      const msg =
-        err && typeof err === "object" && "message" in err
-          ? String((err as { message: unknown }).message)
-          : "Failed to update profile. Please verify your current password.";
-      setErrorMessage(msg);
+      console.error("Failed to update profile:", err);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (!passwordData.currentPassword || !passwordData.newPassword) {
+        customToast.error(
+          "Both current password and new password are required.",
+        );
+        return;
+      }
+
+      await changePassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+      });
+      setPasswordSavedSuccess(true);
+      setTimeout(() => setPasswordSavedSuccess(false), 3000);
+    } catch (err: unknown) {
+      console.error("Failed to change password:", err);
     }
   };
 
@@ -223,13 +232,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <Check className="w-5 h-5 text-emerald-500" />
           Settings successfully saved and synchronized across platform
           instances.
-        </div>
-      )}
-
-      {errorMessage && (
-        <div className="p-4 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-300 font-bold text-xs flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-rose-500" />
-          {errorMessage}
         </div>
       )}
 
@@ -324,7 +326,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               password
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-8">
             <form onSubmit={handleSaveProfile} className="space-y-6 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
@@ -365,39 +367,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 />
               </div>
 
-              <div className="pt-4 border-t border-slate-200 dark:border-zinc-800 space-y-4">
-                <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                  <Key className="w-4 h-4 text-indigo-500" />
-                  Change Security Password
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input
-                    label="Current Password"
-                    type="password"
-                    placeholder="Enter current password to authorize changes"
-                    value={profileData.currentPassword}
-                    onChange={(e) =>
-                      setProfileData({
-                        ...profileData,
-                        currentPassword: e.target.value,
-                      })
-                    }
-                  />
-                  <Input
-                    label="New Password"
-                    type="password"
-                    placeholder="Enter new strong password"
-                    value={profileData.newPassword}
-                    onChange={(e) =>
-                      setProfileData({
-                        ...profileData,
-                        newPassword: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
               <div className="flex justify-end">
                 <Button
                   type="submit"
@@ -408,6 +377,71 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   className="bg-indigo-600 hover:bg-indigo-500"
                 >
                   Update Profile
+                </Button>
+              </div>
+            </form>
+
+            <form
+              onSubmit={handleChangePassword}
+              className="pt-6 border-t border-slate-200 dark:border-zinc-800 space-y-4 text-xs"
+            >
+              <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Key className="w-4 h-4 text-indigo-500" />
+                Change Security Password
+              </h3>
+
+              {passwordSavedSuccess && (
+                <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-3">
+                  <Check className="w-4 h-4 text-emerald-500" />
+                  Password successfully updated.
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Current Password"
+                  password
+                  type={showCurrentPassword ? "text" : "password"}
+                  placeholder="Enter current password"
+                  value={passwordData.currentPassword}
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      currentPassword: e.target.value,
+                    })
+                  }
+                  showPassword={() => setShowCurrentPassword(true)}
+                  hidePassword={() => setShowCurrentPassword(false)}
+                  required
+                />
+                <Input
+                  label="New Password"
+                  password
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder="Enter new strong password"
+                  value={passwordData.newPassword}
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      newPassword: e.target.value,
+                    })
+                  }
+                  showPassword={() => setShowNewPassword(true)}
+                  hidePassword={() => setShowNewPassword(false)}
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  isLoading={isChangingPassword}
+                  disabled={isChangingPassword}
+                  leftIcon={<Key className="w-4 h-4" />}
+                  className="bg-indigo-600 hover:bg-indigo-500"
+                >
+                  Change Password
                 </Button>
               </div>
             </form>

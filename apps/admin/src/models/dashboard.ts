@@ -62,8 +62,6 @@ export interface IUpdateProfilePayload {
   lastName?: string;
   email?: string;
   phone?: string;
-  currentPassword?: string;
-  newPassword?: string;
 }
 
 export interface ChurchSettings {

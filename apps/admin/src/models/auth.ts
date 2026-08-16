@@ -52,3 +52,8 @@ export interface ISignUpResponse {
 export interface IRefreshTokenPayload {
   refreshToken: string;
 }
+
+export interface IChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}

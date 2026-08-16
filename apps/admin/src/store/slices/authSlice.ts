@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { IAuthResponse, ILoginPayload, IUser } from "@/models/auth";
 import { authService } from "@/services/auth.service";
 import { getAccessToken, clearTokens, setTokens } from "@/utils/token";
+import { extractErrorMessage } from "@/utils/api-client";
 
 interface AuthState {
   user: IUser | null;
@@ -19,15 +20,6 @@ const initialState: AuthState = {
   error: null,
 };
 
-interface ApiErrorShape {
-  response?: {
-    data?: {
-      message?: string | string[];
-    };
-  };
-  message?: string;
-}
-
 export const loginUser = createAsyncThunk<
   IAuthResponse,
   ILoginPayload,
@@ -38,13 +30,8 @@ export const loginUser = createAsyncThunk<
     setTokens(data.accessToken, data.refreshToken);
     return data;
   } catch (err: unknown) {
-    const apiErr = err as ApiErrorShape;
-    const message =
-      apiErr.response?.data?.message ||
-      apiErr.message ||
-      "Failed to authenticate";
     return rejectWithValue(
-      Array.isArray(message) ? message.join(", ") : message,
+      extractErrorMessage(err, "Invalid email or password"),
     );
   }
 });
@@ -58,13 +45,8 @@ export const fetchUserProfile = createAsyncThunk<
     const user = await authService.getProfile();
     return user;
   } catch (err: unknown) {
-    const apiErr = err as ApiErrorShape;
-    const message =
-      apiErr.response?.data?.message ||
-      apiErr.message ||
-      "Failed to fetch profile";
     return rejectWithValue(
-      Array.isArray(message) ? message.join(", ") : message,
+      extractErrorMessage(err, "Failed to fetch user profile"),
     );
   }
 });

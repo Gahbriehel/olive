@@ -5,6 +5,7 @@ import {
   IAuthResponse,
   ISignUpResponse,
   IUser,
+  IChangePasswordPayload,
 } from "@/models/auth";
 import { IBaseResponse, extractData } from "@/models/base";
 
@@ -94,5 +95,13 @@ export const authService = {
       refreshToken,
       user,
     };
+  },
+
+  async changePassword(payload: IChangePasswordPayload): Promise<unknown> {
+    const res = await apiClient.post<IBaseResponse<unknown> | unknown>(
+      "/auth/change-password",
+      payload,
+    );
+    return extractData(res.data);
   },
 };

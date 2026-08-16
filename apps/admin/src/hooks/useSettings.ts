@@ -1,7 +1,9 @@
 import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { settingsService } from "@/services/settings.service";
+import { authService } from "@/services/auth.service";
 import { ChurchSettings, IUpdateProfilePayload } from "@/models/dashboard";
+import { IChangePasswordPayload } from "@/models/auth";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
 
@@ -44,6 +46,11 @@ export function useSettings() {
     },
   });
 
+  const changePasswordMutation = useMutation({
+    mutationFn: (payload: IChangePasswordPayload) =>
+      authService.changePassword(payload),
+  });
+
   const dynamicChurchName = user?.church?.name || user?.churchName;
   const effectiveSettings = useMemo(() => {
     return settingsQuery.data
@@ -70,6 +77,9 @@ export function useSettings() {
     isErrorProfile: profileQuery.isError,
     updateProfile: updateProfileMutation.mutateAsync,
     isUpdatingProfile: updateProfileMutation.isPending,
+
+    changePassword: changePasswordMutation.mutateAsync,
+    isChangingPassword: changePasswordMutation.isPending,
 
     // Backward compatibility aliases
     isLoading: settingsQuery.isLoading,

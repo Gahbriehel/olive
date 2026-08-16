@@ -104,10 +104,11 @@ export function extractErrorMessage(
 
   const errObj = error as {
     message?: string;
-    response?: { data?: unknown };
+    response?: { data?: unknown; status?: number };
   };
 
   const resData = errObj.response?.data;
+  const status = errObj.response?.status;
 
   if (resData && typeof resData === "object") {
     const dataObj = resData as Record<string, unknown>;
@@ -140,7 +141,10 @@ export function extractErrorMessage(
 
     // 2. Direct string message at root of response data
     if (typeof dataObj.message === "string" && dataObj.message.trim()) {
-      return dataObj.message.trim();
+      const msg = dataObj.message.trim();
+      if (!/^Request failed with status code/i.test(msg)) {
+        return msg;
+      }
     }
 
     // 3. Nested string message in resData.data.message
@@ -151,13 +155,19 @@ export function extractErrorMessage(
     ) {
       const innerData = dataObj.data as Record<string, unknown>;
       if (typeof innerData.message === "string" && innerData.message.trim()) {
-        return innerData.message.trim();
+        const msg = innerData.message.trim();
+        if (!/^Request failed with status code/i.test(msg)) {
+          return msg;
+        }
       }
     }
 
     // 4. Direct error property (string or object with message)
     if (typeof dataObj.error === "string" && dataObj.error.trim()) {
-      return dataObj.error.trim();
+      const errStr = dataObj.error.trim();
+      if (!/^Request failed with status code/i.test(errStr)) {
+        return errStr;
+      }
     }
 
     if (
@@ -167,14 +177,43 @@ export function extractErrorMessage(
     ) {
       const errProp = dataObj.error as Record<string, unknown>;
       if (typeof errProp.message === "string" && errProp.message.trim()) {
-        return errProp.message.trim();
+        const msg = errProp.message.trim();
+        if (!/^Request failed with status code/i.test(msg)) {
+          return msg;
+        }
       }
     }
   }
 
-  // 5. Fallback to generic Axios error message
-  if (typeof errObj.message === "string" && errObj.message.trim()) {
-    return errObj.message.trim();
+  const rawMsg =
+    typeof errObj.message === "string" ? errObj.message.trim() : "";
+  const isStatusMessage = /^Request failed with status code/i.test(rawMsg);
+
+  if (status === 401 || (isStatusMessage && rawMsg.includes("401"))) {
+    return "Session expired or unauthorized. Please sign in again.";
+  }
+  if (status === 403 || (isStatusMessage && rawMsg.includes("403"))) {
+    return "You do not have administrative permission to perform this action.";
+  }
+  if (status === 404 || (isStatusMessage && rawMsg.includes("404"))) {
+    return "The requested resource could not be found.";
+  }
+  if (status === 409 || (isStatusMessage && rawMsg.includes("409"))) {
+    return "Conflict occurred. The requested item or record already exists.";
+  }
+  if (status === 422 || (isStatusMessage && rawMsg.includes("422"))) {
+    return "Validation error. Please check your submission details.";
+  }
+  if (
+    (status && status >= 500) ||
+    (isStatusMessage && /50[0-9]/.test(rawMsg))
+  ) {
+    return "Internal server error. Please try again later.";
+  }
+
+  // 5. Fallback to generic Axios error message if not raw status text
+  if (rawMsg && !isStatusMessage) {
+    return rawMsg;
   }
 
   return defaultMsg;
@@ -226,8 +265,11 @@ apiClient.interceptors.response.use(
       customToast.error(errorMessage);
     }
 
-    // Ignore login requests for refresh handling
-    if (originalRequest?.url?.includes("/auth/login")) {
+    // Ignore authentication action endpoints (login, change-password) for session refresh/logout handling
+    if (
+      originalRequest?.url?.includes("/auth/login") ||
+      originalRequest?.url?.includes("/auth/change-password")
+    ) {
       return Promise.reject(error);
     }
 

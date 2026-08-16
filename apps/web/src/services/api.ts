@@ -59,8 +59,12 @@ function extractErrorMessage(
   defaultMsg = "Request failed",
 ): string {
   if (!error || typeof error !== "object") return defaultMsg;
-  const errObj = error as { message?: string; response?: { data?: unknown } };
+  const errObj = error as {
+    message?: string;
+    response?: { data?: unknown; status?: number };
+  };
   const resData = errObj.response?.data;
+  const status = errObj.response?.status;
 
   if (resData && typeof resData === "object") {
     const dataObj = resData as Record<string, unknown>;
@@ -85,16 +89,25 @@ function extractErrorMessage(
         if (validMsgs.length > 0) return validMsgs.join(", ");
       }
       if (typeof innerData.message === "string" && innerData.message.trim()) {
-        return innerData.message.trim();
+        const msg = innerData.message.trim();
+        if (!/^Request failed with status code/i.test(msg)) {
+          return msg;
+        }
       }
     }
 
     if (typeof dataObj.message === "string" && dataObj.message.trim()) {
-      return dataObj.message.trim();
+      const msg = dataObj.message.trim();
+      if (!/^Request failed with status code/i.test(msg)) {
+        return msg;
+      }
     }
 
     if (typeof dataObj.error === "string" && dataObj.error.trim()) {
-      return dataObj.error.trim();
+      const errStr = dataObj.error.trim();
+      if (!/^Request failed with status code/i.test(errStr)) {
+        return errStr;
+      }
     }
 
     if (
@@ -104,13 +117,38 @@ function extractErrorMessage(
     ) {
       const errProp = dataObj.error as Record<string, unknown>;
       if (typeof errProp.message === "string" && errProp.message.trim()) {
-        return errProp.message.trim();
+        const msg = errProp.message.trim();
+        if (!/^Request failed with status code/i.test(msg)) {
+          return msg;
+        }
       }
     }
   }
 
-  if (typeof errObj.message === "string" && errObj.message.trim()) {
-    return errObj.message.trim();
+  const rawMsg = typeof errObj.message === "string" ? errObj.message.trim() : "";
+  const isStatusMessage = /^Request failed with status code/i.test(rawMsg);
+
+  if (status === 401 || (isStatusMessage && rawMsg.includes("401"))) {
+    return "Session expired or unauthorized. Please try signing in.";
+  }
+  if (status === 403 || (isStatusMessage && rawMsg.includes("403"))) {
+    return "Access restricted. You do not have permission for this operation.";
+  }
+  if (status === 404 || (isStatusMessage && rawMsg.includes("404"))) {
+    return "The requested resource could not be found.";
+  }
+  if (status === 409 || (isStatusMessage && rawMsg.includes("409"))) {
+    return "Conflict occurred. The item or registration already exists.";
+  }
+  if (status === 422 || (isStatusMessage && rawMsg.includes("422"))) {
+    return "Validation error. Please check your submission details.";
+  }
+  if ((status && status >= 500) || (isStatusMessage && /50[0-9]/.test(rawMsg))) {
+    return "Internal server error. Please try again later.";
+  }
+
+  if (rawMsg && !isStatusMessage) {
+    return rawMsg;
   }
 
   return defaultMsg;
