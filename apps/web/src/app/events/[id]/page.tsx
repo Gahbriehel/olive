@@ -9,6 +9,8 @@ import * as yup from "yup";
 import { Switch } from "@headlessui/react";
 import { webService } from "@/services/api";
 import { IRegisterPayload } from "@olive/types";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import {
   Calendar,
   MapPin,
@@ -25,13 +27,17 @@ import {
 import { motion } from "framer-motion";
 
 const registrationSchema = yup.object().shape({
-  firstName: yup.string().required("First name is required"),
-  lastName: yup.string().required("Last name is required"),
-  email: yup.string().email("Invalid email address").optional(),
-  phone: yup.string().optional(),
-  gender: yup.string().optional(),
-  dateOfBirth: yup.string().optional(),
-  googleCalendarSync: yup.boolean().optional(),
+  firstName: yup.string().trim().required("First name is required"),
+  lastName: yup.string().trim().required("Last name is required"),
+  email: yup
+    .string()
+    .trim()
+    .required("Email address is required")
+    .email("Invalid email address"),
+  phone: yup.string().trim().required("Phone number is required"),
+  gender: yup.string().required("Gender selection is required"),
+  dateOfBirth: yup.string().required("Date of birth is required"),
+  googleCalendarSync: yup.boolean().optional().default(false),
 });
 
 export default function EventRegistrationPage({
@@ -53,12 +59,7 @@ export default function EventRegistrationPage({
     queryFn: () => webService.getEventById(id),
   });
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<IRegisterPayload>({
+  const { control, handleSubmit } = useForm<IRegisterPayload>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: yupResolver(registrationSchema) as any,
     defaultValues: {
@@ -250,127 +251,119 @@ export default function EventRegistrationPage({
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* First Name */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">
-                      First Name *
-                    </label>
-                    <div className="relative">
-                      <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input
-                        {...register("firstName")}
-                        type="text"
+                  <Controller
+                    name="firstName"
+                    control={control}
+                    render={({ field, fieldState: { error } }) => (
+                      <Input
+                        {...field}
+                        label="First Name"
                         placeholder="John"
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        required
+                        leftIcon={<User className="w-4 h-4" />}
+                        error={error?.message}
                       />
-                    </div>
-                    {errors.firstName && (
-                      <p className="text-xs text-rose-500">
-                        {errors.firstName.message}
-                      </p>
                     )}
-                  </div>
+                  />
 
                   {/* Last Name */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">
-                      Last Name *
-                    </label>
-                    <div className="relative">
-                      <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <input
-                        {...register("lastName")}
-                        type="text"
+                  <Controller
+                    name="lastName"
+                    control={control}
+                    render={({ field, fieldState: { error } }) => (
+                      <Input
+                        {...field}
+                        label="Last Name"
                         placeholder="Doe"
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        required
+                        leftIcon={<User className="w-4 h-4" />}
+                        error={error?.message}
                       />
-                    </div>
-                    {errors.lastName && (
-                      <p className="text-xs text-rose-500">
-                        {errors.lastName.message}
-                      </p>
                     )}
-                  </div>
+                  />
                 </div>
 
                 {/* Email */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      {...register("email")}
+                <Controller
+                  name="email"
+                  control={control}
+                  render={({ field, fieldState: { error } }) => (
+                    <Input
+                      {...field}
                       type="email"
+                      label="Email Address"
                       placeholder="john.doe@example.com"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      required
+                      leftIcon={<Mail className="w-4 h-4" />}
+                      error={error?.message}
                     />
-                  </div>
-                  {errors.email && (
-                    <p className="text-xs text-rose-500">
-                      {errors.email.message}
-                    </p>
                   )}
-                </div>
+                />
 
                 {/* Phone */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">
-                    Phone Number
-                  </label>
-                  <div className="relative">
-                    <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      {...register("phone")}
+                <Controller
+                  name="phone"
+                  control={control}
+                  render={({ field, fieldState: { error } }) => (
+                    <Input
+                      {...field}
                       type="tel"
+                      label="Phone Number"
                       placeholder="+234 123 4567 890"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      required
+                      leftIcon={<Phone className="w-4 h-4" />}
+                      error={error?.message}
                     />
-                  </div>
-                </div>
+                  )}
+                />
 
                 {/* Gender & DOB */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">
-                      Gender
-                    </label>
-                    <select
-                      {...register("gender")}
-                      className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-white"
-                    >
-                      <option
-                        value="MALE"
-                        className="bg-[#1F1F1F] text-[#F7F5F0]"
+                  <Controller
+                    name="gender"
+                    control={control}
+                    render={({ field, fieldState: { error } }) => (
+                      <Select
+                        {...field}
+                        label="Gender"
+                        required
+                        error={error?.message}
                       >
-                        Male
-                      </option>
-                      <option
-                        value="FEMALE"
-                        className="bg-[#1F1F1F] text-[#F7F5F0]"
-                      >
-                        Female
-                      </option>
-                    </select>
-                  </div>
+                        <option
+                          value="MALE"
+                          className="bg-[#1F1F1F] text-[#F7F5F0]"
+                        >
+                          Male
+                        </option>
+                        <option
+                          value="FEMALE"
+                          className="bg-[#1F1F1F] text-[#F7F5F0]"
+                        >
+                          Female
+                        </option>
+                      </Select>
+                    )}
+                  />
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">
-                      Date of Birth
-                    </label>
-                    <input
-                      {...register("dateOfBirth")}
-                      type="date"
-                      className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                    />
-                  </div>
+                  <Controller
+                    name="dateOfBirth"
+                    control={control}
+                    render={({ field, fieldState: { error } }) => (
+                      <Input
+                        {...field}
+                        type="date"
+                        label="Date of Birth"
+                        required
+                        error={error?.message}
+                      />
+                    )}
+                  />
                 </div>
 
                 {/* Google Calendar Sync Switch */}
                 <Controller
                   name="googleCalendarSync"
                   control={control}
-                  defaultValue={false}
                   render={({ field: { value, onChange } }) => (
                     <div className="flex items-center justify-between p-3.5 rounded-xl bg-white/5 border border-white/10 mt-2">
                       <div className="space-y-0.5">
