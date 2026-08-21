@@ -175,6 +175,7 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
               title: data.title,
               description: data.description || "",
               location: data.location || "",
+              capacity: data.capacity || 0,
               startDate: data.startDate,
               endDate: data.endDate,
               status: data.status || "DRAFT",

@@ -11,6 +11,8 @@ export interface ChurchEvent {
   capacity: number;
   registeredCount: number;
   checkedInCount: number;
+  games?: number;
+  teams?: number;
   status: EventStatus;
   registrationDeadline: string;
   teamAssignmentEnabled: boolean;
@@ -27,11 +29,16 @@ export interface IApiEvent {
   startDate: string;
   endDate: string;
   location?: string;
+  capacity?: number;
   status: ApiEventStatus;
   imageUrl?: string;
   googleCalendarSync?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  checkedInCount?: number;
+  registeredCount?: number;
+  games?: number;
+  teams?: number;
 }
 
 export interface ICreateEventPayload {
@@ -41,6 +48,7 @@ export interface ICreateEventPayload {
   startDate: string;
   endDate: string;
   location?: string;
+  capacity?: number;
   status?: ApiEventStatus;
   imageUrl?: string;
   googleCalendarSync?: boolean;
@@ -60,9 +68,11 @@ export function adaptApiEventToChurchEvent(apiEvent: IApiEvent): ChurchEvent {
     startDate: apiEvent.startDate,
     endDate: apiEvent.endDate,
     location: apiEvent.location || "N/A",
-    capacity: 500,
-    registeredCount: 0,
-    checkedInCount: 0,
+    capacity: apiEvent.capacity || 500,
+    registeredCount: apiEvent.registeredCount ?? 0,
+    checkedInCount: apiEvent.checkedInCount ?? 0,
+    games: apiEvent.games ?? 0,
+    teams: apiEvent.teams ?? 0,
     status: apiEvent.status || "DRAFT",
     registrationDeadline: apiEvent.startDate,
     teamAssignmentEnabled: true,

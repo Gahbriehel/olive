@@ -39,6 +39,8 @@ export interface ChurchEvent {
   capacity: number;
   registeredCount: number;
   checkedInCount: number;
+  games?: number;
+  teams?: number;
   status: EventStatus;
   registrationDeadline: string;
   teamAssignmentEnabled: boolean;
@@ -55,11 +57,16 @@ export interface IApiEvent {
   startDate: string;
   endDate: string;
   location?: string;
+  capacity?: number;
   status: ApiEventStatus;
   imageUrl?: string;
   googleCalendarSync?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  checkedInCount?: number;
+  registeredCount?: number;
+  games?: number;
+  teams?: number;
 }
 
 export interface ICreateEventPayload {

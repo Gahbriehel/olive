@@ -16,6 +16,7 @@ export interface EventFormValues {
   title: string;
   description?: string;
   location?: string;
+  capacity?: number;
   startDate: string;
   endDate: string;
   status: EventStatusEnum;
@@ -70,6 +71,7 @@ export const EventsForm: React.FC<EventsFormProps> = ({
         title: initialValues?.title || "",
         description: initialValues?.description || "",
         location: initialValues?.location || "",
+        capacity: initialValues?.capacity || 0,
         startDate: formatForDateTimeInput(initialValues?.startDate) || "",
         endDate: formatForDateTimeInput(initialValues?.endDate) || "",
         status: initialValues?.status || "DRAFT",
@@ -104,6 +106,7 @@ export const EventsForm: React.FC<EventsFormProps> = ({
       setIsSubmitting(true);
       await onSubmit({
         ...data,
+        capacity: data.capacity ? Number(data.capacity) : 0,
         status: data.status || "DRAFT",
         googleCalendarSync: Boolean(data.googleCalendarSync),
       });
@@ -170,6 +173,20 @@ export const EventsForm: React.FC<EventsFormProps> = ({
               {...field}
               label="Location"
               placeholder="e.g. Main Auditorium"
+              error={error?.message}
+            />
+          )}
+        />
+
+        <Controller
+          name="capacity"
+          control={control}
+          render={({ field, fieldState: { error } }) => (
+            <Input
+              {...field}
+              label="Capacity"
+              type="number"
+              placeholder="e.g. 100"
               error={error?.message}
             />
           )}
