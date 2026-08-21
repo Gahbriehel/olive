@@ -1,10 +1,14 @@
 "use client";
 
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { BookOpen } from "lucide-react";
 
 export function Hero() {
+  const [showTooltip, setShowTooltip] = useState(false);
+
   return (
     <section className="relative min-h-[90vh] lg:min-h-screen overflow-hidden text-[#F7F5F0] flex flex-col items-center justify-center py-20 lg:py-32">
       {/* Hero Background Image & Overlay */}
@@ -21,14 +25,49 @@ export function Hero() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center flex flex-col items-center">
-        {/* Hebrews 13:8 metadata label */}
+        {/* John 15:7 metadata label with interactive tooltip */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="inline-flex items-center text-[#B18A4A] text-xs font-medium uppercase tracking-[0.25em] mb-6"
+          className="relative mb-6 z-20"
         >
-          Hebrews 13:8
+          <button
+            type="button"
+            onClick={() => setShowTooltip((prev) => !prev)}
+            onMouseEnter={() => setShowTooltip(true)}
+            onMouseLeave={() => setShowTooltip(false)}
+            onFocus={() => setShowTooltip(true)}
+            onBlur={() => setShowTooltip(false)}
+            aria-label="John 15:7 anchor scripture tooltip"
+            className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full border border-[#B18A4A]/40 bg-[#B18A4A]/10 hover:bg-[#B18A4A]/20 hover:border-[#B18A4A] text-[#B18A4A] text-xs font-medium uppercase tracking-[0.25em] transition-all duration-200 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-[#B18A4A]/50"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-[#B18A4A] group-hover:scale-110 transition-transform" />
+            <span>John 15:7</span>
+          </button>
+
+          <AnimatePresence>
+            {showTooltip && (
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 5, scale: 0.96 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-72 sm:w-96 p-4 rounded-md bg-[#1F1F1F]/95 backdrop-blur-md border border-[#B18A4A]/40 shadow-2xl text-left pointer-events-none z-30"
+              >
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
+                  <span className="text-[10px] font-sans uppercase tracking-[0.2em] text-[#B18A4A] font-semibold">
+                    Anchor Scripture (NKJV)
+                  </span>
+                  <span className="text-[10px] text-[#77736B]">John 15:7</span>
+                </div>
+                <p className="text-xs sm:text-sm font-sans font-light italic text-[#F7F5F0] leading-relaxed">
+                  &ldquo;If you abide in Me, and My words abide in you, you will
+                  ask what you desire, and it shall be done for you.&rdquo;
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* Main Church Name — Editorial Display Serif */}
@@ -80,13 +119,6 @@ export function Hero() {
           >
             Join Us This Sunday
           </Link>
-          {/* <Link
-            href="/contact"
-            className="px-8 py-3.5 rounded-sm border border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-[#F7F5F0] font-medium text-xs uppercase tracking-wider transition-colors duration-200 flex items-center space-x-2"
-          >
-            <Play className="w-3.5 h-3.5 fill-[#F7F5F0]" />
-            <span>Watch Live</span>
-          </Link> */}
           <Link
             href="/contact"
             className="px-8 py-3.5 rounded-sm border border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-[#F7F5F0] font-medium text-xs uppercase tracking-wider transition-colors duration-200 flex items-center space-x-2"

@@ -33,12 +33,12 @@ export function Footer() {
             </p>
 
             <div className="border-l-2 border-[#B18A4A]/50 pl-3 py-1 space-y-1">
-              <p className="text-xs italic text-[#A3A3A3]">
-                &ldquo;Jesus Christ the same yesterday, and to day, and for
-                ever.&rdquo;
+              <p className="text-xs italic text-[#A3A3A3] leading-relaxed">
+                &ldquo;If you abide in Me, and My words abide in you, you will
+                ask what you desire, and it shall be done for you.&rdquo;
               </p>
               <p className="text-[11px] font-medium text-[#B18A4A] uppercase tracking-wider">
-                — Hebrews 13:8
+                — John 15:7 (NKJV)
               </p>
             </div>
           </div>

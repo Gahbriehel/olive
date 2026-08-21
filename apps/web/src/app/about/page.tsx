@@ -2,6 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 import { Compass, Target, Heart, Users, BookOpen, Award } from "lucide-react";
 import { WeeklyServices } from "@/components/weekly-services";
+import { AnchorScripture } from "@/components/anchor-scripture";
 
 export const metadata: Metadata = {
   title: "About Us, Mission & Vision",
@@ -29,6 +30,9 @@ export default function AboutPage() {
           </p>
         </div>
       </section>
+
+      {/* ANCHOR SCRIPTURE SECTION — JOHN 15:1-8 (NKJV) */}
+      <AnchorScripture />
 
       {/* MISSION & VISION EDITORIAL GRID */}
       <section className="py-24 border-b border-white/10">
