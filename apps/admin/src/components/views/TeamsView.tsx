@@ -392,7 +392,7 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
       )}
 
       {/* Roster Reassignment Console (if registrations exist) */}
-      {registrations.length > 0 && (
+      {/* {registrations.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Roster Reassignment Console</CardTitle>
@@ -436,7 +436,7 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
             </div>
           </CardContent>
         </Card>
-      )}
+      )} */}
 
       {/* Create Team Sidebar Modal */}
       <SidebarModal
