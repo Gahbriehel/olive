@@ -166,3 +166,23 @@ export interface ChurchSettings {
     allowSelfRegistration: boolean;
   };
 }
+
+// Leaderboard types
+export interface ILeaderboardEntry {
+  rank?: number;
+  teamId: string;
+  teamName: string;
+  color?: string;
+  colorHex?: string;
+  totalScore?: number;
+  totalPoints?: number;
+  memberCount?: number;
+  gamesPlayed?: number;
+}
+
+export interface ILeaderboardResponseData {
+  eventId: string;
+  eventTitle?: string;
+  leaderboard: ILeaderboardEntry[];
+}
+

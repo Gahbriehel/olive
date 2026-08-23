@@ -23,6 +23,7 @@ import {
   QrCode,
   Sparkles,
   Loader2,
+  Trophy,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -40,6 +41,11 @@ const registrationSchema = yup.object().shape({
   googleCalendarSync: yup.boolean().optional().default(false),
 });
 
+function isEventStarted(startDate?: string): boolean {
+  if (!startDate) return false;
+  return new Date(startDate).getTime() <= Date.now();
+}
+
 export default function EventRegistrationPage({
   params,
 }: {
@@ -49,7 +55,6 @@ export default function EventRegistrationPage({
   const [successRegistration, setSuccessRegistration] = useState<
     unknown | null
   >(null);
-
   const {
     data: event,
     isLoading,
@@ -58,6 +63,8 @@ export default function EventRegistrationPage({
     queryKey: ["eventDetail", id],
     queryFn: () => webService.getEventById(id),
   });
+
+  const hasStarted = isEventStarted(event?.startDate);
 
   const { control, handleSubmit } = useForm<IRegisterPayload>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -177,6 +184,18 @@ export default function EventRegistrationPage({
                     <p className="text-xs text-slate-500">{event.location}</p>
                   </div>
                 </div>
+
+                {hasStarted && (
+                  <div className="pt-4 border-t border-white/10">
+                    <Link
+                      href={`/leaderboard/${id}`}
+                      className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500/20 to-amber-600/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center space-x-2 shadow-sm"
+                    >
+                      <Trophy className="w-4 h-4 text-amber-400" />
+                      <span>View Live Standings & Leaderboard</span>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </div>

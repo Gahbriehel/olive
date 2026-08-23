@@ -6,6 +6,8 @@ import {
   IRegisterPayload,
   IApiRegistration,
   IBaseResponse,
+  ILeaderboardEntry,
+  ILeaderboardResponseData,
 } from "@olive/types";
 
 const API_URL =
@@ -282,5 +284,51 @@ export const webService = {
       return data.data;
     }
     return data as IApiRegistration;
+  },
+
+  // Fetch Event Leaderboard
+  async getLeaderboard(eventId: string): Promise<ILeaderboardResponseData> {
+    try {
+      const res = await webApiClient.get<unknown>(`/leaderboard/${eventId}`);
+      const rawData = res.data as Record<string, unknown> | null;
+      let dataObj = rawData;
+
+      if (
+        rawData &&
+        typeof rawData === "object" &&
+        "data" in rawData &&
+        rawData.data
+      ) {
+        dataObj = rawData.data as Record<string, unknown>;
+      }
+
+      if (dataObj && typeof dataObj === "object") {
+        const eventTitle =
+          typeof dataObj.eventTitle === "string"
+            ? dataObj.eventTitle
+            : undefined;
+        const respEventId =
+          typeof dataObj.eventId === "string" ? dataObj.eventId : eventId;
+
+        if ("leaderboard" in dataObj && Array.isArray(dataObj.leaderboard)) {
+          return {
+            eventId: respEventId,
+            eventTitle,
+            leaderboard: dataObj.leaderboard as ILeaderboardEntry[],
+          };
+        }
+      }
+
+      if (Array.isArray(rawData)) {
+        return {
+          eventId,
+          leaderboard: rawData as ILeaderboardEntry[],
+        };
+      }
+
+      return { eventId, leaderboard: [] };
+    } catch {
+      return { eventId, leaderboard: [] };
+    }
   },
 };
