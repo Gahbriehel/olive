@@ -98,7 +98,7 @@ export const EventsView: React.FC<EventsViewProps> = ({
     }
   }, [debouncedSearchTerm]);
 
-  const totalEvents = events.length;
+  const totalEvents = meta?.total ?? events.length;
   const publishedEvents = events.filter((e) => e.status === "PUBLISHED").length;
   const draftEvents = events.filter((e) => e.status === "DRAFT").length;
   const totalRegistrations = events.reduce(

@@ -67,7 +67,7 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
     useState<Registration | null>(null);
   const [selectedNewTeamId, setSelectedNewTeamId] = useState("");
 
-  const totalReg = registrations.length;
+  const totalReg = meta?.total ?? registrations.length;
   const checkedIn = registrations.filter(
     (r) => r.status === "Checked-In",
   ).length;

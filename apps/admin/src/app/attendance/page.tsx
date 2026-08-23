@@ -14,18 +14,45 @@ import {
 export default function AttendancePage() {
   const {
     selectedEventId,
+    activeEvent,
     handleCheckIn: apiCheckIn,
     isQrScannerOpen,
     setIsQrScannerOpen,
     currentRole,
   } = useDashboard();
 
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
   const regParams = useMemo(
-    () => ({ eventId: selectedEventId }),
-    [selectedEventId],
+    () => ({
+      eventId: selectedEventId,
+      page,
+      limit,
+      search: search || undefined,
+    }),
+    [selectedEventId, page, limit, search],
   );
-  const { registrations: apiRegistrations, refetch } =
-    useRegistrations(regParams);
+  const {
+    registrations: apiRegistrations,
+    meta,
+    refetch,
+  } = useRegistrations(regParams);
+
+  const handleSearchChange = (newSearch: string) => {
+    setSearch((prevSearch) => {
+      if (prevSearch !== newSearch) {
+        setPage(1);
+      }
+      return newSearch;
+    });
+  };
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
 
   const initialRegistrations = useMemo(
     () =>
@@ -97,6 +124,14 @@ export default function AttendancePage() {
       isScannerOpen={isQrScannerOpen}
       setIsScannerOpen={setIsQrScannerOpen}
       onRefetch={refetch}
+      meta={meta}
+      activeEvent={activeEvent}
+      page={page}
+      onPageChange={setPage}
+      limit={limit}
+      onLimitChange={handleLimitChange}
+      search={search}
+      onSearchChange={handleSearchChange}
     />
   );
 }

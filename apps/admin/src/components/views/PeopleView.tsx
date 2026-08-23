@@ -79,7 +79,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
 
   // Calculate dynamic stats from people
-  const totalPeople = people.length;
+  const totalPeople = meta?.total ?? people.length;
   const totalMembers = people.filter(
     (p) => p.membershipStatus === "Member",
   ).length;

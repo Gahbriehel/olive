@@ -34,10 +34,10 @@ export default function TeamsPage() {
   });
 
   const registrationsParams = useMemo(
-    () => ({ eventId: selectedEventId }),
+    () => ({ eventId: selectedEventId, limit: 1000 }),
     [selectedEventId],
   );
-  const { registrations: apiRegistrations } =
+  const { registrations: apiRegistrations, meta: registrationsMeta } =
     useRegistrations(registrationsParams);
 
   const teams = useMemo(
@@ -131,6 +131,7 @@ export default function TeamsPage() {
       teams={teams}
       registrations={registrations}
       meta={meta}
+      registrationsMeta={registrationsMeta}
       search={search}
       onSearchChange={handleSearchChange}
       page={page}

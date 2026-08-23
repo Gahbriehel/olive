@@ -34,6 +34,12 @@ interface TeamsViewProps {
     limit?: number;
     totalPages?: number;
   };
+  registrationsMeta?: {
+    total?: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
+  };
   search: string;
   onSearchChange: (search: string) => void;
   page: number;
@@ -57,6 +63,7 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
   teams,
   registrations = [],
   meta,
+  registrationsMeta,
   search,
   onSearchChange,
   page,
@@ -102,7 +109,7 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
   const totalPages = meta?.totalPages ?? 1;
   const displayedTeams = teams;
 
-  const totalAllocated = registrations.length;
+  const totalAllocated = registrationsMeta?.total ?? registrations.length;
   const highestPointsTeam = teams.reduce(
     (max, t) => (t.totalPoints > max.totalPoints ? t : max),
     teams[0] || { name: "N/A", totalPoints: 0 },

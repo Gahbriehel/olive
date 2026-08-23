@@ -168,7 +168,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
     }
   };
 
-  const totalUsers = users.length;
+  const totalUsers = meta?.total ?? users.length;
   const activeUsers = users.filter((u) => u.status === "Active").length;
   const superAdmins = users.filter(
     (u) =>
