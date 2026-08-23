@@ -172,7 +172,7 @@ export default function EventsListPage() {
                     href={`/events/${event.id}`}
                     className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-sm bg-[#B18A4A] hover:bg-[#9C773B] text-white font-medium text-xs uppercase tracking-wider transition-colors group/btn"
                   >
-                    <span>Register</span>
+                    <span>View Details</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
                   </Link>
                 </div>
