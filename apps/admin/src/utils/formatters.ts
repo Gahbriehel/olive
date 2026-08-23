@@ -63,7 +63,8 @@ export function toISOInEventTimezone(dateTimeStr?: string): string {
     return new Date(dateTimeStr).toISOString();
   }
   // Otherwise, it's a naive local datetime string from <input type="datetime-local"> (e.g. "2026-08-25T10:00")
-  const formatted = dateTimeStr.length === 16 ? `${dateTimeStr}:00` : dateTimeStr;
+  const formatted =
+    dateTimeStr.length === 16 ? `${dateTimeStr}:00` : dateTimeStr;
   return new Date(`${formatted}+01:00`).toISOString();
 }
 
@@ -107,4 +108,3 @@ export function formatDateTimeDisplay(dateStr?: string): string {
     return dateStr;
   }
 }
-

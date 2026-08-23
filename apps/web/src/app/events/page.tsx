@@ -135,15 +135,12 @@ export default function EventsListPage() {
                     <div className="flex items-center space-x-1.5 text-xs font-sans text-[#77736B]">
                       <Calendar className="w-3.5 h-3.5 text-[#B18A4A]" />
                       <span>
-                        {new Date(event.startDate).toLocaleDateString(
-                          "en-US",
-                          {
-                            timeZone: "Africa/Lagos",
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          },
-                        )}
+                        {new Date(event.startDate).toLocaleDateString("en-US", {
+                          timeZone: "Africa/Lagos",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
                       </span>
                     </div>
                   </div>
