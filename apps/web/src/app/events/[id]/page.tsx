@@ -169,7 +169,8 @@ export default function EventRegistrationPage({
                       Start Date & Time
                     </p>
                     <p className="text-xs text-slate-500">
-                      {new Date(event.startDate).toLocaleString(undefined, {
+                      {new Date(event.startDate).toLocaleString("en-US", {
+                        timeZone: "Africa/Lagos",
                         dateStyle: "full",
                         timeStyle: "short",
                       })}
@@ -236,7 +237,12 @@ export default function EventRegistrationPage({
                   Event: {event.title}
                 </p>
                 <p className="text-xs text-slate-500">
-                  Date: {new Date(event.startDate).toLocaleDateString()}
+                  Date: {new Date(event.startDate).toLocaleDateString("en-US", {
+                    timeZone: "Africa/Lagos",
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
                 </p>
               </div>
 

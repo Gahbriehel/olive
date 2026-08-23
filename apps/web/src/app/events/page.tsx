@@ -136,8 +136,9 @@ export default function EventsListPage() {
                       <Calendar className="w-3.5 h-3.5 text-[#B18A4A]" />
                       <span>
                         {new Date(event.startDate).toLocaleDateString(
-                          undefined,
+                          "en-US",
                           {
+                            timeZone: "Africa/Lagos",
                             month: "short",
                             day: "numeric",
                             year: "numeric",

@@ -9,6 +9,7 @@ import { Select, type ISelect } from "@/components/ui/Select";
 import { BaseButton, DeleteButton } from "@/components/ui/Button";
 import { cn } from "@/helpers/cn";
 import { uploadsService } from "@/services/uploads.service";
+import { formatDateTimeInput, toISOInEventTimezone } from "@/utils/formatters";
 
 export type EventStatusEnum = "DRAFT" | "PUBLISHED" | "COMPLETED" | "CANCELLED";
 
@@ -53,18 +54,6 @@ export const EventsForm: React.FC<EventsFormProps> = ({
   const [isDeletingState, setIsDeletingState] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  const formatForDateTimeInput = (dateStr?: string) => {
-    if (!dateStr) return "";
-    try {
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return dateStr;
-      const pad = (n: number) => n.toString().padStart(2, "0");
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    } catch {
-      return dateStr;
-    }
-  };
-
   const { control, handleSubmit, watch, setValue, formState } =
     useForm<EventFormValues>({
       defaultValues: {
@@ -72,8 +61,8 @@ export const EventsForm: React.FC<EventsFormProps> = ({
         description: initialValues?.description || "",
         location: initialValues?.location || "",
         capacity: initialValues?.capacity || 0,
-        startDate: formatForDateTimeInput(initialValues?.startDate) || "",
-        endDate: formatForDateTimeInput(initialValues?.endDate) || "",
+        startDate: formatDateTimeInput(initialValues?.startDate) || "",
+        endDate: formatDateTimeInput(initialValues?.endDate) || "",
         status: initialValues?.status || "DRAFT",
         imageUrl: initialValues?.imageUrl || "",
         googleCalendarSync: initialValues?.googleCalendarSync ?? false,
@@ -106,6 +95,8 @@ export const EventsForm: React.FC<EventsFormProps> = ({
       setIsSubmitting(true);
       await onSubmit({
         ...data,
+        startDate: toISOInEventTimezone(data.startDate),
+        endDate: toISOInEventTimezone(data.endDate),
         capacity: data.capacity ? Number(data.capacity) : 0,
         status: data.status || "DRAFT",
         googleCalendarSync: Boolean(data.googleCalendarSync),

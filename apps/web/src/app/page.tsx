@@ -151,8 +151,9 @@ export default function HomePage() {
                   <span>
                     {nextEvent?.startDate
                       ? new Date(nextEvent.startDate).toLocaleDateString(
-                          undefined,
+                          "en-US",
                           {
+                            timeZone: "Africa/Lagos",
                             weekday: "short",
                             month: "short",
                             day: "numeric",
