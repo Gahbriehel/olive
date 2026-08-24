@@ -207,7 +207,7 @@ export default function EventDetailsPage({
               <button
                 onClick={() => setIsRegisterModalOpen(true)}
                 disabled={hasEnded || isFull}
-                className="px-8 py-4 rounded-2xl bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold text-sm shadow-xl shadow-amber-950/40 transition-all flex items-center space-x-2.5"
+                className="px-8 py-4 rounded-2xl bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold text-sm shadow-xl shadow-amber-950/40 transition-all flex items-center space-x-2.5 cursor-pointer"
               >
                 <Ticket className="w-5 h-5" />
                 <span>
@@ -394,7 +394,7 @@ export default function EventDetailsPage({
                 <button
                   onClick={() => setIsRegisterModalOpen(true)}
                   disabled={hasEnded || isFull}
-                  className="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center space-x-2"
+                  className="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center space-x-2 cursor-pointer"
                 >
                   <Ticket className="w-4 h-4" />
                   <span>
