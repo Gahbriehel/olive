@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/FormElements/Input";
 import { Tabs } from "@/components/ui/Tabs";
 import { ChurchSettings, IUpdateProfilePayload } from "@/models/dashboard";
 import { useSettings } from "@/hooks/useSettings";

@@ -5,7 +5,7 @@ import { Controller, useForm } from "react-hook-form";
 
 dayjs.extend(utc);
 
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/FormElements/Input";
 import { Select, type ISelect } from "@/components/ui/Select";
 import { BaseButton } from "@/components/ui/Button";
 import { SidebarModal } from "@/components/ui/SidebarModal";

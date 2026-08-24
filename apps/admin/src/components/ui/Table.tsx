@@ -22,7 +22,7 @@ import {
   ArrowDown,
   FileSpreadsheet,
 } from "lucide-react";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/FormElements/Input";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
 export interface TableProps<TData, TValue> {

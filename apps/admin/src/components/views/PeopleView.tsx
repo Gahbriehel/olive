@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
-import { Select } from "@/components/ui/Input";
+import { Select } from "@/components/FormElements/Select";
 import { Badge } from "@/components/ui/Badge";
 
 import { Tabs } from "@/components/ui/Tabs";

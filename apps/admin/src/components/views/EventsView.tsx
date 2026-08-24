@@ -17,7 +17,8 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
-import { Input, Select } from "@/components/ui/Input";
+import { Input } from "@/components/FormElements/Input";
+import { Select } from "@/components/FormElements/Select";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/helpers/cn";
 import { ActionsList } from "@/components/ui/ActionsList";

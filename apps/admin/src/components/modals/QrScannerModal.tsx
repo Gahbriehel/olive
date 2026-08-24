@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/FormElements/Input";
 import {
   decodeQrFromImageData,
   decodeQrFromImageFile,

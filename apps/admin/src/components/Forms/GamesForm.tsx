@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/FormElements/Input";
 import { BaseButton, DeleteButton } from "@/components/ui/Button";
 import { cn } from "@/helpers/cn";
 

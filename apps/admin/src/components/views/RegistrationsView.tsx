@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
-import { Select } from "@/components/ui/Input";
+import { Select } from "@/components/FormElements/Select";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { StatsCard } from "@/components/ui/StatsCard";

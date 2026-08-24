@@ -26,7 +26,7 @@ const ReactQuill = dynamic(
     loading: () => (
       <div className="h-[200px] w-full animate-pulse rounded-xl bg-gray-100" />
     ),
-  }
+  },
 );
 
 interface RichTextEditorProps {
@@ -43,7 +43,7 @@ interface RichTextEditorProps {
 export const RichTextEditor = forwardRef<ReactQuillType, RichTextEditorProps>(
   function RichTextEditor(
     { label, error, required, value, onChange, placeholder, className, id },
-    ref
+    ref,
   ) {
     const modules = useMemo(
       () => ({
@@ -54,7 +54,7 @@ export const RichTextEditor = forwardRef<ReactQuillType, RichTextEditorProps>(
           ["link", "clean"],
         ],
       }),
-      []
+      [],
     );
 
     return (
@@ -72,7 +72,7 @@ export const RichTextEditor = forwardRef<ReactQuillType, RichTextEditorProps>(
           className={clsx(
             "rich-text-editor-container min-h-[250px] w-full overflow-hidden rounded-xl border bg-gray-50 dark:bg-slate-900 focus-within:border-primary-500 transition-all",
             error ? "border-red-500" : "border-gray-200 dark:border-slate-800",
-            className
+            className,
           )}
         >
           <ReactQuill
@@ -230,5 +230,5 @@ export const RichTextEditor = forwardRef<ReactQuillType, RichTextEditorProps>(
         `}</style>
       </fieldset>
     );
-  }
+  },
 );

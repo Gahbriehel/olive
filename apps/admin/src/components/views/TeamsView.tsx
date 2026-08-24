@@ -3,8 +3,6 @@ import {
   Plus,
   Shield,
   Users,
-  Trophy,
-  Scale,
   Search,
   ChevronLeft,
   ChevronRight,
@@ -15,7 +13,7 @@ import {
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/FormElements/Input";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
@@ -110,16 +108,6 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
   const displayedTeams = teams;
 
   const totalAllocated = registrationsMeta?.total ?? registrations.length;
-  const highestPointsTeam = teams.reduce(
-    (max, t) => (t.totalPoints > max.totalPoints ? t : max),
-    teams[0] || { name: "N/A", totalPoints: 0 },
-  );
-  const avgPoints =
-    teams.length > 0
-      ? (
-          teams.reduce((sum, t) => sum + t.totalPoints, 0) / teams.length
-        ).toFixed(1)
-      : "0";
 
   const handleQuickMove = (regId: string, currentTeamId: string) => {
     if (!onReassignTeam || teams.length === 0) return;
@@ -159,7 +147,7 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
         <StatsCard
           title="Total Teams"
           value={totalItems.toLocaleString()}
-          change="Tournament divisions"
+          change="Teams created"
           trend="neutral"
           icon={Shield}
           color="indigo"
@@ -171,22 +159,6 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
           trend="up"
           icon={Users}
           color="emerald"
-        />
-        <StatsCard
-          title="Leader Team"
-          value={highestPointsTeam.name}
-          change={`${highestPointsTeam.totalPoints} total points`}
-          trend="up"
-          icon={Trophy}
-          color="amber"
-        />
-        <StatsCard
-          title="Average Score"
-          value={`${avgPoints} pts`}
-          change="Team performance average"
-          trend="neutral"
-          icon={Scale}
-          color="cyan"
         />
       </div>
 

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/FormElements/Input";
 import { Badge } from "@/components/ui/Badge";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { QrScannerModal } from "@/components/modals/QrScannerModal";
