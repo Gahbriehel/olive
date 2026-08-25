@@ -141,7 +141,7 @@ export default function HomePage() {
               <h2 className="text-3xl sm:text-5xl font-serif font-medium text-[#F7F5F0] tracking-tight">
                 {nextEvent ? nextEvent.title : "Night Of Wonders"}
               </h2>
-              <p className="text-[#D4D0C7] text-base leading-relaxed font-sans font-light">
+              <p className="text-[#D4D0C7] text-base leading-relaxed font-sans font-light line-clamp-3">
                 {nextEvent?.description ||
                   "Join us for a special session of prayer, divine encounters, and spiritual renewal."}
               </p>

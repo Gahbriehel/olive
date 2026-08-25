@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Input } from "@/components/FormElements/Input";
+import { TextArea } from "@/components/FormElements/TextArea";
 import { BaseButton, DeleteButton } from "@/components/ui/Button";
 import { cn } from "@/helpers/cn";
 
@@ -113,7 +114,7 @@ export const GamesForm: React.FC<GamesFormProps> = ({
           name="description"
           control={control}
           render={({ field, fieldState: { error } }) => (
-            <Input
+            <TextArea
               {...field}
               label="Description"
               placeholder="Brief rules or description..."

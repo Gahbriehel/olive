@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { Switch } from "@headlessui/react";
 import { Upload, Image as ImageIcon, Loader2 } from "lucide-react";
 import { Input } from "@/components/FormElements/Input";
+import { TextArea } from "@/components/FormElements/TextArea";
 import { Select, type ISelect } from "@/components/ui/Select";
 import { BaseButton, DeleteButton } from "@/components/ui/Button";
 import { cn } from "@/helpers/cn";
@@ -146,11 +147,12 @@ export const EventsForm: React.FC<EventsFormProps> = ({
           name="description"
           control={control}
           render={({ field, fieldState: { error } }) => (
-            <Input
+            <TextArea
               {...field}
               label="Description"
-              placeholder="Enter brief description..."
+              placeholder="Enter event description (supports multi-line paragraphs and lists)..."
               error={error?.message}
+              rows={5}
             />
           )}
         />
