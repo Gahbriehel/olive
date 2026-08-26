@@ -21,7 +21,9 @@ import { Table } from "@/components/ui/Table";
 import { ColumnDef } from "@tanstack/react-table";
 import { getUserColumns } from "./users/users-columns";
 import { AuthorityGuard } from "@/components/auth/AuthorityGuard";
-import { ROLES } from "@/utils/rbac";
+import { ROLES, getUserRoles, hasAuthority } from "@/utils/rbac";
+import { IS_STRICT_RBAC_RESTRICTED } from "@/config/features";
+import { useAuth } from "@/hooks/useAuth";
 import {
   AdminUser,
   ICreateUserPayload,
@@ -89,6 +91,13 @@ export const UsersView: React.FC<UsersViewProps> = ({
   const isCreating = propIsCreating || hookIsCreating;
   const isUpdating = propIsUpdating || hookIsUpdating;
   const isDeleting = propIsDeleting || hookIsDeleting;
+
+  const { user } = useAuth();
+  const userRoles = getUserRoles(user);
+  const isSuperAdmin = hasAuthority(userRoles, [ROLES.SUPER_ADMIN]);
+  const canAccessUserDirectory = IS_STRICT_RBAC_RESTRICTED
+    ? isSuperAdmin
+    : true;
 
   const [activeTab, setActiveTab] = useState<"users" | "permissions">("users");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -417,99 +426,133 @@ export const UsersView: React.FC<UsersViewProps> = ({
         </div>
       )}
 
-      {/* Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          title="Total System Users"
-          value={totalUsers.toLocaleString()}
-          change="Admin accounts"
-          trend="neutral"
-          icon={UsersIcon}
-          color="indigo"
-        />
-        <StatsCard
-          title="Active Accounts"
-          value={activeUsers.toLocaleString()}
-          change="Logged in recently"
-          trend="up"
-          icon={ShieldCheck}
-          color="emerald"
-        />
-        <StatsCard
-          title="System Administrators"
-          value={superAdmins.toLocaleString()}
-          change="ADMINS"
-          trend="neutral"
-          icon={Shield}
-          color="cyan"
-        />
-        <StatsCard
-          title="Coordinators & Desk Staff"
-          value={deskStaff.toLocaleString()}
-          change="COORDINATORS"
-          trend="neutral"
-          icon={Lock}
-          color="amber"
-        />
-      </div>
+      {canAccessUserDirectory ? (
+        <>
+          {/* Metrics Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatsCard
+              title="Total System Users"
+              value={totalUsers.toLocaleString()}
+              change="Admin accounts"
+              trend="neutral"
+              icon={UsersIcon}
+              color="indigo"
+            />
+            <StatsCard
+              title="Active Accounts"
+              value={activeUsers.toLocaleString()}
+              change="Logged in recently"
+              trend="up"
+              icon={ShieldCheck}
+              color="emerald"
+            />
+            <StatsCard
+              title="System Administrators"
+              value={superAdmins.toLocaleString()}
+              change="ADMINS"
+              trend="neutral"
+              icon={Shield}
+              color="cyan"
+            />
+            <StatsCard
+              title="Coordinators & Desk Staff"
+              value={deskStaff.toLocaleString()}
+              change="COORDINATORS"
+              trend="neutral"
+              icon={Lock}
+              color="amber"
+            />
+          </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-zinc-800 text-xs">
-        <button
-          onClick={() => setActiveTab("users")}
-          className={`pb-2.5 px-3 font-bold border-b-2 transition-colors ${
-            activeTab === "users"
-              ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
-              : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
-          }`}
-        >
-          Administrator & User Directory ({users.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("permissions")}
-          className={`pb-2.5 px-3 font-bold border-b-2 transition-colors ${
-            activeTab === "permissions"
-              ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
-              : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
-          }`}
-        >
-          RBAC Role Permission Matrix
-        </button>
-      </div>
+          {/* Tabs */}
+          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-zinc-800 text-xs">
+            <button
+              onClick={() => setActiveTab("users")}
+              className={`pb-2.5 px-3 font-bold border-b-2 transition-colors ${
+                activeTab === "users"
+                  ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
+                  : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+              }`}
+            >
+              Administrator & User Directory ({users.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("permissions")}
+              className={`pb-2.5 px-3 font-bold border-b-2 transition-colors ${
+                activeTab === "permissions"
+                  ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
+                  : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+              }`}
+            >
+              RBAC Role Permission Matrix
+            </button>
+          </div>
 
-      {activeTab === "users" ? (
-        <Table
-          columns={userColumns}
-          data={users}
-          searchPlaceholder="Search users by name, email, or role..."
-          enableSearch={true}
-          enablePagination={true}
-          defaultPageSize={10}
-          emptyMessage="No users found"
-          meta={meta}
-          page={page}
-          onPageChange={onPageChange}
-          limit={limit}
-          onLimitChange={onLimitChange}
-          search={search}
-          onSearchChange={onSearchChange}
-        />
+          {activeTab === "users" ? (
+            <Table
+              columns={userColumns}
+              data={users}
+              searchPlaceholder="Search users by name, email, or role..."
+              enableSearch={true}
+              enablePagination={true}
+              defaultPageSize={10}
+              emptyMessage="No users found"
+              meta={meta}
+              page={page}
+              onPageChange={onPageChange}
+              limit={limit}
+              onLimitChange={onLimitChange}
+              search={search}
+              onSearchChange={onSearchChange}
+            />
+          ) : (
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Role Access Control Matrix</CardTitle>
+                  <CardDescription>
+                    System permission rules governing module access per role
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              <Table
+                columns={permissionColumns}
+                data={permissionsMatrix}
+                enableSearch={false}
+                enablePagination={false}
+              />
+            </div>
+          )}
+        </>
       ) : (
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Role Access Control Matrix</CardTitle>
-              <CardDescription>
-                System permission rules governing module access per role
-              </CardDescription>
-            </CardHeader>
-          </Card>
-          <Table
-            columns={permissionColumns}
-            data={permissionsMatrix}
-            enableSearch={false}
-            enablePagination={false}
-          />
+        /* Team Access & Onboarding Notice Card for Non-Super Admins */
+        <div className="p-8 sm:p-12 text-center rounded-3xl bg-slate-50/80 dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 space-y-4 shadow-sm my-4 animate-fade-in">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto">
+            <UserPlus className="w-7 h-7" />
+          </div>
+          <div className="space-y-1.5 max-w-md mx-auto">
+            <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">
+              Team Access & Onboarding
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+              Ready to add someone new to the team? You can invite new team
+              members anytime using the{" "}
+              <strong className="text-indigo-600 dark:text-indigo-400 font-semibold">
+                Invite User
+              </strong>{" "}
+              button above. To review the full directory or request role updates
+              for existing users, please contact a Super Administrator.
+            </p>
+          </div>
+          <div className="pt-2 flex justify-center">
+            <Button
+              variant="primary"
+              leftIcon={<UserPlus className="w-4 h-4" />}
+              onClick={() => setIsCreateOpen(true)}
+            >
+              Invite New User
+            </Button>
+          </div>
         </div>
       )}
 

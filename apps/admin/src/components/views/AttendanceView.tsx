@@ -33,6 +33,9 @@ import {
 } from "@/types/dashboard";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
+import { useAuth } from "@/hooks/useAuth";
+import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
+import { IS_STRICT_RBAC_RESTRICTED } from "@/config/features";
 
 interface AttendanceViewProps {
   registrations: Registration[];
@@ -116,10 +119,16 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
     (r) => r.status !== "Checked-In",
   );
 
+  const { user } = useAuth();
+  const userRoles = getUserRoles(user);
+  const isSuperAdmin = hasAuthority(userRoles, [ROLES.SUPER_ADMIN]);
+  const canExecuteCheckIn = IS_STRICT_RBAC_RESTRICTED ? isSuperAdmin : true;
+
   const handleSimulateScan = async (
     regId: string,
     method: CheckInMethod = "QR Scan",
   ) => {
+    if (!canExecuteCheckIn) return;
     const target = registrations.find(
       (r) => r.id === regId || r.registrationNumber === regId,
     );
@@ -142,6 +151,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   };
 
   const handleManualCheckInSubmit = async (reg: Registration) => {
+    if (!canExecuteCheckIn) return;
     setCheckingInId(reg.id);
     try {
       await onCheckInAttendee(reg.id, "Manual Search");
@@ -305,7 +315,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                           size="sm"
                           onClick={() => handleManualCheckInSubmit(r)}
                           isLoading={checkingInId === r.id}
-                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
+                          disabled={!canExecuteCheckIn}
+                          title={
+                            !canExecuteCheckIn
+                              ? "Only Super Admins can execute check-ins"
+                              : undefined
+                          }
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Check-In
                         </Button>
