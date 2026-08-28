@@ -36,11 +36,6 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
               lb.totalScore ?? lb.totalPoints ?? matchingTeam?.totalPoints ?? 0,
             gamesPlayed: lb.gamesPlayed || 3,
             rankChange: idx === 0 ? "up" : "same",
-            captain:
-              matchingTeam?.captain ||
-              (lb.memberCount !== undefined
-                ? `${lb.memberCount} Members`
-                : "Team Lead"),
           };
         })
       : sortedTeams.map((t, idx) => ({
@@ -52,7 +47,6 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
           totalPoints: t.totalPoints,
           gamesPlayed: 3,
           rankChange: idx === 0 ? "up" : "same",
-          captain: t.captain || "Team Lead",
         }));
 
   const firstPlace = entries[0];
@@ -183,10 +177,6 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                         <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
                           {entry.teamName}
                         </h4>
-                        <p className="text-[11px] text-slate-400">
-                          Captain: {entry.captain} • {entry.gamesPlayed} Games
-                          Played
-                        </p>
                       </div>
                     </div>
                   </div>

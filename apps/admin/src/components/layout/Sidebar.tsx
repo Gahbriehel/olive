@@ -46,7 +46,7 @@ export const Sidebar: React.FC = () => {
               {churchName}
             </h1>
             <p className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
-              Events Platform
+              Admin Portal
             </p>
           </div>
         </div>
@@ -59,26 +59,11 @@ export const Sidebar: React.FC = () => {
         </button>
       </div>
 
-      {/* Active Phase Banner */}
-      <div className="mx-4 mt-4 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 animate-pulse" />
-          <div className="text-[11px] truncate">
-            <p className="font-semibold text-indigo-900 dark:text-indigo-200 truncate">
-              {activeEvent?.name || "No Active Event"}
-            </p>
-            <p className="text-indigo-600 dark:text-indigo-400">
-              Phase 1 Live Operations
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Navigation Links */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
         <div>
           <p className="px-3 mb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-            Core Modules
+            Modules
           </p>
           <nav className="space-y-1">
             {visibleNavItems.map((item) => {
