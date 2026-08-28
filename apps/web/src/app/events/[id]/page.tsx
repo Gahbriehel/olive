@@ -94,6 +94,7 @@ export default function EventDetailsPage({
   const registeredCount = event.registeredCount ?? 0;
   const capacity = event.capacity;
   const isFull = capacity ? registeredCount >= capacity : false;
+  const isFiftyPercentFull = capacity ? registeredCount / capacity >= 0.5 : false;
 
   return (
     <div className="bg-[#171717] min-h-screen text-[#F7F5F0] py-10 lg:py-16">
@@ -336,7 +337,7 @@ export default function EventDetailsPage({
 
               <div className="space-y-4 text-xs">
                 {/* Capacity */}
-                {capacity !== undefined && (
+                {capacity !== undefined && capacity > 0 && isFiftyPercentFull && (
                   <div className="space-y-2 pb-4 border-b border-white/5">
                     <div className="flex items-center justify-between text-slate-400 font-medium">
                       <span className="flex items-center space-x-1.5">
