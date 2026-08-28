@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   Menu,
   Search,
-  QrCode,
   Sun,
   Moon,
   Bell,
@@ -16,7 +15,6 @@ import {
   User,
   Settings,
 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
 import { useDashboard } from "@/context/DashboardContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useClickOutside } from "@/hooks/useClickOutside";
@@ -45,7 +43,6 @@ export const Topbar: React.FC = () => {
     setDarkMode,
     setIsMobileOpen,
     isMobileOpen,
-    setIsQrScannerOpen,
     setIsSearchOpen,
   } = useDashboard();
 
@@ -150,37 +147,16 @@ export const Topbar: React.FC = () => {
           </button>
         </div>
 
-        {/* Mobile search icon — only visible below md */}
-        <button
-          onClick={() => setIsSearchOpen(true)}
-          className="md:hidden p-1.5 sm:p-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-xl transition-colors min-h-[38px] min-w-[38px] sm:min-h-[44px] sm:min-w-[44px] flex items-center justify-center"
-          aria-label="Search"
-        >
-          <Search className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
-        </button>
-
-        {/* Right Controls: QR Button, Theme Toggle, Notifications, User Menu */}
+        {/* Right Controls: Theme Toggle, Notifications, User Menu */}
         <div className="flex items-center gap-1 sm:gap-3">
-          {/* Quick QR Scan Action */}
-          <div className="hidden sm:block">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setIsQrScannerOpen(true)}
-              leftIcon={<QrCode className="w-4 h-4" />}
-              className="bg-indigo-600 hover:bg-indigo-700"
-            >
-              Scan QR
-            </Button>
-          </div>
+          {/* Mobile search icon — only visible below md */}
           <button
-            onClick={() => setIsQrScannerOpen(true)}
-            className="sm:hidden p-1.5 bg-indigo-600 text-white rounded-xl shadow-sm min-h-[38px] min-w-[38px] flex items-center justify-center"
-            title="Scan QR Code"
+            onClick={() => setIsSearchOpen(true)}
+            className="md:hidden p-1.5 sm:p-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-xl transition-colors min-h-[38px] min-w-[38px] sm:min-h-[44px] sm:min-w-[44px] flex items-center justify-center"
+            aria-label="Search"
           >
-            <QrCode className="w-4.5 h-4.5" />
+            <Search className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
           </button>
-
           {/* Theme Switcher — hidden on small screens (< sm) to prevent topbar overflow */}
           <button
             onClick={() => setDarkMode(!darkMode)}
