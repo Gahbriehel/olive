@@ -123,19 +123,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-indigo-900 text-white shadow-xl relative overflow-hidden border border-indigo-800">
         <div className="absolute right-0 top-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
         <div className="space-y-1 z-10">
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
               {activeEvent?.name
                 ? `${activeEvent.name.toUpperCase()} LIVE`
                 : "EVENT DASHBOARD"}
             </span>
-          </div>
+          </div> */}
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-            Operational Dashboard
+            Dashboard
           </h1>
           <p className="text-xs sm:text-sm text-indigo-200">
-            Real-time check-ins, registration, and overview analytics.
+            Overview and analytics.
           </p>
         </div>
 
@@ -146,15 +146,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             size="sm"
             className="px-2.5 border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
           />
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={onOpenQrScanner}
-            leftIcon={<QrCode className="w-4 h-4" />}
-            className="bg-white text-indigo-950 hover:bg-slate-100 shadow-md font-semibold"
-          >
-            Scan QR Code
-          </Button>
           <Button
             variant="outline"
             size="sm"
