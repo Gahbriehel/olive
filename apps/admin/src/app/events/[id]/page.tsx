@@ -21,7 +21,7 @@ export default function EventDetailPage() {
   const { registrations: apiRegistrations } = useRegistrations(regParams);
   const { teams: apiTeams } = useTeams(eventId);
   const gamesParams = React.useMemo(() => ({ eventId }), [eventId]);
-  const { games: apiGames } = useGames(gamesParams);
+  const { games: apiGames, leaderboard } = useGames(gamesParams);
 
   const selectedEvent = events.find((e) => e.id === eventId) || events[0];
 
@@ -52,6 +52,7 @@ export default function EventDetailPage() {
       registrations={registrations}
       teams={teams}
       games={games}
+      leaderboard={leaderboard}
       onBack={() => router.push("/events")}
       onOpenQrScanner={() => setIsQrScannerOpen(true)}
     />

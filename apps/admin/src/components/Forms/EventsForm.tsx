@@ -61,7 +61,7 @@ export const EventsForm: React.FC<EventsFormProps> = ({
         title: initialValues?.title || "",
         description: initialValues?.description || "",
         location: initialValues?.location || "",
-        capacity: initialValues?.capacity || 0,
+        capacity: initialValues?.capacity || undefined,
         startDate: formatDateTimeInput(initialValues?.startDate) || "",
         endDate: formatDateTimeInput(initialValues?.endDate) || "",
         status: initialValues?.status || "DRAFT",
@@ -98,7 +98,7 @@ export const EventsForm: React.FC<EventsFormProps> = ({
         ...data,
         startDate: toISOInEventTimezone(data.startDate),
         endDate: toISOInEventTimezone(data.endDate),
-        capacity: data.capacity ? Number(data.capacity) : 0,
+        capacity: data.capacity ? Number(data.capacity) : undefined,
         status: data.status || "DRAFT",
         googleCalendarSync: Boolean(data.googleCalendarSync),
       });

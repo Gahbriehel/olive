@@ -29,7 +29,7 @@ export interface LeaderboardEntry {
   totalPoints: number;
   gamesPlayed: number;
   rankChange: "up" | "down" | "same";
-  captain: string;
+  captain?: string;
 }
 
 export interface IApiScore {

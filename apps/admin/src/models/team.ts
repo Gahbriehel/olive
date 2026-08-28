@@ -5,12 +5,10 @@ export interface Team {
   color: string;
   colorHex: string;
   totalPoints: number;
+  memberCount?: number;
+  captain?: string;
   createdAt?: string;
   updatedAt?: string;
-  captain?: string;
-  captainPhone?: string;
-  memberCount?: number;
-  badgeIcon?: string;
 }
 
 export interface IApiTeam {
@@ -21,6 +19,8 @@ export interface IApiTeam {
   colorHex?: string;
   totalScore?: number;
   totalPoints?: number;
+  memberCount?: number;
+  captain?: string;
   createdAt?: string;
   updatedAt?: string;
   event?: {
@@ -50,6 +50,7 @@ export type ITeam = Team;
 export function adaptApiTeamToTeam(apiTeam: IApiTeam): Team {
   const rawColor = apiTeam.color || apiTeam.colorHex || "#6366F1";
   const colorHex = rawColor.startsWith("#") ? rawColor : `#${rawColor}`;
+  const rawTeam = apiTeam as unknown as Record<string, unknown>;
 
   return {
     id: apiTeam.id,
@@ -58,12 +59,14 @@ export function adaptApiTeamToTeam(apiTeam: IApiTeam): Team {
     color: apiTeam.name.toLowerCase().replace(/\s+/g, "-"),
     colorHex,
     totalPoints: apiTeam.totalScore ?? apiTeam.totalPoints ?? 0,
+    memberCount:
+      apiTeam.memberCount ??
+      (rawTeam.memberCount as number) ??
+      ((rawTeam._count as Record<string, unknown>)?.members as number) ??
+      undefined,
+    captain: apiTeam.captain || (rawTeam.captain as string) || undefined,
     createdAt: apiTeam.createdAt,
     updatedAt: apiTeam.updatedAt,
-    memberCount: 0,
-    captain: "Team Lead",
-    captainPhone: "",
-    badgeIcon: "Shield",
   };
 }
 

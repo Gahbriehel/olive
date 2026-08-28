@@ -25,6 +25,7 @@ import { EventsForm } from "@/components/Forms/EventsForm";
 import { useEvents } from "@/hooks/useEvents";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { ChurchEvent, Team, Registration, Game } from "@/types/dashboard";
+import { ILeaderboardEntry } from "@/models/game";
 
 interface EventDetailViewProps {
   event: ChurchEvent;
@@ -32,6 +33,7 @@ interface EventDetailViewProps {
   teams: Team[];
   registrations: Registration[];
   games: Game[];
+  leaderboard?: ILeaderboardEntry[];
   onOpenQrScanner: () => void;
 }
 
@@ -41,12 +43,34 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
   teams,
   registrations,
   games,
+  leaderboard = [],
   onOpenQrScanner,
 }) => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditing, setIsEditing] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const { updateEvent, deleteEvent } = useEvents();
+
+  const enrichedTeams = React.useMemo(() => {
+    if (!leaderboard || leaderboard.length === 0) return teams;
+
+    const lbMap = new Map(leaderboard.map((lb) => [lb.teamId, lb]));
+
+    const merged = teams.map((t) => {
+      const lbEntry = lbMap.get(t.id);
+      if (!lbEntry) return t;
+      const rawColor = lbEntry.colorHex || lbEntry.color || t.colorHex;
+      const colorHex = rawColor.startsWith("#") ? rawColor : `#${rawColor}`;
+      return {
+        ...t,
+        totalPoints: lbEntry.totalScore ?? lbEntry.totalPoints ?? t.totalPoints,
+        memberCount: lbEntry.memberCount ?? t.memberCount,
+        colorHex,
+      };
+    });
+
+    return merged.sort((a, b) => b.totalPoints - a.totalPoints);
+  }, [teams, leaderboard]);
 
   const tabs = [
     { id: "overview", label: "Overview" },
@@ -55,10 +79,8 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
       label: "Registrations",
       count: registrations.length,
     },
-    { id: "attendance", label: "Attendance", count: event.checkedInCount },
-    { id: "teams", label: "Assigned Teams", count: teams.length },
-    { id: "games", label: "Games & Leaderboard", count: games.length },
-    { id: "qr-status", label: "QR Status" },
+    { id: "teams", label: "Teams", count: enrichedTeams.length },
+    { id: "games", label: "Games", count: games.length },
   ];
 
   const capPct =
@@ -155,7 +177,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
             />
             <StatsCard
               title="Assigned Teams"
-              value={`${teams.length} Teams`}
+              value={`${enrichedTeams.length} Teams`}
               change="Balanced allocation"
               trend="neutral"
               icon={Shield}
@@ -280,65 +302,39 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
         </Card>
       )}
 
-      {/* Tab Content 3: Attendance */}
-      {activeTab === "attendance" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Live Check-in Progress</CardTitle>
-            <CardDescription>
-              {event.checkedInCount} of {event.registeredCount} checked in
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="w-full h-3 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-emerald-500 rounded-full"
-                style={{ width: `${checkinPct}%` }}
-              />
-            </div>
-            <Button
-              variant="primary"
-              onClick={onOpenQrScanner}
-              leftIcon={<QrCode className="w-4 h-4" />}
-            >
-              Open Scanner
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Tab Content 4: Teams */}
       {activeTab === "teams" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {teams.map((t) => (
-            <Card key={t.id}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <span
-                  className="px-2.5 py-1 rounded-lg text-xs font-bold text-white"
-                  style={{ backgroundColor: t.colorHex }}
-                >
-                  {t.name}
-                </span>
-                <span className="text-xs font-mono font-bold">
-                  {t.memberCount} Members
-                </span>
-              </CardHeader>
-              <CardContent className="text-xs space-y-1">
-                <p className="text-slate-500">
-                  Captain:{" "}
-                  <strong className="text-slate-800 dark:text-slate-200">
-                    {t.captain}
-                  </strong>
-                </p>
-                <p className="text-slate-500">
-                  Points:{" "}
-                  <strong className="text-slate-800 dark:text-slate-200">
-                    {t.totalPoints}
-                  </strong>
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {enrichedTeams.map((t, idx) => (
+              <Card key={t.id}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-md bg-slate-100 dark:bg-zinc-800 font-bold text-[10px] flex items-center justify-center text-slate-500">
+                      #{idx + 1}
+                    </span>
+                    <span
+                      className="px-2.5 py-1 rounded-lg text-xs font-bold text-white"
+                      style={{ backgroundColor: t.colorHex }}
+                    >
+                      {t.name}
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400">
+                    {t.memberCount ?? 0} Members
+                  </span>
+                </CardHeader>
+                <CardContent className="text-xs space-y-1">
+                  <p className="text-slate-500">
+                    Total Score:{" "}
+                    <strong className="text-slate-800 dark:text-slate-200 font-mono text-sm">
+                      {t.totalPoints} pts
+                    </strong>
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       )}
 
@@ -361,21 +357,6 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
             </Card>
           ))}
         </div>
-      )}
-
-      {/* Tab Content 6: QR Status */}
-      {activeTab === "qr-status" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>QR Code Dispatch Status</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-xs">
-            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-medium">
-              100% of registered attendees have generated digital QR codes &
-              received email confirmation.
-            </div>
-          </CardContent>
-        </Card>
       )}
 
       {isEditing && (
