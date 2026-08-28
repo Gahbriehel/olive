@@ -94,7 +94,9 @@ export default function EventDetailsPage({
   const registeredCount = event.registeredCount ?? 0;
   const capacity = event.capacity;
   const isFull = capacity ? registeredCount >= capacity : false;
-  const isFiftyPercentFull = capacity ? registeredCount / capacity >= 0.5 : false;
+  const isFiftyPercentFull = capacity
+    ? registeredCount / capacity >= 0.5
+    : false;
 
   return (
     <div className="bg-[#171717] min-h-screen text-[#F7F5F0] py-10 lg:py-16">
@@ -337,31 +339,33 @@ export default function EventDetailsPage({
 
               <div className="space-y-4 text-xs">
                 {/* Capacity */}
-                {capacity !== undefined && capacity > 0 && isFiftyPercentFull && (
-                  <div className="space-y-2 pb-4 border-b border-white/5">
-                    <div className="flex items-center justify-between text-slate-400 font-medium">
-                      <span className="flex items-center space-x-1.5">
-                        <Users className="w-4 h-4 text-amber-400" />
-                        <span>Capacity</span>
-                      </span>
-                      <span className="text-white font-semibold">
-                        {registeredCount} / {capacity}
-                      </span>
-                    </div>
+                {capacity !== undefined &&
+                  capacity > 0 &&
+                  isFiftyPercentFull && (
+                    <div className="space-y-2 pb-4 border-b border-white/5">
+                      <div className="flex items-center justify-between text-slate-400 font-medium">
+                        <span className="flex items-center space-x-1.5">
+                          <Users className="w-4 h-4 text-amber-400" />
+                          <span>Capacity</span>
+                        </span>
+                        <span className="text-white font-semibold">
+                          {registeredCount} / {capacity}
+                        </span>
+                      </div>
 
-                    <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                      <div
-                        className="h-full bg-amber-500 rounded-full transition-all duration-500"
-                        style={{
-                          width: `${Math.min(
-                            100,
-                            Math.round((registeredCount / capacity) * 100),
-                          )}%`,
-                        }}
-                      />
+                      <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                        <div
+                          className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${Math.min(
+                              100,
+                              Math.round((registeredCount / capacity) * 100),
+                            )}%`,
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Teams Count */}
                 {event.teams !== undefined && event.teams > 0 && (
