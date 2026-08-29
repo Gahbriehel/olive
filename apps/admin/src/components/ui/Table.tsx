@@ -47,6 +47,7 @@ export interface TableProps<TData, TValue> {
   onLimitChange?: (limit: number) => void;
   search?: string;
   onSearchChange?: (search: string) => void;
+  loading?: boolean;
 }
 
 export function Table<TData, TValue>({
@@ -66,6 +67,7 @@ export function Table<TData, TValue>({
   onLimitChange,
   search,
   onSearchChange,
+  loading = false,
 }: TableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [searchInput, setSearchInput] = useState(search ?? "");
@@ -247,7 +249,21 @@ export function Table<TData, TValue>({
               ))}
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/80">
-              {table.getRowModel().rows.length > 0 ? (
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={columns.length}
+                    className="p-12 text-center text-slate-400 dark:text-slate-500"
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                      <p className="font-semibold text-xs text-indigo-600 dark:text-indigo-400">
+                        Loading records...
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : table.getRowModel().rows.length > 0 ? (
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}

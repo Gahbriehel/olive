@@ -34,6 +34,7 @@ interface RegistrationsViewProps {
   teamFilter?: string;
   onTeamFilterChange?: (teamId: string) => void;
   onRefetch?: () => void;
+  isLoading?: boolean;
 }
 
 export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
@@ -52,6 +53,7 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
   teamFilter = "All",
   onTeamFilterChange,
   onRefetch,
+  isLoading = false,
 }) => {
   const [selectedRegistration, setSelectedRegistration] =
     useState<IRegistration | null>(null);
@@ -178,6 +180,7 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
           trend="neutral"
           icon={Users}
           color="indigo"
+          loading={isLoading}
         />
         <StatsCard
           title="Checked-In Today"
@@ -186,6 +189,7 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
           trend="up"
           icon={UserCheck}
           color="emerald"
+          loading={isLoading}
         />
       </div>
 
@@ -237,6 +241,7 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
         onLimitChange={onLimitChange}
         search={search}
         onSearchChange={onSearchChange}
+        loading={isLoading}
       />
 
       {/* Registration Details Sidebar Modal */}

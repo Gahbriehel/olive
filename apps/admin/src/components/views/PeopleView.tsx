@@ -51,6 +51,7 @@ interface PeopleViewProps {
   genderFilter?: string;
   onGenderFilterChange?: (gender: string) => void;
   onRefetch?: () => void;
+  isLoading?: boolean;
 }
 
 export const PeopleView: React.FC<PeopleViewProps> = ({
@@ -72,6 +73,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
   genderFilter = "All",
   onGenderFilterChange,
   onRefetch,
+  isLoading = false,
 }) => {
   const [selectedPerson, setSelectedPerson] = useState<IPerson | null>(null);
   const [drawerTab, setDrawerTab] = useState("info");
@@ -153,6 +155,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
           trend="neutral"
           icon={Users}
           color="indigo"
+          loading={isLoading}
         />
         <StatsCard
           title="Church Members"
@@ -161,6 +164,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
           trend="up"
           icon={Shield}
           color="cyan"
+          loading={isLoading}
         />
         <StatsCard
           title="Visitors & Guests"
@@ -169,6 +173,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
           trend="neutral"
           icon={UserCheck}
           color="amber"
+          loading={isLoading}
         />
         <StatsCard
           title="Active Attendees"
@@ -177,6 +182,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
           trend="up"
           icon={Calendar}
           color="emerald"
+          loading={isLoading}
         />
       </div>
 
@@ -225,6 +231,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
         onLimitChange={onLimitChange}
         search={search}
         onSearchChange={onSearchChange}
+        loading={isLoading}
       />
 
       {/* Person Details Sidebar Modal */}

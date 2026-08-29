@@ -34,6 +34,7 @@ export default function RegistrationsPage() {
     registrations: apiRegistrations,
     meta,
     refetch,
+    isLoading,
   } = useRegistrations(regParams);
   const { teams: apiTeams } = useTeams(selectedEventId);
 
@@ -103,6 +104,7 @@ export default function RegistrationsPage() {
       teamFilter={teamId}
       onTeamFilterChange={handleTeamChange}
       onRefetch={refetch}
+      isLoading={isLoading}
     />
   );
 }

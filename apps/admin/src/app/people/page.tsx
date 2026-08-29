@@ -33,6 +33,7 @@ export default function PeoplePage() {
     createPerson,
     isCreating,
     refetch,
+    isLoading,
   } = usePeople(queryParams);
   const { events: apiEvents } = useEvents();
   const { registerAttendee, isRegistering } = useRegistrations();
@@ -106,6 +107,7 @@ export default function PeoplePage() {
       genderFilter={gender}
       onGenderFilterChange={handleGenderChange}
       onRefetch={refetch}
+      isLoading={isLoading}
     />
   );
 }

@@ -58,6 +58,7 @@ interface UsersViewProps {
   search?: string;
   onSearchChange?: (search: string) => void;
   onRefetch?: () => void;
+  isLoading?: boolean;
 }
 
 export const UsersView: React.FC<UsersViewProps> = ({
@@ -76,6 +77,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
   search,
   onSearchChange,
   onRefetch,
+  isLoading: propIsLoading,
 }) => {
   const {
     users: hookUsers,
@@ -85,12 +87,14 @@ export const UsersView: React.FC<UsersViewProps> = ({
     isCreating: hookIsCreating,
     isUpdating: hookIsUpdating,
     isDeleting: hookIsDeleting,
+    isLoading: hookIsLoading,
   } = useUsers();
 
   const users = propUsers && propUsers.length > 0 ? propUsers : hookUsers;
   const isCreating = propIsCreating || hookIsCreating;
   const isUpdating = propIsUpdating || hookIsUpdating;
   const isDeleting = propIsDeleting || hookIsDeleting;
+  const isLoading = propIsLoading !== undefined ? propIsLoading : hookIsLoading;
 
   const { user } = useAuth();
   const userRoles = getUserRoles(user);
@@ -437,6 +441,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
               trend="neutral"
               icon={UsersIcon}
               color="indigo"
+              loading={isLoading}
             />
             <StatsCard
               title="Active Accounts"
@@ -445,6 +450,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
               trend="up"
               icon={ShieldCheck}
               color="emerald"
+              loading={isLoading}
             />
             <StatsCard
               title="System Administrators"
@@ -453,6 +459,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
               trend="neutral"
               icon={Shield}
               color="cyan"
+              loading={isLoading}
             />
             <StatsCard
               title="Coordinators & Desk Staff"
@@ -461,6 +468,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
               trend="neutral"
               icon={Lock}
               color="amber"
+              loading={isLoading}
             />
           </div>
 
@@ -504,6 +512,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
               onLimitChange={onLimitChange}
               search={search}
               onSearchChange={onSearchChange}
+              loading={isLoading}
             />
           ) : (
             <div className="space-y-4">

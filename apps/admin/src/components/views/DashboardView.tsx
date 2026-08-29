@@ -27,6 +27,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { NavTab, IChurchEvent } from "@/types/dashboard";
 import { StatsCard, StatsCardColor } from "@/components/ui/StatsCard";
 import { IDashboardData } from "@/models/dashboard";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 interface DashboardViewProps {
   activeEvent?: IChurchEvent;
@@ -234,11 +235,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <StatsCard
             key={idx}
             title={stat.title}
-            value={isLoading ? "..." : stat.value}
+            value={stat.value}
             change={stat.change}
             trend={stat.trend}
             icon={stat.icon}
             color={stat.color}
+            loading={isLoading}
           />
         ))}
       </div>
@@ -265,8 +267,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </CardHeader>
           <CardContent className="space-y-3">
             {isLoading ? (
-              <div className="text-center p-6 text-sm text-slate-500">
-                Loading latest registrations...
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="w-9 h-9 rounded-full" />
+                      <div className="space-y-1.5">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-3 w-48" />
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <Skeleton className="h-4 w-12 rounded-md" />
+                      <Skeleton className="h-3 w-16" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : latestRegistrations.length === 0 ? (
               <div className="text-center p-6 text-sm text-slate-500">
@@ -351,8 +370,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </CardHeader>
             <CardContent className="space-y-3">
               {isLoading ? (
-                <div className="text-center p-6 text-sm text-slate-500">
-                  Loading upcoming events...
+                <div className="space-y-3">
+                  {Array.from({ length: 2 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40 space-y-2.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-4 w-12 rounded-full" />
+                      </div>
+                      <Skeleton className="h-3 w-36" />
+                    </div>
+                  ))}
                 </div>
               ) : upcomingEvents.length === 0 ? (
                 <div className="text-center p-6 text-sm text-slate-500">

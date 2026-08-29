@@ -58,14 +58,6 @@ export default function UsersPage() {
     setPage(1);
   };
 
-  if (isLoading && (!users || users.length === 0)) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <UsersView
       users={users}
@@ -83,6 +75,7 @@ export default function UsersPage() {
       isCreating={isCreating}
       isUpdating={isUpdating}
       isDeleting={isDeleting}
+      isLoading={isLoading}
     />
   );
 }

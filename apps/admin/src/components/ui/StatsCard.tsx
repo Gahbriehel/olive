@@ -2,6 +2,7 @@ import React from "react";
 import { LucideIcon, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { clsx } from "clsx";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export type StatsCardColor =
   "indigo" | "emerald" | "amber" | "rose" | "cyan" | "purple" | "slate";
@@ -15,6 +16,7 @@ export interface StatsCardProps {
   color?: StatsCardColor;
   description?: string;
   className?: string;
+  loading?: boolean;
 }
 
 const colorVariants: Record<
@@ -71,7 +73,31 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   color = "indigo",
   description,
   className,
+  loading = false,
 }) => {
+  if (loading) {
+    return (
+      <Card
+        className={clsx(
+          "hover:shadow-md transition-all duration-200",
+          className,
+        )}
+      >
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-3 py-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-8 w-8 rounded-xl" />
+          </div>
+          <div className="flex items-baseline justify-between gap-2 mt-2">
+            <Skeleton className="h-8 w-16" />
+            <Skeleton className="h-4 w-12" />
+          </div>
+          {description && <Skeleton className="h-3 w-32 mt-2" />}
+        </CardContent>
+      </Card>
+    );
+  }
+
   const styles = colorVariants[color] || colorVariants.indigo;
 
   const TrendIcon =
