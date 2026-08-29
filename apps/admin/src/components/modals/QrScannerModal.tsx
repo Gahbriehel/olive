@@ -25,7 +25,7 @@ import {
   triggerHapticFeedback,
 } from "@/utils/qrDecoder";
 import { useHardwareScanner } from "@/hooks/useHardwareScanner";
-import { CheckInMethod, Registration } from "@/types/dashboard";
+import { CheckInMethod, IRegistration } from "@/types/dashboard";
 
 export interface QrScannerModalProps {
   isOpen: boolean;
@@ -33,7 +33,7 @@ export interface QrScannerModalProps {
   onScanSuccess: (tokenOrRegId: string, method: CheckInMethod) => void;
   title?: string;
   description?: string;
-  pendingRegistrations?: Registration[];
+  pendingRegistrations?: IRegistration[];
 }
 
 type ScanTab = "camera" | "upload" | "manual" | "simulate";

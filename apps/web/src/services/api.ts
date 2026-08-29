@@ -1,13 +1,13 @@
 import axios from "axios";
 import { customToast } from "../helpers/customToast";
 import {
-  ChurchSettings,
-  IApiEvent,
-  IRegisterPayload,
-  IApiRegistration,
+  IChurchSettings,
+  IEventResponse,
+  IRegistrationPayload,
+  IRegistrationResponse,
   IBaseResponse,
   ILeaderboardEntry,
-  ILeaderboardResponseData,
+  ILeaderboardResponse,
 } from "@olive/types";
 
 const API_URL =
@@ -181,7 +181,7 @@ webApiClient.interceptors.response.use(
 
 export const webService = {
   // Fetch Church Public Settings
-  async getSettings(): Promise<ChurchSettings> {
+  async getSettings(): Promise<IChurchSettings> {
     try {
       const res = await webApiClient.get<IBaseResponse<unknown>>("/settings");
       const data =
@@ -224,14 +224,14 @@ export const webService = {
   },
 
   // Fetch Published Events
-  async getPublishedEvents(): Promise<IApiEvent[]> {
+  async getPublishedEvents(): Promise<IEventResponse[]> {
     try {
       const res = await webApiClient.get<IBaseResponse<unknown>>("/events", {
         params: { status: "PUBLISHED" },
       });
       const data = res.data?.data;
       if (Array.isArray(data)) {
-        return data as IApiEvent[];
+        return data as IEventResponse[];
       }
       if (
         data &&
@@ -239,7 +239,7 @@ export const webService = {
         "items" in data &&
         Array.isArray((data as { items: unknown[] }).items)
       ) {
-        return (data as { items: IApiEvent[] }).items;
+        return (data as { items: IEventResponse[] }).items;
       }
       if (
         data &&
@@ -247,7 +247,7 @@ export const webService = {
         "events" in data &&
         Array.isArray((data as { events: unknown[] }).events)
       ) {
-        return (data as { events: IApiEvent[] }).events;
+        return (data as { events: IEventResponse[] }).events;
       }
       return [];
     } catch {
@@ -256,16 +256,16 @@ export const webService = {
   },
 
   // Fetch Event Details by ID
-  async getEventById(id: string): Promise<IApiEvent | null> {
+  async getEventById(id: string): Promise<IEventResponse | null> {
     try {
-      const res = await webApiClient.get<IBaseResponse<IApiEvent> | IApiEvent>(
+      const res = await webApiClient.get<IBaseResponse<IEventResponse> | IEventResponse>(
         `/events/${id}`,
       );
       const data = res.data;
       if ("data" in data && data.data) {
         return data.data;
       }
-      return data as IApiEvent;
+      return data as IEventResponse;
     } catch {
       return null;
     }
@@ -274,20 +274,20 @@ export const webService = {
   // Submit Event Registration
   async registerForEvent(
     eventId: string,
-    payload: IRegisterPayload,
-  ): Promise<IApiRegistration> {
+    payload: IRegistrationPayload,
+  ): Promise<IRegistrationResponse> {
     const res = await webApiClient.post<
-      IBaseResponse<IApiRegistration> | IApiRegistration
+      IBaseResponse<IRegistrationResponse> | IRegistrationResponse
     >(`/events/${eventId}/register`, payload);
     const data = res.data;
     if ("data" in data && data.data) {
       return data.data;
     }
-    return data as IApiRegistration;
+    return data as IRegistrationResponse;
   },
 
   // Fetch Event Leaderboard
-  async getLeaderboard(eventId: string): Promise<ILeaderboardResponseData> {
+  async getLeaderboard(eventId: string): Promise<ILeaderboardResponse> {
     try {
       const res = await webApiClient.get<unknown>(`/leaderboard/${eventId}`);
       const rawData = res.data as Record<string, unknown> | null;

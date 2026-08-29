@@ -4,9 +4,9 @@ import React from "react";
 import { usePeople } from "@/hooks/usePeople";
 import { useEvents } from "@/hooks/useEvents";
 import { useRegistrations } from "@/hooks/useRegistrations";
-import { adaptApiPersonToPerson, ICreatePersonPayload } from "@/models/person";
+import { adaptApiPersonToPerson, IPersonPayload } from "@/models/person";
 import { PeopleView } from "@/components/views/PeopleView";
-import { IRegisterPayload } from "@/models/registration";
+import { IRegistrationPayload } from "@/models/registration";
 
 export default function PeoplePage() {
   const [search, setSearch] = React.useState("");
@@ -53,12 +53,12 @@ export default function PeoplePage() {
 
   const handleRegisterPerson = async (
     eventId: string,
-    payload: IRegisterPayload,
+    payload: IRegistrationPayload,
   ) => {
     await registerAttendee({ eventId, dto: payload });
   };
 
-  const handleAddPerson = async (payload: ICreatePersonPayload) => {
+  const handleAddPerson = async (payload: IPersonPayload) => {
     await createPerson(payload);
   };
 

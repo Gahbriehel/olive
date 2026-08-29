@@ -7,7 +7,7 @@ import { useRegistrations } from "@/hooks/useRegistrations";
 import { adaptApiTeamToTeam } from "@/models/team";
 import { adaptApiRegistrationToRegistration } from "@/models/registration";
 import { TeamsView } from "@/components/views/TeamsView";
-import { Registration } from "@/types/dashboard";
+import { IRegistration } from "@/types/dashboard";
 
 export default function TeamsPage() {
   const { selectedEventId } = useDashboard();
@@ -54,7 +54,7 @@ export default function TeamsPage() {
   );
 
   const [overrides, setOverrides] = useState<
-    Record<string, Partial<Registration>>
+    Record<string, Partial<IRegistration>>
   >({});
 
   const registrations = useMemo(

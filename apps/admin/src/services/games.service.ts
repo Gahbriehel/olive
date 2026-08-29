@@ -1,9 +1,9 @@
 import { apiClient } from "@/utils/api-client";
 import {
-  IApiGame,
-  ICreateGamePayload,
+  IGameResponse,
+  IGamePayload,
   IRecordScorePayload,
-  IApiScore,
+  IGameScoreResponse,
   ILeaderboardEntry,
   IUpdateGamePayload,
   IUpdateScorePayload,
@@ -18,13 +18,13 @@ import {
 export const gamesService = {
   async getGames(
     params?: IQueryParams,
-  ): Promise<{ games: IApiGame[]; meta?: IBaseResponse["meta"] }> {
+  ): Promise<{ games: IGameResponse[]; meta?: IBaseResponse["meta"] }> {
     const res = await apiClient.get<IBaseResponse<unknown>>("/games", {
       params,
     });
     const responseData = res.data;
 
-    const games = extractArray<IApiGame>(responseData);
+    const games = extractArray<IGameResponse>(responseData);
 
     let meta: IBaseResponse["meta"] = undefined;
     if (
@@ -49,43 +49,42 @@ export const gamesService = {
     return { games, meta };
   },
 
-  async createGame(payload: ICreateGamePayload): Promise<IApiGame> {
-    const res = await apiClient.post<IBaseResponse<IApiGame> | IApiGame>(
-      "/games",
-      payload,
-    );
-    return extractData<IApiGame>(res.data);
+  async createGame(payload: IGamePayload): Promise<IGameResponse> {
+    const res = await apiClient.post<
+      IBaseResponse<IGameResponse> | IGameResponse
+    >("/games", payload);
+    return extractData<IGameResponse>(res.data);
   },
 
-  async updateGame(id: string, payload: IUpdateGamePayload): Promise<IApiGame> {
-    const res = await apiClient.patch<IBaseResponse<IApiGame> | IApiGame>(
-      `/games/${id}`,
-      payload,
-    );
-    return extractData<IApiGame>(res.data);
+  async updateGame(
+    id: string,
+    payload: IUpdateGamePayload,
+  ): Promise<IGameResponse> {
+    const res = await apiClient.patch<
+      IBaseResponse<IGameResponse> | IGameResponse
+    >(`/games/${id}`, payload);
+    return extractData<IGameResponse>(res.data);
   },
 
   async deleteGame(id: string): Promise<void> {
     await apiClient.delete(`/games/${id}`);
   },
 
-  async recordScore(payload: IRecordScorePayload): Promise<IApiScore> {
-    const res = await apiClient.post<IBaseResponse<IApiScore> | IApiScore>(
-      "/scores",
-      payload,
-    );
-    return extractData<IApiScore>(res.data);
+  async recordScore(payload: IRecordScorePayload): Promise<IGameScoreResponse> {
+    const res = await apiClient.post<
+      IBaseResponse<IGameScoreResponse> | IGameScoreResponse
+    >("/scores", payload);
+    return extractData<IGameScoreResponse>(res.data);
   },
 
   async updateScore(
     id: string,
     payload: IUpdateScorePayload,
-  ): Promise<IApiScore> {
-    const res = await apiClient.patch<IBaseResponse<IApiScore> | IApiScore>(
-      `/scores/${id}`,
-      payload,
-    );
-    return extractData<IApiScore>(res.data);
+  ): Promise<IGameScoreResponse> {
+    const res = await apiClient.patch<
+      IBaseResponse<IGameScoreResponse> | IGameScoreResponse
+    >(`/scores/${id}`, payload);
+    return extractData<IGameScoreResponse>(res.data);
   },
 
   async clearGameScores(gameId: string): Promise<void> {

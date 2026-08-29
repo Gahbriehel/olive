@@ -3,10 +3,10 @@ import { Trophy, Shield, ChevronUp } from "lucide-react";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Card, CardContent } from "@/components/ui/Card";
 import { ILeaderboardEntry } from "@/models/game";
-import { Team, LeaderboardEntry } from "@/types/dashboard";
+import { ITeam, LeaderboardEntry } from "@/types/dashboard";
 
 interface LeaderboardViewProps {
-  teams?: Team[];
+  teams?: ITeam[];
   leaderboard?: ILeaderboardEntry[];
   isLoading?: boolean;
   onRefetch?: () => void;

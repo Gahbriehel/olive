@@ -18,21 +18,21 @@ import { Table } from "@/components/ui/Table";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { RegisterPersonForm } from "@/components/Forms/RegisterPersonForm";
 import { AddPersonForm } from "@/components/Forms/AddPersonForm";
-import { IRegisterPayload } from "@/models/registration";
-import { Person, ICreatePersonPayload } from "@/models/person";
+import { IRegistrationPayload } from "@/models/registration";
+import { IPerson, IPersonPayload } from "@/models/person";
 import { getPeopleColumns } from "./people/people-columns";
 import { getInitials } from "@/utils/formatters";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 
 interface PeopleViewProps {
-  people: Person[];
+  people: IPerson[];
   events?: { id: string; title: string }[];
   onRegisterPerson?: (
     eventId: string,
-    payload: IRegisterPayload,
+    payload: IRegistrationPayload,
   ) => void | Promise<void>;
   isRegistering?: boolean;
-  onAddPerson?: (payload: ICreatePersonPayload) => void | Promise<void>;
+  onAddPerson?: (payload: IPersonPayload) => void | Promise<void>;
   isAddingPerson?: boolean;
   meta?: {
     total?: number;
@@ -73,7 +73,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
   onGenderFilterChange,
   onRefetch,
 }) => {
-  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+  const [selectedPerson, setSelectedPerson] = useState<IPerson | null>(null);
   const [drawerTab, setDrawerTab] = useState("info");
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);

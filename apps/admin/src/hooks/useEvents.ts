@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ICreateEventPayload,
+  IEventPayload,
   IUpdateEventPayload,
-  IApiEvent,
+  IEventResponse,
 } from "@/models/event";
 import { IQueryParams } from "@/models/base";
 import { eventsService } from "@/services/events.service";
 
-const EMPTY_EVENTS: IApiEvent[] = [];
+const EMPTY_EVENTS: IEventResponse[] = [];
 
 export function useEvents(params?: IQueryParams) {
   const queryClient = useQueryClient();
@@ -19,7 +19,7 @@ export function useEvents(params?: IQueryParams) {
   });
 
   const createEventMutation = useMutation({
-    mutationFn: (dto: ICreateEventPayload) => eventsService.createEvent(dto),
+    mutationFn: (dto: IEventPayload) => eventsService.createEvent(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
     },

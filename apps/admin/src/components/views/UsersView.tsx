@@ -25,7 +25,7 @@ import { ROLES, getUserRoles, hasAuthority } from "@/utils/rbac";
 import { IS_STRICT_RBAC_RESTRICTED } from "@/config/features";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  AdminUser,
+  IAdminUser,
   ICreateUserPayload,
   IUpdateUserPayload,
 } from "@/models/dashboard";
@@ -35,7 +35,7 @@ import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { UserForm, UserFormValues } from "@/components/Forms/UserForm";
 
 interface UsersViewProps {
-  users?: AdminUser[];
+  users?: IAdminUser[];
   onCreateUser?: (payload: ICreateUserPayload) => Promise<unknown> | void;
   onUpdateUser?: (
     id: string,
@@ -101,8 +101,8 @@ export const UsersView: React.FC<UsersViewProps> = ({
 
   const [activeTab, setActiveTab] = useState<"users" | "permissions">("users");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
-  const [deletingUser, setDeletingUser] = useState<AdminUser | null>(null);
+  const [editingUser, setEditingUser] = useState<IAdminUser | null>(null);
+  const [deletingUser, setDeletingUser] = useState<IAdminUser | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const showNotification = (msg: string) => {

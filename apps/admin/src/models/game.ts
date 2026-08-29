@@ -1,8 +1,8 @@
-import { Team } from "@/models/team";
+import { ITeam } from "@/models/team";
 
 export type GameStatus = "Upcoming" | "In Progress" | "Completed";
 
-export interface Game {
+export interface IGame {
   id: string;
   eventId: string;
   name: string;
@@ -32,7 +32,7 @@ export interface LeaderboardEntry {
   captain?: string;
 }
 
-export interface IApiScore {
+export interface IGameScoreResponse {
   id: string;
   gameId: string;
   teamId: string;
@@ -47,24 +47,24 @@ export interface IApiScore {
   };
 }
 
-export interface IApiGame {
+export interface IGameResponse {
   id: string;
   eventId: string;
   name: string;
   description?: string;
   maxScore?: number;
-  scores?: IApiScore[];
+  scores?: IGameScoreResponse[];
   createdAt?: string;
 }
 
-export interface ICreateGamePayload {
+export interface IGamePayload {
   eventId: string;
   name: string;
   description?: string;
   maxScore?: number;
 }
 
-export type IUpdateGamePayload = Partial<ICreateGamePayload>;
+export type IUpdateGamePayload = Partial<IGamePayload>;
 
 export interface IRecordScorePayload {
   gameId: string;
@@ -98,9 +98,10 @@ export interface IGameScore {
   points: number;
 }
 
-export type IGame = Game;
-
-export function adaptApiGameToGame(apiGame: IApiGame, teams?: Team[]): Game {
+export function adaptApiGameToGame(
+  apiGame: IGameResponse,
+  teams?: ITeam[],
+): IGame {
   if (!apiGame) {
     return {
       id: "",
@@ -157,7 +158,10 @@ export function adaptApiGameToGame(apiGame: IApiGame, teams?: Team[]): Game {
 }
 
 // Backwards compatibility aliases
-export type ApiGame = IApiGame;
-export type CreateGameDto = ICreateGamePayload;
+export type Game = IGame;
+export type IApiGame = IGameResponse;
+export type ApiGame = IGameResponse;
+export type ICreateGamePayload = IGamePayload;
+export type CreateGameDto = IGamePayload;
 export type UpdateGameDto = IUpdateGamePayload;
 export type RecordScoreDto = IRecordScorePayload;

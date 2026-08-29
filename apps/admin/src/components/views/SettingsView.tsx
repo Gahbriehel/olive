@@ -11,15 +11,15 @@ import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Input } from "@/components/FormElements/Input";
 import { Tabs } from "@/components/ui/Tabs";
-import { ChurchSettings, IUpdateProfilePayload } from "@/models/dashboard";
+import { IChurchSettings, IUpdateProfilePayload } from "@/models/dashboard";
 import { useSettings } from "@/hooks/useSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
 import { customToast } from "@/helpers/customToast";
 
 interface SettingsViewProps {
-  settings?: ChurchSettings;
-  onSaveSettings?: (updated: ChurchSettings) => Promise<unknown> | void;
+  settings?: IChurchSettings;
+  onSaveSettings?: (updated: IChurchSettings) => Promise<unknown> | void;
   defaultTab?: string;
   onRefetch?: () => void;
 }
@@ -68,7 +68,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       },
     };
 
-  const [formData, setFormData] = useState<ChurchSettings>(settings);
+  const [formData, setFormData] = useState<IChurchSettings>(settings);
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [savedSuccess, setSavedSuccess] = useState(false);
 

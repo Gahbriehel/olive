@@ -6,7 +6,7 @@ import { Select } from "@/components/FormElements/Select";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
 import { ActionsList } from "@/components/ui/ActionsList";
-import { Registration, Team } from "@/types/dashboard";
+import { IRegistration, ITeam } from "@/types/dashboard";
 import { ColumnDef } from "@tanstack/react-table";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { SidebarModal } from "@/components/ui/SidebarModal";
@@ -14,8 +14,8 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getInitials } from "@/utils/formatters";
 
 interface RegistrationsViewProps {
-  registrations: Registration[];
-  teams: Team[];
+  registrations: IRegistration[];
+  teams: ITeam[];
   onExportCsv: () => void;
   meta?: {
     total?: number;
@@ -54,14 +54,14 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
   onRefetch,
 }) => {
   const [selectedRegistration, setSelectedRegistration] =
-    useState<Registration | null>(null);
+    useState<IRegistration | null>(null);
 
   const totalReg = meta?.total ?? registrations.length;
   const checkedIn = registrations.filter(
     (r) => r.status === "Checked-In",
   ).length;
 
-  const columns: ColumnDef<Registration>[] = [
+  const columns: ColumnDef<IRegistration>[] = [
     {
       accessorKey: "registrationNumber",
       header: "Reg Number",

@@ -5,7 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { Input } from "@/components/FormElements/Input";
 import { Select, type ISelect } from "@/components/ui/Select";
 import { BaseButton } from "@/components/ui/Button";
-import { IRegisterPayload } from "@/models/registration";
+import { IRegistrationPayload } from "@/models/registration";
 import { cn } from "@/helpers/cn";
 
 export interface RegisterPersonFormValues {
@@ -23,7 +23,7 @@ interface RegisterPersonFormProps {
   defaultEventId?: string;
   onSubmit: (
     eventId: string,
-    payload: IRegisterPayload,
+    payload: IRegistrationPayload,
   ) => void | Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;

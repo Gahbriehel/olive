@@ -1,9 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { IRegisterPayload, IApiRegistration } from "@/models/registration";
+import {
+  IRegistrationPayload,
+  IRegistrationResponse,
+} from "@/models/registration";
 import { IQueryParams } from "@/models/base";
 import { registrationsService } from "@/services/registrations.service";
 
-const EMPTY_REGISTRATIONS: IApiRegistration[] = [];
+const EMPTY_REGISTRATIONS: IRegistrationResponse[] = [];
 
 export function useRegistrations(params?: IQueryParams) {
   const queryClient = useQueryClient();
@@ -20,7 +23,7 @@ export function useRegistrations(params?: IQueryParams) {
       dto,
     }: {
       eventId: string;
-      dto: IRegisterPayload;
+      dto: IRegistrationPayload;
     }) => registrationsService.registerAttendee(eventId, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["registrations"] });

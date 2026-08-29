@@ -1,6 +1,6 @@
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { AdminUser } from "@/models/dashboard";
+import { IAdminUser } from "@/models/dashboard";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { Badge } from "@/components/ui/Badge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -8,14 +8,14 @@ import { getInitials, capitalizeWords } from "@/utils/formatters";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 
 interface GetUserColumnsProps {
-  onEditUser: (user: AdminUser) => void;
-  onDeleteUser?: (user: AdminUser) => void;
+  onEditUser: (user: IAdminUser) => void;
+  onDeleteUser?: (user: IAdminUser) => void;
 }
 
 export function getUserColumns({
   onEditUser,
   onDeleteUser,
-}: GetUserColumnsProps): ColumnDef<AdminUser>[] {
+}: GetUserColumnsProps): ColumnDef<IAdminUser>[] {
   return [
     {
       accessorKey: "name",

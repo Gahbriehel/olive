@@ -1,12 +1,12 @@
 import { MembershipStatus } from "./person";
-import { IApiPerson } from "./person";
-import { IApiTeam } from "./team";
+import { IPersonResponse } from "./person";
+import { ITeamResponse } from "./team";
 import { formatDateTimeDisplay } from "@/utils/formatters";
 
 export type RegistrationStatus = "Confirmed" | "Checked-In" | "Cancelled";
 export type CheckInMethod = "QR Scan" | "Manual Search";
 
-export interface Registration {
+export interface IRegistration {
   id: string;
   registrationNumber: string;
   personId: string;
@@ -16,8 +16,8 @@ export interface Registration {
   gender: "Male" | "Female";
   membershipStatus: MembershipStatus;
   assignedTeamId: string;
-  team: IApiTeam;
-  person: IApiPerson;
+  team: ITeamResponse;
+  person: IPersonResponse;
   qrCodeUrl: string;
   qrGenerated: boolean;
   token: string;
@@ -42,7 +42,7 @@ export interface AttendanceRecord {
 
 export type ApiRegistrationStatus = "REGISTERED" | "CHECKED_IN" | "CANCELLED";
 
-export interface IApiRegistration {
+export interface IRegistrationResponse {
   id: string;
   eventId: string;
   personId: string;
@@ -53,12 +53,12 @@ export interface IApiRegistration {
   status: ApiRegistrationStatus;
   googleCalendarSync?: boolean;
   checkedInAt?: string;
-  person?: IApiPerson;
-  team?: IApiTeam;
+  person?: IPersonResponse;
+  team?: ITeamResponse;
   createdAt?: string;
 }
 
-export interface IRegisterPayload {
+export interface IRegistrationPayload {
   firstName: string;
   lastName: string;
   email?: string;
@@ -73,11 +73,9 @@ export interface ICheckInPayload {
   token: string; // QR code or Registration ID
 }
 
-export type IRegistration = Registration;
-
 export function adaptApiRegistrationToRegistration(
-  apiReg: IApiRegistration,
-): Registration {
+  apiReg: IRegistrationResponse,
+): IRegistration {
   const person = apiReg.person;
   const team = apiReg.team;
 
@@ -109,8 +107,3 @@ export function adaptApiRegistrationToRegistration(
     checkedInAt: apiReg.checkedInAt,
   };
 }
-
-// Backwards compatibility aliases
-export type ApiRegistration = IApiRegistration;
-export type RegisterDto = IRegisterPayload;
-export type CheckInDto = ICheckInPayload;

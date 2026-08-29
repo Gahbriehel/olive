@@ -1,13 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  ICreateTeamPayload,
-  IUpdateTeamPayload,
-  IApiTeam,
-} from "@/models/team";
+import { ITeamPayload, IUpdateTeamPayload, ITeamResponse } from "@/models/team";
 import { IQueryParams } from "@/models/base";
 import { teamsService } from "@/services/teams.service";
 
-const EMPTY_TEAMS: IApiTeam[] = [];
+const EMPTY_TEAMS: ITeamResponse[] = [];
 
 export function useTeams(params?: IQueryParams | string) {
   const queryClient = useQueryClient();
@@ -21,7 +17,7 @@ export function useTeams(params?: IQueryParams | string) {
   });
 
   const createTeamMutation = useMutation({
-    mutationFn: (dto: ICreateTeamPayload) => teamsService.createTeam(dto),
+    mutationFn: (dto: ITeamPayload) => teamsService.createTeam(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });
       queryClient.invalidateQueries({ queryKey: ["leaderboard"] });

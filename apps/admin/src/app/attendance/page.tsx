@@ -8,7 +8,7 @@ import { AttendanceView } from "@/components/views/AttendanceView";
 import {
   AttendanceRecord,
   CheckInMethod,
-  Registration,
+  IRegistration,
 } from "@/types/dashboard";
 
 export default function AttendancePage() {
@@ -63,7 +63,7 @@ export default function AttendancePage() {
   );
 
   const [overrides, setOverrides] = useState<
-    Record<string, Partial<Registration>>
+    Record<string, Partial<IRegistration>>
   >({});
   const [attendanceLog, setAttendanceLog] = useState<AttendanceRecord[]>([]);
 

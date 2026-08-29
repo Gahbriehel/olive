@@ -1,9 +1,5 @@
 import { apiClient } from "@/utils/api-client";
-import {
-  IApiTeam,
-  ICreateTeamPayload,
-  IUpdateTeamPayload,
-} from "@/models/team";
+import { ITeamResponse, ITeamPayload, IUpdateTeamPayload } from "@/models/team";
 import {
   IBaseResponse,
   IQueryParams,
@@ -14,12 +10,12 @@ import {
 export const teamsService = {
   async getTeams(
     params?: IQueryParams,
-  ): Promise<{ teams: IApiTeam[]; meta?: IBaseResponse["meta"] }> {
+  ): Promise<{ teams: ITeamResponse[]; meta?: IBaseResponse["meta"] }> {
     const res = await apiClient.get<IBaseResponse<unknown>>("/teams", {
       params,
     });
     const responseData = res.data;
-    const teams = extractArray<IApiTeam>(responseData);
+    const teams = extractArray<ITeamResponse>(responseData);
 
     let meta: IBaseResponse["meta"] = undefined;
     if (
@@ -44,20 +40,21 @@ export const teamsService = {
     return { teams, meta };
   },
 
-  async createTeam(payload: ICreateTeamPayload): Promise<IApiTeam> {
-    const res = await apiClient.post<IBaseResponse<IApiTeam> | IApiTeam>(
-      "/teams",
-      payload,
-    );
-    return extractData<IApiTeam>(res.data);
+  async createTeam(payload: ITeamPayload): Promise<ITeamResponse> {
+    const res = await apiClient.post<
+      IBaseResponse<ITeamResponse> | ITeamResponse
+    >("/teams", payload);
+    return extractData<ITeamResponse>(res.data);
   },
 
-  async updateTeam(id: string, payload: IUpdateTeamPayload): Promise<IApiTeam> {
-    const res = await apiClient.patch<IBaseResponse<IApiTeam> | IApiTeam>(
-      `/teams/${id}`,
-      payload,
-    );
-    return extractData<IApiTeam>(res.data);
+  async updateTeam(
+    id: string,
+    payload: IUpdateTeamPayload,
+  ): Promise<ITeamResponse> {
+    const res = await apiClient.patch<
+      IBaseResponse<ITeamResponse> | ITeamResponse
+    >(`/teams/${id}`, payload);
+    return extractData<ITeamResponse>(res.data);
   },
 
   async deleteTeam(id: string): Promise<void> {

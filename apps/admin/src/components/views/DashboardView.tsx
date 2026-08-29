@@ -24,12 +24,12 @@ import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Badge } from "@/components/ui/Badge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { NavTab, ChurchEvent } from "@/types/dashboard";
+import { NavTab, IChurchEvent } from "@/types/dashboard";
 import { StatsCard, StatsCardColor } from "@/components/ui/StatsCard";
 import { IDashboardData } from "@/models/dashboard";
 
 interface DashboardViewProps {
-  activeEvent?: ChurchEvent;
+  activeEvent?: IChurchEvent;
   dashboardData?: IDashboardData;
   isLoading?: boolean;
   onNavigate: (tab: NavTab) => void;

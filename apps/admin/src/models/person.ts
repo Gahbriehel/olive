@@ -27,7 +27,7 @@ export interface IPersonRegistrationHistory {
   } | null;
 }
 
-export interface Person {
+export interface IPerson {
   id: string;
   name: string;
   phone: string;
@@ -60,7 +60,7 @@ export interface Person {
   notes?: string;
 }
 
-export interface IApiPerson {
+export interface IPersonResponse {
   id: string;
   churchId: string;
   firstName: string;
@@ -85,7 +85,7 @@ export interface IApiPerson {
   avatarUrl?: string;
 }
 
-export interface ICreatePersonPayload {
+export interface IPersonPayload {
   churchId?: string;
   firstName: string;
   lastName: string;
@@ -97,11 +97,9 @@ export interface ICreatePersonPayload {
   address?: string;
 }
 
-export type IUpdatePersonPayload = Partial<ICreatePersonPayload>;
+export type IUpdatePersonPayload = Partial<IPersonPayload>;
 
-export type IPerson = Person;
-
-export function adaptApiPersonToPerson(apiPerson: IApiPerson): Person {
+export function adaptApiPersonToPerson(apiPerson: IPersonResponse): IPerson {
   const genderMap: Record<ApiGender, "Male" | "Female"> = {
     MALE: "Male",
     FEMALE: "Female",
@@ -181,8 +179,3 @@ export function adaptApiPersonToPerson(apiPerson: IApiPerson): Person {
     notes: apiPerson.notes || "",
   };
 }
-
-// Backwards compatibility aliases
-export type ApiPerson = IApiPerson;
-export type CreatePersonDto = ICreatePersonPayload;
-export type UpdatePersonDto = IUpdatePersonPayload;

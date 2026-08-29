@@ -28,13 +28,13 @@ import { EventsForm } from "@/components/Forms/EventsForm";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { useEvents } from "@/hooks/useEvents";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
-import { ChurchEvent } from "@/types/dashboard";
+import { IChurchEvent } from "@/types/dashboard";
 import { AuthorityGuard } from "@/components/auth/AuthorityGuard";
 import { ROLES } from "@/utils/rbac";
 
 interface EventsViewProps {
-  events: ChurchEvent[];
-  onSelectEvent: (event: ChurchEvent) => void;
+  events: IChurchEvent[];
+  onSelectEvent: (event: IChurchEvent) => void;
   onOpenCreateEvent: () => void;
   onPublishToggle?: (eventId: string) => void;
   meta?: {
@@ -79,8 +79,8 @@ export const EventsView: React.FC<EventsViewProps> = ({
   }
 
   const debouncedSearchTerm = useDebouncedSearch(search, 500);
-  const [editingEvent, setEditingEvent] = useState<ChurchEvent | null>(null);
-  const [deletingEvent, setDeletingEvent] = useState<ChurchEvent | null>(null);
+  const [editingEvent, setEditingEvent] = useState<IChurchEvent | null>(null);
+  const [deletingEvent, setDeletingEvent] = useState<IChurchEvent | null>(null);
   const { updateEvent, deleteEvent } = useEvents();
 
   const onSearchChangeRef = React.useRef(onSearchChange);
@@ -107,7 +107,7 @@ export const EventsView: React.FC<EventsViewProps> = ({
     0,
   );
 
-  const getCardStatusStyles = (status: ChurchEvent["status"]) => {
+  const getCardStatusStyles = (status: IChurchEvent["status"]) => {
     switch (status) {
       case "PUBLISHED":
         return {

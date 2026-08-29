@@ -6,7 +6,7 @@ import { Input } from "@/components/FormElements/Input";
 import { Select, type ISelect } from "@/components/ui/Select";
 import { BaseButton } from "@/components/ui/Button";
 import {
-  ICreatePersonPayload,
+  IPersonPayload,
   ApiGender,
   ApiMembershipStatus,
 } from "@/models/person";
@@ -24,7 +24,7 @@ export interface AddPersonFormValues {
 }
 
 interface AddPersonFormProps {
-  onSubmit: (payload: ICreatePersonPayload) => void | Promise<void>;
+  onSubmit: (payload: IPersonPayload) => void | Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -65,7 +65,7 @@ export const AddPersonForm: React.FC<AddPersonFormProps> = ({
   const onFormSubmit = async (data: AddPersonFormValues) => {
     try {
       setIsSubmitting(true);
-      const payload: ICreatePersonPayload = {
+      const payload: IPersonPayload = {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email || undefined,

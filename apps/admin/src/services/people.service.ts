@@ -1,7 +1,7 @@
 import { apiClient } from "@/utils/api-client";
 import {
-  IApiPerson,
-  ICreatePersonPayload,
+  IPersonResponse,
+  IPersonPayload,
   IUpdatePersonPayload,
 } from "@/models/person";
 import {
@@ -15,39 +15,37 @@ import {
 export const peopleService = {
   async getPeople(
     params?: IQueryParams,
-  ): Promise<{ people: IApiPerson[]; meta?: IBaseResponse["meta"] }> {
+  ): Promise<{ people: IPersonResponse[]; meta?: IBaseResponse["meta"] }> {
     const res = await apiClient.get<IBaseResponse<unknown>>("/people", {
       params,
     });
     return {
-      people: extractArray<IApiPerson>(res.data),
+      people: extractArray<IPersonResponse>(res.data),
       meta: extractMeta(res.data),
     };
   },
 
-  async getPersonById(id: string): Promise<IApiPerson> {
-    const res = await apiClient.get<IBaseResponse<IApiPerson> | IApiPerson>(
-      `/people/${id}`,
-    );
-    return extractData<IApiPerson>(res.data);
+  async getPersonById(id: string): Promise<IPersonResponse> {
+    const res = await apiClient.get<
+      IBaseResponse<IPersonResponse> | IPersonResponse
+    >(`/people/${id}`);
+    return extractData<IPersonResponse>(res.data);
   },
 
-  async createPerson(payload: ICreatePersonPayload): Promise<IApiPerson> {
-    const res = await apiClient.post<IBaseResponse<IApiPerson> | IApiPerson>(
-      "/people",
-      payload,
-    );
-    return extractData<IApiPerson>(res.data);
+  async createPerson(payload: IPersonPayload): Promise<IPersonResponse> {
+    const res = await apiClient.post<
+      IBaseResponse<IPersonResponse> | IPersonResponse
+    >("/people", payload);
+    return extractData<IPersonResponse>(res.data);
   },
 
   async updatePerson(
     id: string,
     payload: IUpdatePersonPayload,
-  ): Promise<IApiPerson> {
-    const res = await apiClient.patch<IBaseResponse<IApiPerson> | IApiPerson>(
-      `/people/${id}`,
-      payload,
-    );
-    return extractData<IApiPerson>(res.data);
+  ): Promise<IPersonResponse> {
+    const res = await apiClient.patch<
+      IBaseResponse<IPersonResponse> | IPersonResponse
+    >(`/people/${id}`, payload);
+    return extractData<IPersonResponse>(res.data);
   },
 };

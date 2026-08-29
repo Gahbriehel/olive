@@ -1,6 +1,6 @@
 import { apiClient } from "@/utils/api-client";
 import {
-  AdminUser,
+  IAdminUser,
   ICreateUserPayload,
   IUpdateUserPayload,
 } from "@/models/dashboard";
@@ -15,7 +15,7 @@ import {
 export const usersService = {
   async getUsers(
     params?: IQueryParams,
-  ): Promise<{ users: AdminUser[]; meta?: IBaseResponse["meta"] }> {
+  ): Promise<{ users: IAdminUser[]; meta?: IBaseResponse["meta"] }> {
     const res = await apiClient.get<IBaseResponse<unknown>>("/users", {
       params,
     });
@@ -56,7 +56,7 @@ export const usersService = {
     return { users, meta };
   },
 
-  async createUser(payload: ICreateUserPayload): Promise<AdminUser> {
+  async createUser(payload: ICreateUserPayload): Promise<IAdminUser> {
     const res = await apiClient.post<IBaseResponse<unknown>>("/users", payload);
     const u = extractData<Record<string, unknown>>(res.data);
 
@@ -89,7 +89,7 @@ export const usersService = {
   async updateUser(
     id: string,
     payload: IUpdateUserPayload,
-  ): Promise<AdminUser> {
+  ): Promise<IAdminUser> {
     const { status, ...restPayload } = payload;
     const bodyPayload = {
       ...restPayload,

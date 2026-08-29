@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { webService } from "@/services/api";
-import { ILeaderboardResponseData, ILeaderboardEntry } from "@olive/types";
+import { ILeaderboardResponse, ILeaderboardEntry } from "@olive/types";
 
 interface UseLeaderboardOptions {
   autoRefresh?: boolean;
@@ -13,7 +13,7 @@ export function useLeaderboard(
 ) {
   const { autoRefresh = false, intervalMs = 15000 } = options;
 
-  const query = useQuery<ILeaderboardResponseData>({
+  const query = useQuery<ILeaderboardResponse>({
     queryKey: ["leaderboard", eventId],
     queryFn: () => webService.getLeaderboard(eventId),
     enabled: Boolean(eventId),

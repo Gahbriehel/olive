@@ -1,5 +1,8 @@
 import { apiClient } from "@/utils/api-client";
-import { IApiRegistration, IRegisterPayload } from "@/models/registration";
+import {
+  IRegistrationResponse,
+  IRegistrationPayload,
+} from "@/models/registration";
 import {
   IBaseResponse,
   IQueryParams,
@@ -10,32 +13,32 @@ import {
 
 export const registrationsService = {
   async getRegistrations(params?: IQueryParams): Promise<{
-    registrations: IApiRegistration[];
+    registrations: IRegistrationResponse[];
     meta?: IBaseResponse["meta"];
   }> {
     const res = await apiClient.get<IBaseResponse<unknown>>("/registrations", {
       params,
     });
     return {
-      registrations: extractArray<IApiRegistration>(res.data),
+      registrations: extractArray<IRegistrationResponse>(res.data),
       meta: extractMeta(res.data),
     };
   },
 
   async registerAttendee(
     eventId: string,
-    payload: IRegisterPayload,
-  ): Promise<IApiRegistration> {
+    payload: IRegistrationPayload,
+  ): Promise<IRegistrationResponse> {
     const res = await apiClient.post<
-      IBaseResponse<IApiRegistration> | IApiRegistration
+      IBaseResponse<IRegistrationResponse> | IRegistrationResponse
     >(`/events/${eventId}/register`, payload);
-    return extractData<IApiRegistration>(res.data);
+    return extractData<IRegistrationResponse>(res.data);
   },
 
-  async getRegistrationById(id: string): Promise<IApiRegistration> {
+  async getRegistrationById(id: string): Promise<IRegistrationResponse> {
     const res = await apiClient.get<
-      IBaseResponse<IApiRegistration> | IApiRegistration
+      IBaseResponse<IRegistrationResponse> | IRegistrationResponse
     >(`/registrations/${id}`);
-    return extractData<IApiRegistration>(res.data);
+    return extractData<IRegistrationResponse>(res.data);
   },
 };

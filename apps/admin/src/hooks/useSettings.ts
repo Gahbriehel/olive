@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { settingsService } from "@/services/settings.service";
 import { authService } from "@/services/auth.service";
-import { ChurchSettings, IUpdateProfilePayload } from "@/models/dashboard";
+import { IChurchSettings, IUpdateProfilePayload } from "@/models/dashboard";
 import { IChangePasswordPayload } from "@/models/auth";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
@@ -22,7 +22,7 @@ export function useSettings() {
   });
 
   const updateSettingsMutation = useMutation({
-    mutationFn: (newSettings: Partial<ChurchSettings>) =>
+    mutationFn: (newSettings: Partial<IChurchSettings>) =>
       settingsService.updateSettings(newSettings),
     onSuccess: (data) => {
       queryClient.setQueryData(["settings"], data);

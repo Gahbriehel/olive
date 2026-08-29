@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ICreatePersonPayload,
+  IPersonPayload,
   IUpdatePersonPayload,
-  IApiPerson,
+  IPersonResponse,
 } from "@/models/person";
 import { IQueryParams } from "@/models/base";
 import { peopleService } from "@/services/people.service";
 
-const EMPTY_PEOPLE: IApiPerson[] = [];
+const EMPTY_PEOPLE: IPersonResponse[] = [];
 
 export function usePeople(params?: IQueryParams) {
   const queryClient = useQueryClient();
@@ -19,7 +19,7 @@ export function usePeople(params?: IQueryParams) {
   });
 
   const createPersonMutation = useMutation({
-    mutationFn: (dto: ICreatePersonPayload) => peopleService.createPerson(dto),
+    mutationFn: (dto: IPersonPayload) => peopleService.createPerson(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["people"] });
     },

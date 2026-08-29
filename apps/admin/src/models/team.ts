@@ -1,4 +1,4 @@
-export interface Team {
+export interface ITeam {
   id: string;
   eventId: string;
   name: string;
@@ -11,7 +11,7 @@ export interface Team {
   updatedAt?: string;
 }
 
-export interface IApiTeam {
+export interface ITeamResponse {
   id: string;
   eventId: string;
   name: string;
@@ -30,24 +30,16 @@ export interface IApiTeam {
   };
 }
 
-export interface ICreateTeamPayload {
+export interface ITeamPayload {
   eventId: string;
   name: string;
   color?: string;
   colorHex?: string;
 }
 
-export interface IUpdateTeamPayload {
-  id?: string;
-  eventId?: string;
-  name?: string;
-  color?: string;
-  colorHex?: string;
-}
+export type IUpdateTeamPayload = Partial<ITeamPayload>;
 
-export type ITeam = Team;
-
-export function adaptApiTeamToTeam(apiTeam: IApiTeam): Team {
+export function adaptApiTeamToTeam(apiTeam: ITeamResponse): ITeam {
   const rawColor = apiTeam.color || apiTeam.colorHex || "#6366F1";
   const colorHex = rawColor.startsWith("#") ? rawColor : `#${rawColor}`;
   const rawTeam = apiTeam as unknown as Record<string, unknown>;
@@ -69,8 +61,3 @@ export function adaptApiTeamToTeam(apiTeam: IApiTeam): Team {
     updatedAt: apiTeam.updatedAt,
   };
 }
-
-// Backwards compatibility aliases
-export type ApiTeam = IApiTeam;
-export type CreateTeamDto = ICreateTeamPayload;
-export type UpdateTeamDto = IUpdateTeamPayload;

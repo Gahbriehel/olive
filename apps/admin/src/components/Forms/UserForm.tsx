@@ -6,7 +6,7 @@ import { Input } from "@/components/FormElements/Input";
 import { Select, type ISelect } from "@/components/ui/Select";
 import { BaseButton, DeleteButton } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { AdminUser } from "@/models/dashboard";
+import { IAdminUser } from "@/models/dashboard";
 import { cn } from "@/helpers/cn";
 
 export interface UserFormValues {
@@ -20,7 +20,7 @@ export interface UserFormValues {
 }
 
 interface UserFormProps {
-  initialValues?: Partial<AdminUser>;
+  initialValues?: Partial<IAdminUser>;
   onSubmit: (data: UserFormValues) => void | Promise<void>;
   onDelete?: () => void | Promise<void>;
   onCancel: () => void;

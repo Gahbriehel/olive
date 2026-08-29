@@ -7,7 +7,7 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-import { UserRole, ChurchEvent, CheckInMethod } from "@/types/dashboard";
+import { UserRole, IChurchEvent, CheckInMethod } from "@/types/dashboard";
 
 // Settings are now handled by useSettings hook
 
@@ -34,10 +34,10 @@ interface DashboardContextType {
   setCurrentRole: (role: UserRole) => void;
   selectedEventId: string;
   setSelectedEventId: (id: string) => void;
-  activeEvent: ChurchEvent | undefined;
+  activeEvent: IChurchEvent | undefined;
 
   // Global lightweight datasets & settings
-  events: ChurchEvent[];
+  events: IChurchEvent[];
 
   // Handlers
   handleCheckIn: (regId: string, method?: CheckInMethod) => Promise<void>;

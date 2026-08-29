@@ -18,13 +18,13 @@ import { StatsCard } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { TeamsForm } from "@/components/Forms/TeamsForm";
-import { Team } from "@/models/team";
-import { Registration } from "@/types/dashboard";
+import { ITeam } from "@/models/team";
+import { IRegistration } from "@/types/dashboard";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
 interface TeamsViewProps {
-  teams: Team[];
-  registrations?: Registration[];
+  teams: ITeam[];
+  registrations?: IRegistration[];
   meta?: {
     total?: number;
     page?: number;
@@ -76,10 +76,10 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
   onRefetch,
 }) => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedTeamForEdit, setSelectedTeamForEdit] = useState<Team | null>(
+  const [selectedTeamForEdit, setSelectedTeamForEdit] = useState<ITeam | null>(
     null,
   );
-  const [deletingTeam, setDeletingTeam] = useState<Team | null>(null);
+  const [deletingTeam, setDeletingTeam] = useState<ITeam | null>(null);
 
   const [searchInput, setSearchInput] = useState(search);
   const debouncedSearch = useDebouncedSearch(searchInput, 500);

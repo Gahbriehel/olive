@@ -1,7 +1,7 @@
-import { Registration } from "@/types/dashboard";
+import { IRegistration } from "@/types/dashboard";
 
 export const exportToCsv = (
-  registrations: Registration[] = [],
+  registrations: IRegistration[] = [],
   filenamePrefix = "YC26_Registrations",
 ) => {
   const headers = [

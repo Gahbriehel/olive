@@ -1,7 +1,7 @@
 export type EventStatus = "CANCELLED" | "PUBLISHED" | "COMPLETED" | "DRAFT";
 export type ApiEventStatus = EventStatus;
 
-export interface ChurchEvent {
+export interface IChurchEvent {
   id: string;
   name: string;
   category: string;
@@ -21,7 +21,7 @@ export interface ChurchEvent {
   googleCalendarSync?: boolean;
 }
 
-export interface IApiEvent {
+export interface IEventResponse {
   id: string;
   churchId: string;
   title: string;
@@ -41,7 +41,7 @@ export interface IApiEvent {
   teams?: number;
 }
 
-export interface ICreateEventPayload {
+export interface IEventPayload {
   churchId?: string;
   title: string;
   description?: string;
@@ -54,12 +54,12 @@ export interface ICreateEventPayload {
   googleCalendarSync?: boolean;
 }
 
-export type IUpdateEventPayload = Partial<ICreateEventPayload>;
-
-export type IChurchEvent = ChurchEvent;
+export type IUpdateEventPayload = Partial<IEventPayload>;
 
 // Adapters
-export function adaptApiEventToChurchEvent(apiEvent: IApiEvent): ChurchEvent {
+export function adaptApiEventToChurchEvent(
+  apiEvent: IEventResponse,
+): IChurchEvent {
   return {
     id: apiEvent.id,
     name: apiEvent.title,
@@ -82,6 +82,10 @@ export function adaptApiEventToChurchEvent(apiEvent: IApiEvent): ChurchEvent {
 }
 
 // Backwards compatibility aliases
-export type ApiEvent = IApiEvent;
-export type CreateEventDto = ICreateEventPayload;
+export type ChurchEvent = IChurchEvent;
+export type IChurchEventAlias = IChurchEvent;
+export type IApiEvent = IEventResponse;
+export type ApiEvent = IEventResponse;
+export type ICreateEventPayload = IEventPayload;
+export type CreateEventDto = IEventPayload;
 export type UpdateEventDto = IUpdateEventPayload;

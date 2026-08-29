@@ -14,7 +14,7 @@ export type NavTab =
   | "users"
   | "settings";
 
-export interface AdminUser {
+export interface IAdminUser {
   id: string;
   name: string;
   email: string;
@@ -64,7 +64,7 @@ export interface IUpdateProfilePayload {
   phone?: string;
 }
 
-export interface ChurchSettings {
+export interface IChurchSettings {
   id?: string;
   churchName: string;
   branchName?: string;
@@ -174,3 +174,7 @@ export interface IDashboardData {
   latestRegistrations: ILatestRegistration[];
   upcomingEvents: IUpcomingEvent[];
 }
+
+// Backwards compatibility aliases
+export type AdminUser = IAdminUser;
+export type ChurchSettings = IChurchSettings;

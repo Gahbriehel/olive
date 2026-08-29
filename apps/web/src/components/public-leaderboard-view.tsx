@@ -14,11 +14,11 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
-import { ILeaderboardEntry, IApiEvent } from "@olive/types";
+import { ILeaderboardEntry, IEventResponse } from "@olive/types";
 
 interface PublicLeaderboardViewProps {
   eventId: string;
-  event?: IApiEvent | null;
+  event?: IEventResponse | null;
 }
 
 export const PublicLeaderboardView: React.FC<PublicLeaderboardViewProps> = ({

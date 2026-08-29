@@ -1,5 +1,5 @@
 import { apiClient } from "@/utils/api-client";
-import { ICheckInPayload, IApiRegistration } from "@/models/registration";
+import { ICheckInPayload, IRegistrationResponse } from "@/models/registration";
 import { IBaseResponse } from "@/models/base";
 
 function extractData<T>(resData: IBaseResponse<T> | T): T {
@@ -10,16 +10,18 @@ function extractData<T>(resData: IBaseResponse<T> | T): T {
 }
 
 export const attendanceService = {
-  async checkInAttendee(payload: ICheckInPayload): Promise<IApiRegistration> {
+  async checkInAttendee(
+    payload: ICheckInPayload,
+  ): Promise<IRegistrationResponse> {
     const res = await apiClient.post<
-      IBaseResponse<IApiRegistration> | IApiRegistration
+      IBaseResponse<IRegistrationResponse> | IRegistrationResponse
     >("/attendance/checkin", payload);
     return extractData(res.data);
   },
 
-  async getEventAttendance(eventId: string): Promise<IApiRegistration[]> {
+  async getEventAttendance(eventId: string): Promise<IRegistrationResponse[]> {
     const res = await apiClient.get<
-      IBaseResponse<IApiRegistration[]> | IApiRegistration[]
+      IBaseResponse<IRegistrationResponse[]> | IRegistrationResponse[]
     >(`/attendance/event/${eventId}`);
     return extractData(res.data) || [];
   },

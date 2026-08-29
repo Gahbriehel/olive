@@ -1,6 +1,6 @@
 import { apiClient } from "@/utils/api-client";
 import {
-  ChurchSettings,
+  IChurchSettings,
   IUserProfile,
   IUpdateProfilePayload,
 } from "@/models/dashboard";
@@ -8,7 +8,7 @@ import { IBaseResponse, extractData } from "@/models/base";
 
 export const settingsService = {
   // Fetch Church Settings
-  async getSettings(): Promise<ChurchSettings> {
+  async getSettings(): Promise<IChurchSettings> {
     try {
       const res = await apiClient.get<IBaseResponse<unknown>>("/settings");
       const data = extractData<Record<string, unknown>>(res.data);
@@ -62,8 +62,8 @@ export const settingsService = {
 
   // Update Church Settings
   async updateSettings(
-    settings: Partial<ChurchSettings>,
-  ): Promise<ChurchSettings> {
+    settings: Partial<IChurchSettings>,
+  ): Promise<IChurchSettings> {
     const payload = {
       name: settings.churchName,
       churchName: settings.churchName,
@@ -104,7 +104,7 @@ export const settingsService = {
         (data.website as string) ||
         settings.websiteUrl ||
         "",
-    } as ChurchSettings;
+    } as IChurchSettings;
   },
 
   // Get current user self profile

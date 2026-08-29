@@ -1,16 +1,18 @@
-export type { EventStatus, ChurchEvent } from "@/models/event";
-export type { MembershipStatus, Person } from "@/models/person";
-export type { Team } from "@/models/team";
+export type { EventStatus, IChurchEvent, ChurchEvent } from "@/models/event";
+export type { MembershipStatus, IPerson } from "@/models/person";
+export type { ITeam } from "@/models/team";
 export type {
   RegistrationStatus,
   CheckInMethod,
-  Registration,
+  IRegistration,
   AttendanceRecord,
 } from "@/models/registration";
-export type { GameStatus, Game, LeaderboardEntry } from "@/models/game";
+export type { GameStatus, IGame, Game, LeaderboardEntry } from "@/models/game";
 export type {
   UserRole,
   NavTab,
+  IAdminUser,
   AdminUser,
+  IChurchSettings,
   ChurchSettings,
 } from "@/models/dashboard";

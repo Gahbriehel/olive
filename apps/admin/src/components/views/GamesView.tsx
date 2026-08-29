@@ -28,13 +28,13 @@ import { StatsCard } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { GamesForm } from "@/components/Forms/GamesForm";
-import { Game } from "@/models/game";
-import { Team } from "@/models/team";
+import { IGame } from "@/models/game";
+import { ITeam } from "@/models/team";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
 interface GamesViewProps {
-  games: Game[];
-  teams: Team[];
+  games: IGame[];
+  teams: ITeam[];
   meta?: {
     total?: number;
     page?: number;
@@ -95,19 +95,18 @@ export const GamesView: React.FC<GamesViewProps> = ({
   isClearingScores = false,
   onRefetch,
 }) => {
-  const [selectedGameForScore, setSelectedGameForScore] = useState<Game | null>(
-    null,
-  );
+  const [selectedGameForScore, setSelectedGameForScore] =
+    useState<IGame | null>(null);
   const [scoreInputs, setScoreInputs] = useState<Record<string, number>>({});
   const [scoreNotes, setScoreNotes] = useState<Record<string, string>>({});
   const [scoreIds, setScoreIds] = useState<Record<string, string>>({});
   const [isConfirmClearScoresOpen, setIsConfirmClearScoresOpen] =
     useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedGameForEdit, setSelectedGameForEdit] = useState<Game | null>(
+  const [selectedGameForEdit, setSelectedGameForEdit] = useState<IGame | null>(
     null,
   );
-  const [deletingGame, setDeletingGame] = useState<Game | null>(null);
+  const [deletingGame, setDeletingGame] = useState<IGame | null>(null);
 
   const [searchInput, setSearchInput] = useState(search);
   const debouncedSearch = useDebouncedSearch(searchInput, 500);
@@ -139,7 +138,7 @@ export const GamesView: React.FC<GamesViewProps> = ({
   const totalMaxPoints = games.reduce((sum, g) => sum + g.maxScore, 0);
   const totalTeams = teams.length;
 
-  const handleOpenScoreModal = (game: Game) => {
+  const handleOpenScoreModal = (game: IGame) => {
     setSelectedGameForScore(game);
     const initialPoints: Record<string, number> = {};
     const initialNotes: Record<string, string> = {};

@@ -29,7 +29,7 @@ export interface IQueryParams {
 export type EventStatus = "CANCELLED" | "PUBLISHED" | "COMPLETED" | "DRAFT";
 export type ApiEventStatus = EventStatus;
 
-export interface ChurchEvent {
+export interface IChurchEvent {
   id: string;
   name: string;
   category: string;
@@ -49,7 +49,7 @@ export interface ChurchEvent {
   googleCalendarSync?: boolean;
 }
 
-export interface IApiEvent {
+export interface IEventResponse {
   id: string;
   churchId: string;
   title: string;
@@ -69,7 +69,7 @@ export interface IApiEvent {
   teams?: number;
 }
 
-export interface ICreateEventPayload {
+export interface IEventPayload {
   churchId?: string;
   title: string;
   description?: string;
@@ -81,14 +81,14 @@ export interface ICreateEventPayload {
   googleCalendarSync?: boolean;
 }
 
-export type IUpdateEventPayload = Partial<ICreateEventPayload>;
+export type IUpdateEventPayload = Partial<IEventPayload>;
 
 // Person types
 export type MembershipStatus = "Member" | "Visitor";
 export type ApiGender = "MALE" | "FEMALE" | "OTHER";
 export type ApiMembershipStatus = "VISITOR" | "MEMBER" | "WORKER" | "LEADER";
 
-export interface IApiPerson {
+export interface IPersonResponse {
   id: string;
   churchId: string;
   firstName: string;
@@ -112,7 +112,7 @@ export interface IApiPerson {
 // Registration types
 export type ApiRegistrationStatus = "REGISTERED" | "CHECKED_IN" | "CANCELLED";
 
-export interface IApiRegistration {
+export interface IRegistrationResponse {
   id: string;
   eventId: string;
   personId: string;
@@ -121,11 +121,11 @@ export interface IApiRegistration {
   status: ApiRegistrationStatus;
   googleCalendarSync?: boolean;
   checkedInAt?: string;
-  person?: IApiPerson;
+  person?: IPersonResponse;
   createdAt?: string;
 }
 
-export interface IRegisterPayload {
+export interface IRegistrationPayload {
   firstName: string;
   lastName: string;
   email?: string;
@@ -137,7 +137,7 @@ export interface IRegisterPayload {
 }
 
 // Dashboard & Church Settings types
-export interface ChurchSettings {
+export interface IChurchSettings {
   id?: string;
   churchName: string;
   branchName?: string;
@@ -180,9 +180,10 @@ export interface ILeaderboardEntry {
   gamesPlayed?: number;
 }
 
-export interface ILeaderboardResponseData {
+export interface ILeaderboardResponse {
   eventId: string;
   eventTitle?: string;
   leaderboard: ILeaderboardEntry[];
 }
+
 

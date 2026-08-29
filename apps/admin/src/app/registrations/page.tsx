@@ -7,7 +7,7 @@ import { useTeams } from "@/hooks/useTeams";
 import { adaptApiRegistrationToRegistration } from "@/models/registration";
 import { adaptApiTeamToTeam } from "@/models/team";
 import { RegistrationsView } from "@/components/views/RegistrationsView";
-import { Registration } from "@/types/dashboard";
+import { IRegistration } from "@/types/dashboard";
 import { exportToCsv } from "@/helpers/exportCsv";
 
 export default function RegistrationsPage() {
@@ -51,7 +51,7 @@ export default function RegistrationsPage() {
   );
 
   const [overrides, setOverrides] = useState<
-    Record<string, Partial<Registration>>
+    Record<string, Partial<IRegistration>>
   >({});
 
   const registrations = useMemo(

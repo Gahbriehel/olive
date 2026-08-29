@@ -26,10 +26,10 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { QrScannerModal } from "@/components/modals/QrScannerModal";
 import {
-  Registration,
+  IRegistration,
   AttendanceRecord,
   CheckInMethod,
-  ChurchEvent,
+  IChurchEvent,
 } from "@/types/dashboard";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
@@ -38,7 +38,7 @@ import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
 import { IS_STRICT_RBAC_RESTRICTED } from "@/config/features";
 
 interface AttendanceViewProps {
-  registrations: Registration[];
+  registrations: IRegistration[];
   attendanceLog: AttendanceRecord[];
   onCheckInAttendee: (
     regId: string,
@@ -53,7 +53,7 @@ interface AttendanceViewProps {
     limit?: number;
     totalPages?: number;
   };
-  activeEvent?: ChurchEvent;
+  activeEvent?: IChurchEvent;
   page?: number;
   onPageChange?: (page: number) => void;
   limit?: number;
@@ -150,7 +150,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
     }
   };
 
-  const handleManualCheckInSubmit = async (reg: Registration) => {
+  const handleManualCheckInSubmit = async (reg: IRegistration) => {
     if (!canExecuteCheckIn) return;
     setCheckingInId(reg.id);
     try {

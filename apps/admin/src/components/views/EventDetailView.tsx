@@ -24,15 +24,15 @@ import { SidebarModal } from "@/components/ui/SidebarModal";
 import { EventsForm } from "@/components/Forms/EventsForm";
 import { useEvents } from "@/hooks/useEvents";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
-import { ChurchEvent, Team, Registration, Game } from "@/types/dashboard";
+import { IChurchEvent, ITeam, IRegistration, IGame } from "@/types/dashboard";
 import { ILeaderboardEntry } from "@/models/game";
 
 interface EventDetailViewProps {
-  event: ChurchEvent;
+  event: IChurchEvent;
   onBack: () => void;
-  teams: Team[];
-  registrations: Registration[];
-  games: Game[];
+  teams: ITeam[];
+  registrations: IRegistration[];
+  games: IGame[];
   leaderboard?: ILeaderboardEntry[];
   onOpenQrScanner: () => void;
 }

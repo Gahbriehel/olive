@@ -8,7 +8,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { Switch } from "@headlessui/react";
 import { webService } from "@/services/api";
-import { IRegisterPayload } from "@olive/types";
+import { IRegistrationPayload } from "@olive/types";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import {
@@ -59,7 +59,7 @@ export function EventRegistrationModal({
     unknown | null
   >(null);
 
-  const { control, handleSubmit, reset } = useForm<IRegisterPayload>({
+  const { control, handleSubmit, reset } = useForm<IRegistrationPayload>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: yupResolver(registrationSchema) as any,
     defaultValues: {
@@ -74,14 +74,14 @@ export function EventRegistrationModal({
   });
 
   const registerMutation = useMutation({
-    mutationFn: (data: IRegisterPayload) =>
+    mutationFn: (data: IRegistrationPayload) =>
       webService.registerForEvent(eventId, data),
     onSuccess: (data) => {
       setSuccessRegistration(data);
     },
   });
 
-  const onSubmit = (data: IRegisterPayload) => {
+  const onSubmit = (data: IRegistrationPayload) => {
     registerMutation.mutate(data);
   };
 

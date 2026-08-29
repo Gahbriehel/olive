@@ -1,18 +1,18 @@
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { Person } from "@/models/person";
+import { IPerson } from "@/models/person";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getInitials, capitalizeWords } from "@/utils/formatters";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 
 interface GetPeopleColumnsProps {
-  onSelectPerson: (person: Person) => void;
+  onSelectPerson: (person: IPerson) => void;
 }
 
 export function getPeopleColumns({
   onSelectPerson,
-}: GetPeopleColumnsProps): ColumnDef<Person>[] {
+}: GetPeopleColumnsProps): ColumnDef<IPerson>[] {
   return [
     {
       accessorKey: "name",

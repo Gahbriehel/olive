@@ -1,15 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ICreateGamePayload,
+  IGamePayload,
   IRecordScorePayload,
-  IApiGame,
+  IGameResponse,
   ILeaderboardEntry,
   IUpdateGamePayload,
 } from "@/models/game";
 import { IQueryParams } from "@/models/base";
 import { gamesService } from "@/services/games.service";
 
-const EMPTY_GAMES: IApiGame[] = [];
+const EMPTY_GAMES: IGameResponse[] = [];
 const EMPTY_LEADERBOARD: ILeaderboardEntry[] = [];
 
 export function useGames(params?: IQueryParams | string) {
@@ -33,7 +33,7 @@ export function useGames(params?: IQueryParams | string) {
   });
 
   const createGameMutation = useMutation({
-    mutationFn: (dto: ICreateGamePayload) => gamesService.createGame(dto),
+    mutationFn: (dto: IGamePayload) => gamesService.createGame(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["games"] });
     },
