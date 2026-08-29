@@ -182,15 +182,6 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
           color="indigo"
           loading={isLoading}
         />
-        <StatsCard
-          title="Checked-In Today"
-          value={checkedIn.toLocaleString()}
-          change={`${totalReg > 0 ? ((checkedIn / totalReg) * 100).toFixed(0) : 0}% check-in rate`}
-          trend="up"
-          icon={UserCheck}
-          color="emerald"
-          loading={isLoading}
-        />
       </div>
 
       {/* Filter Bar */}
