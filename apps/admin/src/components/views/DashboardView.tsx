@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Badge } from "@/components/ui/Badge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { NavTab, ChurchEvent } from "@/types/dashboard";
 import { StatsCard, StatsCardColor } from "@/components/ui/StatsCard";
 import { IDashboardData } from "@/models/dashboard";
@@ -295,16 +296,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
                             {name}
                           </p>
-                          <Badge
-                            variant={
-                              reg.person?.membershipStatus === "MEMBER"
-                                ? "emerald"
-                                : "amber"
-                            }
+                          <StatusBadge
+                            status={reg.person?.membershipStatus || "GUEST"}
                             size="sm"
-                          >
-                            {reg.person?.membershipStatus || "GUEST"}
-                          </Badge>
+                          />
                         </div>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400">
                           Reg #:{" "}

@@ -3,6 +3,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { AdminUser } from "@/models/dashboard";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { Badge } from "@/components/ui/Badge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getInitials, capitalizeWords } from "@/utils/formatters";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 
@@ -52,14 +53,7 @@ export function getUserColumns({
     {
       accessorKey: "status",
       header: "Account Status",
-      cell: ({ row }) => (
-        <Badge
-          variant={row.original.status === "Active" ? "emerald" : "slate"}
-          dot
-        >
-          {row.original.status}
-        </Badge>
-      ),
+      cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
       accessorKey: "lastActive",

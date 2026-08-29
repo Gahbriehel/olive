@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Select } from "@/components/FormElements/Select";
-import { Badge } from "@/components/ui/Badge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 import { Tabs } from "@/components/ui/Tabs";
 import { StatsCard } from "@/components/ui/StatsCard";
@@ -248,16 +248,10 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
                   <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
                     {selectedPerson.name}
                   </h3>
-                  <Badge
-                    variant={
-                      selectedPerson.membershipStatus === "Member"
-                        ? "emerald"
-                        : "amber"
-                    }
+                  <StatusBadge
+                    status={selectedPerson.membershipStatus}
                     size="sm"
-                  >
-                    {selectedPerson.membershipStatus}
-                  </Badge>
+                  />
                 </div>
               </div>
             </div>
@@ -333,14 +327,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
                               {reg.eventDate} • Team: {reg.teamName}
                             </p>
                           </div>
-                          <Badge
-                            variant={
-                              reg.status === "REGISTERED" ? "indigo" : "slate"
-                            }
-                            size="sm"
-                          >
-                            {reg.status}
-                          </Badge>
+                          <StatusBadge status={reg.status} size="sm" />
                         </div>
                       ))}
                     </div>
@@ -367,9 +354,7 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
                       className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 font-semibold text-slate-800 dark:text-slate-200 flex items-center justify-between"
                     >
                       <span>{dept}</span>
-                      <Badge variant="indigo" size="sm">
-                        Active
-                      </Badge>
+                      <StatusBadge status="Active" size="sm" />
                     </div>
                   ))
                 ) : (
@@ -401,12 +386,10 @@ export const PeopleView: React.FC<PeopleViewProps> = ({
                           {hist.date}
                         </p>
                       </div>
-                      <Badge
-                        variant={hist.attended ? "emerald" : "rose"}
+                      <StatusBadge
+                        status={hist.attended ? "Checked In" : "Not Checked In"}
                         size="sm"
-                      >
-                        {hist.attended ? "Checked In" : "Not Checked In"}
-                      </Badge>
+                      />
                     </div>
                   ))
                 ) : (

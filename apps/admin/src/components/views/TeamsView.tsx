@@ -8,7 +8,6 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  ArrowRightLeft,
 } from "lucide-react";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -71,7 +70,6 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
   onCreateTeam,
   onUpdateTeam,
   onDeleteTeam,
-  onReassignTeam,
   isCreating = false,
   isUpdating = false,
   isDeleting = false,
@@ -109,25 +107,16 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
 
   const totalAllocated = registrationsMeta?.total ?? registrations.length;
 
-  const handleQuickMove = (regId: string, currentTeamId: string) => {
-    if (!onReassignTeam || teams.length === 0) return;
-    const teamIds = teams.map((t) => t.id);
-    const currIdx = teamIds.indexOf(currentTeamId);
-    const nextTeamId = teamIds[(currIdx + 1) % teamIds.length];
-    onReassignTeam(regId, nextTeamId);
-  };
-
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-            Event Teams & Allocation
+            Event Teams
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Create and manage conference teams, track scores, and balance roster
-            member allocations.
+            Create and manage event teams.
           </p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
@@ -257,29 +246,16 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
                       </h3>
                     </div>
 
-                    {/* Member Roster Sample if available */}
                     {teamRegs.length > 0 && (
                       <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-zinc-800">
-                        <p className="text-[10px] font-bold uppercase text-slate-400">
-                          Roster Sample
-                        </p>
                         {teamRegs.slice(0, 3).map((r) => (
                           <div
                             key={r.id}
                             className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-zinc-800/50 text-xs"
                           >
-                            <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[110px]">
+                            <span className="font-semibold text-slate-800 dark:text-slate-200">
                               {r.name}
                             </span>
-                            {onReassignTeam && (
-                              <button
-                                onClick={() => handleQuickMove(r.id, team.id)}
-                                className="px-2 py-1 bg-white dark:bg-zinc-700 border border-slate-200 dark:border-zinc-600 rounded text-[10px] font-mono hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950 transition-colors flex items-center gap-1"
-                                title="Move to Next Team"
-                              >
-                                <ArrowRightLeft className="w-3 h-3" /> Move
-                              </button>
-                            )}
                           </div>
                         ))}
                       </div>
@@ -363,53 +339,6 @@ export const TeamsView: React.FC<TeamsViewProps> = ({
           </div>
         </div>
       )}
-
-      {/* Roster Reassignment Console (if registrations exist) */}
-      {/* {registrations.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Roster Reassignment Console</CardTitle>
-            <CardDescription>
-              Transfer registered attendees between event teams immediately
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-              {registrations.map((r) => (
-                <div
-                  key={r.id}
-                  className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900 flex items-center justify-between hover:shadow-sm transition-all"
-                >
-                  <div>
-                    <p className="font-bold text-slate-900 dark:text-slate-100">
-                      {r.name}
-                    </p>
-                    <p className="text-[10px] text-slate-400">
-                      {r.registrationNumber}
-                    </p>
-                    <span
-                      className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold text-white"
-                      style={{ backgroundColor: r.assignedTeamColor }}
-                    >
-                      {r.assignedTeamName}
-                    </span>
-                  </div>
-                  {onReassignTeam && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickMove(r.id, r.assignedTeamId)}
-                      className="text-[11px] h-8"
-                    >
-                      Transfer ⇄
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )} */}
 
       {/* Create Team Sidebar Modal */}
       <SidebarModal

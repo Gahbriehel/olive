@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Input } from "@/components/FormElements/Input";
 import { Select } from "@/components/FormElements/Select";
-import { Badge } from "@/components/ui/Badge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { cn } from "@/helpers/cn";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { StatsCard } from "@/components/ui/StatsCard";
@@ -113,43 +113,31 @@ export const EventsView: React.FC<EventsViewProps> = ({
         return {
           card: "border-t-4 border-t-emerald-500 dark:border-t-emerald-400 bg-white dark:bg-zinc-900 hover:border-emerald-500/50 dark:hover:border-emerald-400/50",
           progress: "bg-emerald-500 dark:bg-emerald-400",
-          badge: (
-            <Badge variant="emerald">
-              <span className="relative flex h-2 w-2 mr-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
-              Published
-            </Badge>
-          ),
+          badge: <StatusBadge status={status} />,
         };
       case "DRAFT":
         return {
           card: "border-t-4 border-t-amber-500 dark:border-t-amber-400 bg-white dark:bg-zinc-900 hover:border-amber-500/50 dark:hover:border-amber-400/50",
           progress: "bg-amber-500 dark:bg-amber-400",
-          badge: (
-            <Badge variant="amber" dot>
-              Draft
-            </Badge>
-          ),
+          badge: <StatusBadge status={status} />,
         };
       case "COMPLETED":
         return {
           card: "border-t-4 border-t-indigo-500 dark:border-t-indigo-400 bg-white dark:bg-zinc-900 opacity-90 hover:opacity-100 hover:border-indigo-500/50",
           progress: "bg-indigo-600 dark:bg-indigo-500",
-          badge: <Badge variant="indigo">Completed</Badge>,
+          badge: <StatusBadge status={status} />,
         };
       case "CANCELLED":
         return {
           card: "border-t-4 border-t-rose-500 dark:border-t-rose-400 bg-white dark:bg-zinc-900 opacity-75 hover:opacity-100 hover:border-rose-500/50",
           progress: "bg-rose-500 dark:bg-rose-400",
-          badge: <Badge variant="rose">Cancelled</Badge>,
+          badge: <StatusBadge status={status} dot={false} />,
         };
       default:
         return {
           card: "border-t-4 border-t-slate-400 dark:border-t-slate-600 bg-white dark:bg-zinc-900",
           progress: "bg-slate-400 dark:bg-slate-500",
-          badge: <Badge variant="slate">{status}</Badge>,
+          badge: <StatusBadge status={status} />,
         };
     }
   };

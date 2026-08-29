@@ -21,7 +21,7 @@ export const exportToCsv = (
     r.phone,
     r.gender,
     r.membershipStatus,
-    `"${r.assignedTeamName || ""}"`,
+    `"${r.team?.name || ""}"`,
     r.status,
   ]);
   const csvContent =

@@ -1,6 +1,8 @@
 export type MembershipStatus = "Member" | "Visitor";
 export type ApiGender = "MALE" | "FEMALE" | "OTHER";
 export type ApiMembershipStatus = "VISITOR" | "MEMBER" | "WORKER" | "LEADER";
+export type ApiEmailStatus =
+  "DELIVERABLE" | "BOUNCED" | "DROPPED" | "COMPLAINED";
 
 export interface IPersonRegistrationHistory {
   id: string;
@@ -67,6 +69,9 @@ export interface IApiPerson {
   phone?: string;
   gender?: ApiGender;
   membershipStatus: ApiMembershipStatus;
+  emailBounceReason: string;
+  emailBouncedAt: string;
+  emailStatus: ApiEmailStatus;
   dateOfBirth?: string;
   address?: string;
   createdAt?: string;
@@ -164,7 +169,9 @@ export function adaptApiPersonToPerson(apiPerson: IApiPerson): Person {
     dob: apiPerson.dateOfBirth
       ? new Date(apiPerson.dateOfBirth).toISOString().slice(0, 10)
       : "N/A",
-    membershipStatus: membershipMap[apiPerson.membershipStatus] || "Member",
+    membershipStatus: apiPerson.membershipStatus
+      ? membershipMap[apiPerson.membershipStatus] || "Visitor"
+      : "Visitor",
     avatarUrl: apiPerson.avatarUrl || undefined,
     registrationHistoryCount: eventsRegisteredCount,
     eventsAttendedCount,

@@ -112,7 +112,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
 
       if (matched) {
         setScanResult(
-          `Checked in: ${matched.name} (${matched.assignedTeamName}) • ${matched.registrationNumber}`,
+          `Checked in: ${matched.name} (${matched.team?.name || ""}) • ${matched.registrationNumber}`,
         );
       } else {
         setScanResult(`Checked in code: ${cleanCode}`);
@@ -609,9 +609,9 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                   </div>
                   <span
                     className="px-2 py-0.5 rounded text-[10px] font-bold text-white"
-                    style={{ backgroundColor: r.assignedTeamColor }}
+                    style={{ backgroundColor: r.team?.colorHex }}
                   >
-                    {r.assignedTeamName}
+                    {r.team?.name}
                   </span>
                 </button>
               ))}

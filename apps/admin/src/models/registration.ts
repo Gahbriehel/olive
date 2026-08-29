@@ -1,6 +1,7 @@
 import { MembershipStatus } from "./person";
 import { IApiPerson } from "./person";
 import { IApiTeam } from "./team";
+import { formatDateTimeDisplay } from "@/utils/formatters";
 
 export type RegistrationStatus = "Confirmed" | "Checked-In" | "Cancelled";
 export type CheckInMethod = "QR Scan" | "Manual Search";
@@ -15,8 +16,8 @@ export interface Registration {
   gender: "Male" | "Female";
   membershipStatus: MembershipStatus;
   assignedTeamId: string;
-  assignedTeamName: string;
-  assignedTeamColor: string;
+  team: IApiTeam;
+  person: IApiPerson;
   qrCodeUrl: string;
   qrGenerated: boolean;
   token: string;
@@ -90,10 +91,12 @@ export function adaptApiRegistrationToRegistration(
     phone: person?.phone || "N/A",
     gender: person?.gender === "FEMALE" ? "Female" : "Male",
     membershipStatus:
-      person?.membershipStatus === "VISITOR" ? "Visitor" : "Member",
+      person?.membershipStatus && person.membershipStatus !== "VISITOR"
+        ? "Member"
+        : "Visitor",
     assignedTeamId: team?.id || "",
-    assignedTeamName: team?.name || "Unassigned",
-    assignedTeamColor: team?.colorHex || "#94A3B8",
+    team: team!,
+    person: person!,
     qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(apiReg.qrCode || apiReg.id)}`,
     qrGenerated: true,
     status: apiReg.status === "CHECKED_IN" ? "Checked-In" : "Confirmed",
@@ -101,11 +104,8 @@ export function adaptApiRegistrationToRegistration(
     confirmationSent: true,
     token: apiReg.token,
     registeredAt: apiReg.createdAt
-      ? new Date(apiReg.createdAt).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }) + " Today"
-      : "Today",
+      ? formatDateTimeDisplay(apiReg.createdAt)
+      : "N/A",
     checkedInAt: apiReg.checkedInAt,
   };
 }

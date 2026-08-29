@@ -2,7 +2,7 @@ import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Person } from "@/models/person";
 import { ActionsList } from "@/components/ui/ActionsList";
-import { Badge } from "@/components/ui/Badge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getInitials, capitalizeWords } from "@/utils/formatters";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 
@@ -62,14 +62,7 @@ export function getPeopleColumns({
       accessorKey: "membershipStatus",
       header: "Membership",
       cell: ({ row }) => (
-        <Badge
-          variant={
-            row.original.membershipStatus === "Member" ? "indigo" : "amber"
-          }
-          size="sm"
-        >
-          {row.original.membershipStatus}
-        </Badge>
+        <StatusBadge status={row.original.membershipStatus} size="sm" />
       ),
     },
     {

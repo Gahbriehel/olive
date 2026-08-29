@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Sparkles, X, Church, Sun, Moon } from "lucide-react";
+import { X, Church, Sun, Moon } from "lucide-react";
 import { clsx } from "clsx";
 import { useDashboard } from "@/context/DashboardContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,14 +13,8 @@ import { getUserRoles, hasAuthority } from "@/utils/rbac";
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
-  const {
-    isMobileOpen,
-    setIsMobileOpen,
-    events,
-    selectedEventId,
-    darkMode,
-    setDarkMode,
-  } = useDashboard();
+  const { isMobileOpen, setIsMobileOpen, darkMode, setDarkMode } =
+    useDashboard();
   const { settings } = useSettings();
   const { user } = useAuth();
 
@@ -31,7 +25,6 @@ export const Sidebar: React.FC = () => {
 
   const churchName =
     settings?.churchName || user?.church?.name || "Church Events";
-  const activeEvent = events.find((e) => e.id === selectedEventId) || events[0];
 
   const navContent = (
     <div className="flex flex-col h-full bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-slate-200">

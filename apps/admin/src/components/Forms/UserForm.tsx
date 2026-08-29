@@ -5,7 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { Input } from "@/components/FormElements/Input";
 import { Select, type ISelect } from "@/components/ui/Select";
 import { BaseButton, DeleteButton } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { AdminUser } from "@/models/dashboard";
 import { cn } from "@/helpers/cn";
 
@@ -202,14 +202,7 @@ export const UserForm: React.FC<UserFormProps> = ({
             </label>
             <div className="flex items-center justify-between px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-800 rounded-xl">
               <div className="flex items-center gap-2">
-                <Badge
-                  variant={
-                    initialValues?.status === "Active" ? "emerald" : "slate"
-                  }
-                  dot
-                >
-                  {initialValues?.status || "Active"}
-                </Badge>
+                <StatusBadge status={initialValues?.status || "Active"} />
               </div>
             </div>
           </div>

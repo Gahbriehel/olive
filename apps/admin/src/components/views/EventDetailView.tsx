@@ -17,7 +17,7 @@ import {
   CardContent,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Tabs } from "@/components/ui/Tabs";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
@@ -110,20 +110,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
         </h1>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <Badge
-              variant={
-                event.status === "PUBLISHED"
-                  ? "emerald"
-                  : event.status === "DRAFT"
-                    ? "amber"
-                    : event.status === "COMPLETED"
-                      ? "indigo"
-                      : "rose"
-              }
-              size="sm"
-            >
-              {event.status}
-            </Badge>
+            <StatusBadge status={event.status} size="sm" />
             <span className="text-xs font-semibold text-slate-400">
               {event.category}
             </span>
@@ -291,11 +278,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({
                     {r.email} • {r.registrationNumber}
                   </p>
                 </div>
-                <Badge
-                  variant={r.status === "Checked-In" ? "emerald" : "indigo"}
-                >
-                  {r.status}
-                </Badge>
+                <StatusBadge status={r.status} />
               </div>
             ))}
           </CardContent>

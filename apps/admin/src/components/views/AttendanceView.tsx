@@ -22,7 +22,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Input } from "@/components/FormElements/Input";
-import { Badge } from "@/components/ui/Badge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { QrScannerModal } from "@/components/modals/QrScannerModal";
 import {
@@ -306,9 +306,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                         </p>
                       </div>
                       {r.status === "Checked-In" ? (
-                        <Badge variant="emerald" size="sm">
-                          Checked-In
-                        </Badge>
+                        <StatusBadge status="Checked-In" size="sm" />
                       ) : (
                         <Button
                           variant="primary"

@@ -1,31 +1,22 @@
 import React, { useState } from "react";
-import {
-  Download,
-  QrCode,
-  Send,
-  Users,
-  UserCheck,
-  Shield,
-  Mail,
-  Calendar,
-} from "lucide-react";
+import { Download, Users, UserCheck, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Select } from "@/components/FormElements/Select";
-import { Badge } from "@/components/ui/Badge";
-import { Modal } from "@/components/ui/Modal";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { Registration, Team } from "@/types/dashboard";
 import { ColumnDef } from "@tanstack/react-table";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
+import { SidebarModal } from "@/components/ui/SidebarModal";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { getInitials } from "@/utils/formatters";
 
 interface RegistrationsViewProps {
   registrations: Registration[];
   teams: Team[];
   onExportCsv: () => void;
-  onReassignTeam: (registrationId: string, newTeamId: string) => void;
   meta?: {
     total?: number;
     page?: number;
@@ -49,7 +40,6 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
   registrations,
   teams,
   onExportCsv,
-  onReassignTeam,
   meta,
   page,
   onPageChange,
@@ -63,16 +53,13 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
   onTeamFilterChange,
   onRefetch,
 }) => {
-  const [reassignModalTarget, setReassignModalTarget] =
+  const [selectedRegistration, setSelectedRegistration] =
     useState<Registration | null>(null);
-  const [selectedNewTeamId, setSelectedNewTeamId] = useState("");
 
   const totalReg = meta?.total ?? registrations.length;
   const checkedIn = registrations.filter(
     (r) => r.status === "Checked-In",
   ).length;
-  const assignedTeams = registrations.filter((r) => r.assignedTeamId).length;
-  const confirmedSent = registrations.filter((r) => r.confirmationSent).length;
 
   const columns: ColumnDef<Registration>[] = [
     {
@@ -103,14 +90,7 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => (
-        <Badge
-          variant={row.original.status === "Checked-In" ? "emerald" : "indigo"}
-          dot
-        >
-          {row.original.status}
-        </Badge>
-      ),
+      cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
       accessorKey: "assignedTeamName",
@@ -118,37 +98,18 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
       cell: ({ row }) => (
         <span
           className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-white shadow-sm inline-block"
-          style={{ backgroundColor: row.original.assignedTeamColor }}
+          style={{ backgroundColor: row.original.team?.color }}
         >
-          {row.original.assignedTeamName}
+          {row.original.team?.name}
         </span>
       ),
     },
     {
-      accessorKey: "qrGenerated",
-      header: "QR Ticket",
-      cell: ({ row }) =>
-        row.original.qrGenerated ? (
-          <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
-            <QrCode className="w-3.5 h-3.5" />
-            Generated
-          </span>
-        ) : (
-          <span className="text-slate-400">Pending</span>
-        ),
-    },
-    {
       accessorKey: "confirmationSent",
       header: "Confirmation Email",
-      cell: ({ row }) =>
-        row.original.confirmationSent ? (
-          <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-semibold">
-            <Send className="w-3.5 h-3.5" />
-            Dispatched
-          </span>
-        ) : (
-          <span className="text-slate-400">Queued</span>
-        ),
+      cell: ({ row }) => (
+        <StatusBadge status={row.original.person?.emailStatus || "PENDING"} />
+      ),
     },
     {
       accessorKey: "googleCalendarSync",
@@ -171,10 +132,9 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
           <ActionsList
             actions={[
               {
-                title: "Change Team",
+                title: "View Details",
                 fn: () => {
-                  setReassignModalTarget(row.original);
-                  setSelectedNewTeamId(row.original.assignedTeamId);
+                  setSelectedRegistration(row.original);
                 },
               },
             ]}
@@ -183,13 +143,6 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
       ),
     },
   ];
-
-  const handleConfirmReassign = () => {
-    if (reassignModalTarget && selectedNewTeamId) {
-      onReassignTeam(reassignModalTarget.id, selectedNewTeamId);
-      setReassignModalTarget(null);
-    }
-  };
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
@@ -233,22 +186,6 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
           trend="up"
           icon={UserCheck}
           color="emerald"
-        />
-        <StatsCard
-          title="Team Assignments"
-          value={assignedTeams.toLocaleString()}
-          change="teams"
-          trend="neutral"
-          icon={Shield}
-          color="cyan"
-        />
-        <StatsCard
-          title="Email Confirmation"
-          value={confirmedSent.toLocaleString()}
-          change="QR tickets sent"
-          trend="up"
-          icon={Mail}
-          color="amber"
         />
       </div>
 
@@ -302,54 +239,133 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
         onSearchChange={onSearchChange}
       />
 
-      {/* Reassign Team Modal */}
-      <Modal
-        isOpen={!!reassignModalTarget}
-        onClose={() => setReassignModalTarget(null)}
-        title="Reassign Attendee Team"
-        description={`Transfer ${reassignModalTarget?.name} (${reassignModalTarget?.registrationNumber}) to a different event team.`}
+      {/* Registration Details Sidebar Modal */}
+      <SidebarModal
+        display={!!selectedRegistration}
+        close={() => setSelectedRegistration(null)}
+        title="Registration Details"
       >
-        <div className="space-y-4 text-xs">
-          <div>
-            <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
-              Select Target Team
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {teams.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setSelectedNewTeamId(t.id)}
-                  className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
-                    selectedNewTeamId === t.id
-                      ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 ring-2 ring-indigo-500/20"
-                      : "border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800"
-                  }`}
-                >
-                  <span className="font-bold text-slate-900 dark:text-slate-100">
-                    {t.name}
-                  </span>
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: t.colorHex }}
+        {selectedRegistration && (
+          <div className="space-y-6">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-[-1rem] mb-2">
+              Registration Code:{" "}
+              <span className="font-mono font-semibold">
+                {selectedRegistration.registrationNumber}
+              </span>
+            </p>
+
+            {/* Header Badge Card */}
+            <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-base flex items-center justify-center">
+                  {getInitials(selectedRegistration.name)}
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                    {selectedRegistration.name}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {selectedRegistration.email}
+                  </p>
+                </div>
+              </div>
+              <StatusBadge status={selectedRegistration.status} />
+            </div>
+
+            {/* Info Sections */}
+            <div className="space-y-4">
+              <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-zinc-800 pb-2 flex items-center gap-2">
+                <Users className="w-4 h-4 text-indigo-500" />
+                Attendee & Team Profile
+              </h4>
+
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <p className="text-slate-400 dark:text-slate-500 mb-1">
+                    Gender
+                  </p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">
+                    {selectedRegistration.gender}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-400 dark:text-slate-500 mb-1">
+                    Membership Status
+                  </p>
+                  <StatusBadge
+                    status={selectedRegistration.membershipStatus}
+                    size="sm"
                   />
-                </button>
-              ))}
+                </div>
+                <div>
+                  <p className="text-slate-400 dark:text-slate-500 mb-1">
+                    Phone Number
+                  </p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">
+                    {selectedRegistration.phone || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-400 dark:text-slate-500 mb-1">
+                    Assigned Team
+                  </p>
+                  {selectedRegistration.team ? (
+                    <span
+                      className="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm inline-block"
+                      style={{
+                        backgroundColor: selectedRegistration.team.color,
+                      }}
+                    >
+                      {selectedRegistration.team.name}
+                    </span>
+                  ) : (
+                    <span className="text-slate-400">None</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-zinc-800 pb-2 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-indigo-500" />
+                Registration Details
+              </h4>
+
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <p className="text-slate-400 dark:text-slate-500 mb-1">
+                    Registered At
+                  </p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">
+                    {selectedRegistration.registeredAt}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-400 dark:text-slate-500 mb-1">
+                    Confirmation Email
+                  </p>
+                  <StatusBadge
+                    status={
+                      selectedRegistration.person?.emailStatus || "PENDING"
+                    }
+                    size="sm"
+                  />
+                </div>
+                <div>
+                  <p className="text-slate-400 dark:text-slate-500 mb-1">
+                    Calendar Sync
+                  </p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">
+                    {selectedRegistration.googleCalendarSync
+                      ? "Opted In"
+                      : "Off"}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setReassignModalTarget(null)}
-            >
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={handleConfirmReassign}>
-              Confirm Reassignment
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        )}
+      </SidebarModal>
     </div>
   );
 };

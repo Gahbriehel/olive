@@ -62,19 +62,6 @@ export default function RegistrationsPage() {
     [initialRegistrations, overrides],
   );
 
-  const handleReassignTeam = (regId: string, newTeamId: string) => {
-    const targetTeam = teams.find((t) => t.id === newTeamId);
-    if (!targetTeam) return;
-    setOverrides((prev) => ({
-      ...prev,
-      [regId]: {
-        assignedTeamId: targetTeam.id,
-        assignedTeamName: targetTeam.name,
-        assignedTeamColor: targetTeam.colorHex,
-      },
-    }));
-  };
-
   const handleSearchChange = React.useCallback((newSearch: string) => {
     setSearch((prevSearch) => {
       if (prevSearch !== newSearch) {
@@ -103,7 +90,6 @@ export default function RegistrationsPage() {
     <RegistrationsView
       registrations={registrations}
       teams={teams}
-      onReassignTeam={handleReassignTeam}
       onExportCsv={() => exportToCsv(registrations)}
       meta={meta}
       page={page}
