@@ -258,9 +258,9 @@ export const webService = {
   // Fetch Event Details by ID
   async getEventById(id: string): Promise<IEventResponse | null> {
     try {
-      const res = await webApiClient.get<IBaseResponse<IEventResponse> | IEventResponse>(
-        `/events/${id}`,
-      );
+      const res = await webApiClient.get<
+        IBaseResponse<IEventResponse> | IEventResponse
+      >(`/events/${id}`);
       const data = res.data;
       if ("data" in data && data.data) {
         return data.data;
