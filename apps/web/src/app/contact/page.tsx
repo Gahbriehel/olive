@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { customToast } from "@/helpers/customToast";
 import { TruncatedTextWithCopy } from "@/components/ui/TruncatedTextWithCopy";
+import { webService } from "@/services/api";
+import { PrayerCategory, InquiryCategory } from "@olive/types";
 import {
   MapPin,
   Phone,
@@ -32,14 +33,22 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    setIsSubmitting(false);
-    setSubmitted(true);
-    customToast.success(
-      activeTab === "prayer"
-        ? "Your prayer request has been submitted successfully."
-        : "Your message has been sent to our team.",
-    );
+    try {
+      await webService.submitContactForm({
+        type: activeTab,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        category: formData.category as PrayerCategory | InquiryCategory,
+        message: formData.message,
+        isPrivate: activeTab === "prayer" ? formData.isPrivate : undefined,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      console.error("Failed to submit contact form:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
@@ -48,7 +57,7 @@ export default function ContactPage() {
       name: "",
       email: "",
       phone: "",
-      category: "General Prayer",
+      category: activeTab === "prayer" ? "General Prayer" : "General Question",
       message: "",
       isPrivate: false,
     });
@@ -189,6 +198,10 @@ export default function ContactPage() {
                   onClick={() => {
                     setActiveTab("prayer");
                     setSubmitted(false);
+                    setFormData((prev) => ({
+                      ...prev,
+                      category: "General Prayer",
+                    }));
                   }}
                   className={`pb-2 text-xs font-sans uppercase tracking-wider transition-colors relative ${
                     activeTab === "prayer"
@@ -210,6 +223,10 @@ export default function ContactPage() {
                   onClick={() => {
                     setActiveTab("inquiry");
                     setSubmitted(false);
+                    setFormData((prev) => ({
+                      ...prev,
+                      category: "General Question",
+                    }));
                   }}
                   className={`pb-2 text-xs font-sans uppercase tracking-wider transition-colors relative ${
                     activeTab === "inquiry"

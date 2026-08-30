@@ -186,4 +186,44 @@ export interface ILeaderboardResponse {
   leaderboard: ILeaderboardEntry[];
 }
 
+// Contact Submission types
+export type ContactSubmissionType = "prayer" | "inquiry";
+
+export type PrayerCategory =
+  | "Healing & Health"
+  | "Family & Marriage"
+  | "Financial Breakthrough"
+  | "Spiritual Growth"
+  | "General Prayer";
+
+export type InquiryCategory =
+  | "Visiting This Sunday"
+  | "Small Groups / Ministries"
+  | "Volunteering"
+  | "General Question";
+
+export interface ICreateContactSubmissionPayload {
+  type: ContactSubmissionType;
+  name: string;
+  email: string;
+  phone?: string;
+  category: PrayerCategory | InquiryCategory;
+  message: string;
+  isPrivate?: boolean;
+}
+
+export interface IContactSubmissionResponse {
+  id: string;
+  churchId: string;
+  type: ContactSubmissionType;
+  name: string;
+  email: string;
+  phone: string | null;
+  category: string;
+  message: string;
+  isPrivate: boolean;
+  createdAt: string;
+}
+
+
 

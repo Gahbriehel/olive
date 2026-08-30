@@ -8,6 +8,8 @@ import {
   IBaseResponse,
   ILeaderboardEntry,
   ILeaderboardResponse,
+  ICreateContactSubmissionPayload,
+  IContactSubmissionResponse,
 } from "@olive/types";
 
 const API_URL =
@@ -330,5 +332,19 @@ export const webService = {
     } catch {
       return { eventId, leaderboard: [] };
     }
+  },
+
+  // Submit Contact Form (prayer requests / inquiry)
+  async submitContactForm(
+    payload: ICreateContactSubmissionPayload,
+  ): Promise<IContactSubmissionResponse> {
+    const res = await webApiClient.post<
+      IBaseResponse<IContactSubmissionResponse> | IContactSubmissionResponse
+    >("/contact", payload);
+    const data = res.data;
+    if ("data" in data && data.data) {
+      return data.data;
+    }
+    return data as IContactSubmissionResponse;
   },
 };
