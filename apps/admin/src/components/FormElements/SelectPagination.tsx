@@ -18,7 +18,9 @@ export function SelectPagination({
   return (
     <div className="sticky -top-1 z-10 border-b border-gray-200 bg-white px-4 py-2 dark:border-slate-700 dark:bg-slate-800">
       <div className="flex items-center justify-between text-xs text-gray-500 dark:text-slate-400">
-        <span>Page {currentPage} of {totalPages}</span>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
         <div className="flex gap-1">
           <button
             type="button"

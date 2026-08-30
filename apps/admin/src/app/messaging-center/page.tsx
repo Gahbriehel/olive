@@ -1,3 +1,3 @@
 export default function MessagingCenterPage() {
-    return <div>Yo Messanger</div>;
+  return <div>Yo Messanger</div>;
 }

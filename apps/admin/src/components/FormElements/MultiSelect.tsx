@@ -73,11 +73,14 @@ export function MultiSelect({
     setPage(1);
   }
 
-  const queryParams = useMemo<IQueryParams>(() => ({
-    page,
-    limit: defaultLimit,
-    name: debouncedQuery,
-  }), [page, defaultLimit, debouncedQuery]);
+  const queryParams = useMemo<IQueryParams>(
+    () => ({
+      page,
+      limit: defaultLimit,
+      name: debouncedQuery,
+    }),
+    [page, defaultLimit, debouncedQuery],
+  );
 
   const queryResult = queryHook ? queryHook(queryParams) : null;
 
@@ -178,7 +181,7 @@ export function MultiSelect({
               >
                 {value && value.length > 0
                   ? truncateString(value.map((v) => v.label).join(", "), 40)
-                  : placeholder ?? "Select options..."}
+                  : (placeholder ?? "Select options...")}
               </span>
               <div className="flex items-center gap-2">
                 {isLoading && <ClipLoader size={12} />}
@@ -291,7 +294,8 @@ export function MultiSelect({
                       <>
                         <span
                           className={cn("block truncate capitalize", {
-                            "font-semibold text-indigo-600 dark:text-indigo-400": selected,
+                            "font-semibold text-indigo-600 dark:text-indigo-400":
+                              selected,
                             "font-normal": !selected,
                           })}
                         >

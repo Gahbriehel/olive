@@ -2,7 +2,6 @@
 
 import { type JSX, type ReactNode } from "react";
 
-
 import { cn } from "@/helpers/cn";
 
 interface Props {
