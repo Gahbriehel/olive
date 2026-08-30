@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Download, Users, UserCheck, Calendar } from "lucide-react";
+import { Download, Users, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Select } from "@/components/FormElements/Select";
@@ -59,9 +59,6 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
     useState<IRegistration | null>(null);
 
   const totalReg = meta?.total ?? registrations.length;
-  const checkedIn = registrations.filter(
-    (r) => r.status === "Checked-In",
-  ).length;
 
   const columns: ColumnDef<IRegistration>[] = [
     {

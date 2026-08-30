@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Check, Save, User, Building2, Key } from "lucide-react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { Check, CheckCircle2, Save, User, Building2, Key } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -7,15 +7,17 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Button, BaseButton } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Input } from "@/components/FormElements/Input";
 import { Tabs } from "@/components/ui/Tabs";
+import { Modal } from "@/components/ui/Modal";
 import { IChurchSettings, IUpdateProfilePayload } from "@/models/dashboard";
 import { useSettings } from "@/hooks/useSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
 import { customToast } from "@/helpers/customToast";
+import { useRouter } from "next/navigation";
 
 interface SettingsViewProps {
   settings?: IChurchSettings;
@@ -30,7 +32,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   defaultTab = "church-info",
   onRefetch,
 }) => {
-  const { user } = useAuth();
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const userRoles = getUserRoles(user);
   const isAdmin = hasAuthority(userRoles, [ROLES.SUPER_ADMIN, ROLES.ADMIN]);
   const {
@@ -118,6 +121,35 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [passwordSavedSuccess, setPasswordSavedSuccess] = useState(false);
+  const [countdown, setCountdown] = useState(10);
+
+  const performFullLogout = useCallback(() => {
+    try {
+      logout();
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+    router.push("/login");
+  }, [logout, router]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (passwordSavedSuccess) {
+      timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            performFullLogout();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [passwordSavedSuccess, performFullLogout]);
 
   useEffect(() => {
     if (hookSettings) {
@@ -190,8 +222,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         currentPassword: "",
         newPassword: "",
       });
+
+      customToast.success("Password changed successfully.");
+      setCountdown(10);
       setPasswordSavedSuccess(true);
-      setTimeout(() => setPasswordSavedSuccess(false), 3000);
     } catch (err: unknown) {
       console.error("Failed to change password:", err);
     }
@@ -617,6 +651,39 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </CardContent>
         </Card>
       )}
+
+      {/* Password Changed Success Modal */}
+      <Modal
+        isOpen={passwordSavedSuccess}
+        onClose={performFullLogout}
+        maxWidth="sm"
+      >
+        <div className="space-y-6 py-8 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+            <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
+          </div>
+
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Password changed successfully
+            </h3>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              For security reasons, you will be logged out in{" "}
+              <span className="font-medium text-orange-600">{countdown}</span>{" "}
+              seconds.
+            </p>
+            <p className="mt-1 text-sm text-gray-500">
+              Please log in again with your new password.
+            </p>
+          </div>
+
+          <BaseButton
+            onClick={performFullLogout}
+            text={`Log out now (${countdown}s)`}
+            className="w-full animate-pulse hover:animate-none"
+          />
+        </div>
+      </Modal>
     </div>
   );
 };
