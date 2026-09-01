@@ -90,12 +90,12 @@ export const mainNavItems: NavItem[] = [
     icon: Trophy,
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
   },
-  {
-    href: "/messaging-center",
-    label: "Messaging Center",
-    icon: MessageCircle,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-  },
+  // {
+  //   href: "/messaging-center",
+  //   label: "Messaging Center",
+  //   icon: MessageCircle,
+  //   allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  // },
   {
     href: "/contact",
     label: "Prayers & Inquiries",
