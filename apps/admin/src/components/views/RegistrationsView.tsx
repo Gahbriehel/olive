@@ -12,6 +12,7 @@ import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getInitials } from "@/utils/formatters";
+import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
 
 interface RegistrationsViewProps {
   registrations: IRegistration[];
@@ -61,6 +62,11 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
   const totalReg = meta?.total ?? registrations.length;
 
   const columns: ColumnDef<IRegistration>[] = [
+    {
+      id: "s/n",
+      header: "S/N",
+      accessorFn: (_, rowIndex) => padNumberWithZeros(rowIndex + 1),
+    },
     {
       accessorKey: "registrationNumber",
       header: "Reg Number",

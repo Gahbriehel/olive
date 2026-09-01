@@ -33,6 +33,7 @@ import { useUsers } from "@/hooks/useUsers";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { UserForm, UserFormValues } from "@/components/Forms/UserForm";
+import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
 
 interface UsersViewProps {
   users?: IAdminUser[];
@@ -294,6 +295,11 @@ export const UsersView: React.FC<UsersViewProps> = ({
   ];
 
   const permissionColumns: ColumnDef<PermissionMatrixItem>[] = [
+    {
+      id: "s/n",
+      header: "S/N",
+      accessorFn: (_, rowIndex) => padNumberWithZeros(rowIndex + 1),
+    },
     {
       accessorKey: "item",
       header: "Sidebar Navigation & Route",

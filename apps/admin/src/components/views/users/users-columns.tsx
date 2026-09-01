@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getInitials, capitalizeWords } from "@/utils/formatters";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
+import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
 
 interface GetUserColumnsProps {
   onEditUser: (user: IAdminUser) => void;
@@ -17,6 +18,11 @@ export function getUserColumns({
   onDeleteUser,
 }: GetUserColumnsProps): ColumnDef<IAdminUser>[] {
   return [
+    {
+      id: "s/n",
+      header: "S/N",
+      accessorFn: (_, rowIndex) => padNumberWithZeros(rowIndex + 1),
+    },
     {
       accessorKey: "name",
       header: "Administrator / User",

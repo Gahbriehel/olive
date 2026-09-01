@@ -275,7 +275,7 @@ export function Table<TData, TValue>({
                         key={cell.id}
                         className="p-3.5 align-middle text-slate-700 dark:text-slate-200"
                       >
-                        {!["select", "image", "actions"].includes(
+                        {!["select", "image", "actions", "s/n", "sn"].includes(
                           cell.column.id,
                         ) &&
                         (cell.getValue() === null ||

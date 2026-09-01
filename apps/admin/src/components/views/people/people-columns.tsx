@@ -5,6 +5,7 @@ import { ActionsList } from "@/components/ui/ActionsList";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getInitials, capitalizeWords } from "@/utils/formatters";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
+import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
 
 interface GetPeopleColumnsProps {
   onSelectPerson: (person: IPerson) => void;
@@ -14,6 +15,11 @@ export function getPeopleColumns({
   onSelectPerson,
 }: GetPeopleColumnsProps): ColumnDef<IPerson>[] {
   return [
+    {
+      id: "s/n",
+      header: "S/N",
+      accessorFn: (_, rowIndex) => padNumberWithZeros(rowIndex + 1),
+    },
     {
       accessorKey: "name",
       header: "Person",
