@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/FormElements/Input";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
+import { NotAvailable } from "@/components/ui/NotAvailable";
 
 export interface TableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -274,9 +275,18 @@ export function Table<TData, TValue>({
                         key={cell.id}
                         className="p-3.5 align-middle text-slate-700 dark:text-slate-200"
                       >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
+                        {!["select", "image", "actions"].includes(
+                          cell.column.id,
+                        ) &&
+                        (cell.getValue() === null ||
+                          cell.getValue() === undefined ||
+                          cell.getValue() === "") ? (
+                          <NotAvailable />
+                        ) : (
+                          flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )
                         )}
                       </td>
                     ))}

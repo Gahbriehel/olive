@@ -20,6 +20,7 @@
     "@olive/types": "workspace:*",
     "@olive/ui": "workspace:*",
     "@radix-ui/react-popover": "^1.1.23",
+    "@radix-ui/react-tabs": "^1.1.21",
     "@reduxjs/toolkit": "^2.12.0",
     "@tanstack/react-query": "^5.101.4",
     "@tanstack/react-table": "^8.21.3",

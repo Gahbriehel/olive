@@ -429,7 +429,7 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3.5 rounded-sm bg-[#B18A4A] hover:bg-[#9C773B] disabled:opacity-50 text-white font-medium text-xs uppercase tracking-wider transition-colors flex items-center justify-center space-x-2"
+                    className="w-full py-3.5 rounded-sm bg-[#B18A4A] hover:bg-[#9C773B] disabled:opacity-50 text-white font-medium text-xs uppercase tracking-wider transition-colors flex items-center justify-center space-x-2 cursor-pointer"
                   >
                     {isSubmitting ? (
                       <Loader2 className="w-4 h-4 animate-spin text-white" />

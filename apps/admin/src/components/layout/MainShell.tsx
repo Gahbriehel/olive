@@ -48,7 +48,8 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
     pathname?.startsWith("/users") ||
     pathname?.startsWith("/settings") ||
     pathname?.startsWith("/profile") ||
-    pathname?.startsWith("/messaging-center");
+    pathname?.startsWith("/messaging-center") ||
+    pathname?.startsWith("/contact");
 
   // Fetch user profile on startup / session restore
   useEffect(() => {

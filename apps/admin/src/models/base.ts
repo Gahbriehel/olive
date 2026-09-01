@@ -23,6 +23,7 @@ export interface IQueryParams {
   teamId?: string;
   membershipStatus?: string;
   gender?: string;
+  type?: string;
 }
 
 export function extractData<T>(resData: unknown): T {

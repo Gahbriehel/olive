@@ -11,6 +11,7 @@ import {
   Settings,
   LucideIcon,
   MessageCircle,
+  Heart,
 } from "lucide-react";
 import { ROLES } from "@/utils/rbac";
 
@@ -93,6 +94,12 @@ export const mainNavItems: NavItem[] = [
     href: "/messaging-center",
     label: "Messaging Center",
     icon: MessageCircle,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
+  {
+    href: "/contact",
+    label: "Prayers & Inquiries",
+    icon: Heart,
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
   {
