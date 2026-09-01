@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { TruncatedTextWithCopy } from "@/components/ui/TruncatedTextWithCopy";
+import PhoneInput from "@/components/ui/PhoneInput";
 import { webService } from "@/services/api";
 import { PrayerCategory, InquiryCategory } from "@olive/types";
 import {
@@ -321,20 +322,14 @@ export default function ContactPage() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="block text-xs font-medium text-[#D4D0C7]">
-                        Phone Number (Optional)
-                      </label>
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) =>
-                          setFormData({ ...formData, phone: e.target.value })
-                        }
-                        placeholder="e.g. +234 800 000 0000"
-                        className="w-full px-4 py-3 rounded-sm bg-[#171717] border border-white/10 text-[#F7F5F0] placeholder-[#77736B] text-xs focus:outline-none focus:border-[#B18A4A] transition-colors"
-                      />
-                    </div>
+                    <PhoneInput
+                      label="Phone Number (Optional)"
+                      value={formData.phone}
+                      onChange={(val) =>
+                        setFormData({ ...formData, phone: val })
+                      }
+                      placeholder="800 000 0000"
+                    />
 
                     <div className="space-y-2">
                       <label className="block text-xs font-medium text-[#D4D0C7]">

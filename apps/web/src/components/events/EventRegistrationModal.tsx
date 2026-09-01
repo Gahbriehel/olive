@@ -11,11 +11,11 @@ import { webService } from "@/services/api";
 import { IRegistrationPayload } from "@olive/types";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import PhoneInput from "@/components/ui/PhoneInput";
 import {
   X,
   User,
   Mail,
-  Phone,
   Calendar,
   CheckCircle2,
   QrCode,
@@ -275,14 +275,16 @@ export function EventRegistrationModal({
                       <Controller
                         name="phone"
                         control={control}
-                        render={({ field, fieldState: { error } }) => (
-                          <Input
-                            {...field}
-                            type="tel"
+                        render={({
+                          field: { value, onChange },
+                          fieldState: { error },
+                        }) => (
+                          <PhoneInput
+                            value={value || ""}
+                            onChange={onChange}
                             label="Phone Number"
-                            placeholder="+234 123 4567 890"
+                            placeholder="801 234 5678"
                             required
-                            leftIcon={<Phone className="w-4 h-4" />}
                             error={error?.message}
                           />
                         )}
