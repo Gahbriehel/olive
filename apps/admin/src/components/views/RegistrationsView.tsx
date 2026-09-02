@@ -98,8 +98,9 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
-      accessorKey: "assignedTeamName",
+      id: "assignedTeamName",
       header: "Assigned Team",
+      accessorFn: (row) => row.team?.name,
       cell: ({ row }) => (
         <span
           className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-white shadow-sm inline-block"
@@ -110,15 +111,17 @@ export const RegistrationsView: React.FC<RegistrationsViewProps> = ({
       ),
     },
     {
-      accessorKey: "confirmationSent",
+      id: "confirmationSent",
       header: "Confirmation Email",
+      accessorFn: (row) => row.person?.emailStatus || "PENDING",
       cell: ({ row }) => (
         <StatusBadge status={row.original.person?.emailStatus || "PENDING"} />
       ),
     },
     {
-      accessorKey: "googleCalendarSync",
+      id: "googleCalendarSync",
       header: "Calendar Sync",
+      accessorFn: (row) => row.googleCalendarSync ?? false,
       cell: ({ row }) =>
         row.original.googleCalendarSync ? (
           <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
