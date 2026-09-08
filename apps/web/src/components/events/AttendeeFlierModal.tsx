@@ -395,17 +395,41 @@ export function AttendeeFlierModal({
       // -------------------------------------------------------------
       // 2. CHURCH HEADER: Abiding Word of Grace Missions Presents
       // -------------------------------------------------------------
+      ctx.save();
+      ctx.font = "bold 34px sans-serif";
+      ctx.letterSpacing = "2px";
+      const churchLine1W = ctx.measureText("ABIDING WORD OF").width;
+      const churchLine2W = ctx.measureText("GRACE MISSIONS").width;
+      const churchTextW = Math.max(churchLine1W, churchLine2W);
+      const churchLogoSize = 75;
+      const churchLogoGap = 24;
+      const churchTotalW = churchLogoSize + churchLogoGap + churchTextW;
+      const churchStartX = Math.round((CANVAS_WIDTH - churchTotalW) / 2);
+
       // Logo (Gold Dove & Bible)
       if (logoImageRef.current) {
-        ctx.drawImage(logoImageRef.current, 240, 38, 75, 75);
+        ctx.drawImage(
+          logoImageRef.current,
+          churchStartX,
+          38,
+          churchLogoSize,
+          churchLogoSize,
+        );
       }
 
       ctx.textAlign = "left";
       ctx.fillStyle = "#FFFFFF";
-      ctx.font = "bold 34px sans-serif";
-      ctx.letterSpacing = "2px";
-      ctx.fillText("ABIDING WORD OF", 350, 72);
-      ctx.fillText("GRACE MISSIONS", 350, 110);
+      ctx.fillText(
+        "ABIDING WORD OF",
+        churchStartX + churchLogoSize + churchLogoGap,
+        72,
+      );
+      ctx.fillText(
+        "GRACE MISSIONS",
+        churchStartX + churchLogoSize + churchLogoGap,
+        110,
+      );
+      ctx.restore();
 
       // "P R E S E N T S" with flanking gold divider lines
       ctx.textAlign = "center";
@@ -426,22 +450,35 @@ export function AttendeeFlierModal({
       // -------------------------------------------------------------
       // 3. TITLE BRANDING: YOUTH AFLAME 2026
       // -------------------------------------------------------------
-      // Draw "YOUTH" in crisp bold white
-      ctx.textAlign = "left";
-      ctx.fillStyle = "#FFFFFF";
+      ctx.save();
       ctx.font = "900 100px sans-serif";
       ctx.letterSpacing = "1px";
-      ctx.fillText("YOUTH", 240, 255);
+      const youthW = ctx.measureText("YOUTH").width;
 
-      // Stacked Year Badges: [20] Blue and [26] Red with clear margin
-      const badgeX = 645;
+      ctx.font = "900 94px sans-serif";
+      ctx.letterSpacing = "1px";
+      const aflameW = ctx.measureText("AFLAME").width;
+
       const badgeW = 105;
       const badgeH = 66;
       const badgeRadius = 14;
       const badgeGap = 2; // Gap/margin between badges to prevent bleeding
 
       const badge20Y = 175;
-      const badge26Y = badge20Y + badgeH + badgeGap; // 175 + 66 + 12 = 253
+      const badge26Y = badge20Y + badgeH + badgeGap; // 175 + 66 + 2 = 243
+
+      const maxTitleWordW = Math.max(youthW, aflameW);
+      const titleToBadgeGap = 22;
+      const totalTitleW = maxTitleWordW + titleToBadgeGap + badgeW;
+      const titleStartX = Math.round((CANVAS_WIDTH - totalTitleW) / 2);
+      const badgeX = titleStartX + maxTitleWordW + titleToBadgeGap;
+
+      // Draw "YOUTH" in crisp bold white
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "900 100px sans-serif";
+      ctx.letterSpacing = "1px";
+      ctx.fillText("YOUTH", titleStartX, 255);
 
       // [20] Blue Pill
       ctx.fillStyle = "#1D4ED8";
@@ -480,7 +517,12 @@ export function AttendeeFlierModal({
       ctx.restore();
 
       // Draw "AFLAME" in vibrant gold/orange gradient
-      const aflameGrad = ctx.createLinearGradient(240, 0, 720, 0);
+      const aflameGrad = ctx.createLinearGradient(
+        titleStartX,
+        0,
+        titleStartX + aflameW,
+        0,
+      );
       aflameGrad.addColorStop(0, "#FBAE17");
       aflameGrad.addColorStop(0.5, "#F7931E");
       aflameGrad.addColorStop(1, "#F15A24");
@@ -488,25 +530,46 @@ export function AttendeeFlierModal({
       ctx.textAlign = "left";
       ctx.font = "900 94px sans-serif";
       ctx.letterSpacing = "1px";
-      ctx.fillText("AFLAME", 240, 335);
+      ctx.fillText("AFLAME", titleStartX, 335);
+      ctx.restore();
 
       // Theme Banner
-      ctx.textAlign = "center";
+      ctx.save();
       ctx.font = "italic 24px serif";
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillText("Theme:", 220, 376);
+      ctx.letterSpacing = "0px";
+      const themeLabelW = ctx.measureText("Theme:").width;
+
+      ctx.font = "bold 23px sans-serif";
+      ctx.letterSpacing = "1.5px";
+      const themeTextW = ctx.measureText(
+        "THE WORD, PROSPERITY & TRUE SUCCESS",
+      ).width;
+
+      const themeGap = 16;
+      const themeTotalW = themeLabelW + themeGap + themeTextW;
+      const themeStartX = Math.round((CANVAS_WIDTH - themeTotalW) / 2);
 
       ctx.textAlign = "left";
+      ctx.font = "italic 24px serif";
+      ctx.letterSpacing = "0px";
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillText("Theme:", themeStartX, 376);
+
       ctx.font = "bold 23px sans-serif";
       ctx.letterSpacing = "1.5px";
       ctx.fillStyle = "#FFFFFF";
-      ctx.fillText("THE WORD, PROSPERITY & TRUE SUCCESS", 270, 376);
+      ctx.fillText(
+        "THE WORD, PROSPERITY & TRUE SUCCESS",
+        themeStartX + themeLabelW + themeGap,
+        376,
+      );
 
       ctx.textAlign = "center";
       ctx.font = "bold 17px sans-serif";
       ctx.fillStyle = "#FCD34D";
       ctx.letterSpacing = "2px";
       ctx.fillText("Joshua 1:8", 540, 404);
+      ctx.restore();
     }
 
     // -------------------------------------------------------------
