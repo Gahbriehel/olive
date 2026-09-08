@@ -330,7 +330,7 @@ export default function EventDetailsPage({
                   </p>
                 </div>
 
-                {event.endDate && (
+                {/* {event.endDate && (
                   <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
                     <div className="flex items-center space-x-2 text-xs font-semibold text-amber-400">
                       <Clock className="w-4 h-4" />
@@ -344,7 +344,7 @@ export default function EventDetailsPage({
                       })}
                     </p>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
           </div>

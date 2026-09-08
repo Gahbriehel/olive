@@ -750,7 +750,7 @@ export function AttendeeFlierModal({
 
     ctx.fillStyle = "#0F172A";
     ctx.font = "900 22px sans-serif";
-    ctx.fillText("10:00AM PROMPT", cardX + 500, cardY + 145);
+    ctx.fillText("9:00AM PROMPT", cardX + 500, cardY + 145);
     ctx.restore();
 
     // -------------------------------------------------------------
