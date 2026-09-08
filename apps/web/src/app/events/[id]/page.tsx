@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { webService } from "@/services/api";
 import { EventRegistrationModal } from "@/components/events/EventRegistrationModal";
+import { AttendeeFlierModal } from "@/components/events/AttendeeFlierModal";
 import { customToast } from "@/helpers/customToast";
 import {
   Calendar,
@@ -39,6 +40,13 @@ export default function EventDetailsPage({
 }) {
   const { id } = use(params);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isFlierModalOpen, setIsFlierModalOpen] = useState(false);
+  const [flierInitialName, setFlierInitialName] = useState("");
+
+  const handleOpenFlierWithName = (name: string) => {
+    setFlierInitialName(name);
+    setIsFlierModalOpen(true);
+  };
 
   const {
     data: event,
@@ -220,6 +228,18 @@ export default function EventDetailsPage({
                       ? "Event Full"
                       : "Register for Event"}
                 </span>
+              </button>
+
+              {/* ACTION: GET ATTENDEE FLIER */}
+              <button
+                onClick={() => {
+                  setFlierInitialName("");
+                  setIsFlierModalOpen(true);
+                }}
+                className="px-6 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-amber-500/30 hover:border-amber-400 text-amber-300 font-bold text-sm transition-all flex items-center space-x-2.5 cursor-pointer shadow-lg shadow-black/30"
+              >
+                <Sparkles className="w-5 h-5 text-amber-400" />
+                <span>Get Attendee Flier</span>
               </button>
 
               {/* PROMINENT ACTION: VIEW STANDINGS */}
@@ -411,6 +431,17 @@ export default function EventDetailsPage({
                   </span>
                 </button>
 
+                <button
+                  onClick={() => {
+                    setFlierInitialName("");
+                    setIsFlierModalOpen(true);
+                  }}
+                  className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-amber-500/30 hover:border-amber-400 text-amber-300 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>Get Attendee Flier</span>
+                </button>
+
                 {hasStarted && (
                   <Link
                     href={`/leaderboard/${id}`}
@@ -434,6 +465,17 @@ export default function EventDetailsPage({
         eventTitle={event.title}
         eventStartDate={event.startDate}
         eventLocation={event.location}
+        onOpenFlier={handleOpenFlierWithName}
+      />
+
+      {/* TEMPORARY ATTENDEE FLIER MODAL */}
+      <AttendeeFlierModal
+        isOpen={isFlierModalOpen}
+        onClose={() => setIsFlierModalOpen(false)}
+        eventTitle={event.title}
+        eventStartDate={event.startDate}
+        eventLocation={event.location}
+        initialName={flierInitialName}
       />
     </div>
   );

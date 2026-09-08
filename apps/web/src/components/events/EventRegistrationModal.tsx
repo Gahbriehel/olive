@@ -45,6 +45,7 @@ interface EventRegistrationModalProps {
   eventTitle: string;
   eventStartDate?: string;
   eventLocation?: string;
+  onOpenFlier?: (registeredName: string) => void;
 }
 
 export function EventRegistrationModal({
@@ -54,10 +55,12 @@ export function EventRegistrationModal({
   eventTitle,
   eventStartDate,
   eventLocation,
+  onOpenFlier,
 }: EventRegistrationModalProps) {
   const [successRegistration, setSuccessRegistration] = useState<
     unknown | null
   >(null);
+  const [registeredName, setRegisteredName] = useState("");
 
   const { control, handleSubmit, reset } = useForm<IRegistrationPayload>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,6 +85,7 @@ export function EventRegistrationModal({
   });
 
   const onSubmit = (data: IRegistrationPayload) => {
+    setRegisteredName(`${data.firstName} ${data.lastName}`.trim());
     registerMutation.mutate(data);
   };
 
@@ -180,6 +184,19 @@ export function EventRegistrationModal({
                     </div>
 
                     <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                      {onOpenFlier && (
+                        <button
+                          onClick={() => {
+                            const name = registeredName;
+                            handleClose();
+                            onOpenFlier(name);
+                          }}
+                          className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md shadow-amber-900/20 transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
+                        >
+                          <Sparkles className="w-4 h-4 text-amber-300" />
+                          <span>Get My Event Flier</span>
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           setSuccessRegistration(null);
@@ -191,7 +208,11 @@ export function EventRegistrationModal({
                       </button>
                       <button
                         onClick={handleClose}
-                        className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md shadow-amber-900/20 transition-all"
+                        className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-white text-xs font-bold transition-all ${
+                          onOpenFlier
+                            ? "bg-white/10 hover:bg-white/15"
+                            : "bg-amber-600 hover:bg-amber-500 shadow-md shadow-amber-900/20"
+                        }`}
                       >
                         Done
                       </button>
