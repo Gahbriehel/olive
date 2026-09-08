@@ -4,6 +4,7 @@ import React, {
   useState,
   useRef,
   useEffect,
+  useCallback,
   useSyncExternalStore,
 } from "react";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
@@ -15,7 +16,6 @@ import {
   ZoomIn,
   Move,
   RotateCcw,
-  Sparkles,
   User,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -150,8 +150,17 @@ export function AttendeeFlierModal({
   const [logoLoaded, setLogoLoaded] = useState(false);
   const [templateLoaded, setTemplateLoaded] = useState(false);
   const [photoVersion, setPhotoVersion] = useState(0);
+  const [canvasReady, setCanvasReady] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  // Headless UI's Dialog mounts its Portal children asynchronously (SSR
+  // handoff), so canvasRef.current can still be null on the render where
+  // isOpen first becomes true. This callback ref flips canvasReady once the
+  // node actually lands in the DOM so the draw effect below re-runs.
+  const setCanvasRef = useCallback((node: HTMLCanvasElement | null) => {
+    canvasRef.current = node;
+    setCanvasReady(node !== null);
+  }, []);
   const userImageRef = useRef<HTMLImageElement | null>(null);
   const logoImageRef = useRef<HTMLImageElement | null>(null);
   const templateImageRef = useRef<HTMLImageElement | null>(null);
@@ -708,6 +717,7 @@ export function AttendeeFlierModal({
     ctx.restore();
   }, [
     isOpen,
+    canvasReady,
     attendeeName,
     zoom,
     panX,
@@ -847,9 +857,9 @@ export function AttendeeFlierModal({
                 {/* Header Strip */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 bg-[#0B1329]">
                   <div className="flex items-center space-x-2.5">
-                    <div className="p-2 rounded-xl bg-amber-500/15 text-amber-400">
+                    {/* <div className="p-2 rounded-xl bg-amber-500/15 text-amber-400">
                       <Sparkles className="w-5 h-5" />
-                    </div>
+                    </div> */}
                     <div>
                       <DialogTitle className="text-lg font-bold text-white tracking-wide">
                         Create Your Youth Aflame 2026 Flier
@@ -872,7 +882,7 @@ export function AttendeeFlierModal({
 
                 {/* Main Split Body: Left Controls, Right Canvas Preview */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 sm:p-8">
-                  {/* Left Column: Form & Adjustments */}
+                  {/* Left Column: Form & Adjustments (desktop also keeps the buttons pinned to the bottom here) */}
                   <div className="lg:col-span-6 space-y-6 flex flex-col justify-between">
                     <div className="space-y-5">
                       {/* Step 1: Name Input */}
@@ -969,8 +979,8 @@ export function AttendeeFlierModal({
                       )}
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="pt-4 border-t border-white/10 flex flex-wrap gap-3">
+                    {/* Action Buttons (desktop only — mobile shows these below the preview instead) */}
+                    <div className="hidden lg:flex pt-4 border-t border-white/10 flex-wrap gap-3">
                       <button
                         onClick={handleDownload}
                         disabled={isGenerating}
@@ -1003,7 +1013,7 @@ export function AttendeeFlierModal({
                   <div className="lg:col-span-6 flex flex-col items-center justify-center">
                     <div className="relative w-full max-w-[360px] aspect-[4/5] bg-black/60 rounded-2xl overflow-hidden border border-blue-500/30 shadow-2xl group select-none">
                       <canvas
-                        ref={canvasRef}
+                        ref={setCanvasRef}
                         onMouseDown={handleMouseDown}
                         onMouseMove={handleMouseMove}
                         onMouseUp={handleMouseUp}
@@ -1028,6 +1038,35 @@ export function AttendeeFlierModal({
                     <p className="text-[11px] text-slate-400 mt-2 text-center">
                       Ready for WhatsApp & Instagram
                     </p>
+                  </div>
+
+                  {/* Action Buttons (mobile only — shown after the preview so Download comes last; desktop shows these under the form instead) */}
+                  <div className="lg:hidden pt-4 border-t border-white/10 flex flex-wrap gap-3">
+                    <button
+                      onClick={handleDownload}
+                      disabled={isGenerating}
+                      className="flex-1 py-3 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center space-x-2 shadow-lg shadow-amber-950/40 cursor-pointer"
+                    >
+                      {isGenerating ? (
+                        <span>Processing...</span>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4" />
+                          <span>Download My Flier</span>
+                        </>
+                      )}
+                    </button>
+
+                    {canShare && (
+                      <button
+                        onClick={handleShare}
+                        className="py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs transition-colors flex items-center space-x-1.5 cursor-pointer"
+                        title="Share to WhatsApp / Social Media"
+                      >
+                        <Share2 className="w-4 h-4 text-amber-400" />
+                        <span>Share</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </motion.div>
