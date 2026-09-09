@@ -656,10 +656,20 @@ export function AttendeeFlierModal({
     ctx.save();
     ctx.textAlign = "center";
 
+    // Clean, Single-Tier Attendee Name
+    const displayName = (attendeeName.trim() || "Your Name Here").toUpperCase();
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = "900 52px sans-serif";
+    ctx.letterSpacing = "1.5px";
+    ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
+    ctx.shadowBlur = 12;
+    ctx.fillText(displayName, 540, 897);
+    ctx.shadowBlur = 0;
+
     // "I will be attending" pill ribbon banner
     const pillW = 340;
     const pillH = 46;
-    const pillY = 852;
+    const pillY = 922;
     const pillX = 540 - pillW / 2;
 
     // Glowing pill container
@@ -672,16 +682,6 @@ export function AttendeeFlierModal({
     ctx.font = "bold 19px sans-serif";
     ctx.letterSpacing = "2.5px";
     ctx.fillText("I WILL BE ATTENDING", 540, pillY + 30);
-
-    // Clean, Single-Tier Attendee Name
-    const displayName = (attendeeName.trim() || "Your Name Here").toUpperCase();
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "900 52px sans-serif";
-    ctx.letterSpacing = "1.5px";
-    ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-    ctx.shadowBlur = 12;
-    ctx.fillText(displayName, 540, 955);
-    ctx.shadowBlur = 0;
     ctx.restore();
 
     // -------------------------------------------------------------
