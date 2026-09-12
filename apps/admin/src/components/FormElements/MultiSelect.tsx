@@ -164,7 +164,12 @@ export function MultiSelect({
 
   return (
     <fieldset className="relative space-y-2">
-      <Listbox value={value} onChange={handleChange} multiple>
+      <Listbox
+        value={value}
+        onChange={handleChange}
+        multiple
+        by={(a: ISelect, b: ISelect) => a?.value?._id === b?.value?._id}
+      >
         <Listbox.Label className="block text-sm font-semibold text-gray-600 dark:text-slate-300">
           {label} {required && <span className="text-red-600">*</span>}{" "}
           {value?.length > 0 && (

@@ -30,6 +30,8 @@ export interface IPersonRegistrationHistory {
 export interface IPerson {
   id: string;
   name: string;
+  firstName: string;
+  lastName: string;
   phone: string;
   email: string;
   gender: "Male" | "Female";
@@ -161,6 +163,8 @@ export function adaptApiPersonToPerson(apiPerson: IPersonResponse): IPerson {
   return {
     id: apiPerson.id,
     name: `${apiPerson.firstName} ${apiPerson.lastName}`.trim(),
+    firstName: apiPerson.firstName || "",
+    lastName: apiPerson.lastName || "",
     phone: apiPerson.phone || "N/A",
     email: apiPerson.email || "N/A",
     gender: apiPerson.gender ? genderMap[apiPerson.gender] : "Male",
