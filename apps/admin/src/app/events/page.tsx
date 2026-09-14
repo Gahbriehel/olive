@@ -1,31 +1,71 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Plus,
+  Search,
+  Filter,
+  MapPin,
+  Clock,
+  Calendar,
+  Radio,
+  Users,
+  Layers,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsRight,
+  ChevronsLeft,
+} from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { RefreshButton } from "@/components/ui/RefreshButton";
+import { Input } from "@/components/FormElements/Input";
+import { Select } from "@/components/FormElements/Select";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { cn } from "@/helpers/cn";
+import { ActionsList } from "@/components/ui/ActionsList";
+import { StatsCard } from "@/components/ui/StatsCard";
+import { SidebarModal } from "@/components/ui/SidebarModal";
+import { EventsForm } from "@/components/Forms/EventsForm";
+import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { useDashboard } from "@/context/DashboardContext";
 import { useEvents } from "@/hooks/useEvents";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { adaptApiEventToChurchEvent } from "@/models/event";
-import { EventsView } from "@/components/views/EventsView";
+import { IChurchEvent } from "@/types/dashboard";
+import { AuthorityGuard } from "@/components/auth/AuthorityGuard";
+import { ROLES } from "@/utils/rbac";
 
 export default function EventsPage() {
   const router = useRouter();
   const { setIsCreateEventOpen } = useDashboard();
-  const [search, setSearch] = React.useState("");
-  const [status, setStatus] = React.useState("All");
-  const [page, setPage] = React.useState(1);
-  const [limit, setLimit] = React.useState(10);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedSearch(search, 500);
+  const [status, setStatus] = useState("All");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  const [editingEvent, setEditingEvent] = useState<IChurchEvent | null>(null);
+  const [deletingEvent, setDeletingEvent] = useState<IChurchEvent | null>(null);
 
   const queryParams = React.useMemo(
     () => ({
       page,
       limit,
-      search: search || undefined,
+      search: debouncedSearch || undefined,
       status: status !== "All" ? status : undefined,
     }),
-    [page, limit, search, status],
+    [page, limit, debouncedSearch, status],
   );
 
-  const { events: apiEvents, meta, refetch } = useEvents(queryParams);
+  const {
+    events: apiEvents,
+    meta,
+    refetch,
+    updateEvent,
+    deleteEvent,
+  } = useEvents(queryParams);
 
   const events = React.useMemo(
     () =>
@@ -33,14 +73,10 @@ export default function EventsPage() {
     [apiEvents],
   );
 
-  const handleSearchChange = React.useCallback((newSearch: string) => {
-    setSearch((prevSearch) => {
-      if (prevSearch !== newSearch) {
-        setPage(1);
-      }
-      return newSearch;
-    });
-  }, []);
+  const handleSearchChange = (newSearch: string) => {
+    setSearch(newSearch);
+    setPage(1);
+  };
 
   const handleLimitChange = (newLimit: number) => {
     setLimit(newLimit);
@@ -52,21 +88,427 @@ export default function EventsPage() {
     setPage(1);
   };
 
+  const totalEvents = meta?.total ?? events.length;
+  const publishedEvents = events.filter((e) => e.status === "PUBLISHED").length;
+  const draftEvents = events.filter((e) => e.status === "DRAFT").length;
+  const totalRegistrations = events.reduce(
+    (sum, e) => sum + e.registeredCount,
+    0,
+  );
+
+  const getCardStatusStyles = (eventStatus: IChurchEvent["status"]) => {
+    switch (eventStatus) {
+      case "PUBLISHED":
+        return {
+          card: "border-t-4 border-t-emerald-500 dark:border-t-emerald-400 bg-white dark:bg-zinc-900 hover:border-emerald-500/50 dark:hover:border-emerald-400/50",
+          progress: "bg-emerald-500 dark:bg-emerald-400",
+          badge: <StatusBadge status={eventStatus} />,
+        };
+      case "DRAFT":
+        return {
+          card: "border-t-4 border-t-amber-500 dark:border-t-amber-400 bg-white dark:bg-zinc-900 hover:border-amber-500/50 dark:hover:border-amber-400/50",
+          progress: "bg-amber-500 dark:bg-amber-400",
+          badge: <StatusBadge status={eventStatus} />,
+        };
+      case "COMPLETED":
+        return {
+          card: "border-t-4 border-t-indigo-500 dark:border-t-indigo-400 bg-white dark:bg-zinc-900 opacity-90 hover:opacity-100 hover:border-indigo-500/50",
+          progress: "bg-indigo-600 dark:bg-indigo-500",
+          badge: <StatusBadge status={eventStatus} />,
+        };
+      case "CANCELLED":
+        return {
+          card: "border-t-4 border-t-rose-500 dark:border-t-rose-400 bg-white dark:bg-zinc-900 opacity-75 hover:opacity-100 hover:border-rose-500/50",
+          progress: "bg-rose-500 dark:bg-rose-400",
+          badge: <StatusBadge status={eventStatus} dot={false} />,
+        };
+      default:
+        return {
+          card: "border-t-4 border-t-slate-400 dark:border-t-slate-600 bg-white dark:bg-zinc-900",
+          progress: "bg-slate-400 dark:bg-slate-500",
+          badge: <StatusBadge status={eventStatus} />,
+        };
+    }
+  };
+
   return (
-    <EventsView
-      events={events}
-      onOpenCreateEvent={() => setIsCreateEventOpen(true)}
-      onSelectEvent={(evt) => router.push(`/events/${evt.id}`)}
-      meta={meta}
-      page={page}
-      onPageChange={setPage}
-      limit={limit}
-      onLimitChange={handleLimitChange}
-      search={search}
-      onSearchChange={handleSearchChange}
-      statusFilter={status}
-      onStatusFilterChange={handleStatusChange}
-      onRefetch={refetch}
-    />
+    <div className="space-y-6 animate-fade-in pb-10">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+            Event Management
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            Organize conferences, worship nights, leadership retreats, and
+            community events.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <RefreshButton onRefetch={refetch} />
+          <AuthorityGuard
+            roles={[ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR]}
+          >
+            <Button
+              variant="primary"
+              onClick={() => setIsCreateEventOpen(true)}
+              leftIcon={<Plus className="w-4 h-4" />}
+            >
+              Create Event
+            </Button>
+          </AuthorityGuard>
+        </div>
+      </div>
+
+      {/* Metrics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard
+          title="Total Events"
+          value={totalEvents.toLocaleString()}
+          change="All platform events"
+          trend="neutral"
+          icon={Calendar}
+          color="indigo"
+        />
+        <StatsCard
+          title="Published Events"
+          value={publishedEvents.toLocaleString()}
+          change="Currently active"
+          trend="up"
+          icon={Radio}
+          color="emerald"
+        />
+        <StatsCard
+          title="Draft Events"
+          value={draftEvents.toLocaleString()}
+          change="In preparation"
+          trend="neutral"
+          icon={Layers}
+          color="amber"
+        />
+        <StatsCard
+          title="Total Registered"
+          value={totalRegistrations.toLocaleString()}
+          change="Across all events"
+          trend="up"
+          icon={Users}
+          color="indigo"
+        />
+      </div>
+
+      {/* Toolbar Filters */}
+      <div className="flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-zinc-900 p-3 rounded-2xl border border-slate-200 dark:border-zinc-800">
+        <div className="w-full sm:flex-1">
+          <Input
+            placeholder="Search events by title or location"
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            leftIcon={<Search className="w-4 h-4" />}
+          />
+        </div>
+        <div className="w-full sm:w-48">
+          <Select
+            value={status}
+            onChange={(e) => handleStatusChange(e.target.value)}
+            leftIcon={<Filter className="w-4 h-4" />}
+          >
+            <option value="All">All Statuses</option>
+            <option value="PUBLISHED">Published</option>
+            <option value="DRAFT">Draft</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="CANCELLED">Cancelled</option>
+          </Select>
+        </div>
+      </div>
+
+      {/* Events Grid */}
+      {events.length === 0 ? (
+        <div className="p-12 text-center text-slate-500 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
+          No data available
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {events.map((evt) => {
+            const statusStyle = getCardStatusStyles(evt.status);
+            const capPct = Math.round(
+              (evt.registeredCount / Math.max(evt.capacity, 1)) * 100,
+            );
+            return (
+              <Card
+                key={evt.id}
+                className={cn(
+                  "transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-black/40 overflow-hidden group",
+                  statusStyle.card,
+                )}
+              >
+                <div>
+                  {evt.imageUrl && (
+                    <div className="relative w-full h-36 bg-slate-100 dark:bg-zinc-800 overflow-hidden border-b border-slate-100 dark:border-zinc-800">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={evt.imageUrl}
+                        alt={evt.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
+                  <CardHeader className="flex flex-row items-start justify-between pb-2">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        {statusStyle.badge}
+                        <span className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+                          {evt.category}
+                        </span>
+                      </div>
+                      <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
+                        {evt.name}
+                      </CardTitle>
+                    </div>
+
+                    {/* Options menu dropdown */}
+                    <ActionsList
+                      actions={[
+                        {
+                          title: "View Event Details",
+                          fn: () => router.push(`/events/${evt.id}`),
+                        },
+                        {
+                          title: "Edit Event",
+                          fn: () => setEditingEvent(evt),
+                        },
+                        {
+                          title:
+                            evt.status === "DRAFT"
+                              ? "Publish Event"
+                              : "Unpublish",
+                          fn: async () => {
+                            await updateEvent({
+                              id: evt.id,
+                              dto: {
+                                status:
+                                  evt.status === "DRAFT"
+                                    ? "PUBLISHED"
+                                    : "DRAFT",
+                              },
+                            });
+                          },
+                        },
+                        {
+                          title: "Delete Event",
+                          fn: () => setDeletingEvent(evt),
+                          destructive: true,
+                        },
+                      ]}
+                    />
+                  </CardHeader>
+
+                  <CardContent className="space-y-3 pt-0">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                      {evt.description}
+                    </p>
+
+                    <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300 bg-slate-50/50 dark:bg-zinc-800/40 p-2.5 rounded-xl border border-slate-100 dark:border-zinc-800/60">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                        <span className="truncate font-medium">
+                          {evt.location}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                        <span className="font-medium">
+                          Deadline:{" "}
+                          {new Date(
+                            evt.registrationDeadline,
+                          ).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Capacity Bar */}
+                    <div className="space-y-1 pt-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">
+                          Registration Capacity
+                        </span>
+                        <span className="font-mono text-xs font-semibold text-slate-500">
+                          {evt.registeredCount.toLocaleString()} /{" "}
+                          {evt.capacity.toLocaleString()} ({capPct}%)
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                        <div
+                          className={cn(
+                            "h-full rounded-full transition-all duration-500",
+                            statusStyle.progress,
+                          )}
+                          style={{ width: `${Math.min(capPct, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </div>
+
+                <div className="p-4 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-center group-hover:border-indigo-500/50 transition-colors"
+                    onClick={() => router.push(`/events/${evt.id}`)}
+                  >
+                    Manage Event & View Dashboard
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Pagination Bar */}
+      <div className="p-3.5 border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex items-center gap-4">
+          <span>
+            Showing{" "}
+            <span className="font-semibold text-slate-900 dark:text-slate-200">
+              {(page - 1) * limit + 1}
+            </span>{" "}
+            to{" "}
+            <span className="font-semibold text-slate-900 dark:text-slate-200">
+              {Math.min(page * limit, meta?.total ?? events.length)}
+            </span>{" "}
+            of{" "}
+            <span className="font-semibold text-slate-900 dark:text-slate-200">
+              {meta?.total ?? events.length}
+            </span>{" "}
+            results
+          </span>
+
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px]">Rows:</span>
+            <select
+              value={limit}
+              onChange={(e) => handleLimitChange(Number(e.target.value))}
+              className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs py-1 px-2 focus:ring-1 focus:ring-indigo-500 outline-none"
+            >
+              {[5, 10, 20, 50].map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setPage(1)}
+            disabled={page <= 1}
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            title="First Page"
+          >
+            <ChevronsLeft className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setPage(page - 1)}
+            disabled={page <= 1}
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            title="Previous Page"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          <span className="px-3 text-xs">
+            Page{" "}
+            <span className="font-semibold text-slate-900 dark:text-slate-100">
+              {page}
+            </span>{" "}
+            of{" "}
+            <span className="font-semibold text-slate-900 dark:text-slate-100">
+              {meta?.totalPages ?? 1}
+            </span>
+          </span>
+
+          <button
+            type="button"
+            onClick={() => setPage(page + 1)}
+            disabled={page >= (meta?.totalPages ?? 1)}
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            title="Next Page"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setPage(meta?.totalPages ?? 1)}
+            disabled={page >= (meta?.totalPages ?? 1)}
+            className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            title="Last Page"
+          >
+            <ChevronsRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {editingEvent && (
+        <SidebarModal
+          title="Edit Event"
+          display={Boolean(editingEvent)}
+          close={() => setEditingEvent(null)}
+        >
+          <EventsForm
+            initialValues={{
+              id: editingEvent.id,
+              title: editingEvent.name,
+              description: editingEvent.description,
+              location: editingEvent.location,
+              capacity: editingEvent.capacity,
+              startDate: editingEvent.startDate,
+              endDate: editingEvent.endDate,
+              status: editingEvent.status,
+              imageUrl: editingEvent.imageUrl,
+              googleCalendarSync: editingEvent.googleCalendarSync,
+            }}
+            onCancel={() => setEditingEvent(null)}
+            onSubmit={async (data) => {
+              await updateEvent({
+                id: editingEvent.id,
+                dto: {
+                  title: data.title,
+                  description: data.description,
+                  location: data.location,
+                  capacity: data.capacity,
+                  startDate: data.startDate,
+                  endDate: data.endDate,
+                  status: data.status,
+                  imageUrl: data.imageUrl,
+                  googleCalendarSync: data.googleCalendarSync,
+                },
+              });
+              setEditingEvent(null);
+            }}
+            onDelete={async () => {
+              await deleteEvent(editingEvent.id);
+              setEditingEvent(null);
+            }}
+          />
+        </SidebarModal>
+      )}
+
+      {deletingEvent && (
+        <ConfirmActionModal
+          display={Boolean(deletingEvent)}
+          close={() => setDeletingEvent(null)}
+          actionName="delete"
+          title={`Are you sure you want to delete ${deletingEvent.name}?`}
+          fn={async () => {
+            await deleteEvent(deletingEvent.id);
+            setDeletingEvent(null);
+          }}
+        />
+      )}
+    </div>
   );
 }
