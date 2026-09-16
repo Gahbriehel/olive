@@ -148,7 +148,6 @@ export default function PeoplePage() {
                 <p className="font-bold text-slate-900 dark:text-slate-100">
                   {capitalizeWords(person.name)}
                 </p>
-                <p className="text-[11px] text-slate-400">ID: {person.id}</p>
               </div>
             </div>
           );
@@ -206,7 +205,6 @@ export default function PeoplePage() {
                 title: "View Details",
 
                 fn: () => {
-                  console.log(row.original);
                   setSelectedPerson(row.original);
                 },
               },
@@ -317,6 +315,7 @@ export default function PeoplePage() {
             <option value="All">All Statuses</option>
             <option value="Member">Member</option>
             <option value="Worker">Worker</option>
+            <option value="Leader">Leader</option>
             <option value="Visitor">Visitor</option>
           </Select>
         </div>

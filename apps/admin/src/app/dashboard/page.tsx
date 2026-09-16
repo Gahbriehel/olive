@@ -44,7 +44,7 @@ export default function DashboardPage() {
   const latestRegistrations = dashboardData?.latestRegistrations || [];
   const upcomingEvents = dashboardData?.upcomingEvents || [];
 
-  const totalReg = overview?.totalRegistrations ?? 0;
+  const totalPeople = overview?.totalPeople ?? 0;
   const checkedIn = overview?.totalCheckInsToday ?? 0;
   const attendancePct = overview?.attendanceRate ?? 0;
   const visitors = overview?.totalVisitors ?? 0;
@@ -60,9 +60,9 @@ export default function DashboardPage() {
     color: StatsCardColor;
   }> = [
     {
-      title: "Total Registrations",
-      value: totalReg.toLocaleString(),
-      change: `${activeEvent?.name || "Active Event"}`,
+      title: "Total People",
+      value: totalPeople.toLocaleString(),
+      change: "",
       trend: "up",
       icon: Users,
       color: "indigo",

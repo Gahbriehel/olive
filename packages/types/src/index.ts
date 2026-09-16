@@ -84,7 +84,7 @@ export interface IEventPayload {
 export type IUpdateEventPayload = Partial<IEventPayload>;
 
 // Person types
-export type MembershipStatus = "Member" | "Visitor";
+export type MembershipStatus = "Member" | "Visitor" | "Worker" | "Leader";
 export type ApiGender = "MALE" | "FEMALE" | "OTHER";
 export type ApiMembershipStatus = "VISITOR" | "MEMBER" | "WORKER" | "LEADER";
 

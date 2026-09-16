@@ -119,6 +119,16 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       dot = false;
       label = "Member";
       break;
+    case "WORKER":
+      variant = "cyan";
+      dot = false;
+      label = "Worker";
+      break;
+    case "LEADER":
+      variant = "emerald";
+      dot = false;
+      label = "Leader";
+      break;
 
     default:
       variant = "slate";

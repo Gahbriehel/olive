@@ -1,5 +1,4 @@
-import { MembershipStatus } from "./person";
-import { IPersonResponse } from "./person";
+import { MembershipStatus, IPersonResponse, membershipMap } from "./person";
 import { ITeamResponse } from "./team";
 import { formatDateTimeDisplay } from "@/utils/formatters";
 
@@ -89,8 +88,8 @@ export function adaptApiRegistrationToRegistration(
     phone: person?.phone || "N/A",
     gender: person?.gender === "FEMALE" ? "Female" : "Male",
     membershipStatus:
-      person?.membershipStatus && person.membershipStatus !== "VISITOR"
-        ? "Member"
+      person?.membershipStatus && membershipMap[person.membershipStatus]
+        ? membershipMap[person.membershipStatus]
         : "Visitor",
     assignedTeamId: team?.id || "",
     team: team!,

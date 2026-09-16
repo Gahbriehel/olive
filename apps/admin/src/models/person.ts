@@ -1,4 +1,4 @@
-export type MembershipStatus = "Member" | "Visitor";
+export type MembershipStatus = "Member" | "Visitor" | "Worker" | "Leader";
 export type ApiGender = "MALE" | "FEMALE" | "OTHER";
 export type ApiMembershipStatus = "VISITOR" | "MEMBER" | "WORKER" | "LEADER";
 export type ApiEmailStatus =
@@ -117,18 +117,18 @@ export interface IPersonPayload {
 
 export type IUpdatePersonPayload = Partial<IPersonPayload>;
 
+export const membershipMap: Record<ApiMembershipStatus, MembershipStatus> = {
+  MEMBER: "Member",
+  WORKER: "Worker",
+  LEADER: "Leader",
+  VISITOR: "Visitor",
+};
+
 export function adaptApiPersonToPerson(apiPerson: IPersonResponse): IPerson {
   const genderMap: Record<ApiGender, "Male" | "Female"> = {
     MALE: "Male",
     FEMALE: "Female",
     OTHER: "Male",
-  };
-
-  const membershipMap: Record<ApiMembershipStatus, "Member" | "Visitor"> = {
-    MEMBER: "Member",
-    WORKER: "Member",
-    LEADER: "Member",
-    VISITOR: "Visitor",
   };
 
   const rawRegistrations = apiPerson.registrations || [];
