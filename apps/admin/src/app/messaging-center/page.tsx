@@ -4,7 +4,15 @@ import React, { useState, useMemo, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import { Send, Mail, Phone, User, X, RotateCcw, CheckSquare } from "lucide-react";
+import {
+  Send,
+  Mail,
+  Phone,
+  User,
+  X,
+  RotateCcw,
+  CheckSquare,
+} from "lucide-react";
 import { Input } from "@/components/FormElements/Input";
 import { MultiSelect } from "@/components/FormElements/MultiSelect";
 import { RichTextEditor } from "@/components/FormElements/RichTextEditor";
@@ -510,23 +518,26 @@ export default function MessagingCenterPage() {
       </div>
 
       {/* Gmail-style full filter selection helper banner */}
-      {isAllOnPageSelected && meta?.total !== undefined && meta.total > people.length && (
-        <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 text-xs text-indigo-900 dark:text-indigo-200 flex flex-col sm:flex-row items-center justify-center gap-2 text-center">
-          <span>
-            All <strong>{people.length}</strong> recipients on this page are selected.
-          </span>
-          <button
-            type="button"
-            onClick={handleSelectAllFiltered}
-            disabled={isSelectingAllFiltered}
-            className="font-semibold underline hover:text-indigo-700 dark:hover:text-indigo-300 cursor-pointer disabled:opacity-50"
-          >
-            {isSelectingAllFiltered
-              ? "Selecting..."
-              : `Select all ${meta.total} recipients matching filters`}
-          </button>
-        </div>
-      )}
+      {isAllOnPageSelected &&
+        meta?.total !== undefined &&
+        meta.total > people.length && (
+          <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 text-xs text-indigo-900 dark:text-indigo-200 flex flex-col sm:flex-row items-center justify-center gap-2 text-center">
+            <span>
+              All <strong>{people.length}</strong> recipients on this page are
+              selected.
+            </span>
+            <button
+              type="button"
+              onClick={handleSelectAllFiltered}
+              disabled={isSelectingAllFiltered}
+              className="font-semibold underline hover:text-indigo-700 dark:hover:text-indigo-300 cursor-pointer disabled:opacity-50"
+            >
+              {isSelectingAllFiltered
+                ? "Selecting..."
+                : `Select all ${meta.total} recipients matching filters`}
+            </button>
+          </div>
+        )}
 
       {/* Server-side Paginated & Filtered Table */}
       <div className="flex flex-col gap-4">
