@@ -93,3 +93,29 @@ export function extractMeta(
   }
   return undefined;
 }
+
+export function extractStats<T>(resData: unknown): T | undefined {
+  if (!resData || typeof resData !== "object" || resData === null) {
+    return undefined;
+  }
+  const obj = resData as Record<string, unknown>;
+  if ("stats" in obj && obj.stats && typeof obj.stats === "object") {
+    return obj.stats as T;
+  }
+  if (
+    "data" in obj &&
+    obj.data &&
+    typeof obj.data === "object" &&
+    obj.data !== null
+  ) {
+    const dataObj = obj.data as Record<string, unknown>;
+    if (
+      "stats" in dataObj &&
+      dataObj.stats &&
+      typeof dataObj.stats === "object"
+    ) {
+      return dataObj.stats as T;
+    }
+  }
+  return undefined;
+}

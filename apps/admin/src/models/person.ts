@@ -87,6 +87,22 @@ export interface IPersonResponse {
   avatarUrl?: string;
 }
 
+export interface IPeopleStats {
+  total: number;
+  membership: {
+    visitors: number;
+    members: number;
+    workers: number;
+    leaders: number;
+  };
+  gender: {
+    male: number;
+    female: number;
+    other: number;
+    unspecified: number;
+  };
+}
+
 export interface IPersonPayload {
   churchId?: string;
   firstName: string;

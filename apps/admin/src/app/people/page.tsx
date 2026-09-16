@@ -61,6 +61,7 @@ export default function PeoplePage() {
   const {
     people: apiPeople,
     meta,
+    stats,
     createPerson,
     isCreating,
     refetch,
@@ -120,17 +121,10 @@ export default function PeoplePage() {
     setPage(1);
   };
 
-  // Calculate dynamic stats from people
-  const totalPeople = meta?.total ?? people.length;
-  const totalMembers = people.filter(
-    (p) => p.membershipStatus === "Member",
-  ).length;
-  const totalVisitors = people.filter(
-    (p) => p.membershipStatus === "Visitor",
-  ).length;
-  const activeAttendees = people.filter(
-    (p) => p.registrationHistoryCount > 0,
-  ).length;
+  const totalPeople = stats?.total ?? people.length;
+  const totalMembers = stats?.membership?.members ?? 0;
+  const totalVisitors = stats?.membership?.visitors ?? 0;
+  const totalWorkers = stats?.membership?.workers ?? 0;
 
   const columns = useMemo<ColumnDef<IPerson>[]>(
     () => [
@@ -210,7 +204,11 @@ export default function PeoplePage() {
             actions={[
               {
                 title: "View Details",
-                fn: () => setSelectedPerson(row.original),
+
+                fn: () => {
+                  console.log(row.original);
+                  setSelectedPerson(row.original);
+                },
               },
             ]}
           />
@@ -290,21 +288,21 @@ export default function PeoplePage() {
           loading={isLoading}
         />
         <StatsCard
+          title="Church Workers"
+          value={totalWorkers.toLocaleString()}
+          change=""
+          trend="up"
+          icon={Calendar}
+          color="emerald"
+          loading={isLoading}
+        />
+        <StatsCard
           title="Visitors & Guests"
           value={totalVisitors.toLocaleString()}
           change={`${totalPeople > 0 ? ((totalVisitors / totalPeople) * 100).toFixed(0) : 0}% of total`}
           trend="neutral"
           icon={UserCheck}
           color="amber"
-          loading={isLoading}
-        />
-        <StatsCard
-          title="Active Attendees"
-          value={activeAttendees.toLocaleString()}
-          change="Attended 1+ events"
-          trend="up"
-          icon={Calendar}
-          color="emerald"
           loading={isLoading}
         />
       </div>
@@ -318,6 +316,7 @@ export default function PeoplePage() {
           >
             <option value="All">All Statuses</option>
             <option value="Member">Member</option>
+            <option value="Worker">Worker</option>
             <option value="Visitor">Visitor</option>
           </Select>
         </div>

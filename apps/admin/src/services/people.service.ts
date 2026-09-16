@@ -3,6 +3,7 @@ import {
   IPersonResponse,
   IPersonPayload,
   IUpdatePersonPayload,
+  IPeopleStats,
 } from "@/models/person";
 import {
   IBaseResponse,
@@ -10,18 +11,22 @@ import {
   extractData,
   extractArray,
   extractMeta,
+  extractStats,
 } from "@/models/base";
 
 export const peopleService = {
-  async getPeople(
-    params?: IQueryParams,
-  ): Promise<{ people: IPersonResponse[]; meta?: IBaseResponse["meta"] }> {
+  async getPeople(params?: IQueryParams): Promise<{
+    people: IPersonResponse[];
+    meta?: IBaseResponse["meta"];
+    stats?: IPeopleStats;
+  }> {
     const res = await apiClient.get<IBaseResponse<unknown>>("/people", {
       params,
     });
     return {
       people: extractArray<IPersonResponse>(res.data),
       meta: extractMeta(res.data),
+      stats: extractStats<IPeopleStats>(res.data),
     };
   },
 
