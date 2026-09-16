@@ -4,10 +4,11 @@ import React, { useState, useMemo, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import { Send, Mail, Phone, User, X } from "lucide-react";
+import { Send, Mail, Phone, User, X, RotateCcw, CheckSquare } from "lucide-react";
 import { Input } from "@/components/FormElements/Input";
 import { MultiSelect } from "@/components/FormElements/MultiSelect";
 import { RichTextEditor } from "@/components/FormElements/RichTextEditor";
+import { Select } from "@/components/FormElements/Select";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { BaseButton } from "@/components/ui/Button";
 import { SidebarModal } from "@/components/ui/SidebarModal";
@@ -83,18 +84,24 @@ export default function MessagingCenterPage() {
   >({});
   const [isSending, setIsSending] = useState(false);
 
-  // Server-side query params
+  // Server-side query params & filters
   const [search, setSearch] = useState("");
+  const [membershipStatus, setMembershipStatus] = useState("All");
+  const [gender, setGender] = useState("All");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [isSelectingAllFiltered, setIsSelectingAllFiltered] = useState(false);
 
   const queryParams = useMemo(
     () => ({
       page,
       limit,
       search: search || undefined,
+      membershipStatus:
+        membershipStatus !== "All" ? membershipStatus : undefined,
+      gender: gender !== "All" ? gender : undefined,
     }),
-    [page, limit, search],
+    [page, limit, search, membershipStatus, gender],
   );
 
   const { people: apiPeople, meta, isLoading } = usePeople(queryParams);
@@ -211,6 +218,55 @@ export default function MessagingCenterPage() {
     setLimit(newLimit);
     setPage(1);
   }, []);
+
+  const handleMembershipChange = useCallback((value: string) => {
+    setMembershipStatus(value);
+    setPage(1);
+  }, []);
+
+  const handleGenderChange = useCallback((value: string) => {
+    setGender(value);
+    setPage(1);
+  }, []);
+
+  const handleResetFilters = useCallback(() => {
+    setMembershipStatus("All");
+    setGender("All");
+    setPage(1);
+  }, []);
+
+  const handleSelectAllFiltered = useCallback(async () => {
+    const totalCount = meta?.total ?? people.length;
+    if (totalCount <= 0) return;
+
+    try {
+      setIsSelectingAllFiltered(true);
+      const res = await peopleService.getPeople({
+        page: 1,
+        limit: Math.max(totalCount, 50),
+        search: search || undefined,
+        membershipStatus:
+          membershipStatus !== "All" ? membershipStatus : undefined,
+        gender: gender !== "All" ? gender : undefined,
+      });
+
+      const allMatching = res.people.map(adaptApiPersonToPerson);
+      setSelectedPersons((prev) => {
+        const next = { ...prev };
+        allMatching.forEach((p) => {
+          next[p.id] = p;
+        });
+        return next;
+      });
+      customToast.success(
+        `Selected ${allMatching.length} recipient${allMatching.length === 1 ? "" : "s"} matching filter`,
+      );
+    } catch {
+      customToast.error("Failed to select all filtered recipients");
+    } finally {
+      setIsSelectingAllFiltered(false);
+    }
+  }, [meta?.total, people.length, search, membershipStatus, gender]);
 
   const {
     control,
@@ -361,14 +417,14 @@ export default function MessagingCenterPage() {
   );
 
   return (
-    <div className="flex flex-col gap-8 p-4 md:p-8">
+    <div className="space-y-6 animate-fade-in pb-10">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
             Messaging Center
           </h1>
-          <p className="text-gray-500 dark:text-slate-400 text-sm">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
             Manage communications and send broadcast messages to members
           </p>
         </div>
@@ -394,6 +450,83 @@ export default function MessagingCenterPage() {
           />
         </div>
       </div>
+
+      {/* Toolbar Filters & Batch Selection Aid */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-3 rounded-2xl border border-slate-200 dark:border-zinc-800">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="w-full sm:w-44">
+            <Select
+              value={membershipStatus}
+              onChange={(e) => handleMembershipChange(e.target.value)}
+              aria-label="Filter by membership status"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Member">Member</option>
+              <option value="Worker">Worker</option>
+              <option value="Leader">Leader</option>
+              <option value="Visitor">Visitor</option>
+            </Select>
+          </div>
+          <div className="w-full sm:w-44">
+            <Select
+              value={gender}
+              onChange={(e) => handleGenderChange(e.target.value)}
+              aria-label="Filter by gender"
+            >
+              <option value="All">All Genders</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </Select>
+          </div>
+          {(membershipStatus !== "All" || gender !== "All") && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="text-xs font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 flex items-center gap-1 transition-colors px-2 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Reset filters
+            </button>
+          )}
+        </div>
+
+        {meta?.total !== undefined && meta.total > 0 && (
+          <div className="flex items-center gap-2">
+            <BaseButton
+              color="outline"
+              className="!h-[42px] !text-xs font-semibold w-full sm:w-auto"
+              icon={<CheckSquare className="w-3.5 h-3.5 text-indigo-500" />}
+              text={
+                isSelectingAllFiltered
+                  ? "Selecting all..."
+                  : `Select all ${meta.total} filtered`
+              }
+              loading={isSelectingAllFiltered}
+              disabled={isSelectingAllFiltered}
+              onClick={handleSelectAllFiltered}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Gmail-style full filter selection helper banner */}
+      {isAllOnPageSelected && meta?.total !== undefined && meta.total > people.length && (
+        <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 text-xs text-indigo-900 dark:text-indigo-200 flex flex-col sm:flex-row items-center justify-center gap-2 text-center">
+          <span>
+            All <strong>{people.length}</strong> recipients on this page are selected.
+          </span>
+          <button
+            type="button"
+            onClick={handleSelectAllFiltered}
+            disabled={isSelectingAllFiltered}
+            className="font-semibold underline hover:text-indigo-700 dark:hover:text-indigo-300 cursor-pointer disabled:opacity-50"
+          >
+            {isSelectingAllFiltered
+              ? "Selecting..."
+              : `Select all ${meta.total} recipients matching filters`}
+          </button>
+        </div>
+      )}
 
       {/* Server-side Paginated & Filtered Table */}
       <div className="flex flex-col gap-4">
