@@ -11,6 +11,9 @@ import {
   Send,
   X,
   Sparkles,
+  Upload,
+  Loader2,
+  Trash2,
 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button, BaseButton } from "@/components/ui/Button";
@@ -43,6 +46,7 @@ import {
   ISendBatchRegistrantsEmailPayload,
 } from "@/services/email.service";
 import { registrationsService } from "@/services/registrations.service";
+import { uploadsService } from "@/services/uploads.service";
 
 interface EmailFormValues {
   subject: string;
@@ -51,6 +55,7 @@ interface EmailFormValues {
   ctaLabel?: string;
   ctaUrl?: string;
   includeQrPass: boolean;
+  imageUrl?: string;
 }
 
 // Query hook for MultiSelect component to search and paginate registrants
@@ -223,6 +228,7 @@ export default function RegistrationsPage() {
     reset,
     setValue,
     getValues,
+    watch,
     formState: { errors },
   } = useForm<EmailFormValues>({
     defaultValues: {
@@ -232,8 +238,30 @@ export default function RegistrationsPage() {
       ctaLabel: "",
       ctaUrl: "",
       includeQrPass: false,
+      imageUrl: "",
     },
   });
+
+  const [isUploadingFlyer, setIsUploadingFlyer] = useState(false);
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const flyerImageUrl = watch("imageUrl");
+
+  const handleFlyerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploadingFlyer(true);
+      const uploadedUrl = await uploadsService.uploadFlyer(file);
+      setValue("imageUrl", uploadedUrl, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    } catch {
+      // Handled by toast interceptor
+    } finally {
+      setIsUploadingFlyer(false);
+    }
+  };
 
   const handleOpenEmailModal = () => {
     setSendToAllRegistrants(true);
@@ -264,6 +292,7 @@ export default function RegistrationsPage() {
         ctaLabel: formData.ctaLabel?.trim() || undefined,
         ctaUrl: formData.ctaUrl?.trim() || undefined,
         includeQrPass: formData.includeQrPass,
+        imageUrl: formData.imageUrl?.trim() || undefined,
       };
 
       if (sendToAllRegistrants) {
@@ -680,6 +709,66 @@ export default function RegistrationsPage() {
               />
             )}
           />
+
+          {/* Announcement Flyer Image */}
+          <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-zinc-800">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                Announcement Flyer Image (Optional)
+              </label>
+              <span className="text-[11px] text-slate-400">
+                Max 3MB (JPEG, PNG, WEBP)
+              </span>
+            </div>
+            <Controller
+              name="imageUrl"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  placeholder="https://... or upload flyer image"
+                  error={errors.imageUrl?.message}
+                />
+              )}
+            />
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors">
+                {isUploadingFlyer ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
+                ) : (
+                  <Upload className="w-4 h-4 text-indigo-500" />
+                )}
+                <span>
+                  {isUploadingFlyer ? "Uploading..." : "Upload Image File"}
+                </span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/jpg"
+                  onChange={handleFlyerUpload}
+                  disabled={isUploadingFlyer}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            {flyerImageUrl && (
+              <div className="relative w-full h-36 rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800/50 mt-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={flyerImageUrl}
+                  alt="Flyer Preview"
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setValue("imageUrl", "")}
+                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 hover:bg-black/80 text-white transition-colors"
+                  title="Remove image"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Include QR Pass Switch */}
           <Controller

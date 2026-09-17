@@ -8,6 +8,7 @@ export interface IBatchEmailPayload {
   message: string;
   ctaLabel?: string;
   ctaUrl?: string;
+  imageUrl?: string;
 }
 
 export interface ISendBatchRegistrantsEmailPayload {
@@ -22,6 +23,7 @@ export interface ISendBatchRegistrantsEmailPayload {
   ctaLabel?: string;
   ctaUrl?: string;
   includeQrPass?: boolean;
+  imageUrl?: string;
 }
 
 export interface ISendRegistrantEmailPayload {
@@ -32,6 +34,7 @@ export interface ISendRegistrantEmailPayload {
   ctaLabel?: string;
   ctaUrl?: string;
   includeQrPass?: boolean;
+  imageUrl?: string;
 }
 
 export const emailService = {
