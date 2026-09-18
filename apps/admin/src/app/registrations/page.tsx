@@ -242,6 +242,43 @@ export default function RegistrationsPage() {
     },
   });
 
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportCsv = useCallback(async () => {
+    setIsExporting(true);
+    try {
+      const pageSize = 200;
+      let allRegistrations: IRegistration[] = [];
+      let currentPage = 1;
+      let total = Infinity;
+
+      while (allRegistrations.length < total) {
+        const res = await registrationsService.getRegistrations({
+          eventId: selectedEventId || undefined,
+          search: search || undefined,
+          status: status !== "All" ? status : undefined,
+          teamId: teamId !== "All" ? teamId : undefined,
+          page: currentPage,
+          limit: pageSize,
+        });
+
+        if (res.registrations.length === 0) break;
+
+        allRegistrations = allRegistrations.concat(
+          res.registrations.map(adaptApiRegistrationToRegistration),
+        );
+        total = res.meta?.total ?? allRegistrations.length;
+        currentPage += 1;
+      }
+
+      exportToCsv(allRegistrations);
+    } catch {
+      customToast.error("Failed to export registrations");
+    } finally {
+      setIsExporting(false);
+    }
+  }, [selectedEventId, search, status, teamId]);
+
   const [isUploadingFlyer, setIsUploadingFlyer] = useState(false);
   // eslint-disable-next-line react-hooks/incompatible-library
   const flyerImageUrl = watch("imageUrl");
@@ -461,7 +498,8 @@ export default function RegistrationsPage() {
           <RefreshButton onRefetch={refetch} />
           <Button
             variant="outline"
-            onClick={() => exportToCsv(registrations)}
+            onClick={handleExportCsv}
+            loading={isExporting}
             leftIcon={<Download className="w-4 h-4" />}
           >
             Export CSV Roster
