@@ -18,9 +18,9 @@ export const exportToCsv = (
     r.registrationNumber,
     `"${r.name}"`,
     r.email,
-    r.phone,
+    // r.phone,
     r.gender,
-    r.membershipStatus,
+    // r.membershipStatus,
     `"${r.team?.name || ""}"`,
     r.status,
   ]);
