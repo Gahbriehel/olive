@@ -8,9 +8,9 @@ export const exportToCsv = (
     "Registration Number",
     "Name",
     "Email",
-    "Phone",
+    // "Phone",
     "Gender",
-    "Membership",
+    // "Membership",
     "Team",
     "Status",
   ];
