@@ -333,12 +333,12 @@ export const PublicLeaderboardView: React.FC<PublicLeaderboardViewProps> = ({
                           {entry.teamName}
                         </h4>
                         <div className="flex items-center space-x-3 text-xs text-slate-400 mt-0.5">
-                          {entry.memberCount !== undefined && (
+                          {/* {entry.memberCount !== undefined && (
                             <span className="flex items-center space-x-1">
                               <Users className="w-3.5 h-3.5 text-slate-500" />
                               <span>{entry.memberCount} Members</span>
                             </span>
-                          )}
+                          )} */}
                           {entry.gamesPlayed !== undefined && (
                             <span>• {entry.gamesPlayed} Games</span>
                           )}

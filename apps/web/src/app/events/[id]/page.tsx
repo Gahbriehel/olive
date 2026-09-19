@@ -363,7 +363,7 @@ export default function EventDetailsPage({
                   capacity > 0 &&
                   isFiftyPercentFull && (
                     <div className="space-y-2 pb-4 border-b border-white/5">
-                      <div className="flex items-center justify-between text-slate-400 font-medium">
+                      {/* <div className="flex items-center justify-between text-slate-400 font-medium">
                         <span className="flex items-center space-x-1.5">
                           <Users className="w-4 h-4 text-amber-400" />
                           <span>Capacity</span>
@@ -371,7 +371,7 @@ export default function EventDetailsPage({
                         <span className="text-white font-semibold">
                           {registeredCount} / {capacity}
                         </span>
-                      </div>
+                      </div> */}
 
                       <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
                         <div
