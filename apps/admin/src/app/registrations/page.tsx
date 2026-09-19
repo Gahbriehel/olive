@@ -534,10 +534,10 @@ export default function RegistrationsPage() {
             value={status}
             onChange={(e) => handleStatusChange(e.target.value)}
           >
-            <option value="All">All Statuses</option>
-            <option value="Checked-In">Checked-In</option>
-            <option value="Confirmed">Confirmed</option>
-            <option value="Cancelled">Cancelled</option>
+            <option value="">All Statuses</option>
+            <option value="CHECKED_IN">Checked-In</option>
+            <option value="CONFIRMED">Confirmed</option>
+            <option value="CANCELLED">Cancelled</option>
           </Select>
         </div>
         <div className="w-full sm:w-48">
