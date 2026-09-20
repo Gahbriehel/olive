@@ -175,7 +175,7 @@ export default function ContactPage() {
                       <span className="font-medium text-[#F7F5F0]">
                         Tuesday (Digging Deep):
                       </span>
-                      <span>6:00 PM – 7:30 PM</span>
+                      <span>5:30 PM – 7:00 PM</span>
                     </li>
                     <li className="flex justify-between pb-1">
                       <span className="font-medium text-[#F7F5F0]">
