@@ -5,6 +5,7 @@ import { TruncatedTextWithCopy } from "@/components/ui/TruncatedTextWithCopy";
 import PhoneInput from "@/components/ui/PhoneInput";
 import { webService } from "@/services/api";
 import { PrayerCategory, InquiryCategory } from "@olive/types";
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import {
   MapPin,
   Phone,
@@ -15,13 +16,15 @@ import {
   CheckCircle2,
   MessageSquare,
   Loader2,
+  AlertTriangle,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function ContactPage() {
   const [activeTab, setActiveTab] = useState<"prayer" | "inquiry">("prayer");
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPhoneConfirm, setShowPhoneConfirm] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -31,8 +34,7 @@ export default function ContactPage() {
     isPrivate: false,
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitForm = async () => {
     setIsSubmitting(true);
     try {
       await webService.submitContactForm({
@@ -50,6 +52,22 @@ export default function ContactPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.phone.trim()) {
+      setShowPhoneConfirm(true);
+      return;
+    }
+
+    await submitForm();
+  };
+
+  const handleConfirmWithoutPhone = async () => {
+    setShowPhoneConfirm(false);
+    await submitForm();
   };
 
   const handleReset = () => {
@@ -445,6 +463,74 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
+
+      {/* NO PHONE NUMBER CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {showPhoneConfirm && (
+          <Dialog
+            static
+            open={showPhoneConfirm}
+            onClose={() => setShowPhoneConfirm(false)}
+            className="relative z-50"
+          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+              aria-hidden="true"
+            />
+
+            <div className="fixed inset-0 flex items-center justify-center p-4">
+              <DialogPanel className="w-full max-w-md">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="w-full rounded-3xl bg-[#1F1F1F] border border-white/10 p-6 sm:p-8 text-[#F7F5F0] shadow-2xl space-y-5"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-400 flex items-center justify-center">
+                    <AlertTriangle className="w-6 h-6" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <DialogTitle className="text-xl font-serif font-medium text-white">
+                      Continue Without a Phone Number?
+                    </DialogTitle>
+                    <p className="text-xs text-[#D4D0C7] font-sans font-light leading-relaxed">
+                      A phone number might be needed to reach you. Would you
+                      like to continue submitting without one?
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowPhoneConfirm(false)}
+                      className="flex-1 px-4 py-2.5 rounded-sm border border-white/10 text-[#F7F5F0] hover:bg-white/5 font-medium text-xs uppercase tracking-wider transition-colors"
+                    >
+                      Add Phone Number
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleConfirmWithoutPhone}
+                      disabled={isSubmitting}
+                      className="flex-1 px-4 py-2.5 rounded-sm bg-[#B18A4A] hover:bg-[#9C773B] disabled:opacity-50 text-white font-medium text-xs uppercase tracking-wider transition-colors flex items-center justify-center space-x-2 cursor-pointer"
+                    >
+                      {isSubmitting ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      ) : (
+                        <span>Continue Without Phone</span>
+                      )}
+                    </button>
+                  </div>
+                </motion.div>
+              </DialogPanel>
+            </div>
+          </Dialog>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

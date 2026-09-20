@@ -7,7 +7,6 @@ import {
   Shield,
   RefreshCw,
   ArrowLeft,
-  Users,
   Sparkles,
   Flame,
   Award,
