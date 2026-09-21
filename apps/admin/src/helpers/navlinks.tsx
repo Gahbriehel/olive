@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   Calendar,
+  CalendarRange,
   Users,
   Ticket,
   Shield,
@@ -16,12 +17,13 @@ import {
 import { ROLES } from "@/utils/rbac";
 
 export interface NavItem {
-  href: string;
+  href?: string;
   label: string;
   icon: LucideIcon;
   badge?: string;
   highlight?: boolean;
   allowedRoles?: string[];
+  subs?: NavItem[];
 }
 
 export interface FutureModule {
@@ -38,58 +40,71 @@ export const mainNavItems: NavItem[] = [
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
   {
-    href: "/events",
-    label: "Events",
-    icon: Calendar,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
-  },
-  {
     href: "/people",
     label: "People",
     icon: Users,
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
   },
   {
-    href: "/registrations",
-    label: "Registrations",
-    icon: Ticket,
+    label: "Event Management",
+    icon: CalendarRange,
     allowedRoles: [
       ROLES.SUPER_ADMIN,
       ROLES.ADMIN,
       ROLES.COORDINATOR,
       ROLES.REGISTRATION_DESK,
     ],
-  },
-  {
-    href: "/teams",
-    label: "Teams",
-    icon: Shield,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
-  },
-  {
-    href: "/attendance",
-    label: "Attendance",
-    icon: QrCode,
-    highlight: true,
-    allowedRoles: [
-      ROLES.SUPER_ADMIN,
-      ROLES.ADMIN,
-      ROLES.COORDINATOR,
-      ROLES.REGISTRATION_DESK,
+    subs: [
+      {
+        href: "/events",
+        label: "Events",
+        icon: Calendar,
+        allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+      },
+      {
+        href: "/games",
+        label: "Games",
+        icon: Gamepad2,
+        allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+      },
+      {
+        href: "/attendance",
+        label: "Attendance",
+        icon: QrCode,
+        highlight: true,
+        allowedRoles: [
+          ROLES.SUPER_ADMIN,
+          ROLES.ADMIN,
+          ROLES.COORDINATOR,
+          ROLES.REGISTRATION_DESK,
+        ],
+      },
+      {
+        href: "/registrations",
+        label: "Registrations",
+        icon: Ticket,
+        allowedRoles: [
+          ROLES.SUPER_ADMIN,
+          ROLES.ADMIN,
+          ROLES.COORDINATOR,
+          ROLES.REGISTRATION_DESK,
+        ],
+      },
+      {
+        href: "/teams",
+        label: "Teams",
+        icon: Shield,
+        allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+      },
+      {
+        href: "/leaderboard",
+        label: "Leaderboard",
+        icon: Trophy,
+        allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+      },
     ],
   },
-  {
-    href: "/games",
-    label: "Games",
-    icon: Gamepad2,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
-  },
-  {
-    href: "/leaderboard",
-    label: "Leaderboard",
-    icon: Trophy,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
-  },
+
   {
     href: "/messaging-center",
     label: "Messaging Center",
