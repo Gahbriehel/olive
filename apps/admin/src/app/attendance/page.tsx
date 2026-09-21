@@ -254,7 +254,7 @@ export default function AttendancePage() {
           color="indigo"
         />
         <StatsCard
-          title="Checked-In Today"
+          title="Checked-In"
           value={checkedInCount.toLocaleString()}
           change={`${checkinPct}% check-in rate`}
           trend="up"
