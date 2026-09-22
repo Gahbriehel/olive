@@ -24,6 +24,8 @@ export interface IQueryParams {
   membershipStatus?: string;
   gender?: string;
   type?: string;
+  category?: string;
+  isPrivate?: boolean;
 }
 
 export function extractData<T>(resData: unknown): T {

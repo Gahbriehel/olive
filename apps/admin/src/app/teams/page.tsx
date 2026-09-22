@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo } from "react";
 import {
-  Plus,
   Shield,
   Users,
   Search,
@@ -12,9 +11,8 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
-import { RefreshButton } from "@/components/ui/RefreshButton";
+import { downloadCsvExport } from "@/helpers/downloadCsvExport";
+import { ListToolbar } from "@/components/ui/ListToolbar";
 import { Input } from "@/components/FormElements/Input";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
@@ -141,33 +139,13 @@ export default function TeamsPage() {
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-            Event Teams
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Create and manage event teams.
-          </p>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <RefreshButton onRefetch={refetch} />
-          <ExportCsvButton
-            endpoint="/teams/export"
-            params={{
-              eventId: selectedEventId || undefined,
-              search: debouncedSearch || undefined,
-            }}
-            fallbackFilename={`teams-${new Date().toISOString().slice(0, 10)}.csv`}
-          />
-          <Button
-            variant="primary"
-            leftIcon={<Plus className="w-4 h-4" />}
-            onClick={() => setIsCreateOpen(true)}
-          >
-            Create New Team
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+          Event Teams
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          Create and manage event teams.
+        </p>
       </div>
 
       {/* Metrics Grid */}
@@ -190,40 +168,64 @@ export default function TeamsPage() {
         />
       </StatsCardGroup>
 
-      {/* Search & Rows Per Page Control */}
+      {/* Toolbar + Search & Rows Per Page Control */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm">
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-500" />
-          <Input
-            type="text"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            placeholder="Search teams by name..."
-            className="pl-9 text-xs h-9 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 focus:border-indigo-500"
-          />
-        </div>
+        <ListToolbar
+          create={{
+            label: "Create New Team",
+            onClick: () => setIsCreateOpen(true),
+          }}
+          actions={[
+            { title: "Refresh", fn: () => refetch() },
+            {
+              title: "Export CSV",
+              fn: () =>
+                downloadCsvExport(
+                  "/teams/export",
+                  {
+                    eventId: selectedEventId || undefined,
+                    search: debouncedSearch || undefined,
+                  },
+                  `teams-${new Date().toISOString().slice(0, 10)}.csv`,
+                ),
+            },
+          ]}
+        />
 
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-slate-500 dark:text-slate-400 font-medium">
-            Rows per page:
-          </span>
-          <select
-            value={limit}
-            onChange={(e) => {
-              setLimit(Number(e.target.value));
-              setPage(1);
-            }}
-            className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs py-1.5 px-2.5 font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all cursor-pointer"
-          >
-            {[5, 10, 20, 50].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
+        <div className="flex items-center gap-3 sm:ml-auto">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-500" />
+            <Input
+              type="text"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search teams by name..."
+              className="pl-9 text-xs h-9 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 focus:border-indigo-500"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 text-xs shrink-0">
+            <span className="text-slate-500 dark:text-slate-400 font-medium">
+              Rows:
+            </span>
+            <select
+              value={limit}
+              onChange={(e) => {
+                setLimit(Number(e.target.value));
+                setPage(1);
+              }}
+              className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs py-1.5 px-2.5 font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all cursor-pointer"
+            >
+              {[5, 10, 20, 50].map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 

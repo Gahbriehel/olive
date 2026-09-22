@@ -10,9 +10,10 @@ import {
   UserCheck,
   Calendar,
 } from "lucide-react";
+import { downloadCsvExport } from "@/helpers/downloadCsvExport";
+import { ListToolbar } from "@/components/ui/ListToolbar";
+import { FiltersButton } from "@/components/ui/FiltersButton";
 import { Button } from "@/components/ui/Button";
-import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
-import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Select } from "@/components/FormElements/Select";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Tabs } from "@/components/ui/Tabs";
@@ -46,6 +47,7 @@ export default function PeoplePage() {
   const [drawerTab, setDrawerTab] = useState("info");
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const queryParams = useMemo(
     () => ({
@@ -120,6 +122,13 @@ export default function PeoplePage() {
   const handleGenderChange = (newGender: string) => {
     setGender(newGender);
     setPage(1);
+  };
+
+  const activeFilterCount =
+    (membershipStatus !== "All" ? 1 : 0) + (gender !== "All" ? 1 : 0);
+  const clearFilters = () => {
+    handleMembershipChange("All");
+    handleGenderChange("All");
   };
 
   const totalPeople = stats?.total ?? people.length;
@@ -235,45 +244,14 @@ export default function PeoplePage() {
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-            People Directory
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Central repository of church members, conference attendees, and
-            first-time guests.
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <div className="flex gap-2 w-full sm:w-auto">
-            <RefreshButton onRefetch={refetch} />
-            <ExportCsvButton
-              endpoint="/people/export"
-              params={{
-                search: search || undefined,
-                membershipStatus:
-                  membershipStatus !== "All" ? membershipStatus : undefined,
-                gender: gender !== "All" ? gender : undefined,
-              }}
-              fallbackFilename={`people-${new Date().toISOString().slice(0, 10)}.csv`}
-            />
-            <Button
-              variant="outline"
-              leftIcon={<UserPlus className="w-4 h-4" />}
-              onClick={() => setIsAddPersonOpen(true)}
-            >
-              Add Person
-            </Button>
-            <Button
-              variant="primary"
-              leftIcon={<Calendar className="w-4 h-4" />}
-              onClick={() => setIsRegisterOpen(true)}
-            >
-              Register Person for Event
-            </Button>
-          </div>
-        </div>
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+          People Directory
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          Central repository of church members, conference attendees, and
+          first-time guests.
+        </p>
       </div>
 
       {/* Directory Stats Grid */}
@@ -316,32 +294,6 @@ export default function PeoplePage() {
         />
       </StatsCardGroup>
 
-      {/* Toolbar Filters */}
-      <div className="flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-zinc-900 p-3 rounded-2xl border border-slate-200 dark:border-zinc-800">
-        <div className="w-full sm:w-44">
-          <Select
-            value={membershipStatus}
-            onChange={(e) => handleMembershipChange(e.target.value)}
-          >
-            <option value="All">All Statuses</option>
-            <option value="Member">Member</option>
-            <option value="Worker">Worker</option>
-            <option value="Leader">Leader</option>
-            <option value="Visitor">Visitor</option>
-          </Select>
-        </div>
-        <div className="w-full sm:w-44">
-          <Select
-            value={gender}
-            onChange={(e) => handleGenderChange(e.target.value)}
-          >
-            <option value="All">All Genders</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-          </Select>
-        </div>
-      </div>
-
       {/* People TanStack Data Table */}
       <Table
         columns={columns}
@@ -359,7 +311,97 @@ export default function PeoplePage() {
         search={search}
         onSearchChange={handleSearchChange}
         loading={isLoading}
-      />
+      >
+        <ListToolbar
+          create={{
+            label: "Add Person",
+            onClick: () => setIsAddPersonOpen(true),
+            icon: <UserPlus className="w-4 h-4" />,
+          }}
+          actions={[
+            { title: "Refresh", fn: () => refetch() },
+            {
+              title: "Export CSV",
+              fn: () =>
+                downloadCsvExport(
+                  "/people/export",
+                  {
+                    search: search || undefined,
+                    membershipStatus:
+                      membershipStatus !== "All" ? membershipStatus : undefined,
+                    gender: gender !== "All" ? gender : undefined,
+                  },
+                  `people-${new Date().toISOString().slice(0, 10)}.csv`,
+                ),
+            },
+            {
+              title: "Register Person for Event",
+              fn: () => setIsRegisterOpen(true),
+            },
+          ]}
+          trailing={
+            <FiltersButton
+              onClick={() => setFiltersOpen(true)}
+              activeCount={activeFilterCount}
+            />
+          }
+        />
+      </Table>
+
+      {/* Filters Sidebar Modal */}
+      <SidebarModal
+        display={filtersOpen}
+        close={() => setFiltersOpen(false)}
+        title="Filters"
+      >
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+              Membership Status
+            </label>
+            <Select
+              value={membershipStatus}
+              onChange={(e) => handleMembershipChange(e.target.value)}
+            >
+              <option value="All">All Statuses</option>
+              <option value="Member">Member</option>
+              <option value="Worker">Worker</option>
+              <option value="Leader">Leader</option>
+              <option value="Visitor">Visitor</option>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+              Gender
+            </label>
+            <Select
+              value={gender}
+              onChange={(e) => handleGenderChange(e.target.value)}
+            >
+              <option value="All">All Genders</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </Select>
+          </div>
+          <div className="flex gap-3 pt-4 mt-2 border-t border-slate-100 dark:border-zinc-800">
+            <Button
+              variant="outline"
+              className="flex-1 justify-center"
+              onClick={clearFilters}
+              disabled={activeFilterCount === 0}
+            >
+              Clear all
+            </Button>
+            <Button
+              variant="primary"
+              className="flex-1 justify-center"
+              onClick={() => setFiltersOpen(false)}
+            >
+              Apply
+            </Button>
+          </div>
+        </div>
+      </SidebarModal>
 
       {/* Person Details Sidebar Modal */}
       <SidebarModal

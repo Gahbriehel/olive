@@ -1,9 +1,16 @@
 "use client";
 
 import React from "react";
-import { Trophy, Shield, ChevronUp } from "lucide-react";
-import { RefreshButton } from "@/components/ui/RefreshButton";
-import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
+import {
+  Trophy,
+  Shield,
+  ChevronUp,
+  MoreHorizontal,
+  ChevronDown,
+} from "lucide-react";
+import { downloadCsvExport } from "@/helpers/downloadCsvExport";
+import { ListToolbar } from "@/components/ui/ListToolbar";
+import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { useDashboard } from "@/context/DashboardContext";
 import { useTeams } from "@/hooks/useTeams";
@@ -80,19 +87,35 @@ export default function LeaderboardPage() {
             Live scores calculated automatically from games, and trivia.
           </p>
         </div>
-        <div className="flex gap-2">
-          <RefreshButton
-            onRefetch={refetch}
-            className="px-3 bg-white/10 hover:bg-white/20 border-white/20 text-white"
-          />
-          {selectedEventId && (
-            <ExportCsvButton
-              endpoint={`/leaderboard/${selectedEventId}/export`}
-              fallbackFilename={`leaderboard-${selectedEventId}-${new Date().toISOString().slice(0, 10)}.csv`}
+        <ListToolbar
+          actions={[
+            { title: "Refresh", fn: () => refetch() },
+            ...(selectedEventId
+              ? [
+                  {
+                    title: "Export CSV",
+                    fn: () =>
+                      downloadCsvExport(
+                        `/leaderboard/${selectedEventId}/export`,
+                        {},
+                        `leaderboard-${selectedEventId}-${new Date().toISOString().slice(0, 10)}.csv`,
+                      ),
+                  },
+                ]
+              : []),
+          ]}
+          actionsTrigger={
+            <Button
+              variant="outline"
+              position="icon-last"
               className="bg-white/10 hover:bg-white/20 border-white/20 text-white"
-            />
-          )}
-        </div>
+            >
+              <MoreHorizontal className="w-4 h-4" />
+              Actions
+              <ChevronDown className="w-3.5 h-3.5 text-white/60" />
+            </Button>
+          }
+        />
       </div>
 
       {teams.length === 0 ? (

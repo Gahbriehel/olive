@@ -18,8 +18,8 @@ import {
   CardDescription,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
-import { RefreshButton } from "@/components/ui/RefreshButton";
+import { downloadCsvExport } from "@/helpers/downloadCsvExport";
+import { ListToolbar } from "@/components/ui/ListToolbar";
 import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
 import { ActionsList } from "@/components/ui/ActionsList";
@@ -28,7 +28,6 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { UserForm, UserFormValues } from "@/components/Forms/UserForm";
-import { AuthorityGuard } from "@/components/auth/AuthorityGuard";
 import { ROLES, getUserRoles, hasAuthority } from "@/utils/rbac";
 import { IS_STRICT_RBAC_RESTRICTED } from "@/config/features";
 import { getInitials, capitalizeWords } from "@/utils/formatters";
@@ -159,6 +158,10 @@ export default function UsersPage() {
   const canAccessUserDirectory = IS_STRICT_RBAC_RESTRICTED
     ? isSuperAdmin
     : true;
+  const canManageUsers = hasAuthority(userRoles, [
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+  ]);
 
   const [activeTab, setActiveTab] = useState<"users" | "permissions">("users");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -456,33 +459,14 @@ export default function UsersPage() {
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-            Users & Permission Control
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Manage system access, assign roles, and synchronize user contact
-            directory.
-          </p>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <RefreshButton onRefetch={refetch} />
-          <AuthorityGuard roles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]}>
-            <ExportCsvButton
-              endpoint="/users/export"
-              params={{ search: search || undefined }}
-              fallbackFilename={`users-${new Date().toISOString().slice(0, 10)}.csv`}
-            />
-            <Button
-              variant="primary"
-              leftIcon={<UserPlus className="w-4 h-4" />}
-              onClick={() => setIsCreateOpen(true)}
-            >
-              Invite User
-            </Button>
-          </AuthorityGuard>
-        </div>
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+          Users & Permission Control
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          Manage system access, assign roles, and synchronize user contact
+          directory.
+        </p>
       </div>
 
       {successMessage && (
@@ -575,7 +559,32 @@ export default function UsersPage() {
               search={search}
               onSearchChange={handleSearchChange}
               loading={isLoading}
-            />
+            >
+              <ListToolbar
+                create={{
+                  label: "Invite User",
+                  onClick: () => setIsCreateOpen(true),
+                  icon: <UserPlus className="w-4 h-4" />,
+                  show: canManageUsers,
+                }}
+                actions={[
+                  { title: "Refresh", fn: () => refetch() },
+                  ...(canManageUsers
+                    ? [
+                        {
+                          title: "Export CSV",
+                          fn: () =>
+                            downloadCsvExport(
+                              "/users/export",
+                              { search: search || undefined },
+                              `users-${new Date().toISOString().slice(0, 10)}.csv`,
+                            ),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+            </Table>
           ) : (
             <div className="space-y-4">
               <Card>

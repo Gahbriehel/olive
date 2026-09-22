@@ -6,14 +6,18 @@ import { IContact } from "@/models/contact";
 import { formatDate } from "@/helpers/formatDate";
 import { useContactQuery } from "@/hooks/useContactQuery";
 import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
+import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { Table } from "@/components/ui/Table";
+import { ListToolbar } from "@/components/ui/ListToolbar";
+import { FiltersButton } from "@/components/ui/FiltersButton";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { SidebarModal } from "@/components/ui/SidebarModal";
-import { BaseButton } from "@/components/ui/Button";
-import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
+import { BaseButton, Button } from "@/components/ui/Button";
+import { Input } from "@/components/FormElements/Input";
+import { Select } from "@/components/FormElements/Select";
 import { NotAvailable } from "@/components/ui/NotAvailable";
-import { AuthorityGuard } from "@/components/auth/AuthorityGuard";
-import { ROLES } from "@/utils/rbac";
+import { useAuth } from "@/hooks/useAuth";
+import { ROLES, getUserRoles, hasAuthority } from "@/utils/rbac";
 import { Mail, Phone, Calendar, HeartHandshake, Tag, Send } from "lucide-react";
 
 const columnHelper = createColumnHelper<IContact>();
@@ -22,8 +26,28 @@ export function PrayerTable(): JSX.Element {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [isPrivate, setIsPrivate] = useState<"All" | "Public" | "Private">(
+    "All",
+  );
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<IContact | null>(null);
+
+  const { user } = useAuth();
+  const userRoles = getUserRoles(user);
+  const canExport = hasAuthority(userRoles, [ROLES.SUPER_ADMIN, ROLES.ADMIN]);
+  const isSuperAdmin = hasAuthority(userRoles, [ROLES.SUPER_ADMIN]);
+
+  const isPrivateFilterValue =
+    isSuperAdmin && isPrivate !== "All" ? isPrivate === "Private" : undefined;
+  const activeFilterCount =
+    (category.trim() ? 1 : 0) + (isPrivateFilterValue !== undefined ? 1 : 0);
+  const clearFilters = () => {
+    setCategory("");
+    setIsPrivate("All");
+    setPage(1);
+  };
 
   const columns = [
     columnHelper.accessor((_, rowIndex) => padNumberWithZeros(rowIndex + 1), {
@@ -102,11 +126,13 @@ export function PrayerTable(): JSX.Element {
     }),
   ];
 
-  const { data, isLoading } = useContactQuery(
+  const { data, isLoading, refetch } = useContactQuery(
     {
-      page: page,
-      limit: limit,
-      search: search,
+      page,
+      limit,
+      search,
+      category: category.trim() || undefined,
+      isPrivate: isPrivateFilterValue,
     },
     "prayer",
   );
@@ -115,15 +141,6 @@ export function PrayerTable(): JSX.Element {
 
   return (
     <>
-      <div className="flex justify-end mb-3">
-        <AuthorityGuard roles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]}>
-          <ExportCsvButton
-            endpoint="/contact/submissions/export"
-            params={{ type: "prayer", search: search || undefined }}
-            fallbackFilename={`contact-submissions-${new Date().toISOString().slice(0, 10)}.csv`}
-          />
-        </AuthorityGuard>
-      </div>
       <Table
         data={prayers ?? []}
         columns={columns as Array<ColumnDef<IContact>>}
@@ -138,7 +155,96 @@ export function PrayerTable(): JSX.Element {
         onPageChange={(page) => setPage(page)}
         limit={limit}
         onLimitChange={(limit) => setLimit(limit)}
-      />
+      >
+        <ListToolbar
+          actions={[
+            { title: "Refresh", fn: () => refetch() },
+            ...(canExport
+              ? [
+                  {
+                    title: "Export CSV",
+                    fn: () =>
+                      downloadCsvExport(
+                        "/contact/submissions/export",
+                        {
+                          type: "prayer",
+                          search: search || undefined,
+                          category: category.trim() || undefined,
+                          isPrivate: isPrivateFilterValue,
+                        },
+                        `contact-submissions-${new Date().toISOString().slice(0, 10)}.csv`,
+                      ),
+                  },
+                ]
+              : []),
+          ]}
+          trailing={
+            <FiltersButton
+              onClick={() => setFiltersOpen(true)}
+              activeCount={activeFilterCount}
+            />
+          }
+        />
+      </Table>
+
+      {/* Filters Sidebar Modal */}
+      <SidebarModal
+        display={filtersOpen}
+        close={() => setFiltersOpen(false)}
+        title="Filters"
+      >
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+              Category
+            </label>
+            <Input
+              type="text"
+              value={category}
+              onChange={(e) => {
+                setCategory(e.target.value);
+                setPage(1);
+              }}
+              placeholder="e.g. General, Partnership..."
+            />
+          </div>
+          {isSuperAdmin && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                Privacy
+              </label>
+              <Select
+                value={isPrivate}
+                onChange={(e) => {
+                  setIsPrivate(e.target.value as "All" | "Public" | "Private");
+                  setPage(1);
+                }}
+              >
+                <option value="All">All</option>
+                <option value="Public">Public only</option>
+                <option value="Private">Private only</option>
+              </Select>
+            </div>
+          )}
+          <div className="flex gap-3 pt-4 mt-2 border-t border-slate-100 dark:border-zinc-800">
+            <Button
+              variant="outline"
+              className="flex-1 justify-center"
+              onClick={clearFilters}
+              disabled={activeFilterCount === 0}
+            >
+              Clear all
+            </Button>
+            <Button
+              variant="primary"
+              className="flex-1 justify-center"
+              onClick={() => setFiltersOpen(false)}
+            >
+              Apply
+            </Button>
+          </div>
+        </div>
+      </SidebarModal>
 
       <SidebarModal
         title="Prayer Request Details"
