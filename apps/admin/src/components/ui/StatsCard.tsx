@@ -1,7 +1,7 @@
 import React from "react";
 import { LucideIcon, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
-import { clsx } from "clsx";
+import { cn } from "@/helpers/cn";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 export type StatsCardColor =
@@ -78,21 +78,21 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   if (loading) {
     return (
       <Card
-        className={clsx(
-          "hover:shadow-md transition-all duration-200",
+        className={cn(
+          "hover:shadow-md transition-all duration-200 w-full max-w-[280px]",
           className,
         )}
       >
-        <CardContent className="p-5">
-          <div className="flex items-center justify-between mb-3 py-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-8 w-8 rounded-xl" />
+        <CardContent className="p-3.5 sm:p-4">
+          <div className="flex items-center justify-between mb-2">
+            <Skeleton className="h-3.5 w-20" />
+            <Skeleton className="h-7 w-7 rounded-lg" />
           </div>
-          <div className="flex items-baseline justify-between gap-2 mt-2">
-            <Skeleton className="h-8 w-16" />
-            <Skeleton className="h-4 w-12" />
+          <div className="flex items-baseline justify-between gap-2 mt-1">
+            <Skeleton className="h-7 w-14" />
+            <Skeleton className="h-3.5 w-10" />
           </div>
-          {description && <Skeleton className="h-3 w-32 mt-2" />}
+          {description && <Skeleton className="h-3 w-28 mt-1.5" />}
         </CardContent>
       </Card>
     );
@@ -105,33 +105,39 @@ export const StatsCard: React.FC<StatsCardProps> = ({
 
   return (
     <Card
-      className={clsx("hover:shadow-md transition-all duration-200", className)}
+      className={cn(
+        "hover:shadow-md transition-all duration-200 w-full max-w-[280px]",
+        className,
+      )}
     >
-      <CardContent className="p-5">
-        <div className="flex items-center justify-between mb-3 py-2">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+      <CardContent className="p-3.5 sm:p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span
+            className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate pr-2"
+            title={title}
+          >
             {title}
           </span>
           {Icon && (
             <div
-              className={clsx(
-                "p-2 rounded-xl shrink-0 transition-transform group-hover:scale-105",
+              className={cn(
+                "p-1.5 rounded-lg shrink-0 transition-transform group-hover:scale-105",
                 styles.iconBg,
                 styles.iconText,
               )}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-3.5 h-3.5" />
             </div>
           )}
         </div>
 
-        <div className="flex items-baseline justify-between gap-2">
-          <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+        <div className="flex items-baseline justify-between gap-1.5 flex-wrap">
+          <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             {value}
           </h3>
           {change && (
             <span
-              className={clsx(
+              className={cn(
                 "text-[11px] font-semibold flex items-center gap-1 shrink-0",
                 trend === "up"
                   ? "text-emerald-600 dark:text-emerald-400"
@@ -155,3 +161,21 @@ export const StatsCard: React.FC<StatsCardProps> = ({
     </Card>
   );
 };
+
+export type StatsCardGroupProps = React.HTMLAttributes<HTMLDivElement>;
+
+export const StatsCardGroup: React.FC<StatsCardGroupProps> = ({
+  className,
+  children,
+  ...props
+}) => (
+  <div className={cn("flex flex-wrap gap-2", className)} {...props}>
+    {children}
+  </div>
+);
+
+export type StatsCardComponent = React.FC<StatsCardProps> & {
+  Group: React.FC<StatsCardGroupProps>;
+};
+
+(StatsCard as StatsCardComponent).Group = StatsCardGroup;

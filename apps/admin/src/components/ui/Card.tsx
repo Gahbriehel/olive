@@ -1,5 +1,5 @@
 import React from "react";
-import { clsx } from "clsx";
+import { cn } from "@/helpers/cn";
 
 export const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
@@ -7,7 +7,7 @@ export const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   ...props
 }) => (
   <div
-    className={clsx(
+    className={cn(
       "bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-2xl shadow-sm transition-all duration-200",
       className,
     )}
@@ -22,7 +22,7 @@ export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   children,
   ...props
 }) => (
-  <div className={clsx("p-5 pb-3 flex flex-col gap-1", className)} {...props}>
+  <div className={cn("p-5 pb-3 flex flex-col gap-1", className)} {...props}>
     {children}
   </div>
 );
@@ -33,7 +33,7 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
   ...props
 }) => (
   <h3
-    className={clsx(
+    className={cn(
       "text-base font-semibold text-slate-900 dark:text-slate-100 tracking-tight",
       className,
     )}
@@ -47,7 +47,7 @@ export const CardDescription: React.FC<
   React.HTMLAttributes<HTMLParagraphElement>
 > = ({ className, children, ...props }) => (
   <p
-    className={clsx(
+    className={cn(
       "text-xs text-slate-500 dark:text-slate-400 font-normal",
       className,
     )}
@@ -62,7 +62,7 @@ export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   children,
   ...props
 }) => (
-  <div className={clsx("p-5 pt-0", className)} {...props}>
+  <div className={cn("p-5 pt-0", className)} {...props}>
     {children}
   </div>
 );
@@ -73,7 +73,7 @@ export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   ...props
 }) => (
   <div
-    className={clsx(
+    className={cn(
       "p-5 pt-0 flex items-center justify-between border-t border-slate-100 dark:border-zinc-800 mt-3 pt-3",
       className,
     )}

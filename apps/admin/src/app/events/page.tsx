@@ -25,7 +25,7 @@ import { Select } from "@/components/FormElements/Select";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { cn } from "@/helpers/cn";
 import { ActionsList } from "@/components/ui/ActionsList";
-import { StatsCard } from "@/components/ui/StatsCard";
+import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { EventsForm } from "@/components/Forms/EventsForm";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
@@ -161,7 +161,7 @@ export default function EventsPage() {
       </div>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <StatsCardGroup>
         <StatsCard
           title="Total Events"
           value={totalEvents.toLocaleString()}
@@ -194,7 +194,7 @@ export default function EventsPage() {
           icon={Users}
           color="indigo"
         />
-      </div>
+      </StatsCardGroup>
 
       {/* Toolbar Filters */}
       <div className="flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-zinc-900 p-3 rounded-2xl border border-slate-200 dark:border-zinc-800">

@@ -22,7 +22,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Tabs } from "@/components/ui/Tabs";
-import { StatsCard } from "@/components/ui/StatsCard";
+import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { EventsForm } from "@/components/Forms/EventsForm";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
@@ -179,7 +179,7 @@ export default function EventDetailPage() {
       {activeTab === "overview" && (
         <div className="space-y-6">
           {/* Key Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatsCardGroup>
             <StatsCard
               title="Capacity Used"
               value={`${capPct}%`}
@@ -212,7 +212,7 @@ export default function EventDetailPage() {
               icon={Gamepad2}
               color="amber"
             />
-          </div>
+          </StatsCardGroup>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="overflow-hidden">

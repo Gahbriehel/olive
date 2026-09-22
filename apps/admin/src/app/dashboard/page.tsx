@@ -28,7 +28,11 @@ import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Badge } from "@/components/ui/Badge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { NavTab } from "@/types/dashboard";
-import { StatsCard, StatsCardColor } from "@/components/ui/StatsCard";
+import {
+  StatsCard,
+  StatsCardColor,
+  StatsCardGroup,
+} from "@/components/ui/StatsCard";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useDashboard } from "@/context/DashboardContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -216,7 +220,7 @@ export default function DashboardPage() {
       </div>
 
       {/* 6 Key Operational Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <StatsCardGroup>
         {stats.map((stat, idx) => (
           <StatsCard
             key={idx}
@@ -229,7 +233,7 @@ export default function DashboardPage() {
             loading={isLoading}
           />
         ))}
-      </div>
+      </StatsCardGroup>
 
       {/* Main Grid: Latest Registrations Feed & Upcoming Schedule */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

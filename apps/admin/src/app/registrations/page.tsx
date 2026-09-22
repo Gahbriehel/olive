@@ -24,7 +24,7 @@ import { Input } from "@/components/FormElements/Input";
 import { MultiSelect } from "@/components/FormElements/MultiSelect";
 import { RichTextEditor } from "@/components/FormElements/RichTextEditor";
 import { Switch } from "@/components/FormElements/Switch";
-import { StatsCard } from "@/components/ui/StatsCard";
+import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
 import { ListToolbar } from "@/components/ui/ListToolbar";
 import { FiltersButton } from "@/components/ui/FiltersButton";
@@ -475,7 +475,7 @@ export default function RegistrationsPage() {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <StatsCardGroup>
         <StatsCard
           title="Total Registrations"
           value={totalReg.toLocaleString()}
@@ -485,7 +485,7 @@ export default function RegistrationsPage() {
           color="indigo"
           loading={isLoading}
         />
-      </div>
+      </StatsCardGroup>
 
       {/* Data Table */}
       <Table

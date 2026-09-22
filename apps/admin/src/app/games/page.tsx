@@ -28,7 +28,7 @@ import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/FormElements/Input";
 import { ActionsList } from "@/components/ui/ActionsList";
-import { StatsCard } from "@/components/ui/StatsCard";
+import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { GamesForm } from "@/components/Forms/GamesForm";
@@ -275,7 +275,7 @@ export default function GamesPage() {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <StatsCardGroup>
         <StatsCard
           title="Total Games"
           value={totalItems.toLocaleString()}
@@ -308,7 +308,7 @@ export default function GamesPage() {
           icon={Users}
           color="amber"
         />
-      </div>
+      </StatsCardGroup>
 
       {/* Search & Rows Per Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm">

@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Input } from "@/components/FormElements/Input";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { StatsCard } from "@/components/ui/StatsCard";
+import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { QrScannerModal } from "@/components/modals/QrScannerModal";
 import {
   AttendanceRecord,
@@ -244,7 +244,7 @@ export default function AttendancePage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <StatsCardGroup>
         <StatsCard
           title="Total Registrations"
           value={totalReg.toLocaleString()}
@@ -277,7 +277,7 @@ export default function AttendancePage() {
           icon={TrendingUp}
           color="cyan"
         />
-      </div>
+      </StatsCardGroup>
 
       {/* Progress Bar Gauge */}
       <Card>

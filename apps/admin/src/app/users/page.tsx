@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { RefreshButton } from "@/components/ui/RefreshButton";
-import { StatsCard } from "@/components/ui/StatsCard";
+import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { Badge } from "@/components/ui/Badge";
@@ -495,7 +495,7 @@ export default function UsersPage() {
       {canAccessUserDirectory ? (
         <>
           {/* Metrics Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatsCardGroup>
             <StatsCard
               title="Total System Users"
               value={totalUsers.toLocaleString()}
@@ -532,7 +532,7 @@ export default function UsersPage() {
               color="amber"
               loading={isLoading}
             />
-          </div>
+          </StatsCardGroup>
 
           {/* Tabs */}
           <div className="flex items-center gap-2 border-b border-slate-200 dark:border-zinc-800 text-xs">

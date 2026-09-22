@@ -16,7 +16,7 @@ import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Select } from "@/components/FormElements/Select";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Tabs } from "@/components/ui/Tabs";
-import { StatsCard } from "@/components/ui/StatsCard";
+import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ActionsList } from "@/components/ui/ActionsList";
@@ -277,7 +277,7 @@ export default function PeoplePage() {
       </div>
 
       {/* Directory Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <StatsCardGroup>
         <StatsCard
           title="Total People"
           value={totalPeople.toLocaleString()}
@@ -314,7 +314,7 @@ export default function PeoplePage() {
           color="amber"
           loading={isLoading}
         />
-      </div>
+      </StatsCardGroup>
 
       {/* Toolbar Filters */}
       <div className="flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-zinc-900 p-3 rounded-2xl border border-slate-200 dark:border-zinc-800">
