@@ -11,6 +11,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Select } from "@/components/FormElements/Select";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -247,6 +248,16 @@ export default function PeoplePage() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <div className="flex gap-2 w-full sm:w-auto">
             <RefreshButton onRefetch={refetch} />
+            <ExportCsvButton
+              endpoint="/people/export"
+              params={{
+                search: search || undefined,
+                membershipStatus:
+                  membershipStatus !== "All" ? membershipStatus : undefined,
+                gender: gender !== "All" ? gender : undefined,
+              }}
+              fallbackFilename={`people-${new Date().toISOString().slice(0, 10)}.csv`}
+            />
             <Button
               variant="outline"
               leftIcon={<UserPlus className="w-4 h-4" />}

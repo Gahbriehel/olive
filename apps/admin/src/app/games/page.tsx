@@ -23,6 +23,7 @@ import {
   CardContent,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/FormElements/Input";
@@ -255,6 +256,14 @@ export default function GamesPage() {
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <RefreshButton onRefetch={refetch} />
+          <ExportCsvButton
+            endpoint="/games/export"
+            params={{
+              eventId: selectedEventId || undefined,
+              search: debouncedSearch || undefined,
+            }}
+            fallbackFilename={`games-${new Date().toISOString().slice(0, 10)}.csv`}
+          />
           <Button
             variant="primary"
             leftIcon={<Plus className="w-4 h-4" />}

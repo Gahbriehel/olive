@@ -18,6 +18,7 @@ import {
   CardDescription,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
@@ -468,6 +469,11 @@ export default function UsersPage() {
         <div className="flex gap-2 w-full sm:w-auto">
           <RefreshButton onRefetch={refetch} />
           <AuthorityGuard roles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]}>
+            <ExportCsvButton
+              endpoint="/users/export"
+              params={{ search: search || undefined }}
+              fallbackFilename={`users-${new Date().toISOString().slice(0, 10)}.csv`}
+            />
             <Button
               variant="primary"
               leftIcon={<UserPlus className="w-4 h-4" />}

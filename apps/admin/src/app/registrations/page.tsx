@@ -4,7 +4,6 @@ import React, { useState, useMemo, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Download,
   Users,
   Calendar,
   Mail,
@@ -17,7 +16,10 @@ import {
 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button, BaseButton } from "@/components/ui/Button";
+import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { RefreshButton } from "@/components/ui/RefreshButton";
+import { AuthorityGuard } from "@/components/auth/AuthorityGuard";
+import { ROLES } from "@/utils/rbac";
 import { Select } from "@/components/FormElements/Select";
 import { Input } from "@/components/FormElements/Input";
 import { MultiSelect } from "@/components/FormElements/MultiSelect";
@@ -31,7 +33,6 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { getInitials } from "@/utils/formatters";
 import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
-import { exportToCsv } from "@/helpers/exportCsv";
 import { customToast } from "@/helpers/customToast";
 import { useDashboard } from "@/context/DashboardContext";
 import { useRegistrations } from "@/hooks/useRegistrations";
@@ -241,43 +242,6 @@ export default function RegistrationsPage() {
       imageUrl: "",
     },
   });
-
-  const [isExporting, setIsExporting] = useState(false);
-
-  const handleExportCsv = useCallback(async () => {
-    setIsExporting(true);
-    try {
-      const pageSize = 200;
-      let allRegistrations: IRegistration[] = [];
-      let currentPage = 1;
-      let total = Infinity;
-
-      while (allRegistrations.length < total) {
-        const res = await registrationsService.getRegistrations({
-          eventId: selectedEventId || undefined,
-          search: search || undefined,
-          status: status !== "All" ? status : undefined,
-          teamId: teamId !== "All" ? teamId : undefined,
-          page: currentPage,
-          limit: pageSize,
-        });
-
-        if (res.registrations.length === 0) break;
-
-        allRegistrations = allRegistrations.concat(
-          res.registrations.map(adaptApiRegistrationToRegistration),
-        );
-        total = res.meta?.total ?? allRegistrations.length;
-        currentPage += 1;
-      }
-
-      exportToCsv(allRegistrations);
-    } catch {
-      customToast.error("Failed to export registrations");
-    } finally {
-      setIsExporting(false);
-    }
-  }, [selectedEventId, search, status, teamId]);
 
   const [isUploadingFlyer, setIsUploadingFlyer] = useState(false);
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -496,14 +460,26 @@ export default function RegistrationsPage() {
         </div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto items-center">
           <RefreshButton onRefetch={refetch} />
-          <Button
-            variant="outline"
-            onClick={handleExportCsv}
-            loading={isExporting}
-            leftIcon={<Download className="w-4 h-4" />}
+          <AuthorityGuard
+            roles={[
+              ROLES.SUPER_ADMIN,
+              ROLES.ADMIN,
+              ROLES.COORDINATOR,
+              ROLES.REGISTRATION_DESK,
+            ]}
           >
-            Export CSV Roster
-          </Button>
+            <ExportCsvButton
+              endpoint="/registrations/export"
+              params={{
+                eventId: selectedEventId || undefined,
+                search: search || undefined,
+                status: status !== "All" ? status : undefined,
+                teamId: teamId !== "All" ? teamId : undefined,
+              }}
+              fallbackFilename={`registrations-${new Date().toISOString().slice(0, 10)}.csv`}
+              label="Export CSV Roster"
+            />
+          </AuthorityGuard>
           <Button
             variant="primary"
             onClick={handleOpenEmailModal}

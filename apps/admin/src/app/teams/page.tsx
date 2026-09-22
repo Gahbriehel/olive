@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Input } from "@/components/FormElements/Input";
 import { ActionsList } from "@/components/ui/ActionsList";
@@ -151,6 +152,14 @@ export default function TeamsPage() {
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <RefreshButton onRefetch={refetch} />
+          <ExportCsvButton
+            endpoint="/teams/export"
+            params={{
+              eventId: selectedEventId || undefined,
+              search: debouncedSearch || undefined,
+            }}
+            fallbackFilename={`teams-${new Date().toISOString().slice(0, 10)}.csv`}
+          />
           <Button
             variant="primary"
             leftIcon={<Plus className="w-4 h-4" />}

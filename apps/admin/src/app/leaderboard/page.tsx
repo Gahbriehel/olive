@@ -3,6 +3,7 @@
 import React from "react";
 import { Trophy, Shield, ChevronUp } from "lucide-react";
 import { RefreshButton } from "@/components/ui/RefreshButton";
+import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { Card, CardContent } from "@/components/ui/Card";
 import { useDashboard } from "@/context/DashboardContext";
 import { useTeams } from "@/hooks/useTeams";
@@ -79,10 +80,19 @@ export default function LeaderboardPage() {
             Live scores calculated automatically from games, and trivia.
           </p>
         </div>
-        <RefreshButton
-          onRefetch={refetch}
-          className="px-3 bg-white/10 hover:bg-white/20 border-white/20 text-white"
-        />
+        <div className="flex gap-2">
+          <RefreshButton
+            onRefetch={refetch}
+            className="px-3 bg-white/10 hover:bg-white/20 border-white/20 text-white"
+          />
+          {selectedEventId && (
+            <ExportCsvButton
+              endpoint={`/leaderboard/${selectedEventId}/export`}
+              fallbackFilename={`leaderboard-${selectedEventId}-${new Date().toISOString().slice(0, 10)}.csv`}
+              className="bg-white/10 hover:bg-white/20 border-white/20 text-white"
+            />
+          )}
+        </div>
       </div>
 
       {teams.length === 0 ? (

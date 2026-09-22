@@ -10,7 +10,10 @@ import { Table } from "@/components/ui/Table";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { BaseButton } from "@/components/ui/Button";
+import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { NotAvailable } from "@/components/ui/NotAvailable";
+import { AuthorityGuard } from "@/components/auth/AuthorityGuard";
+import { ROLES } from "@/utils/rbac";
 import { Mail, Phone, Calendar, MessageSquare, Tag, Send } from "lucide-react";
 
 const columnHelper = createColumnHelper<IContact>();
@@ -112,6 +115,15 @@ export function InquiryTable(): JSX.Element {
 
   return (
     <>
+      <div className="flex justify-end mb-3">
+        <AuthorityGuard roles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]}>
+          <ExportCsvButton
+            endpoint="/contact/submissions/export"
+            params={{ type: "inquiry", search: search || undefined }}
+            fallbackFilename={`contact-submissions-${new Date().toISOString().slice(0, 10)}.csv`}
+          />
+        </AuthorityGuard>
+      </div>
       <Table
         data={inquiries ?? []}
         columns={columns as Array<ColumnDef<IContact>>}
