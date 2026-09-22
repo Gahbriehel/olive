@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, type ReactNode } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -49,6 +49,7 @@ export interface TableProps<TData, TValue> {
   search?: string;
   onSearchChange?: (search: string) => void;
   loading?: boolean;
+  children?: ReactNode;
 }
 
 export function Table<TData, TValue>({
@@ -69,6 +70,7 @@ export function Table<TData, TValue>({
   search,
   onSearchChange,
   loading = false,
+  children,
 }: TableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [searchInput, setSearchInput] = useState(search ?? "");
@@ -178,29 +180,34 @@ export function Table<TData, TValue>({
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Search Header Bar */}
-      {enableSearch && (
-        <div className="flex items-center justify-between gap-4">
-          <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-500" />
-            <Input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder={searchPlaceholder}
-              className="pl-9 text-xs h-9 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 focus:border-indigo-500"
-            />
-          </div>
-          {searchInput && (
-            <span className="text-[11px] text-slate-400 animate-fade-in">
-              {searchInput !== debouncedSearch ? (
-                <span className="flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
+      {/* Toolbar + Search Header Bar */}
+      {(children || enableSearch) && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {children}
+          {enableSearch && (
+            <div className="flex items-center gap-3 sm:ml-auto">
+              <div className="relative w-full sm:w-72">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-500" />
+                <Input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder={searchPlaceholder}
+                  className="pl-9 text-xs h-9 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 focus:border-indigo-500"
+                />
+              </div>
+              {searchInput && (
+                <span className="text-[11px] text-slate-400 animate-fade-in shrink-0">
+                  {searchInput !== debouncedSearch ? (
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
+                    </span>
+                  ) : (
+                    `Filtered: ${totalItems}`
+                  )}
                 </span>
-              ) : (
-                `Filtered results: ${totalItems}`
               )}
-            </span>
+            </div>
           )}
         </div>
       )}

@@ -16,10 +16,9 @@ import {
 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button, BaseButton } from "@/components/ui/Button";
-import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
-import { RefreshButton } from "@/components/ui/RefreshButton";
-import { AuthorityGuard } from "@/components/auth/AuthorityGuard";
-import { ROLES } from "@/utils/rbac";
+import { downloadCsvExport } from "@/helpers/downloadCsvExport";
+import { useAuth } from "@/hooks/useAuth";
+import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
 import { Select } from "@/components/FormElements/Select";
 import { Input } from "@/components/FormElements/Input";
 import { MultiSelect } from "@/components/FormElements/MultiSelect";
@@ -27,6 +26,8 @@ import { RichTextEditor } from "@/components/FormElements/RichTextEditor";
 import { Switch } from "@/components/FormElements/Switch";
 import { StatsCard } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
+import { ListToolbar } from "@/components/ui/ListToolbar";
+import { FiltersButton } from "@/components/ui/FiltersButton";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -107,6 +108,15 @@ export default function RegistrationsPage() {
   const [limit, setLimit] = useState(10);
   const [selectedRegistration, setSelectedRegistration] =
     useState<IRegistration | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const { user } = useAuth();
+  const canExport = hasAuthority(getUserRoles(user), [
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.COORDINATOR,
+    ROLES.REGISTRATION_DESK,
+  ]);
 
   // Email modal state
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
@@ -174,6 +184,12 @@ export default function RegistrationsPage() {
   };
 
   const totalReg = meta?.total ?? registrations.length;
+  const activeFilterCount =
+    (status !== "All" ? 1 : 0) + (teamId !== "All" ? 1 : 0);
+  const clearFilters = () => {
+    handleStatusChange("All");
+    handleTeamChange("All");
+  };
 
   // Selected registrants helpers
   const selectedRegistrantList = useMemo(
@@ -448,46 +464,14 @@ export default function RegistrationsPage() {
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-            Registrations Manager
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Real-time roster of confirmed registrants, QR ticket dispatches, and
-            assigned tournament teams.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2 w-full sm:w-auto items-center">
-          <RefreshButton onRefetch={refetch} />
-          <AuthorityGuard
-            roles={[
-              ROLES.SUPER_ADMIN,
-              ROLES.ADMIN,
-              ROLES.COORDINATOR,
-              ROLES.REGISTRATION_DESK,
-            ]}
-          >
-            <ExportCsvButton
-              endpoint="/registrations/export"
-              params={{
-                eventId: selectedEventId || undefined,
-                search: search || undefined,
-                status: status !== "All" ? status : undefined,
-                teamId: teamId !== "All" ? teamId : undefined,
-              }}
-              fallbackFilename={`registrations-${new Date().toISOString().slice(0, 10)}.csv`}
-              label="Export CSV Roster"
-            />
-          </AuthorityGuard>
-          <Button
-            variant="primary"
-            onClick={handleOpenEmailModal}
-            leftIcon={<Mail className="w-4 h-4" />}
-          >
-            Send Email
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+          Registrations Manager
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          Real-time roster of confirmed registrants, QR ticket dispatches, and
+          assigned tournament teams.
+        </p>
       </div>
 
       {/* Metrics Grid */}
@@ -501,34 +485,6 @@ export default function RegistrationsPage() {
           color="indigo"
           loading={isLoading}
         />
-      </div>
-
-      {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-zinc-900 p-3 rounded-2xl border border-slate-200 dark:border-zinc-800">
-        <div className="w-full sm:w-44">
-          <Select
-            value={status}
-            onChange={(e) => handleStatusChange(e.target.value)}
-          >
-            <option value="">All Statuses</option>
-            <option value="CHECKED_IN">Checked-In</option>
-            <option value="CONFIRMED">Confirmed</option>
-            <option value="CANCELLED">Cancelled</option>
-          </Select>
-        </div>
-        <div className="w-full sm:w-48">
-          <Select
-            value={teamId}
-            onChange={(e) => handleTeamChange(e.target.value)}
-          >
-            <option value="All">All Teams</option>
-            {teams.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </Select>
-        </div>
       </div>
 
       {/* Data Table */}
@@ -548,7 +504,99 @@ export default function RegistrationsPage() {
         search={search}
         onSearchChange={handleSearchChange}
         loading={isLoading}
-      />
+      >
+        <ListToolbar
+          create={{
+            label: "Send Email",
+            onClick: handleOpenEmailModal,
+            icon: <Mail className="w-4 h-4" />,
+          }}
+          actions={[
+            { title: "Refresh", fn: () => refetch() },
+            ...(canExport
+              ? [
+                  {
+                    title: "Export CSV",
+                    fn: () =>
+                      downloadCsvExport(
+                        "/registrations/export",
+                        {
+                          eventId: selectedEventId || undefined,
+                          search: search || undefined,
+                          status: status !== "All" ? status : undefined,
+                          teamId: teamId !== "All" ? teamId : undefined,
+                        },
+                        `registrations-${new Date().toISOString().slice(0, 10)}.csv`,
+                      ),
+                  },
+                ]
+              : []),
+          ]}
+          trailing={
+            <FiltersButton
+              onClick={() => setFiltersOpen(true)}
+              activeCount={activeFilterCount}
+            />
+          }
+        />
+      </Table>
+
+      {/* Filters Sidebar Modal */}
+      <SidebarModal
+        display={filtersOpen}
+        close={() => setFiltersOpen(false)}
+        title="Filters"
+      >
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+              Status
+            </label>
+            <Select
+              value={status}
+              onChange={(e) => handleStatusChange(e.target.value)}
+            >
+              <option value="All">All Statuses</option>
+              <option value="CHECKED_IN">Checked-In</option>
+              <option value="CONFIRMED">Confirmed</option>
+              <option value="CANCELLED">Cancelled</option>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+              Team
+            </label>
+            <Select
+              value={teamId}
+              onChange={(e) => handleTeamChange(e.target.value)}
+            >
+              <option value="All">All Teams</option>
+              {teams.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="flex gap-3 pt-4 mt-2 border-t border-slate-100 dark:border-zinc-800">
+            <Button
+              variant="outline"
+              className="flex-1 justify-center"
+              onClick={clearFilters}
+              disabled={activeFilterCount === 0}
+            >
+              Clear all
+            </Button>
+            <Button
+              variant="primary"
+              className="flex-1 justify-center"
+              onClick={() => setFiltersOpen(false)}
+            >
+              Apply
+            </Button>
+          </div>
+        </div>
+      </SidebarModal>
 
       {/* Compose Batch Email Sidebar Modal */}
       <SidebarModal
