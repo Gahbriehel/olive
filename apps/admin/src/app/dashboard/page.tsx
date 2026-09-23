@@ -4,16 +4,13 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import {
   Users,
-  UserCheck,
   UserPlus,
-  TrendingUp,
   Gamepad2,
   QrCode,
   Plus,
   Shield,
   Download,
   Clock,
-  Sparkles,
   ChevronRight,
 } from "lucide-react";
 import {
@@ -49,8 +46,6 @@ export default function DashboardPage() {
   const upcomingEvents = dashboardData?.upcomingEvents || [];
 
   const totalPeople = overview?.totalPeople ?? 0;
-  const checkedIn = overview?.totalCheckInsToday ?? 0;
-  const attendancePct = overview?.attendanceRate ?? 0;
   const visitors = overview?.totalVisitors ?? 0;
   const members = overview?.totalMembers ?? 0;
   const activeEventsCount = overview?.activeEvents ?? 0;
@@ -72,14 +67,6 @@ export default function DashboardPage() {
       color: "indigo",
     },
     {
-      title: "Checked In Today",
-      value: checkedIn.toLocaleString(),
-      change: `${attendancePct}% attendance rate`,
-      trend: "up",
-      icon: UserCheck,
-      color: "emerald",
-    },
-    {
       title: "Visitors / First-Timers",
       value: visitors.toLocaleString(),
       change: `First-time guests`,
@@ -94,14 +81,6 @@ export default function DashboardPage() {
       trend: "neutral",
       icon: Shield,
       color: "cyan",
-    },
-    {
-      title: "Attendance Rate",
-      value: `${attendancePct}%`,
-      change: `${checkedIn} check-ins today`,
-      trend: "up",
-      icon: TrendingUp,
-      color: "emerald",
     },
     {
       title: "Active Events",
@@ -403,28 +382,6 @@ export default function DashboardPage() {
                 ))
               )}
             </CardContent>
-          </Card>
-
-          {/* Quick System Readiness */}
-          <Card className="bg-slate-900 border border-slate-800 text-white p-5 rounded-2xl">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span className="text-xs font-bold tracking-wide uppercase text-slate-300">
-                Registration Desk Mode
-              </span>
-            </div>
-            <p className="text-xs text-slate-300 mb-3">
-              Volunteers can use fast manual check-in or camera QR scanning on
-              mobile tablets.
-            </p>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => handleNavigate("attendance")}
-              className="w-full bg-indigo-500 hover:bg-indigo-400 text-white font-semibold"
-            >
-              Open Live Attendance Desk
-            </Button>
           </Card>
         </div>
       </div>
