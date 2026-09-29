@@ -1,11 +1,13 @@
-import React from "react";
-import { Badge } from "./Badge";
+import { Badge, BadgeVariant } from "./Badge";
 
-interface StatusBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+interface StatusBadgeProps extends Omit<
+  React.HTMLAttributes<HTMLSpanElement>,
+  "color"
+> {
   status: string;
   size?: "sm" | "md";
   className?: string;
-  variant?: "indigo" | "emerald" | "amber" | "rose" | "slate" | "cyan";
+  variant?: BadgeVariant;
   dot?: boolean;
 }
 

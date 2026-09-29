@@ -1,4 +1,11 @@
-export type { EventStatus, IChurchEvent, ChurchEvent } from "@/models/event";
+export type {
+  EventCategory,
+  EventStatus,
+  AdminEvent,
+  CreateOrUpdateEventPayload,
+  IChurchEvent,
+  ChurchEvent,
+} from "@/models/event";
 export type { MembershipStatus, IPerson } from "@/models/person";
 export type { ITeam } from "@/models/team";
 export type {

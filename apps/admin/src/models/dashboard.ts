@@ -156,6 +156,8 @@ export interface ILatestRegistration {
   team?: IDashboardTeamSummary | null;
 }
 
+import type { EventCategory } from "./event";
+
 export interface IUpcomingEvent {
   id: string;
   title: string;
@@ -166,6 +168,10 @@ export interface IUpcomingEvent {
   status: string;
   totalRegistrations: number;
   totalTeams: number;
+  category?: EventCategory | string;
+  requiresRegistration?: boolean;
+  isFeatured?: boolean;
+  capacity?: number | null;
 }
 
 export interface IDashboardData {

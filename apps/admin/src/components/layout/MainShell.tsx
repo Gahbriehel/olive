@@ -173,17 +173,7 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
         <EventsForm
           onCancel={() => setIsCreateEventOpen(false)}
           onSubmit={async (data) => {
-            await createEvent({
-              title: data.title,
-              description: data.description || "",
-              location: data.location || "",
-              capacity: data.capacity || 0,
-              startDate: data.startDate,
-              endDate: data.endDate,
-              status: data.status || "DRAFT",
-              imageUrl: data.imageUrl,
-              googleCalendarSync: data.googleCalendarSync,
-            });
+            await createEvent(data);
             setIsCreateEventOpen(false);
           }}
         />

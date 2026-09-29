@@ -18,7 +18,8 @@ import { cn } from "@/helpers/cn";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 
 type Type = "button" | "submit" | "reset" | "link";
-type Color = "primary" | "secondary" | "white" | "outline" | "danger";
+type Color = "primary" | "secondary" | "white" | "outline" | "danger" | "ghost";
+type Size = "sm" | "md" | "lg" | "icon";
 type BaseButtonTypeProps = HTMLMotionProps<"button">;
 type BaseLinkTypeProps = LinkProps;
 
@@ -30,6 +31,7 @@ type BaseButtonProps = {
   loading?: boolean;
   hideText?: boolean;
   color?: Color;
+  size?: Size;
   className?: string;
   badgeNumber?: number;
   position?: "icon-first" | "icon-last";
@@ -46,10 +48,10 @@ interface DeleteButtonProps {
 
 const motionProps = {
   initial: {
-    boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.05)",
   },
-  whileHover: { scale: 1.01, boxShadow: "0 12px 18px -3px rgb(0 0 0 / 0.1)" },
-  whileTap: { scale: 0.99, boxShadow: "0 8px 12px -2px rgb(0 0 0 / 0.1)" },
+  whileHover: { scale: 1.01, boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" },
+  whileTap: { scale: 0.99, boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.05)" },
 };
 
 export const BaseButton = forwardRef<
@@ -65,6 +67,7 @@ export const BaseButton = forwardRef<
     loading,
     badgeNumber,
     color = "primary",
+    size = "md",
     position = "icon-first",
     hideText = false,
     ...props
@@ -73,18 +76,27 @@ export const BaseButton = forwardRef<
 ) {
   const displayText = text || children;
   const classNames = cn(
-    "relative flex h-10 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md border px-3 py-2 text-sm font-semibold xs:text-base sm:h-12 sm:px-5 sm:py-3 disabled:cursor-not-allowed [&>span]:hover:opacity-100",
+    "relative flex cursor-pointer items-center justify-center whitespace-nowrap rounded-xl border font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50 [&>span]:hover:opacity-100",
     {
-      "border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:bg-slate-100 disabled:border-slate-200 disabled:text-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:disabled:bg-slate-800 dark:disabled:border-slate-700 dark:disabled:text-slate-500":
+      // Sizes
+      "h-9 px-3 py-1.5 text-xs gap-1.5": size === "sm",
+      "h-9 w-9 p-0 text-xs justify-center items-center": size === "icon",
+      "h-10 px-4 py-2 text-sm gap-2": size === "md",
+      "h-12 px-5 py-3 text-base gap-2": size === "lg",
+    },
+    {
+      "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-zinc-700/80 dark:bg-zinc-800/80 dark:text-slate-200 dark:hover:bg-zinc-700 shadow-xs":
         color === "outline",
-      "border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-slate-400 disabled:border-slate-400 dark:disabled:bg-slate-700 dark:disabled:border-slate-700 dark:disabled:text-slate-500":
+      "border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700 shadow-xs":
         color === "primary",
-      "border-rose-600 bg-rose-600 text-white hover:bg-rose-700 disabled:bg-slate-400 disabled:border-slate-400 dark:disabled:bg-slate-700 dark:disabled:border-slate-700 dark:disabled:text-slate-500":
+      "border-rose-600 bg-rose-600 text-white hover:bg-rose-700 shadow-xs":
         color === "danger",
-      "border-slate-800 bg-slate-800 text-white hover:bg-slate-900 disabled:bg-slate-400 disabled:border-slate-400 dark:disabled:bg-slate-700 dark:disabled:border-slate-700 dark:disabled:text-slate-500":
+      "border-slate-800 bg-slate-800 text-white hover:bg-slate-900 shadow-xs dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700":
         color === "secondary",
-      "border-indigo-600 bg-white text-indigo-600 hover:bg-indigo-50 disabled:text-slate-400 disabled:border-slate-300 disabled:bg-slate-50 dark:bg-transparent dark:hover:bg-indigo-900/40 dark:disabled:text-slate-500 dark:disabled:border-slate-700 dark:disabled:bg-slate-800":
+      "border-indigo-600 bg-white text-indigo-600 hover:bg-indigo-50 dark:bg-transparent dark:hover:bg-indigo-900/40":
         color === "white",
+      "border-transparent bg-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-zinc-800":
+        color === "ghost",
     },
     { "flex-row-reverse": position === "icon-first" },
     className,
@@ -122,7 +134,11 @@ export const BaseButton = forwardRef<
         <div className="flex items-center justify-center py-0.5">
           <ClipLoader
             size={16}
-            color={["white", "outline"].includes(color) ? "#6366f1" : "#ffffff"}
+            color={
+              ["white", "outline", "ghost"].includes(color)
+                ? "#6366f1"
+                : "#ffffff"
+            }
           />
         </div>
       ) : (
@@ -187,12 +203,13 @@ export const Button = forwardRef<
     isLoading?: boolean;
     leftIcon?: ReactNode;
     rightIcon?: ReactNode;
-    size?: "sm" | "md" | "lg" | "icon";
+    size?: Size;
   }
 >(function Button(
   {
     variant,
     color,
+    size,
     isLoading,
     loading,
     leftIcon,
@@ -209,7 +226,7 @@ export const Button = forwardRef<
     (variant === "destructive"
       ? "danger"
       : variant === "ghost"
-        ? "outline"
+        ? "ghost"
         : (variant as Color) || "primary");
   const finalLoading = loading ?? isLoading;
   const finalIcon = icon || rightIcon || leftIcon;
@@ -219,6 +236,7 @@ export const Button = forwardRef<
     <BaseButton
       ref={ref}
       color={finalColor}
+      size={size}
       loading={finalLoading}
       icon={finalIcon}
       text={typeof displayText === "string" ? displayText : undefined}

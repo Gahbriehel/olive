@@ -61,7 +61,7 @@ export const SidebarModal = ({
               <button
                 type="button"
                 onClick={close}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-zinc-800 dark:hover:text-slate-200 transition-colors"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-zinc-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>

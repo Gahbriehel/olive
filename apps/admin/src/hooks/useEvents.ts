@@ -1,15 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  AdminEvent,
+  CreateOrUpdateEventPayload,
   IEventPayload,
   IUpdateEventPayload,
-  IEventResponse,
 } from "@/models/event";
 import { IQueryParams } from "@/models/base";
-import { eventsService } from "@/services/events.service";
+import { eventsService, AdminEventFilters } from "@/services/events.service";
 
-const EMPTY_EVENTS: IEventResponse[] = [];
+const EMPTY_EVENTS: AdminEvent[] = [];
 
-export function useEvents(params?: IQueryParams) {
+export function useEvents(params?: AdminEventFilters | IQueryParams) {
   const queryClient = useQueryClient();
 
   const eventsQuery = useQuery({
@@ -19,15 +20,21 @@ export function useEvents(params?: IQueryParams) {
   });
 
   const createEventMutation = useMutation({
-    mutationFn: (dto: IEventPayload) => eventsService.createEvent(dto),
+    mutationFn: (dto: CreateOrUpdateEventPayload | IEventPayload) =>
+      eventsService.createEvent(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
     },
   });
 
   const updateEventMutation = useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: IUpdateEventPayload }) =>
-      eventsService.updateEvent(id, dto),
+    mutationFn: ({
+      id,
+      dto,
+    }: {
+      id: string;
+      dto: Partial<CreateOrUpdateEventPayload> | IUpdateEventPayload;
+    }) => eventsService.updateEvent(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
     },

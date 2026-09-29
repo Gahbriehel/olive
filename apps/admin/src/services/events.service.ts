@@ -1,6 +1,9 @@
 import { apiClient } from "@/utils/api-client";
 import {
-  IEventResponse,
+  AdminEvent,
+  CreateOrUpdateEventPayload,
+  EventStatus,
+  EventCategory,
   IEventPayload,
   IUpdateEventPayload,
 } from "@/models/event";
@@ -12,41 +15,65 @@ import {
   extractMeta,
 } from "@/models/base";
 
+export interface AdminEventFilters {
+  page?: number;
+  limit?: number;
+  status?: EventStatus;
+  category?: EventCategory;
+  requiresRegistration?: boolean;
+  isFeatured?: boolean;
+  search?: string;
+}
+
+export const fetchAdminEvents = async (filters?: AdminEventFilters) => {
+  const response = await apiClient.get<{
+    items: AdminEvent[];
+    meta: IBaseResponse["meta"];
+  }>("/events", { params: filters });
+  return response.data;
+};
+
 export const eventsService = {
+  fetchAdminEvents,
+
   async getEvents(
-    params?: IQueryParams,
-  ): Promise<{ events: IEventResponse[]; meta?: IBaseResponse["meta"] }> {
+    params?: AdminEventFilters | IQueryParams,
+  ): Promise<{ events: AdminEvent[]; meta?: IBaseResponse["meta"] }> {
     const res = await apiClient.get<IBaseResponse<unknown>>("/events", {
       params,
     });
     return {
-      events: extractArray<IEventResponse>(res.data),
+      events: extractArray<AdminEvent>(res.data),
       meta: extractMeta(res.data),
     };
   },
 
-  async getEventById(id: string): Promise<IEventResponse> {
-    const res = await apiClient.get<
-      IBaseResponse<IEventResponse> | IEventResponse
-    >(`/events/${id}`);
-    return extractData<IEventResponse>(res.data);
+  async getEventById(id: string): Promise<AdminEvent> {
+    const res = await apiClient.get<IBaseResponse<AdminEvent> | AdminEvent>(
+      `/events/${id}`,
+    );
+    return extractData<AdminEvent>(res.data);
   },
 
-  async createEvent(payload: IEventPayload): Promise<IEventResponse> {
-    const res = await apiClient.post<
-      IBaseResponse<IEventResponse> | IEventResponse
-    >("/events", payload);
-    return extractData<IEventResponse>(res.data);
+  async createEvent(
+    payload: CreateOrUpdateEventPayload | IEventPayload,
+  ): Promise<AdminEvent> {
+    const res = await apiClient.post<IBaseResponse<AdminEvent> | AdminEvent>(
+      "/events",
+      payload,
+    );
+    return extractData<AdminEvent>(res.data);
   },
 
   async updateEvent(
     id: string,
-    payload: IUpdateEventPayload,
-  ): Promise<IEventResponse> {
-    const res = await apiClient.patch<
-      IBaseResponse<IEventResponse> | IEventResponse
-    >(`/events/${id}`, payload);
-    return extractData<IEventResponse>(res.data);
+    payload: Partial<CreateOrUpdateEventPayload> | IUpdateEventPayload,
+  ): Promise<AdminEvent> {
+    const res = await apiClient.patch<IBaseResponse<AdminEvent> | AdminEvent>(
+      `/events/${id}`,
+      payload,
+    );
+    return extractData<AdminEvent>(res.data);
   },
 
   async deleteEvent(id: string): Promise<{ success: boolean }> {

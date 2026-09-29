@@ -34,11 +34,11 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { useDashboard } from "@/context/DashboardContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { exportToCsv } from "@/helpers/exportCsv";
+import { getCategoryColor, EventCategory } from "@/models/event";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { activeEvent, setIsQrScannerOpen, setIsCreateEventOpen } =
-    useDashboard();
+  const { setIsQrScannerOpen, setIsCreateEventOpen } = useDashboard();
   const { dashboardData, isLoading, refetch } = useDashboardData();
 
   const overview = dashboardData?.overview;
@@ -358,28 +358,50 @@ export default function DashboardPage() {
                   No data available
                 </div>
               ) : (
-                upcomingEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                upcomingEvents.map((event) => {
+                  const categoryColor = getCategoryColor(
+                    event.category as EventCategory,
+                  );
+                  return (
+                    <div
+                      key={event.id}
+                      className="event-card p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40 hover:bg-slate-100 dark:hover:bg-zinc-800/70 transition-all cursor-pointer space-y-1.5"
+                      onClick={() => router.push(`/events/${event.id}`)}
+                    >
+                      <div className="flex items-center justify-between flex-wrap gap-1">
+                        <span className="category-pill">
+                          <Badge color={categoryColor} size="sm">
+                            {event.category || "GENERAL"}
+                          </Badge>
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          {event.isFeatured && (
+                            <span className="featured-star text-amber-500 font-semibold text-[11px] flex items-center gap-0.5">
+                              ★ Pinned on Website
+                            </span>
+                          )}
+                          <Badge variant="slate" size="sm">
+                            {new Date(event.startDate).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                              },
+                            )}
+                          </Badge>
+                        </div>
+                      </div>
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
                         {event.title}
-                      </span>
-                      <Badge variant="indigo" size="sm">
-                        {new Date(event.startDate).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </Badge>
+                      </h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        {event.requiresRegistration !== false
+                          ? `Registrations: ${event.totalRegistrations ?? 0}`
+                          : "Open Admission"}
+                      </p>
                     </div>
-                    <p className="text-[11px] text-slate-500 mb-2">
-                      {event.totalRegistrations} registered • {event.totalTeams}{" "}
-                      teams
-                    </p>
-                  </div>
-                ))
+                  );
+                })
               )}
             </CardContent>
           </Card>

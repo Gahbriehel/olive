@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { RefreshCw, Check } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { cn } from "@/helpers/cn";
 
 export interface RefreshButtonProps {
   onRefetch?: () => void | Promise<unknown>;
@@ -15,9 +15,7 @@ export interface RefreshButtonProps {
 
 export const RefreshButton: React.FC<RefreshButtonProps> = ({
   onRefetch,
-  className = "px-3",
-  variant = "outline",
-  size,
+  className,
   showText = false,
   text = "Refresh",
 }) => {
@@ -50,12 +48,15 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
   };
 
   return (
-    <Button
-      variant={variant}
-      size={size}
+    <button
+      type="button"
       onClick={handleClick}
       disabled={isRefreshing}
-      className={className}
+      className={cn(
+        "inline-flex h-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 dark:border-zinc-700/80 dark:bg-zinc-800/80 dark:text-slate-300 dark:hover:bg-zinc-700 dark:hover:text-slate-100 cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed",
+        showText ? "px-3 gap-1.5 text-xs font-semibold" : "w-9 p-0",
+        className,
+      )}
       title={isRefreshing ? "Refreshing data..." : "Refresh Data"}
     >
       {justRefreshed ? (
@@ -70,10 +71,10 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
         />
       )}
       {showText && (
-        <span className="text-xs font-semibold">
+        <span>
           {isRefreshing ? "Refreshing..." : justRefreshed ? "Updated!" : text}
         </span>
       )}
-    </Button>
+    </button>
   );
 };

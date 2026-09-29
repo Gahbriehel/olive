@@ -171,7 +171,7 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
               ref={ref}
               disabled={disabled}
               className={clsx(
-                "w-full text-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 min-h-[42px] capitalize",
+                "w-full text-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 min-h-[42px] capitalize cursor-pointer",
                 disabled &&
                   "pointer-events-none cursor-not-allowed bg-slate-50 opacity-60 dark:bg-zinc-800/50",
               )}

@@ -23,20 +23,77 @@ export interface IQueryParams {
   eventId?: string;
   teamId?: string;
   membershipStatus?: string;
+  gender?: string;
+  type?: string;
+  category?: string;
+  isPrivate?: boolean;
+  requiresRegistration?: boolean;
+  isFeatured?: boolean;
 }
 
 // Event types
-export type EventStatus = "CANCELLED" | "PUBLISHED" | "COMPLETED" | "DRAFT";
+export type EventCategory =
+  | "GENERAL"
+  | "CONFERENCE"
+  | "VIGIL"
+  | "COMMUNION"
+  | "REVIVAL"
+  | "WORSHIP"
+  | "OUTREACH";
+
+export type EventStatus = "DRAFT" | "PUBLISHED" | "COMPLETED" | "CANCELLED";
 export type ApiEventStatus = EventStatus;
+
+export interface AdminEvent {
+  id: string;
+  churchId: string;
+  title: string;
+  description?: string | null;
+  category: EventCategory;
+  location?: string | null;
+  startDate: string; // ISO 8601
+  endDate: string; // ISO 8601
+  status: EventStatus;
+  imageUrl?: string | null;
+  googleCalendarSync: boolean;
+  capacity?: number | null;
+  requiresRegistration: boolean;
+  highlights?: string[] | null;
+  isFeatured: boolean;
+  registeredCount: number;
+  checkedInCount: number;
+  teams: number;
+  games: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateOrUpdateEventPayload {
+  title: string;
+  description?: string;
+  category: EventCategory;
+  startDate: string;
+  endDate: string;
+  status?: EventStatus;
+  location?: string;
+  imageUrl?: string;
+  googleCalendarSync?: boolean;
+  requiresRegistration: boolean;
+  capacity?: number | null;
+  highlights?: string[];
+  isFeatured?: boolean;
+}
 
 export interface IChurchEvent {
   id: string;
+  churchId?: string;
   name: string;
-  category: string;
+  title?: string;
+  category: EventCategory | string;
   startDate: string;
   endDate: string;
   location: string;
-  capacity: number;
+  capacity: number | null;
   registeredCount: number;
   checkedInCount: number;
   games?: number;
@@ -45,43 +102,18 @@ export interface IChurchEvent {
   registrationDeadline: string;
   teamAssignmentEnabled: boolean;
   description: string;
-  imageUrl?: string;
+  imageUrl?: string | null;
   googleCalendarSync?: boolean;
-}
-
-export interface IEventResponse {
-  id: string;
-  churchId: string;
-  title: string;
-  description?: string;
-  startDate: string;
-  endDate: string;
-  location?: string;
-  capacity?: number;
-  status: ApiEventStatus;
-  imageUrl?: string;
-  googleCalendarSync?: boolean;
+  requiresRegistration: boolean;
+  highlights?: string[] | null;
+  isFeatured: boolean;
   createdAt?: string;
   updatedAt?: string;
-  checkedInCount?: number;
-  registeredCount?: number;
-  games?: number;
-  teams?: number;
 }
 
-export interface IEventPayload {
-  churchId?: string;
-  title: string;
-  description?: string;
-  startDate: string;
-  endDate: string;
-  location?: string;
-  status?: ApiEventStatus;
-  imageUrl?: string;
-  googleCalendarSync?: boolean;
-}
-
-export type IUpdateEventPayload = Partial<IEventPayload>;
+export type IEventResponse = AdminEvent;
+export type IEventPayload = CreateOrUpdateEventPayload;
+export type IUpdateEventPayload = Partial<CreateOrUpdateEventPayload>;
 
 // Person types
 export type MembershipStatus = "Member" | "Visitor" | "Worker" | "Leader";

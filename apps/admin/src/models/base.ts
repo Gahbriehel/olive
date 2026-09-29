@@ -26,6 +26,8 @@ export interface IQueryParams {
   type?: string;
   category?: string;
   isPrivate?: boolean;
+  requiresRegistration?: boolean;
+  isFeatured?: boolean;
 }
 
 export function extractData<T>(resData: unknown): T {
