@@ -12,12 +12,21 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import {
+  CATEGORY_TABS,
+  CATEGORY_LABELS,
+  CATEGORY_COLORS,
+} from "@/lib/category";
+import { EventCategory } from "@olive/types";
 
 export default function EventsListPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<
+    EventCategory | undefined
+  >(undefined);
 
   const {
-    data: events = [],
+    data: allEvents = [],
     isLoading,
     isError,
   } = useQuery({
@@ -25,14 +34,23 @@ export default function EventsListPage() {
     queryFn: () => webService.getPublishedEvents(),
   });
 
-  const filteredEvents = events.filter(
-    (e) =>
-      e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (e.description &&
-        e.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (e.location &&
-        e.location.toLowerCase().includes(searchQuery.toLowerCase())),
+  // Only show tabs for categories that have at least one event
+  const availableCategories = new Set(allEvents.map((e) => e.category));
+  const visibleTabs = CATEGORY_TABS.filter(
+    (tab) => !tab.category || availableCategories.has(tab.category),
   );
+
+  // Client-side category + search filtering
+  const filteredEvents = allEvents.filter((e) => {
+    const matchesCategory = !activeCategory || e.category === activeCategory;
+    const query = searchQuery.toLowerCase();
+    const matchesSearch =
+      !query ||
+      e.title.toLowerCase().includes(query) ||
+      (e.description && e.description.toLowerCase().includes(query)) ||
+      (e.location && e.location.toLowerCase().includes(query));
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div className="bg-[#171717] min-h-screen text-[#F7F5F0] py-16 lg:py-24">
@@ -64,6 +82,25 @@ export default function EventsListPage() {
             />
           </div>
         </div>
+
+        {/* CATEGORY FILTER TABS — only shown when there are 2+ categories */}
+        {visibleTabs.length > 2 && (
+          <div className="flex flex-wrap gap-2">
+            {visibleTabs.map((tab) => (
+              <button
+                key={tab.label}
+                onClick={() => setActiveCategory(tab.category)}
+                className={`px-4 py-2 rounded-sm text-xs font-sans font-medium uppercase tracking-wider transition-colors border ${
+                  activeCategory === tab.category
+                    ? "bg-[#B18A4A] border-[#B18A4A] text-white"
+                    : "bg-[#1F1F1F] border-white/10 text-[#D4D0C7] hover:border-[#B18A4A]/50 hover:text-[#F7F5F0]"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* LOADING STATE */}
         {isLoading && (
@@ -129,8 +166,11 @@ export default function EventsListPage() {
                 <div className="p-8 space-y-5">
                   {/* Status & Date Tag */}
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-sans font-medium uppercase tracking-wider text-[#B18A4A] border border-[#B18A4A]/30 px-2.5 py-0.5 rounded-sm">
-                      Published Event
+                    <span
+                      className={`text-[10px] font-sans font-medium uppercase tracking-wider border px-2.5 py-0.5 rounded-sm ${CATEGORY_COLORS[event.category as EventCategory] || "border-[#B18A4A]/30 text-[#B18A4A]"}`}
+                    >
+                      {CATEGORY_LABELS[event.category as EventCategory] ??
+                        event.category}
                     </span>
                     <div className="flex items-center space-x-1.5 text-xs font-sans text-[#77736B]">
                       <Calendar className="w-3.5 h-3.5 text-[#B18A4A]" />
@@ -165,9 +205,15 @@ export default function EventsListPage() {
 
                 {/* Action Footer */}
                 <div className="p-8 pt-0 border-t border-white/5 mt-4 flex items-center justify-between">
-                  <span className="text-[11px] font-sans text-[#B18A4A]">
-                    Open for Registration
-                  </span>
+                  {event.requiresRegistration ? (
+                    <span className="text-[11px] font-sans text-[#B18A4A]">
+                      Registration Required
+                    </span>
+                  ) : (
+                    <span className="text-[11px] font-sans text-emerald-400">
+                      Free • Walk-In Welcome
+                    </span>
+                  )}
                   <Link
                     href={`/events/${event.id}`}
                     className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-sm bg-[#B18A4A] hover:bg-[#9C773B] text-white font-medium text-xs uppercase tracking-wider transition-colors group/btn"

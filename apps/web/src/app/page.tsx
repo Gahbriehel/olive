@@ -15,6 +15,8 @@ import { useQuery } from "@tanstack/react-query";
 import { webService } from "@/services/api";
 import { WeeklyServices } from "@/components/weekly-services";
 import { Hero } from "@/components/hero";
+import { CATEGORY_LABELS } from "@/lib/category";
+import { EventCategory } from "@olive/types";
 
 export default function HomePage() {
   const { data: events = [] } = useQuery({
@@ -23,6 +25,14 @@ export default function HomePage() {
   });
 
   const nextEvent = events.length > 0 ? events[0] : null;
+
+  const { data: featuredEvent } = useQuery({
+    queryKey: ["featuredEvent"],
+    queryFn: () => webService.getFeaturedEvent(),
+  });
+
+  // Use featured event for banner, fallback to first published event
+  const bannerEvent = featuredEvent || nextEvent;
 
   return (
     <div className="bg-[#171717] text-[#F7F5F0]">
@@ -112,45 +122,60 @@ export default function HomePage() {
         <div className="bg-[#1F1F1F] text-[#F7F5F0] border border-white/10 rounded-sm overflow-hidden">
           <div
             className={`grid grid-cols-1 ${
-              nextEvent?.imageUrl ? "lg:grid-cols-12" : ""
+              bannerEvent?.imageUrl ? "lg:grid-cols-12" : ""
             } items-center`}
           >
-            {nextEvent?.imageUrl && (
+            {bannerEvent?.imageUrl && (
               <div className="lg:col-span-5 h-64 sm:h-80 lg:h-full relative min-h-[320px] bg-[#141414] overflow-hidden border-b lg:border-b-0 lg:border-r border-white/10">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={nextEvent.imageUrl}
-                  alt={nextEvent.title}
+                  src={bannerEvent.imageUrl}
+                  alt={bannerEvent.title}
                   className="w-full h-full object-cover"
                 />
               </div>
             )}
             <div
               className={`${
-                nextEvent?.imageUrl ? "lg:col-span-7" : ""
+                bannerEvent?.imageUrl ? "lg:col-span-7" : ""
               } p-8 sm:p-12 lg:p-14 space-y-6`}
             >
-              <span className="inline-flex items-center space-x-2 text-[#B18A4A] text-xs font-sans font-medium uppercase tracking-[0.2em]">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>
-                  {nextEvent
-                    ? "Featured Upcoming Program"
-                    : "Upcoming Gathering"}
+              {/* Badge Row */}
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center space-x-2 text-[#B18A4A] text-xs font-sans font-medium uppercase tracking-[0.2em]">
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>
+                    {bannerEvent
+                      ? "Featured Upcoming Program"
+                      : "Upcoming Gathering"}
+                  </span>
                 </span>
-              </span>
+                {bannerEvent && (
+                  <span className="text-[10px] font-sans font-medium uppercase tracking-wider border px-2.5 py-0.5 rounded-sm border-[#B18A4A]/30 text-[#B18A4A]">
+                    {CATEGORY_LABELS[bannerEvent.category as EventCategory] ??
+                      bannerEvent.category}
+                  </span>
+                )}
+                {bannerEvent && !bannerEvent.requiresRegistration && (
+                  <span className="text-[10px] font-sans font-medium uppercase tracking-wider border px-2.5 py-0.5 rounded-sm border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
+                    Free Admission • Open to All
+                  </span>
+                )}
+              </div>
+
               <h2 className="text-3xl sm:text-5xl font-serif font-medium text-[#F7F5F0] tracking-tight">
-                {nextEvent ? nextEvent.title : "Night Of Wonders"}
+                {bannerEvent ? bannerEvent.title : "Night Of Wonders"}
               </h2>
               <p className="text-[#D4D0C7] text-base leading-relaxed font-sans font-light line-clamp-3">
-                {nextEvent?.description ||
+                {bannerEvent?.description ||
                   "Join us for a special session of prayer, divine encounters, and spiritual renewal."}
               </p>
               <div className="flex flex-wrap gap-6 text-xs font-sans text-[#77736B]">
                 <div className="flex items-center space-x-2">
                   <Clock className="w-4 h-4 text-[#B18A4A]" />
                   <span>
-                    {nextEvent?.startDate
-                      ? new Date(nextEvent.startDate).toLocaleDateString(
+                    {bannerEvent?.startDate
+                      ? new Date(bannerEvent.startDate).toLocaleDateString(
                           "en-US",
                           {
                             timeZone: "Africa/Lagos",
@@ -164,17 +189,35 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <MapPin className="w-4 h-4 text-[#B18A4A]" />
-                  <span>{nextEvent?.location || "Church Auditorium"}</span>
+                  <span>{bannerEvent?.location || "Church Auditorium"}</span>
                 </div>
               </div>
               <div className="pt-4">
-                <Link
-                  href={nextEvent ? `/events/${nextEvent.id}` : "/events"}
-                  className="inline-flex items-center space-x-2 px-7 py-3 rounded-sm bg-[#B18A4A] hover:bg-[#9C773B] text-white font-medium text-xs uppercase tracking-wider transition-colors"
-                >
-                  <span>{nextEvent ? "Register Now" : "View All Events"}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                {bannerEvent?.requiresRegistration ? (
+                  <Link
+                    href={`/events/${bannerEvent.id}`}
+                    className="inline-flex items-center space-x-2 px-7 py-3 rounded-sm bg-[#B18A4A] hover:bg-[#9C773B] text-white font-medium text-xs uppercase tracking-wider transition-colors"
+                  >
+                    <span>Register Now</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                ) : bannerEvent ? (
+                  <Link
+                    href={`/events/${bannerEvent.id}`}
+                    className="inline-flex items-center space-x-2 px-7 py-3 rounded-sm border border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-[#F7F5F0] font-medium text-xs uppercase tracking-wider transition-colors"
+                  >
+                    <span>Program Schedule & Directions</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                ) : (
+                  <Link
+                    href="/events"
+                    className="inline-flex items-center space-x-2 px-7 py-3 rounded-sm bg-[#B18A4A] hover:bg-[#9C773B] text-white font-medium text-xs uppercase tracking-wider transition-colors"
+                  >
+                    <span>View All Events</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                )}
               </div>
             </div>
           </div>

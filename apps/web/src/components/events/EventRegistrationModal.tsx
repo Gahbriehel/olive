@@ -21,6 +21,7 @@ import {
   QrCode,
   Loader2,
   Sparkles,
+  AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -61,6 +62,7 @@ export function EventRegistrationModal({
     unknown | null
   >(null);
   const [registeredName, setRegisteredName] = useState("");
+  const [walkInNotice, setWalkInNotice] = useState(false);
 
   const { control, handleSubmit, reset } = useForm<IRegistrationPayload>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,6 +84,17 @@ export function EventRegistrationModal({
     onSuccess: (data) => {
       setSuccessRegistration(data);
     },
+    onError: (error: unknown) => {
+      const err = error as {
+        response?: { status?: number; data?: { message?: string } };
+      };
+      if (
+        err.response?.status === 400 &&
+        err.response?.data?.message?.toLowerCase().includes("not required")
+      ) {
+        setWalkInNotice(true);
+      }
+    },
   });
 
   const onSubmit = (data: IRegistrationPayload) => {
@@ -91,6 +104,7 @@ export function EventRegistrationModal({
 
   const handleClose = () => {
     setSuccessRegistration(null);
+    setWalkInNotice(false);
     reset();
     onClose();
   };
@@ -132,7 +146,62 @@ export function EventRegistrationModal({
                   <X className="w-5 h-5" />
                 </button>
 
-                {successRegistration ? (
+                {walkInNotice ? (
+                  /* WALK-IN NOTICE STATE */
+                  <div className="text-center space-y-6 py-2">
+                    <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center mx-auto">
+                      <CheckCircle2 className="w-10 h-10" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                        No Registration Needed!
+                      </span>
+                      <DialogTitle className="text-2xl font-serif font-medium text-white">
+                        You&apos;re Already Welcome
+                      </DialogTitle>
+                      <p className="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
+                        Admission is free and open to everyone. No ticket or
+                        online reservation is needed. We look forward to
+                        welcoming you in person!
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-left space-y-2">
+                      <p className="text-sm font-bold text-white">
+                        {eventTitle}
+                      </p>
+                      {eventStartDate && (
+                        <p className="text-xs text-slate-400">
+                          {new Date(eventStartDate).toLocaleDateString(
+                            "en-US",
+                            {
+                              timeZone: "Africa/Lagos",
+                              weekday: "long",
+                              month: "long",
+                              day: "numeric",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )}
+                        </p>
+                      )}
+                      {eventLocation && (
+                        <p className="text-xs text-slate-400">
+                          📍 {eventLocation}
+                        </p>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={handleClose}
+                      className="px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider transition-colors"
+                    >
+                      Got It — See You There!
+                    </button>
+                  </div>
+                ) : successRegistration ? (
                   /* SUCCESS CONFIRMATION STATE */
                   <div className="text-center space-y-6 py-2">
                     <div className="w-16 h-16 rounded-2xl bg-amber-500/15 text-amber-400 flex items-center justify-center mx-auto">
@@ -241,6 +310,21 @@ export function EventRegistrationModal({
                       onSubmit={handleSubmit(onSubmit)}
                       className="space-y-4"
                     >
+                      {registerMutation.isError && (
+                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-start space-x-2.5">
+                          <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                          <p className="text-xs text-red-400">
+                            {(
+                              registerMutation.error as {
+                                response?: { data?: { message?: string } };
+                              }
+                            )?.response?.data?.message ||
+                              (registerMutation.error as Error)?.message ||
+                              "Registration failed. Please check your details and try again."}
+                          </p>
+                        </div>
+                      )}
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* First Name */}
                         <Controller

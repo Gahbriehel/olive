@@ -7,6 +7,9 @@ import { webService } from "@/services/api";
 import { EventRegistrationModal } from "@/components/events/EventRegistrationModal";
 import { AttendeeFlierModal } from "@/components/events/AttendeeFlierModal";
 import { customToast } from "@/helpers/customToast";
+import { CATEGORY_LABELS, CATEGORY_COLORS } from "@/lib/category";
+import { generateGoogleCalendarLink, downloadIcsFile } from "@/lib/calendar";
+import { EventCategory } from "@olive/types";
 import {
   Calendar,
   MapPin,
@@ -20,6 +23,9 @@ import {
   Ticket,
   Clock,
   ChevronRight,
+  DoorOpen,
+  CalendarPlus,
+  Download,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -153,9 +159,14 @@ export default function EventDetailsPage({
           <div className="p-6 sm:p-10 space-y-6 relative -mt-16 sm:-mt-24">
             {/* Status Badges */}
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold uppercase tracking-wider shadow-sm">
+              <span
+                className={`inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm border ${CATEGORY_COLORS[event.category as EventCategory] || "bg-amber-500/20 text-amber-300 border-amber-500/30"}`}
+              >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Published Event</span>
+                <span>
+                  {CATEGORY_LABELS[event.category as EventCategory] ??
+                    event.category}
+                </span>
               </span>
 
               {hasStarted && !hasEnded && (
@@ -214,39 +225,90 @@ export default function EventDetailsPage({
 
             {/* PROMINENT ACTION BUTTONS STRIP */}
             <div className="pt-6 border-t border-white/10 flex flex-wrap items-center gap-4">
-              {/* PRIMARY ACTION: REGISTER */}
-              <button
-                onClick={() => setIsRegisterModalOpen(true)}
-                disabled={hasEnded || isFull}
-                className="px-8 py-4 rounded-2xl bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold text-sm shadow-xl shadow-amber-950/40 transition-all flex items-center space-x-2.5 cursor-pointer"
-              >
-                <Ticket className="w-5 h-5" />
-                <span>
-                  {hasEnded
-                    ? "Registration Closed"
-                    : isFull
-                      ? "Event Full"
-                      : "Register for Event"}
-                </span>
-              </button>
+              {event.requiresRegistration ? (
+                <>
+                  {/* Registration Required CTA */}
+                  <button
+                    onClick={() => setIsRegisterModalOpen(true)}
+                    disabled={hasEnded || isFull}
+                    className="px-8 py-4 rounded-sm bg-[#B18A4A] hover:bg-[#9C773B] disabled:opacity-50 text-white font-bold text-sm shadow-xl shadow-amber-950/40 transition-all flex items-center space-x-2.5 cursor-pointer"
+                  >
+                    <Ticket className="w-5 h-5" />
+                    <span>
+                      {hasEnded
+                        ? "Registration Closed"
+                        : isFull
+                          ? "Event Full"
+                          : "Register for Free Pass"}
+                    </span>
+                  </button>
 
-              {/* ACTION: GET ATTENDEE FLIER */}
+                  {/* Capacity Indicator */}
+                  {event.capacity && !hasEnded && (
+                    <span className="text-xs text-[#77736B] font-sans">
+                      {registeredCount} / {event.capacity} seats taken
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Walk-In: Open Admission Box */}
+                  <div className="flex items-center space-x-2.5 px-5 py-3 rounded-sm border border-emerald-500/30 bg-emerald-500/10">
+                    <DoorOpen className="w-5 h-5 text-emerald-400" />
+                    <div>
+                      <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block">
+                        Open Admission • No Registration Required
+                      </span>
+                      <span className="text-[11px] text-[#D4D0C7]">
+                        Free walk-in service. Everyone is welcome!
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Calendar Actions */}
+                  {event.googleCalendarSync && (
+                    <>
+                      <button
+                        onClick={() =>
+                          window.open(
+                            generateGoogleCalendarLink(event),
+                            "_blank",
+                          )
+                        }
+                        className="px-5 py-3 rounded-sm bg-white/5 hover:bg-white/10 border border-white/10 text-[#F7F5F0] font-medium text-xs transition-colors flex items-center space-x-2 cursor-pointer"
+                      >
+                        <CalendarPlus className="w-4 h-4 text-[#B18A4A]" />
+                        <span>Add to Google Calendar</span>
+                      </button>
+                      <button
+                        onClick={() => downloadIcsFile(event)}
+                        className="px-5 py-3 rounded-sm bg-white/5 hover:bg-white/10 border border-white/10 text-[#F7F5F0] font-medium text-xs transition-colors flex items-center space-x-2 cursor-pointer"
+                      >
+                        <Download className="w-4 h-4 text-[#B18A4A]" />
+                        <span>Download .ICS File</span>
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* Get Attendee Flier */}
               <button
                 onClick={() => {
                   setFlierInitialName("");
                   setIsFlierModalOpen(true);
                 }}
-                className="px-6 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-amber-500/30 hover:border-amber-400 text-amber-300 font-bold text-sm transition-all flex items-center space-x-2.5 cursor-pointer shadow-lg shadow-black/30"
+                className="px-6 py-4 rounded-sm bg-white/5 hover:bg-white/10 border border-[#B18A4A]/30 hover:border-[#B18A4A] text-[#B18A4A] font-bold text-sm transition-all flex items-center space-x-2.5 cursor-pointer"
               >
-                <Sparkles className="w-5 h-5 text-amber-400" />
+                <Sparkles className="w-5 h-5 text-[#B18A4A]" />
                 <span>Get Attendee Flier</span>
               </button>
 
-              {/* PROMINENT ACTION: VIEW STANDINGS */}
+              {/* View Standings (if event started) */}
               {hasStarted && (
                 <Link
                   href={`/leaderboard/${id}`}
-                  className="px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-amber-600/20 border border-amber-500/50 hover:border-amber-400 text-amber-300 font-bold text-sm uppercase tracking-wider transition-all flex items-center space-x-2.5 shadow-lg shadow-amber-950/30 group"
+                  className="px-8 py-4 rounded-sm bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-amber-600/20 border border-amber-500/50 hover:border-amber-400 text-amber-300 font-bold text-sm uppercase tracking-wider transition-all flex items-center space-x-2.5 group"
                 >
                   <Trophy className="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" />
                   <span>View Live Standings</span>
@@ -261,6 +323,26 @@ export default function EventDetailsPage({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT / MAIN CONTENT COLUMN */}
           <div className="lg:col-span-8 space-y-8">
+            {/* PROGRAM HIGHLIGHTS */}
+            {event.highlights && event.highlights.length > 0 && (
+              <div className="rounded-sm border border-white/10 bg-[#1F1F1F] p-8 space-y-4 shadow-sm">
+                <h2 className="text-xl font-serif font-medium text-white flex items-center space-x-2">
+                  <span>What to Expect</span>
+                </h2>
+                <ul className="space-y-3">
+                  {event.highlights.map((item, idx) => (
+                    <li
+                      key={idx}
+                      className="flex items-start space-x-3 text-sm text-[#D4D0C7] font-light"
+                    >
+                      <Sparkles className="w-4 h-4 text-[#B18A4A] shrink-0 mt-0.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {/* EVENT DESCRIPTION */}
             <div className="rounded-3xl border border-white/10 bg-[#1F1F1F] p-8 space-y-4 shadow-sm">
               <h2 className="text-xl font-serif font-medium text-white flex items-center space-x-2">
@@ -359,11 +441,14 @@ export default function EventDetailsPage({
 
               <div className="space-y-4 text-xs">
                 {/* Capacity */}
-                {capacity !== undefined &&
+                {Boolean(
+                  capacity !== null &&
+                  capacity !== undefined &&
                   capacity > 0 &&
-                  isFiftyPercentFull && (
-                    <div className="space-y-2 pb-4 border-b border-white/5">
-                      {/* <div className="flex items-center justify-between text-slate-400 font-medium">
+                  isFiftyPercentFull,
+                ) && (
+                  <div className="space-y-2 pb-4 border-b border-white/5">
+                    {/* <div className="flex items-center justify-between text-slate-400 font-medium">
                         <span className="flex items-center space-x-1.5">
                           <Users className="w-4 h-4 text-amber-400" />
                           <span>Capacity</span>
@@ -373,19 +458,21 @@ export default function EventDetailsPage({
                         </span>
                       </div> */}
 
-                      <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                        <div
-                          className="h-full bg-amber-500 rounded-full transition-all duration-500"
-                          style={{
-                            width: `${Math.min(
-                              100,
-                              Math.round((registeredCount / capacity) * 100),
-                            )}%`,
-                          }}
-                        />
-                      </div>
+                    <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                      <div
+                        className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            Math.round(
+                              (registeredCount / (capacity as number)) * 100,
+                            ),
+                          )}%`,
+                        }}
+                      />
                     </div>
-                  )}
+                  </div>
+                )}
 
                 {/* Teams Count */}
                 {event.teams !== undefined && event.teams > 0 && (
@@ -416,20 +503,27 @@ export default function EventDetailsPage({
 
               {/* ACTION CALLOUT IN SIDEBAR */}
               <div className="pt-2 space-y-3">
-                <button
-                  onClick={() => setIsRegisterModalOpen(true)}
-                  disabled={hasEnded || isFull}
-                  className="w-full py-3.5 rounded-xl bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center space-x-2 cursor-pointer"
-                >
-                  <Ticket className="w-4 h-4" />
-                  <span>
-                    {hasEnded
-                      ? "Registration Closed"
-                      : isFull
-                        ? "Event Full"
-                        : "Register Now"}
-                  </span>
-                </button>
+                {event.requiresRegistration ? (
+                  <button
+                    onClick={() => setIsRegisterModalOpen(true)}
+                    disabled={hasEnded || isFull}
+                    className="w-full py-3.5 rounded-sm bg-[#B18A4A] hover:bg-[#9C773B] disabled:opacity-50 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center space-x-2 cursor-pointer"
+                  >
+                    <Ticket className="w-4 h-4" />
+                    <span>
+                      {hasEnded
+                        ? "Registration Closed"
+                        : isFull
+                          ? "Event Full"
+                          : "Register Now"}
+                    </span>
+                  </button>
+                ) : (
+                  <div className="w-full py-3.5 rounded-sm border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2">
+                    <DoorOpen className="w-4 h-4" />
+                    <span>Walk-In • No Registration Needed</span>
+                  </div>
+                )}
 
                 <button
                   onClick={() => {
@@ -464,7 +558,7 @@ export default function EventDetailsPage({
         eventId={id}
         eventTitle={event.title}
         eventStartDate={event.startDate}
-        eventLocation={event.location}
+        eventLocation={event.location ?? undefined}
         onOpenFlier={handleOpenFlierWithName}
       />
 
@@ -474,7 +568,7 @@ export default function EventDetailsPage({
         onClose={() => setIsFlierModalOpen(false)}
         eventTitle={event.title}
         eventStartDate={event.startDate}
-        eventLocation={event.location}
+        eventLocation={event.location ?? undefined}
         initialName={flierInitialName}
       />
     </div>

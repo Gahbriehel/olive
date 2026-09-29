@@ -226,10 +226,15 @@ export const webService = {
   },
 
   // Fetch Published Events
-  async getPublishedEvents(): Promise<IEventResponse[]> {
+  async getPublishedEvents(params?: {
+    category?: string;
+    search?: string;
+    isFeatured?: boolean;
+    limit?: number;
+  }): Promise<IEventResponse[]> {
     try {
       const res = await webApiClient.get<IBaseResponse<unknown>>("/events", {
-        params: { status: "PUBLISHED" },
+        params: { status: "PUBLISHED", ...params },
       });
       const data = res.data?.data;
       if (Array.isArray(data)) {
@@ -254,6 +259,19 @@ export const webService = {
       return [];
     } catch {
       return [];
+    }
+  },
+
+  // Fetch Featured Hero Event
+  async getFeaturedEvent(): Promise<IEventResponse | null> {
+    try {
+      const events = await this.getPublishedEvents({
+        isFeatured: true,
+        limit: 1,
+      });
+      return events[0] ?? null;
+    } catch {
+      return null;
     }
   },
 
