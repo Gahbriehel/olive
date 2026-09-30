@@ -11,9 +11,10 @@ interface TabLinkProps {
   href: string;
   children: ReactNode;
   icon?: ReactNode;
+  count?: number | string;
 }
 
-export function TabLink({ value, href, children, icon }: TabLinkProps) {
+export function TabLink({ value, href, children, icon, count }: TabLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === href;
 
@@ -28,7 +29,7 @@ export function TabLink({ value, href, children, icon }: TabLinkProps) {
           : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-zinc-800/80",
       )}
     >
-      <Link href={href}>
+      <Link href={href} className="flex items-center gap-2">
         {icon && (
           <span
             className={clsx(
@@ -39,7 +40,19 @@ export function TabLink({ value, href, children, icon }: TabLinkProps) {
             {icon}
           </span>
         )}
-        {children}
+        <span>{children}</span>
+        {count !== undefined && (
+          <span
+            className={clsx(
+              "px-1.5 py-0.5 text-[10px] rounded-md font-mono font-semibold",
+              isActive
+                ? "bg-white/20 text-white"
+                : "bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-slate-400",
+            )}
+          >
+            {count}
+          </span>
+        )}
       </Link>
     </Tabs.Trigger>
   );

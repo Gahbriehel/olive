@@ -3,6 +3,7 @@
 import { JSX, useState } from "react";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { IContact } from "@/models/contact";
+import { extractMeta } from "@/models/base";
 import { formatDate } from "@/helpers/formatDate";
 import { useContactQuery } from "@/hooks/useContactQuery";
 import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
@@ -143,6 +144,7 @@ export function PrayerTable(): JSX.Element {
     <>
       <Table
         data={prayers ?? []}
+        meta={data?.meta || extractMeta(data)}
         columns={columns as Array<ColumnDef<IContact>>}
         loading={isLoading}
         searchPlaceholder="Search prayers..."

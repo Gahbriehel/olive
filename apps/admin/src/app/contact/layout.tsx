@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import * as Tabs from "@radix-ui/react-tabs";
 import { TabLink } from "./_components/TabLink";
 import { HeartHandshake, Mail } from "lucide-react";
+import { useContactCounts } from "@/hooks/useContactQuery";
 
 export default function ContactsLayout({
   children,
@@ -12,6 +13,7 @@ export default function ContactsLayout({
 }) {
   const pathname = usePathname();
   const activeTab = pathname.includes("prayers") ? "prayers" : "inquiries";
+  const { prayerCount, inquiryCount } = useContactCounts();
 
   return (
     <div className="flex flex-col gap-6">
@@ -32,6 +34,7 @@ export default function ContactsLayout({
             value="prayers"
             href="/contact/prayers"
             icon={<HeartHandshake className="w-4 h-4" />}
+            count={prayerCount}
           >
             Prayers
           </TabLink>
@@ -39,6 +42,7 @@ export default function ContactsLayout({
             value="inquiries"
             href="/contact/inquiries"
             icon={<Mail className="w-4 h-4" />}
+            count={inquiryCount}
           >
             Inquiries
           </TabLink>
