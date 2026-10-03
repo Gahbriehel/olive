@@ -210,7 +210,7 @@ export function MultiSelect({
 
           <input
             type="text"
-            className="sr-only"
+            className="sr-only text-base"
             onBlur={onBlur}
             tabIndex={-1}
           />
@@ -230,7 +230,7 @@ export function MultiSelect({
                   <input
                     type="text"
                     name={label + "search"}
-                    className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-9 pr-4 text-sm placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:placeholder-slate-500"
+                    className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-9 pr-4 text-base placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:placeholder-slate-500"
                     placeholder="Search options..."
                     value={query}
                     onChange={(e) => {

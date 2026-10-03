@@ -60,6 +60,13 @@
     --shadow-lg:
       0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.3);
   }
+
+  /* Prevent iOS Safari auto-zoom on focus by enforcing at least 16px (1rem) on form elements */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 body {

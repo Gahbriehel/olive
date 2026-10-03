@@ -13,6 +13,7 @@ import { Check, ChevronDown, PlusCircle, XCircle } from "lucide-react";
 import { type FieldError } from "react-hook-form";
 import { ClipLoader } from "react-spinners";
 import { clsx } from "clsx";
+import { cn } from "@/helpers/cn";
 
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 
@@ -158,7 +159,7 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
   };
 
   return (
-    <fieldset className={clsx("relative space-y-1.5 w-full", className)}>
+    <fieldset className={cn("relative space-y-1.5 w-full", className)}>
       <Combobox value={value} onChange={handleChange} disabled={disabled}>
         {label && (
           <Combobox.Label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -170,8 +171,8 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
             <Combobox.Input
               ref={ref}
               disabled={disabled}
-              className={clsx(
-                "w-full text-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 min-h-[42px] capitalize cursor-pointer",
+              className={cn(
+                "w-full text-base bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 min-h-[42px] capitalize cursor-pointer",
                 disabled &&
                   "pointer-events-none cursor-not-allowed bg-slate-50 opacity-60 dark:bg-zinc-800/50",
               )}

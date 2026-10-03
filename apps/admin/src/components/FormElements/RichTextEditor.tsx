@@ -105,10 +105,11 @@ export const RichTextEditor = forwardRef<ReactQuillType, RichTextEditorProps>(
           .rich-text-editor-container .ql-container {
             border: none;
             font-family: inherit;
-            font-size: 0.875rem;
+            font-size: 1rem;
             min-height: 200px;
           }
           .rich-text-editor-container .ql-editor {
+            font-size: 1rem;
             padding: 16px;
             min-height: 200px;
           }

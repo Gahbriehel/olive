@@ -193,7 +193,7 @@ export function Table<TData, TValue>({
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="pl-9 text-xs h-9 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 focus:border-indigo-500"
+                  className="pl-9 text-base h-9 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 focus:border-indigo-500"
                 />
               </div>
               {searchInput && (
@@ -342,7 +342,7 @@ export function Table<TData, TValue>({
                 <select
                   value={currentLimit}
                   onChange={(e) => handleLimitChange(Number(e.target.value))}
-                  className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs py-1 px-2 focus:ring-1 focus:ring-indigo-500 outline-none"
+                  className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-base py-1 px-2 focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer"
                 >
                   {pageSizeOptions.map((size) => (
                     <option key={size} value={size}>

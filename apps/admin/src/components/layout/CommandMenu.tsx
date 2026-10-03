@@ -150,7 +150,7 @@ export const CommandMenu: React.FC = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command or search attendees, teams, events..."
-            className="w-full text-sm bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
+            className="w-full text-base bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
           />
           <kbd className="px-2 py-0.5 text-[10px] font-mono bg-slate-100 dark:bg-zinc-800 text-slate-500 rounded border border-slate-200 dark:border-zinc-700 ml-2">
             ESC

@@ -837,7 +837,7 @@ export default function EventsPage() {
             <select
               value={limit}
               onChange={(e) => handleLimitChange(Number(e.target.value))}
-              className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs py-1 px-2 focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer"
+              className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-base py-1 px-2 focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer"
             >
               {[5, 10, 20, 50].map((size) => (
                 <option key={size} value={size}>

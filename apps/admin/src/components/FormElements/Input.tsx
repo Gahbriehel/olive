@@ -1,5 +1,6 @@
 import React from "react";
 import { clsx } from "clsx";
+import { cn } from "@/helpers/cn";
 import { Eye, EyeOff, X } from "lucide-react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -74,7 +75,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div className="relative flex items-center">
           {countryCode && (
             <div className="flex items-center justify-center min-h-[42px] rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3.5 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/50">
-              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+              <span className="text-base font-medium text-slate-600 dark:text-slate-300">
                 {countryCode}
               </span>
             </div>
@@ -86,8 +87,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
           <input
             ref={ref}
-            className={clsx(
-              "w-full text-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 min-h-[42px]",
+            className={cn(
+              "w-full text-base bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 min-h-[42px]",
               countryCode ? "rounded-r-xl" : "rounded-xl",
               leftIcon ? "pl-10" : "px-3.5",
               (finalRightIcon || shortcutHint) && showClear

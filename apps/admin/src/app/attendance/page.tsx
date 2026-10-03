@@ -397,7 +397,7 @@ export default function AttendancePage() {
                 <select
                   value={limit}
                   onChange={(e) => handleLimitChange(Number(e.target.value))}
-                  className="ml-2 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs py-1 px-2 font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer"
+                  className="ml-2 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-base py-1 px-2 font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer"
                 >
                   {[5, 10, 20, 50].map((size) => (
                     <option key={size} value={size}>
