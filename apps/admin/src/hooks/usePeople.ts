@@ -43,5 +43,6 @@ export function usePeople(params?: IQueryParams) {
     createPerson: createPersonMutation.mutateAsync,
     isCreating: createPersonMutation.isPending,
     updatePerson: updatePersonMutation.mutateAsync,
+    isUpdating: updatePersonMutation.isPending,
   };
 }

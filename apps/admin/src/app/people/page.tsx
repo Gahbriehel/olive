@@ -9,6 +9,7 @@ import {
   Shield,
   UserCheck,
   Calendar,
+  Edit,
 } from "lucide-react";
 import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { ListToolbar } from "@/components/ui/ListToolbar";
@@ -22,17 +23,21 @@ import { Table } from "@/components/ui/Table";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { RegisterPersonForm } from "@/components/Forms/RegisterPersonForm";
-import { AddPersonForm } from "@/components/Forms/AddPersonForm";
+import { PersonForm } from "@/components/Forms/PersonForm";
 import { getInitials, capitalizeWords } from "@/utils/formatters";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
+import { customToast } from "@/helpers/customToast";
 import { usePeople } from "@/hooks/usePeople";
 import { useEvents } from "@/hooks/useEvents";
 import { useRegistrations } from "@/hooks/useRegistrations";
+import { useAuth } from "@/hooks/useAuth";
+import { getUserRoles, ROLES } from "@/utils/rbac";
 import {
   adaptApiPersonToPerson,
   IPerson,
   IPersonPayload,
+  IUpdatePersonPayload,
 } from "@/models/person";
 import { IRegistrationPayload } from "@/models/registration";
 
@@ -44,10 +49,15 @@ export default function PeoplePage() {
   const [limit, setLimit] = useState(10);
 
   const [selectedPerson, setSelectedPerson] = useState<IPerson | null>(null);
+  const [editingPerson, setEditingPerson] = useState<IPerson | null>(null);
   const [drawerTab, setDrawerTab] = useState("info");
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const { user } = useAuth();
+  const userRoles = getUserRoles(user);
+  const isSuperAdmin = userRoles.includes(ROLES.SUPER_ADMIN);
 
   const queryParams = useMemo(
     () => ({
@@ -67,6 +77,8 @@ export default function PeoplePage() {
     stats,
     createPerson,
     isCreating,
+    updatePerson,
+    isUpdating,
     refetch,
     isLoading,
   } = usePeople(queryParams);
@@ -98,6 +110,23 @@ export default function PeoplePage() {
   const handleAddPerson = async (payload: IPersonPayload) => {
     await createPerson(payload);
     setIsAddPersonOpen(false);
+  };
+
+  const handleEditPerson = async (payload: IUpdatePersonPayload) => {
+    if (!editingPerson || !isSuperAdmin) return;
+    try {
+      const updated = await updatePerson({
+        id: editingPerson.id,
+        dto: payload,
+      });
+      setEditingPerson(null);
+      if (selectedPerson?.id === editingPerson.id && updated) {
+        setSelectedPerson(adaptApiPersonToPerson(updated));
+      }
+      customToast.success("Person updated successfully!");
+    } catch (err) {
+      console.error("Failed to update person:", err);
+    }
   };
 
   const handleSearchChange = useCallback((newSearch: string) => {
@@ -208,22 +237,31 @@ export default function PeoplePage() {
       {
         id: "actions",
         header: "Actions",
-        cell: ({ row }) => (
-          <ActionsList
-            actions={[
-              {
-                title: "View Details",
-
-                fn: () => {
-                  setSelectedPerson(row.original);
-                },
+        cell: ({ row }) => {
+          const person = row.original;
+          const actions = [
+            {
+              title: "View Details",
+              fn: () => {
+                setSelectedPerson(person);
               },
-            ]}
-          />
-        ),
+            },
+          ];
+
+          if (isSuperAdmin) {
+            actions.push({
+              title: "Edit Person",
+              fn: () => {
+                setEditingPerson(person);
+              },
+            });
+          }
+
+          return <ActionsList actions={actions} />;
+        },
       },
     ],
-    [page, limit],
+    [page, limit, isSuperAdmin],
   );
 
   const drawerTabs = [
@@ -430,6 +468,17 @@ export default function PeoplePage() {
                   />
                 </div>
               </div>
+              {isSuperAdmin && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 text-xs font-semibold"
+                  onClick={() => setEditingPerson(selectedPerson)}
+                >
+                  <Edit className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <span>Edit Profile</span>
+                </Button>
+              )}
             </div>
 
             {/* Drawer Sub-Tabs */}
@@ -479,6 +528,16 @@ export default function PeoplePage() {
                       {selectedPerson.dob}
                     </p>
                   </div>
+                  {selectedPerson.address && (
+                    <div className="col-span-2 p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60">
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">
+                        Address
+                      </p>
+                      <p className="font-semibold text-slate-800 dark:text-slate-200 mt-1">
+                        {selectedPerson.address}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-slate-200 dark:border-zinc-800 space-y-2">
@@ -602,7 +661,7 @@ export default function PeoplePage() {
         display={isAddPersonOpen}
         close={() => setIsAddPersonOpen(false)}
       >
-        <AddPersonForm
+        <PersonForm
           onSubmit={handleAddPerson}
           onCancel={() => setIsAddPersonOpen(false)}
           isLoading={isCreating}
@@ -622,6 +681,25 @@ export default function PeoplePage() {
           isLoading={isRegistering}
         />
       </SidebarModal>
+
+      {/* Edit Person Sidebar Modal - Only for Super Admin */}
+      {isSuperAdmin && (
+        <SidebarModal
+          title="Edit Person"
+          display={!!editingPerson}
+          close={() => setEditingPerson(null)}
+        >
+          {editingPerson && (
+            <PersonForm
+              key={editingPerson.id}
+              initialValues={editingPerson}
+              onSubmit={handleEditPerson}
+              onCancel={() => setEditingPerson(null)}
+              isLoading={isUpdating}
+            />
+          )}
+        </SidebarModal>
+      )}
     </div>
   );
 }

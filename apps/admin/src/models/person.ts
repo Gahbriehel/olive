@@ -60,6 +60,11 @@ export interface IPerson {
     checkedInAt?: string;
   }[];
   notes?: string;
+  address?: string;
+  rawGender?: ApiGender;
+  rawMembershipStatus?: ApiMembershipStatus;
+  dateOfBirth?: string;
+  raw?: IPersonResponse;
 }
 
 export interface IPersonResponse {
@@ -122,6 +127,16 @@ export const membershipMap: Record<ApiMembershipStatus, MembershipStatus> = {
   WORKER: "Worker",
   LEADER: "Leader",
   VISITOR: "Visitor",
+};
+
+export const reverseMembershipMap: Record<
+  MembershipStatus,
+  ApiMembershipStatus
+> = {
+  Member: "MEMBER",
+  Worker: "WORKER",
+  Leader: "LEADER",
+  Visitor: "VISITOR",
 };
 
 export function adaptApiPersonToPerson(apiPerson: IPersonResponse): IPerson {
@@ -197,5 +212,12 @@ export function adaptApiPersonToPerson(apiPerson: IPersonResponse): IPerson {
     departments,
     attendanceHistory,
     notes: apiPerson.notes || "",
+    address: apiPerson.address || "",
+    rawGender: apiPerson.gender,
+    rawMembershipStatus: apiPerson.membershipStatus,
+    dateOfBirth: apiPerson.dateOfBirth
+      ? new Date(apiPerson.dateOfBirth).toISOString().slice(0, 10)
+      : "",
+    raw: apiPerson,
   };
 }
