@@ -191,13 +191,13 @@ export default function ContactPage() {
                     </li>
                     <li className="flex justify-between border-b border-white/5 pb-2">
                       <span className="font-medium text-[#F7F5F0]">
-                        Tuesday (Digging Deep):
+                        Tuesday:
                       </span>
                       <span>5:30 PM – 7:00 PM</span>
                     </li>
                     <li className="flex justify-between pb-1">
                       <span className="font-medium text-[#F7F5F0]">
-                        Thursday (Prayer &amp; Missions):
+                        Wednesday (Prayer &amp; Missions):
                       </span>
                       <span>10:00 AM – 1:00 PM</span>
                     </li>

@@ -32,7 +32,7 @@ export function WeeklyServices({ dark = false }: WeeklyServicesProps) {
     },
     {
       number: "02",
-      title: "BIBLE STUDY (DIGGING DEEP)",
+      title: "BIBLE STUDY",
       day: "EVERY TUESDAY",
       time: "5:30 PM – 7:00 PM",
       description:
@@ -45,7 +45,7 @@ export function WeeklyServices({ dark = false }: WeeklyServicesProps) {
     {
       number: "03",
       title: "PRAYER MEETING (MISSIONS & OUTREACH)",
-      day: "EVERY THURSDAY",
+      day: "EVERY WEDNESDAY",
       time: "10:00 AM – 1:00 PM",
       description:
         "A dedicated prayer and outreach gathering for widows, widowers, and the less privileged, focusing on prayer, support, and missions.",
