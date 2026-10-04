@@ -22,4 +22,6 @@ export type {
   AdminUser,
   IChurchSettings,
   ChurchSettings,
+  IUpcomingBirthday,
+  IDashboardData,
 } from "@/models/dashboard";

@@ -174,11 +174,26 @@ export interface IUpcomingEvent {
   capacity?: number | null;
 }
 
+export interface IUpcomingBirthday {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string | null;
+  phone?: string | null;
+  membershipStatus: string;
+  dateOfBirth: string;
+  nextBirthday: string;
+  daysUntil: number;
+  turningAge?: number;
+}
+
 export interface IDashboardData {
   overview: IDashboardOverview;
   demographics: IDemographics;
   latestRegistrations: ILatestRegistration[];
   upcomingEvents: IUpcomingEvent[];
+  upcomingBirthdays?: IUpcomingBirthday[];
+  recentBounceAlerts?: Record<string, unknown>[];
 }
 
 // Backwards compatibility aliases

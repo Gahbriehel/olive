@@ -35,6 +35,7 @@ import { useDashboard } from "@/context/DashboardContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { exportToCsv } from "@/helpers/exportCsv";
 import { getCategoryColor, EventCategory } from "@/models/event";
+import { UpcomingBirthdaysCard } from "@/components/dashboard/UpcomingBirthdaysCard";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -44,6 +45,7 @@ export default function DashboardPage() {
   const overview = dashboardData?.overview;
   const latestRegistrations = dashboardData?.latestRegistrations || [];
   const upcomingEvents = dashboardData?.upcomingEvents || [];
+  const upcomingBirthdays = dashboardData?.upcomingBirthdays || [];
 
   const totalPeople = overview?.totalPeople ?? 0;
   const visitors = overview?.totalVisitors ?? 0;
@@ -326,6 +328,11 @@ export default function DashboardPage() {
 
         {/* Upcoming Events & Quick Stats */}
         <div className="space-y-4">
+          <UpcomingBirthdaysCard
+            birthdays={upcomingBirthdays}
+            isLoading={isLoading}
+          />
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle>Upcoming Events</CardTitle>

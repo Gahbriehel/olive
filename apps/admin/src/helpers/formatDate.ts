@@ -28,3 +28,18 @@ export function formatDate({
 export function formatDateToInputType(date: string): string {
   return dayjs(date).utc().format("YYYY-MM-DD");
 }
+
+/**
+ * Formats a birthday date and its relative countdown for display badges.
+ * - daysUntil === 0 => "🎉 Today!"
+ * - daysUntil === 1 => "Tomorrow"
+ * - daysUntil > 1   => "In X days (Oct 15)"
+ */
+export function formatBirthdayDate(isoDate: string, daysUntil: number): string {
+  if (daysUntil === 0) return "🎉 Today!";
+  if (daysUntil === 1) return "Tomorrow";
+  const formatted = isoDate ? dayjs(isoDate).format("MMM D") : "";
+  return formatted
+    ? `In ${daysUntil} days (${formatted})`
+    : `In ${daysUntil} days`;
+}

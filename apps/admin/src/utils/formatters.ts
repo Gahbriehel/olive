@@ -1,8 +1,14 @@
 import { truncateString } from "@/helpers/truncateString";
 import { capitalizeWords } from "@/helpers/capitalizeWords";
 import { capitalizeFirstLetter } from "@/helpers/capitalizeFirstLetter";
+import { formatBirthdayDate } from "@/helpers/formatDate";
 
-export { truncateString, capitalizeWords, capitalizeFirstLetter };
+export {
+  truncateString,
+  capitalizeWords,
+  capitalizeFirstLetter,
+  formatBirthdayDate,
+};
 
 export const EVENT_TIMEZONE = "Africa/Lagos"; // GMT+1
 

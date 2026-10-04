@@ -11,6 +11,16 @@ export interface IBatchEmailPayload {
   imageUrl?: string;
 }
 
+export interface ISendSinglePersonEmailPayload {
+  personId: string;
+  subject: string;
+  heading: string;
+  message: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+  imageUrl?: string;
+}
+
 export interface ISendBatchRegistrantsEmailPayload {
   registrationIds?: string[];
   eventId?: string;
@@ -64,5 +74,19 @@ export const emailService = {
       payload,
     );
     return extractData(res.data);
+  },
+
+  async sendSinglePersonEmail(
+    payload: ISendSinglePersonEmailPayload,
+  ): Promise<unknown> {
+    return emailService.sendBatchEmail({
+      personIds: [payload.personId],
+      subject: payload.subject,
+      heading: payload.heading,
+      message: payload.message,
+      ctaLabel: payload.ctaLabel,
+      ctaUrl: payload.ctaUrl,
+      imageUrl: payload.imageUrl,
+    });
   },
 };
