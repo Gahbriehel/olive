@@ -185,6 +185,15 @@ export interface IUpcomingBirthday {
   nextBirthday: string;
   daysUntil: number;
   turningAge?: number;
+  isGreeted?: boolean;
+  greetedAt?: string | null;
+  greetedBy?: {
+    id: string;
+    name?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+  } | null;
 }
 
 export interface IDashboardData {

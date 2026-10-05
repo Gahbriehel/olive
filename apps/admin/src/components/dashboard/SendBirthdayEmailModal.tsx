@@ -2,21 +2,24 @@
 
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Cake, Send } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Cake, Send, Image as ImageIcon } from "lucide-react";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/FormElements/Input";
 import { RichTextEditor } from "@/components/FormElements/RichTextEditor";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { IUpcomingBirthday } from "@/models/dashboard";
-import { emailService } from "@/services/email.service";
+import { birthdayService } from "@/services/birthday.service";
 import { customToast } from "@/helpers/customToast";
+import { extractErrorMessage } from "@/utils/api-client";
 import dayjs from "dayjs";
 
 interface BirthdayEmailFormValues {
   subject: string;
   heading: string;
   message: string;
+  imageUrl?: string;
   ctaLabel?: string;
   ctaUrl?: string;
 }
@@ -34,6 +37,7 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const queryClient = useQueryClient();
   const [isSending, setIsSending] = useState(false);
 
   const {
@@ -46,6 +50,7 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
       subject: "",
       heading: "",
       message: "",
+      imageUrl: "",
       ctaLabel: "",
       ctaUrl: "",
     },
@@ -55,9 +60,10 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
     if (birthday && isOpen) {
       const firstName = birthday.firstName || "Member";
       reset({
-        subject: `Happy Birthday, ${firstName}! 🎉`,
-        heading: `Wishing You a Blessed Birthday!`,
-        message: `<p>Dear beloved,</p><p>On behalf of our entire church community, we want to wish you a very happy and blessed birthday!</p><p>May this new year of your life be filled with abundant joy, peace, good health, and blessings in every endeavor.</p><p>Warmest regards,<br />Church Leadership</p>`,
+        subject: `Happy Birthday, ${firstName}! 🎂 Celebrating You Today!`,
+        heading: `Happy Birthday, ${firstName}!`,
+        message: `<p>Dear ${firstName},</p><p>On behalf of our entire church family, we want to wish you a very happy and blessed birthday!</p><p>May this new year of your life be filled with God's abundant grace, peace, good health, and fruitfulness in all you do.</p><p>Warmest blessings,<br />Church Leadership</p>`,
+        imageUrl: "",
         ctaLabel: "",
         ctaUrl: "",
       });
@@ -69,11 +75,14 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
 
     try {
       setIsSending(true);
-      await emailService.sendSinglePersonEmail({
+      await birthdayService.sendBirthdayGreeting({
         personId: birthday.id,
         subject: formData.subject.trim(),
         heading: formData.heading.trim(),
         message: formData.message.trim(),
+        imageUrl: formData.imageUrl?.trim()
+          ? formData.imageUrl.trim()
+          : undefined,
         ctaLabel: formData.ctaLabel?.trim()
           ? formData.ctaLabel.trim()
           : undefined,
@@ -83,10 +92,24 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
       customToast.success(
         `Birthday greeting sent to ${birthday.firstName} ${birthday.lastName}!`,
       );
+
+      // Refresh dashboard data so greeted status updates immediately
+      await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       onSuccess?.();
       onClose();
-    } catch {
-      // Handled by apiClient interceptor
+    } catch (err: unknown) {
+      const axiosError = err as {
+        response?: { status?: number; data?: unknown };
+      };
+      if (axiosError.response?.status === 409) {
+        // Concurrency or duplicate send conflict: refresh dashboard
+        await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      }
+      const errorMsg = extractErrorMessage(
+        err,
+        "Failed to send birthday greeting",
+      );
+      customToast.error(errorMsg);
     } finally {
       setIsSending(false);
     }
@@ -137,7 +160,7 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
               <Input
                 {...field}
                 label="Message Subject"
-                placeholder="e.g. Happy Birthday! 🎉"
+                placeholder="e.g. Happy Birthday! 🎂"
                 error={errors.subject?.message}
                 required
               />
@@ -156,6 +179,21 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
                 placeholder="e.g. Wishing You a Blessed Birthday!"
                 error={errors.heading?.message}
                 required
+              />
+            )}
+          />
+
+          {/* Optional Card Image URL */}
+          <Controller
+            name="imageUrl"
+            control={control}
+            render={({ field }) => (
+              <Input
+                {...field}
+                label="Birthday Card Image URL (Optional)"
+                placeholder="e.g. /public/uploads/birthday-card.png or https://..."
+                icon={<ImageIcon className="w-4 h-4 text-slate-400" />}
+                error={errors.imageUrl?.message}
               />
             )}
           />
@@ -208,12 +246,12 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
           <div className="mt-4 flex flex-col gap-3 pt-4 sm:flex-row-reverse sm:border-t sm:border-slate-100 dark:sm:border-zinc-800">
             <Button
               type="submit"
-              disabled={isSending || !birthday.email}
+              disabled={isSending || !birthday.email || birthday.isGreeted}
               isLoading={isSending}
               rightIcon={<Send className="w-4 h-4" />}
               className="w-full sm:w-auto"
             >
-              Send Birthday Email
+              Send Birthday Greeting
             </Button>
             <Button
               variant="outline"

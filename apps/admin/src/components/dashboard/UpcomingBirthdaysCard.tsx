@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Cake, ChevronRight, Mail } from "lucide-react";
+import { Cake, ChevronRight, Mail, MailCheck, Check } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -122,10 +122,30 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
               `${birthday.firstName || ""} ${birthday.lastName || ""}`.trim() ||
               "Member";
 
+            const isGreeted = Boolean(birthday.isGreeted);
+
+            let greetedByText = "Church Admin";
+            if (birthday.greetedBy) {
+              if (typeof birthday.greetedBy === "object") {
+                greetedByText =
+                  birthday.greetedBy.name ||
+                  `${birthday.greetedBy.firstName || ""} ${birthday.greetedBy.lastName || ""}`.trim() ||
+                  "Church Admin";
+              }
+            }
+
+            const greetedDate = birthday.greetedAt
+              ? dayjs(birthday.greetedAt).format("MMM D, YYYY")
+              : "";
+            const greetedReason = greetedDate
+              ? `Greeting already sent by ${greetedByText} on ${greetedDate}`
+              : `Greeting already sent by ${greetedByText}`;
+
             return (
               <div
                 key={birthday.id}
                 className="flex items-center justify-between p-3 rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40 hover:bg-slate-100/80 dark:hover:bg-zinc-800/70 transition-all cursor-pointer group"
+                onClick={() => router.push("/people")}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="min-w-0">
@@ -137,12 +157,6 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
                         status={birthday.membershipStatus || "MEMBER"}
                         size="sm"
                       />
-                      {/* {birthday.turningAge !== undefined &&
-                        birthday.turningAge !== null && (
-                          <Badge variant="purple" size="sm">
-                            Turning {birthday.turningAge}
-                          </Badge>
-                        )} */}
                     </div>
                     {birthday.email && (
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
@@ -155,30 +169,62 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
                 <div className="flex items-center gap-2 shrink-0 ml-2">
                   {renderCountdownBadge(birthday)}
 
-                  {birthday.email ? (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenEmailModal(birthday);
-                      }}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-950/60 transition-colors cursor-pointer"
-                      title={`Send birthday greeting to ${birthday.firstName}`}
-                    >
-                      <Mail className="w-4 h-4" />
-                    </button>
+                  {isGreeted && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 px-2 py-0.5 rounded-full">
+                      <Check className="w-3 h-3" /> Greeted
+                    </span>
+                  )}
+
+                  {isGreeted ? (
+                    <div className="relative group/tooltip inline-flex items-center">
+                      <button
+                        type="button"
+                        disabled
+                        aria-label={greetedReason}
+                        title={greetedReason}
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1.5 rounded-lg text-emerald-600/80 dark:text-emerald-400/80 bg-emerald-50 dark:bg-emerald-950/50 cursor-not-allowed border border-emerald-200/60 dark:border-emerald-800/40"
+                      >
+                        <MailCheck className="w-4 h-4" />
+                      </button>
+                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-slate-900 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-medium text-white shadow-lg shadow-black/20 border border-slate-700/50 animate-in fade-in duration-150">
+                        {greetedReason}
+                      </div>
+                    </div>
+                  ) : birthday.email ? (
+                    <div className="relative group/tooltip inline-flex items-center">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenEmailModal(birthday);
+                        }}
+                        aria-label={`Send birthday greeting to ${birthday.firstName}`}
+                        title={`Send birthday greeting to ${birthday.firstName}`}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-950/60 transition-colors cursor-pointer"
+                      >
+                        <Mail className="w-4 h-4" />
+                      </button>
+                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-slate-900 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-medium text-white shadow-lg shadow-black/20 border border-slate-700/50 animate-in fade-in duration-150">
+                        Send greeting to {birthday.firstName}
+                      </div>
+                    </div>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push("/people");
-                      }}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
-                      title="View person details"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
+                    <div className="relative group/tooltip inline-flex items-center">
+                      <button
+                        type="button"
+                        disabled
+                        aria-label="No email address on record"
+                        title="No email address on record"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1.5 rounded-lg text-slate-300 dark:text-zinc-600 bg-slate-100/60 dark:bg-zinc-800/40 cursor-not-allowed"
+                      >
+                        <Mail className="w-4 h-4 opacity-50" />
+                      </button>
+                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-slate-900 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-medium text-white shadow-lg shadow-black/20 border border-slate-700/50 animate-in fade-in duration-150">
+                        No email address on record
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
