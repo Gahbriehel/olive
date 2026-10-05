@@ -126,7 +126,6 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
               <div
                 key={birthday.id}
                 className="flex items-center justify-between p-3 rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40 hover:bg-slate-100/80 dark:hover:bg-zinc-800/70 transition-all cursor-pointer group"
-                onClick={() => router.push("/people")}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="min-w-0">
