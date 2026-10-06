@@ -1,0 +1,763 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import {
+  MailWarning,
+  AlertTriangle,
+  CheckCircle2,
+  Percent,
+  Globe,
+  Tag,
+  Calendar,
+  ShieldCheck,
+} from "lucide-react";
+import { Table } from "@/components/ui/Table";
+import { Tabs } from "@/components/ui/Tabs";
+import { Badge } from "@/components/ui/Badge";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { RefreshButton } from "@/components/ui/RefreshButton";
+import { ActionsList, ActionItem } from "@/components/ui/ActionsList";
+import { ListToolbar } from "@/components/ui/ListToolbar";
+import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
+import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
+import { NotAvailable } from "@/components/ui/NotAvailable";
+import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
+import { ViewBounceDetailsModal } from "@/components/modals/ViewBounceDetailsModal";
+import { RemediateBounceModal } from "@/components/modals/RemediateBounceModal";
+import { emailBounceService } from "@/services/emailBounce.service";
+import {
+  EmailBounce,
+  EmailBounceTabFilter,
+  EmailBounceAnalyticsResponse,
+} from "@/models/emailBounce";
+import { useAuth } from "@/hooks/useAuth";
+import { getUserRoles, ROLES } from "@/utils/rbac";
+import { downloadCsvExport } from "@/helpers/downloadCsvExport";
+import { customToast } from "@/helpers/customToast";
+import dayjs from "dayjs";
+
+const columnHelper = createColumnHelper<EmailBounce>();
+
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+export default function EmailBouncesPage() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const userRoles = useMemo(() => getUserRoles(user), [user]);
+  const canManage =
+    userRoles.includes(ROLES.SUPER_ADMIN) || userRoles.includes(ROLES.ADMIN);
+
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+
+  // Global Time & Analytics Filter States
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(
+    currentMonth,
+  );
+
+  // Table Filter States
+  const [tabFilter, setTabFilter] = useState<EmailBounceTabFilter>(
+    EmailBounceTabFilter.ALL,
+  );
+  const [search, setSearch] = useState<string>("");
+  const [emailTypeFilter, setEmailTypeFilter] = useState<string>("ALL");
+  const [recipientTypeFilter, setRecipientTypeFilter] = useState<string>("ALL");
+  const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
+
+  // Modals State
+  const [selectedBounce, setSelectedBounce] = useState<EmailBounce | null>(
+    null,
+  );
+  const [remediateTarget, setRemediateTarget] = useState<EmailBounce | null>(
+    null,
+  );
+
+  // 1. Fetch Analytics Data
+  const {
+    data: analyticsData,
+    isLoading: isAnalyticsLoading,
+    refetch: refetchAnalytics,
+  } = useQuery<EmailBounceAnalyticsResponse>({
+    queryKey: [
+      "email-bounces-analytics",
+      selectedYear,
+      selectedMonth,
+      emailTypeFilter,
+      recipientTypeFilter,
+    ],
+    queryFn: () =>
+      emailBounceService.getBounceAnalytics({
+        year: selectedYear,
+        month: selectedMonth || undefined,
+        emailType: emailTypeFilter !== "ALL" ? emailTypeFilter : undefined,
+        recipientType:
+          recipientTypeFilter !== "ALL" ? recipientTypeFilter : undefined,
+      }),
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
+
+  // Compute table query parameters
+  const computedQueryParams = useMemo(() => {
+    let isResolved: boolean | undefined = undefined;
+    let bounceType: string | undefined = undefined;
+
+    if (tabFilter === EmailBounceTabFilter.UNRESOLVED) {
+      isResolved = false;
+    } else if (tabFilter === EmailBounceTabFilter.RESOLVED) {
+      isResolved = true;
+    } else if (tabFilter === EmailBounceTabFilter.HARD_BOUNCE) {
+      bounceType = "Hard";
+    } else if (tabFilter === EmailBounceTabFilter.SOFT_BOUNCE) {
+      bounceType = "Soft";
+    }
+
+    return {
+      search: search || undefined,
+      isResolved,
+      bounceType,
+      emailType: emailTypeFilter !== "ALL" ? emailTypeFilter : undefined,
+      recipientType:
+        recipientTypeFilter !== "ALL" ? recipientTypeFilter : undefined,
+      page,
+      limit,
+    };
+  }, [tabFilter, search, emailTypeFilter, recipientTypeFilter, page, limit]);
+
+  // 2. Fetch Email Bounces List
+  const {
+    data: bounceResponse,
+    isLoading: isListLoading,
+    isFetching,
+    refetch: refetchList,
+  } = useQuery({
+    queryKey: ["email-bounces-list", computedQueryParams],
+    queryFn: () => emailBounceService.getBounces(computedQueryParams),
+    staleTime: 1000 * 30, // 30 seconds
+  });
+
+  const bounces = useMemo(
+    () => bounceResponse?.data || [],
+    [bounceResponse?.data],
+  );
+
+  const meta = useMemo(
+    () => ({
+      total: bounceResponse?.total ?? bounces.length,
+      page: bounceResponse?.page ?? page,
+      limit: bounceResponse?.limit ?? limit,
+      totalPages: bounceResponse?.totalPages ?? 1,
+    }),
+    [
+      bounceResponse?.total,
+      bounceResponse?.page,
+      bounceResponse?.limit,
+      bounceResponse?.totalPages,
+      bounces.length,
+      page,
+      limit,
+    ],
+  );
+
+  const handleRefreshAll = () => {
+    refetchAnalytics();
+    refetchList();
+  };
+
+  // 3. Mark Resolved Mutation
+  const resolveMutation = useMutation({
+    mutationFn: (id: string) => emailBounceService.resolveBounce(id),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ["email-bounces-list"] });
+      queryClient.invalidateQueries({ queryKey: ["email-bounces-analytics"] });
+      if (selectedBounce?.id === updated.id) {
+        setSelectedBounce((prev) => (prev ? { ...prev, ...updated } : null));
+      }
+      customToast.success("Email bounce marked as resolved");
+    },
+    onError: () => {
+      customToast.error("Failed to mark bounce as resolved");
+    },
+  });
+
+  // Table Columns Definition
+  const columns = useMemo<ColumnDef<EmailBounce>[]>(
+    () =>
+      [
+        columnHelper.accessor("email", {
+          header: "Recipient",
+          cell: ({ row }) => {
+            const item = row.original;
+            const initials = (item.recipientName || item.email || "E")
+              .slice(0, 2)
+              .toUpperCase();
+
+            return (
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 font-bold text-xs flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/40">
+                  {initials}
+                </div>
+                <div className="min-w-0 max-w-[180px] sm:max-w-[240px]">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {item.recipientName && (
+                      <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                        {item.recipientName}
+                      </p>
+                    )}
+                    {item.recipientType && (
+                      <Badge
+                        variant={
+                          item.recipientType === "PERSON" ? "indigo" : "cyan"
+                        }
+                        size="sm"
+                        className="text-[9px] px-1 py-0"
+                      >
+                        {item.recipientType}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="text-[11px] font-mono text-slate-600 dark:text-slate-300 truncate mt-0.5">
+                    <TruncatedTextWithCopy
+                      text={item.email}
+                      maxLength={24}
+                      textClassName="text-[11px] font-mono text-slate-600 dark:text-slate-300"
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          },
+        }),
+
+        columnHelper.accessor("bounceType", {
+          header: "Classification",
+          cell: ({ row }) => {
+            const item = row.original;
+            const isHard =
+              item.bounceType?.toLowerCase() === "hard" ||
+              item.eventType?.toLowerCase().includes("failed");
+
+            return (
+              <div className="space-y-0.5 whitespace-nowrap">
+                <StatusBadge
+                  status={isHard ? "BOUNCED" : item.bounceType || "BOUNCED"}
+                  size="sm"
+                />
+                {item.eventType && (
+                  <p className="text-[10px] text-slate-400 font-mono truncate max-w-[120px]">
+                    {item.eventType}
+                  </p>
+                )}
+              </div>
+            );
+          },
+        }),
+
+        columnHelper.accessor("emailType", {
+          header: "Context / Template",
+          cell: ({ getValue }) => {
+            const emailType = getValue();
+            if (!emailType) return <NotAvailable />;
+            return (
+              <div className="max-w-[160px] truncate text-xs font-medium text-slate-700 dark:text-slate-300">
+                <span title={emailType}>{emailType}</span>
+              </div>
+            );
+          },
+        }),
+
+        columnHelper.accessor("reason", {
+          header: "Diagnostic Reason",
+          cell: ({ getValue }) => {
+            const reason = getValue();
+            if (!reason) return <NotAvailable />;
+            return (
+              <div className="max-w-[220px] sm:max-w-[280px]">
+                <p
+                  className="text-xs font-mono text-slate-700 dark:text-slate-300 truncate"
+                  title={reason}
+                >
+                  {reason}
+                </p>
+              </div>
+            );
+          },
+        }),
+
+        columnHelper.accessor("isResolved", {
+          header: "Status",
+          cell: ({ getValue }) => {
+            const isResolved = getValue();
+            if (isResolved) {
+              return (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                  <CheckCircle2 className="w-3 h-3" /> Resolved
+                </span>
+              );
+            }
+            return (
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                <AlertTriangle className="w-3 h-3" /> Action Needed
+              </span>
+            );
+          },
+        }),
+
+        columnHelper.accessor("createdAt", {
+          header: "Recorded",
+          cell: ({ getValue }) => {
+            const val = getValue();
+            if (!val) return <NotAvailable />;
+            return (
+              <div className="space-y-0.5 whitespace-nowrap">
+                <p className="text-xs font-medium text-slate-800 dark:text-slate-200">
+                  {dayjs(val).format("MMM D, YYYY")}
+                </p>
+                <p className="text-[10px] text-slate-400">
+                  {dayjs(val).format("h:mm A")}
+                </p>
+              </div>
+            );
+          },
+        }),
+
+        columnHelper.display({
+          id: "actions",
+          header: () => <div className="text-right">Actions</div>,
+          cell: ({ row }) => {
+            const item = row.original;
+            const actions: ActionItem[] = [
+              ...(canManage && !item.isResolved
+                ? [
+                    {
+                      title: "Fix & Remediate Email",
+                      fn: () => setRemediateTarget(item),
+                    },
+                    {
+                      title: "Mark as Resolved",
+                      fn: () => resolveMutation.mutate(item.id),
+                    },
+                  ]
+                : []),
+              {
+                title: "View Full Diagnostics",
+                fn: () => setSelectedBounce(item),
+              },
+            ];
+
+            return (
+              <div className="flex justify-end">
+                <ActionsList actions={actions} />
+              </div>
+            );
+          },
+        }),
+      ] as ColumnDef<EmailBounce>[],
+    [canManage, resolveMutation],
+  );
+
+  // Summary Metrics computed from Analytics Response or local fallback
+  const summary = useMemo(
+    () =>
+      analyticsData?.summary || {
+        totalSent: 0,
+        totalBounces: meta.total,
+        resolvedBounces: bounces.filter((b) => b.isResolved).length,
+        unresolvedBounces: bounces.filter((b) => !b.isResolved).length,
+        bounceRate: 0,
+        resolutionRate: 0,
+        deliveryRate: 100,
+      },
+    [analyticsData?.summary, meta.total, bounces],
+  );
+
+  // Filter Tabs Configuration
+  const tabs = useMemo(
+    () => [
+      {
+        id: EmailBounceTabFilter.ALL,
+        label: "All Bounces",
+        count: summary.totalBounces,
+      },
+      {
+        id: EmailBounceTabFilter.UNRESOLVED,
+        label: "Action Needed",
+        count: summary.unresolvedBounces,
+      },
+      {
+        id: EmailBounceTabFilter.HARD_BOUNCE,
+        label: "Hard Bounces",
+        count: analyticsData?.byBounceType?.find(
+          (b) => b.category.toLowerCase() === "hard",
+        )?.count,
+      },
+      {
+        id: EmailBounceTabFilter.SOFT_BOUNCE,
+        label: "Soft Bounces",
+        count: analyticsData?.byBounceType?.find(
+          (b) => b.category.toLowerCase() === "soft",
+        )?.count,
+      },
+      {
+        id: EmailBounceTabFilter.RESOLVED,
+        label: "Resolved",
+        count: summary.resolvedBounces,
+      },
+    ],
+    [summary, analyticsData],
+  );
+
+  // KPI Stats Cards Configuration
+  const kpiStats = useMemo(
+    () => [
+      {
+        title: "Delivery Rate",
+        value: `${summary.deliveryRate}%`,
+        description: `${selectedMonth ? MONTH_NAMES[selectedMonth - 1] : selectedYear} delivery success`,
+        icon: ShieldCheck,
+        color: "emerald" as const,
+        loading: isAnalyticsLoading,
+      },
+      {
+        title: "Total Delivery Failures",
+        value: summary.totalBounces,
+        description: `Out of ${summary.totalSent.toLocaleString()} sent emails`,
+        icon: MailWarning,
+        color: "rose" as const,
+        loading: isAnalyticsLoading,
+      },
+      {
+        title: "Action Needed",
+        value: summary.unresolvedBounces,
+        description: "Pending address fix",
+        icon: AlertTriangle,
+        color: "amber" as const,
+        loading: isAnalyticsLoading,
+      },
+      {
+        title: "Resolved Rate",
+        value: `${summary.resolutionRate}%`,
+        description: `${summary.resolvedBounces} remediated`,
+        icon: CheckCircle2,
+        color: "indigo" as const,
+        loading: isAnalyticsLoading,
+      },
+      {
+        title: "Bounce Rate",
+        value: `${summary.bounceRate}%`,
+        description: "Target under 2.0%",
+        icon: Percent,
+        color: summary.bounceRate > 2 ? ("rose" as const) : ("cyan" as const),
+        className: "col-span-2 sm:col-span-1",
+        loading: isAnalyticsLoading,
+      },
+    ],
+    [summary, selectedMonth, selectedYear, isAnalyticsLoading],
+  );
+
+  return (
+    <div className="space-y-5 sm:space-y-6 pb-12 min-w-0 max-w-full">
+      {/* Page Header */}
+      <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40 shadow-xs shrink-0">
+              <MailWarning className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 truncate">
+                Email Bounces & Delivery Issues
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                Monitor Resend webhooks, remediate invalid emails, and resend
+                critical communications.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Header Controls: Year/Month Selector, Refresh, & CSV Export */}
+        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 flex-wrap">
+          {/* Year Selector */}
+          <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-2.5 py-1 shadow-xs">
+            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+            <select
+              value={selectedYear}
+              onChange={(e) => {
+                setSelectedYear(Number(e.target.value));
+                setPage(1);
+              }}
+              className="text-xs font-semibold bg-transparent text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+            >
+              {[
+                currentYear - 2,
+                currentYear - 1,
+                currentYear,
+                currentYear + 1,
+              ].map((yr) => (
+                <option key={yr} value={yr} className="dark:bg-zinc-900">
+                  {yr}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <RefreshButton onRefetch={handleRefreshAll} />
+
+          {canManage && (
+            <ExportCsvButton
+              endpoint="/email-bounces/export"
+              params={{
+                search: computedQueryParams.search,
+                isResolved: computedQueryParams.isResolved,
+                bounceType: computedQueryParams.bounceType,
+                emailType: computedQueryParams.emailType,
+                recipientType: computedQueryParams.recipientType,
+              }}
+              fallbackFilename={`email-bounces-${new Date().toISOString().slice(0, 10)}.csv`}
+              label="Export CSV"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* KPI Stats Cards */}
+      <StatsCardGroup>
+        {kpiStats.map((kpi, idx) => (
+          <StatsCard
+            key={idx}
+            title={kpi.title}
+            value={kpi.value}
+            change={kpi.description}
+            trend="neutral"
+            icon={kpi.icon}
+            color={kpi.color}
+            className={kpi.className}
+            loading={kpi.loading}
+          />
+        ))}
+      </StatsCardGroup>
+
+      {/* Top Failing Domains & Categories Banner */}
+      {analyticsData &&
+        (analyticsData.topFailingDomains?.length > 0 ||
+          analyticsData.byEmailType?.length > 0) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            {/* Top Failing Domains */}
+            {analyticsData.topFailingDomains?.length > 0 && (
+              <div className="p-3.5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-indigo-500" />
+                    Top Failing Domains
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    High bounce rate clusters
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {analyticsData.topFailingDomains.map((dom) => (
+                    <span
+                      key={dom.domain}
+                      className="inline-flex items-center gap-1 text-[11px] font-mono font-medium px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-zinc-700/60"
+                    >
+                      @{dom.domain}
+                      <span className="text-rose-500 font-bold">
+                        ({dom.count})
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Email Types Breakdown */}
+            {analyticsData.byEmailType?.length > 0 && (
+              <div className="p-3.5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-purple-500" />
+                    Failures by Email Type
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    Distribution by campaign
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {analyticsData.byEmailType.map((em) => (
+                    <span
+                      key={em.category}
+                      className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-zinc-700/60"
+                    >
+                      {em.category}
+                      <span className="text-indigo-600 dark:text-indigo-400 font-bold">
+                        {em.percentage}%
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+      {/* Table Section */}
+      <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 p-3.5 sm:p-6 shadow-xs space-y-4 min-w-0 max-w-full overflow-hidden">
+        {/* Status Filter Tabs */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
+          <div className="overflow-x-auto no-scrollbar max-w-full">
+            <Tabs
+              tabs={tabs}
+              activeTab={tabFilter}
+              onChange={(tabId) => {
+                setTabFilter(tabId as EmailBounceTabFilter);
+                setPage(1);
+              }}
+            />
+          </div>
+
+          {/* Month Filter Clear / Badge */}
+          {selectedMonth && (
+            <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+              <Badge variant="indigo" size="md">
+                Month: {MONTH_NAMES[selectedMonth - 1]}
+              </Badge>
+              <button
+                type="button"
+                onClick={() => setSelectedMonth(null)}
+                className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 underline cursor-pointer"
+              >
+                Clear
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Table with Toolbar & Filter Dropdowns */}
+        <Table
+          columns={columns}
+          data={bounces}
+          loading={isListLoading || isFetching}
+          searchPlaceholder="Search by email, name, subject, or error code..."
+          search={search}
+          onSearchChange={(query: string) => {
+            setSearch(query);
+            setPage(1);
+          }}
+          enableSearch={true}
+          enablePagination={true}
+          page={page}
+          onPageChange={(newPage: number) => setPage(newPage)}
+          limit={limit}
+          onLimitChange={(newLimit: number) => {
+            setLimit(newLimit);
+            setPage(1);
+          }}
+          meta={meta}
+          emptyMessage="No bounce alerts found matching current criteria"
+        >
+          <ListToolbar
+            actions={[
+              { title: "Refresh", fn: handleRefreshAll },
+              ...(canManage
+                ? [
+                    {
+                      title: "Export CSV",
+                      fn: () =>
+                        downloadCsvExport(
+                          "/email-bounces/export",
+                          {
+                            search: computedQueryParams.search,
+                            isResolved: computedQueryParams.isResolved,
+                            bounceType: computedQueryParams.bounceType,
+                            emailType: computedQueryParams.emailType,
+                            recipientType: computedQueryParams.recipientType,
+                          },
+                          `email-bounces-${new Date().toISOString().slice(0, 10)}.csv`,
+                        ),
+                    },
+                  ]
+                : []),
+            ]}
+            trailing={
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* Email Type Filter */}
+                <select
+                  value={emailTypeFilter}
+                  onChange={(e) => {
+                    setEmailTypeFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="text-xs font-medium bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                >
+                  <option value="ALL">All Email Types</option>
+                  <option value="REGISTRATION_CONFIRMATION">
+                    Registration Confirmation
+                  </option>
+                  <option value="CUSTOM_BROADCAST">Custom Broadcast</option>
+                  <option value="ADMIN_WELCOME">Admin Welcome</option>
+                </select>
+
+                {/* Recipient Type Filter */}
+                <select
+                  value={recipientTypeFilter}
+                  onChange={(e) => {
+                    setRecipientTypeFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="text-xs font-medium bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                >
+                  <option value="ALL">All Recipients</option>
+                  <option value="PERSON">Person (Member/Visitor)</option>
+                  <option value="USER">User (Admin/Staff)</option>
+                </select>
+              </div>
+            }
+          />
+        </Table>
+      </div>
+
+      {/* Modal: View Diagnostics Details */}
+      <ViewBounceDetailsModal
+        isOpen={Boolean(selectedBounce)}
+        bounce={selectedBounce}
+        onClose={() => setSelectedBounce(null)}
+        isResolving={resolveMutation.isPending}
+        onRemediate={(bounce) => {
+          setSelectedBounce(null);
+          setRemediateTarget(bounce);
+        }}
+        onResolve={(bounce) => resolveMutation.mutate(bounce.id)}
+      />
+
+      {/* Modal: Remediate Bounced Email Address */}
+      <RemediateBounceModal
+        isOpen={Boolean(remediateTarget)}
+        bounce={remediateTarget}
+        onClose={() => setRemediateTarget(null)}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["email-bounces-list"] });
+          queryClient.invalidateQueries({
+            queryKey: ["email-bounces-analytics"],
+          });
+        }}
+      />
+    </div>
+  );
+}

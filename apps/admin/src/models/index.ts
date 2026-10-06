@@ -6,3 +6,15 @@ export * from "./game";
 export * from "./person";
 export * from "./registration";
 export * from "./team";
+export type {
+  BirthdayGreetingAuthor,
+  BirthdayGreetingRecord,
+  BirthdayPersonItem,
+  BirthdayListResponse,
+  MonthlyBirthdayStat,
+  BirthdayAnalyticsResponse,
+  SendBirthdayGreetingPayload,
+  SendBirthdayGreetingResponse,
+} from "./birthday";
+export { BirthdayStatusFilter } from "./birthday";
+export * from "./emailBounce";

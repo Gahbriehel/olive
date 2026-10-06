@@ -62,6 +62,9 @@ export function extractData<T>(resData: unknown): T {
     if ("games" in obj && Array.isArray(obj.games)) {
       return obj.games as T;
     }
+    if ("bounces" in obj && Array.isArray(obj.bounces)) {
+      return obj.bounces as T;
+    }
   }
   return current as T;
 }

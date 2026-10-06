@@ -15,6 +15,7 @@ import {
   Heart,
   BarChart3,
   Cake,
+  MailWarning,
 } from "lucide-react";
 import { ROLES } from "@/utils/rbac";
 
@@ -136,6 +137,12 @@ export const mainNavItems: NavItem[] = [
         label: "Birthdays",
         icon: Cake,
         allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+      },
+      {
+        href: "/reports/bounces",
+        label: "Email Bounces",
+        icon: MailWarning,
+        allowedRoles: [ROLES.SUPER_ADMIN],
       },
     ],
   },
