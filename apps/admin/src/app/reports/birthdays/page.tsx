@@ -5,17 +5,14 @@ import { useQuery } from "@tanstack/react-query";
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import {
   Cake,
-  Mail,
   MailCheck,
   CheckCircle2,
   Clock,
   AlertCircle,
   Percent,
   Users,
-  Eye,
   Calendar,
   Sparkles,
-  Send,
 } from "lucide-react";
 import { Table } from "@/components/ui/Table";
 import { Tabs } from "@/components/ui/Tabs";
@@ -30,11 +27,7 @@ import { NotAvailable } from "@/components/ui/NotAvailable";
 import { SendBirthdayEmailModal } from "@/components/dashboard/SendBirthdayEmailModal";
 import { ViewBirthdayGreetingModal } from "@/components/modals/ViewBirthdayGreetingModal";
 import { birthdayService } from "@/services/birthday.service";
-import {
-  BirthdayPersonItem,
-  BirthdayStatusFilter,
-  MonthlyBirthdayStat,
-} from "@/models/birthday";
+import { BirthdayPersonItem, BirthdayStatusFilter } from "@/models/birthday";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
 
@@ -86,14 +79,16 @@ export default function BirthdayReportsPage() {
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
 
-  // Modal State
-  const [selectedPersonForEmail, setSelectedPersonForEmail] =
-    useState<BirthdayPersonItem | null>(null);
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  // Modal State (Selected person drives modal open/close)
+  const [emailTarget, setEmailTarget] = useState<BirthdayPersonItem | null>(
+    null,
+  );
+  const [viewTarget, setViewTarget] = useState<BirthdayPersonItem | null>(null);
 
-  const [selectedPersonForView, setSelectedPersonForView] =
-    useState<BirthdayPersonItem | null>(null);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const setMonthFilter = (month: number | null) => {
+    setSelectedMonth(month);
+    setPage(1);
+  };
 
   // 1. Fetch Birthday Analytics
   const {
@@ -136,22 +131,11 @@ export default function BirthdayReportsPage() {
       }),
   });
 
-  const handleRefetchAll = async () => {
-    await Promise.all([refetchAnalytics(), refetchList()]);
-  };
+  const handleRefetchAll = () =>
+    Promise.all([refetchAnalytics(), refetchList()]);
 
-  const handleOpenEmail = (person: BirthdayPersonItem) => {
-    setSelectedPersonForEmail(person);
-    setIsEmailModalOpen(true);
-  };
-
-  const handleOpenView = (person: BirthdayPersonItem) => {
-    setSelectedPersonForView(person);
-    setIsViewModalOpen(true);
-  };
-
-  // Table Columns Definition using project standard ActionsList
-  const columns = useMemo(() => {
+  // Table Columns Definition
+  const columns = useMemo<ColumnDef<BirthdayPersonItem>[]>(() => {
     return [
       columnHelper.accessor(
         (row) => `${row.firstName} ${row.lastName}`.trim(),
@@ -161,11 +145,10 @@ export default function BirthdayReportsPage() {
           cell: ({ row }) => {
             const person = row.original;
             const fullName =
-              `${person.firstName || ""} ${person.lastName || ""}`.trim() ||
+              [person.firstName, person.lastName].filter(Boolean).join(" ") ||
               "Member";
-            const initials = `${person.firstName?.[0] || ""}${
-              person.lastName?.[0] || ""
-            }`.toUpperCase();
+            const initials =
+              `${person.firstName?.[0] || ""}${person.lastName?.[0] || ""}`.toUpperCase();
 
             return (
               <div className="flex items-center gap-3 min-w-0">
@@ -208,11 +191,10 @@ export default function BirthdayReportsPage() {
         cell: ({ row }) => {
           const person = row.original;
           const target = person.birthdayDate || person.dateOfBirth;
-          const formatted = target ? dayjs(target).format("MMM D") : "—";
           return (
             <div className="space-y-0.5 whitespace-nowrap">
               <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                {formatted}
+                {target ? dayjs(target).format("MMM D") : "—"}
               </p>
               {person.turningAge !== undefined &&
                 person.turningAge !== null && (
@@ -267,11 +249,13 @@ export default function BirthdayReportsPage() {
         cell: ({ row }) => {
           const person = row.original;
           if (person.isGreeted || person.status === "COMPLETED") {
-            const senderName = person.greeting?.sentBy
-              ? `${person.greeting.sentBy.firstName || ""} ${
-                  person.greeting.sentBy.lastName || ""
-                }`.trim() || "Admin"
-              : "Admin";
+            const senderName =
+              [
+                person.greeting?.sentBy?.firstName,
+                person.greeting?.sentBy?.lastName,
+              ]
+                .filter(Boolean)
+                .join(" ") || "Admin";
 
             return (
               <div className="flex flex-col gap-0.5 whitespace-nowrap">
@@ -307,28 +291,26 @@ export default function BirthdayReportsPage() {
         cell: ({ row }) => {
           const person = row.original;
           const isGreeted = person.isGreeted || person.status === "COMPLETED";
-          const hasEmail = Boolean(person.email);
 
-          const actions: ActionItem[] = [];
-
-          if (isGreeted) {
-            actions.push({
-              title: "View Record",
-              fn: () => handleOpenView(person),
-            });
-            if (hasEmail) {
-              actions.push({
-                title: "Send Another Message",
-                fn: () => handleOpenEmail(person),
-              });
-            }
-          } else {
-            actions.push({
-              title: "Send Birthday Message",
-              disabled: !hasEmail,
-              fn: () => handleOpenEmail(person),
-            });
-          }
+          const actions: ActionItem[] = isGreeted
+            ? [
+                { title: "View Record", fn: () => setViewTarget(person) },
+                ...(person.email
+                  ? [
+                      {
+                        title: "Send Another Message",
+                        fn: () => setEmailTarget(person),
+                      },
+                    ]
+                  : []),
+              ]
+            : [
+                {
+                  title: "Send Birthday Message",
+                  disabled: !person.email,
+                  fn: () => setEmailTarget(person),
+                },
+              ];
 
           return (
             <div className="flex justify-end">
@@ -337,10 +319,98 @@ export default function BirthdayReportsPage() {
           );
         },
       }),
-    ];
+    ] as ColumnDef<BirthdayPersonItem>[];
   }, []);
 
-  const monthlyBreakdown = analyticsData?.monthlyBreakdown || [];
+  // 12-Month Distribution Summary Data
+  const monthlyStats = useMemo(() => {
+    const map = new Map(
+      analyticsData?.monthlyBreakdown?.map((m) => [m.month, m]),
+    );
+    return MONTH_ABBR.map((abbr, idx) => {
+      const monthNum = idx + 1;
+      const stat = map.get(monthNum);
+      return {
+        monthNum,
+        abbr,
+        total: stat?.total ?? 0,
+        completed: stat?.completed ?? 0,
+        rate: stat?.handlingRate ?? 0,
+      };
+    });
+  }, [analyticsData?.monthlyBreakdown]);
+
+  // KPI Stats Cards Configuration
+  const kpiStats = useMemo(
+    () => [
+      {
+        title: "Handling Rate",
+        value: `${analyticsData?.handlingRate ?? 0}%`,
+        description: selectedMonth
+          ? `${MONTH_NAMES[selectedMonth - 1]} coverage`
+          : `${selectedYear} overall`,
+        icon: Percent,
+        color: "emerald" as const,
+      },
+      {
+        title: "Total Birthdays",
+        value: analyticsData?.totalBirthdays ?? 0,
+        description: "Members in cycle",
+        icon: Users,
+        color: "indigo" as const,
+      },
+      {
+        title: "Greeted",
+        value: analyticsData?.completedCount ?? 0,
+        description: "Delivered",
+        icon: MailCheck,
+        color: "cyan" as const,
+      },
+      {
+        title: "Pending",
+        value: analyticsData?.pendingCount ?? 0,
+        description: "Upcoming",
+        icon: Clock,
+        color: "amber" as const,
+      },
+      {
+        title: "Missed",
+        value: analyticsData?.missedCount ?? 0,
+        description: "Ungreeted past",
+        icon: AlertCircle,
+        color: "rose" as const,
+        className: "col-span-2 sm:col-span-1",
+      },
+    ],
+    [analyticsData, selectedMonth, selectedYear],
+  );
+
+  // Filter Tabs Configuration
+  const statusTabs = useMemo(
+    () => [
+      {
+        id: BirthdayStatusFilter.ALL,
+        label: "All Birthdays",
+        count: analyticsData?.totalBirthdays,
+      },
+      {
+        id: BirthdayStatusFilter.PENDING,
+        label: "Pending",
+        count: analyticsData?.pendingCount,
+      },
+      {
+        id: BirthdayStatusFilter.COMPLETED,
+        label: "Greeted",
+        count: analyticsData?.completedCount,
+      },
+      {
+        id: BirthdayStatusFilter.MISSED,
+        label: "Missed",
+        count: analyticsData?.missedCount,
+      },
+    ],
+    [analyticsData],
+  );
 
   return (
     <div className="space-y-5 sm:space-y-6 pb-12 min-w-0 max-w-full">
@@ -365,7 +435,6 @@ export default function BirthdayReportsPage() {
 
         {/* Global Controls: Year Selector & Refresh */}
         <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-          {/* Year Selector */}
           <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-2.5 py-1 shadow-xs">
             <Calendar className="w-3.5 h-3.5 text-slate-400" />
             <select
@@ -376,9 +445,11 @@ export default function BirthdayReportsPage() {
               }}
               className="text-xs font-semibold text-slate-800 dark:text-slate-200 bg-transparent border-none focus:outline-hidden cursor-pointer"
             >
-              <option value={currentYear - 1}>{currentYear - 1}</option>
-              <option value={currentYear}>{currentYear}</option>
-              <option value={currentYear + 1}>{currentYear + 1}</option>
+              {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -389,51 +460,13 @@ export default function BirthdayReportsPage() {
       {/* Analytics KPI Summary Cards */}
       <div className="w-full">
         <StatsCardGroup className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 w-full">
-          <StatsCard
-            title="Handling Rate"
-            value={`${analyticsData?.handlingRate ?? 0}%`}
-            description={
-              selectedMonth
-                ? `${MONTH_NAMES[selectedMonth - 1]} coverage`
-                : `${selectedYear} overall`
-            }
-            icon={Percent}
-            color="emerald"
-            loading={isAnalyticsLoading}
-          />
-          <StatsCard
-            title="Total Birthdays"
-            value={analyticsData?.totalBirthdays ?? 0}
-            description="Members in cycle"
-            icon={Users}
-            color="indigo"
-            loading={isAnalyticsLoading}
-          />
-          <StatsCard
-            title="Greeted"
-            value={analyticsData?.completedCount ?? 0}
-            description="Delivered"
-            icon={MailCheck}
-            color="cyan"
-            loading={isAnalyticsLoading}
-          />
-          <StatsCard
-            title="Pending"
-            value={analyticsData?.pendingCount ?? 0}
-            description="Upcoming"
-            icon={Clock}
-            color="amber"
-            loading={isAnalyticsLoading}
-          />
-          <StatsCard
-            title="Missed"
-            value={analyticsData?.missedCount ?? 0}
-            description="Ungreeted past"
-            icon={AlertCircle}
-            color="rose"
-            loading={isAnalyticsLoading}
-            className="col-span-2 sm:col-span-1"
-          />
+          {kpiStats.map((stat) => (
+            <StatsCard
+              key={stat.title}
+              {...stat}
+              loading={isAnalyticsLoading}
+            />
+          ))}
         </StatsCardGroup>
       </div>
 
@@ -449,10 +482,7 @@ export default function BirthdayReportsPage() {
           {selectedMonth !== null && (
             <button
               type="button"
-              onClick={() => {
-                setSelectedMonth(null);
-                setPage(1);
-              }}
+              onClick={() => setMonthFilter(null)}
               className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
             >
               Show Full Year
@@ -460,26 +490,17 @@ export default function BirthdayReportsPage() {
           )}
         </div>
 
-        {/* Responsive Month Grid / Horizontal scroll */}
+        {/* Responsive Month Grid */}
         <div className="overflow-x-auto no-scrollbar -mx-1 px-1 py-0.5">
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-12 gap-2 min-w-[320px]">
-            {MONTH_ABBR.map((abbr, idx) => {
-              const mNum = idx + 1;
-              const stat: MonthlyBirthdayStat | undefined =
-                monthlyBreakdown.find((m) => m.month === mNum);
-              const isSelected = selectedMonth === mNum;
-              const total = stat?.total ?? 0;
-              const completed = stat?.completed ?? 0;
-              const rate = stat?.handlingRate ?? 0;
+            {monthlyStats.map(({ monthNum, abbr, total, completed, rate }) => {
+              const isSelected = selectedMonth === monthNum;
 
               return (
                 <button
                   key={abbr}
                   type="button"
-                  onClick={() => {
-                    setSelectedMonth(isSelected ? null : mNum);
-                    setPage(1);
-                  }}
+                  onClick={() => setMonthFilter(isSelected ? null : monthNum)}
                   className={clsx(
                     "flex flex-col items-start p-2 sm:p-2.5 rounded-xl border transition-all text-left cursor-pointer",
                     isSelected
@@ -540,28 +561,7 @@ export default function BirthdayReportsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
           <div className="overflow-x-auto no-scrollbar max-w-full">
             <Tabs
-              tabs={[
-                {
-                  id: BirthdayStatusFilter.ALL,
-                  label: "All Birthdays",
-                  count: analyticsData?.totalBirthdays,
-                },
-                {
-                  id: BirthdayStatusFilter.PENDING,
-                  label: "Pending",
-                  count: analyticsData?.pendingCount,
-                },
-                {
-                  id: BirthdayStatusFilter.COMPLETED,
-                  label: "Greeted",
-                  count: analyticsData?.completedCount,
-                },
-                {
-                  id: BirthdayStatusFilter.MISSED,
-                  label: "Missed",
-                  count: analyticsData?.missedCount,
-                },
-              ]}
+              tabs={statusTabs}
               activeTab={statusFilter}
               onChange={(tabId) => {
                 setStatusFilter(tabId as BirthdayStatusFilter);
@@ -577,10 +577,7 @@ export default function BirthdayReportsPage() {
               </Badge>
               <button
                 type="button"
-                onClick={() => {
-                  setSelectedMonth(null);
-                  setPage(1);
-                }}
+                onClick={() => setMonthFilter(null)}
                 className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 underline cursor-pointer"
               >
                 Clear
@@ -591,7 +588,7 @@ export default function BirthdayReportsPage() {
 
         {/* Data Table with ListToolbar and ActionsList */}
         <Table
-          columns={columns as Array<ColumnDef<BirthdayPersonItem>>}
+          columns={columns}
           data={listData?.data || []}
           searchPlaceholder="Search member by name, email, or phone..."
           search={search}
@@ -617,32 +614,24 @@ export default function BirthdayReportsPage() {
           loading={isListLoading}
           emptyMessage="No birthday records found for the selected cycle and filters."
         >
-          <ListToolbar
-            actions={[{ title: "Refresh", fn: () => handleRefetchAll() }]}
-          />
+          <ListToolbar actions={[{ title: "Refresh", fn: handleRefetchAll }]} />
         </Table>
       </div>
 
       {/* Compose Birthday Greeting Modal */}
       <SendBirthdayEmailModal
-        birthday={selectedPersonForEmail}
-        isOpen={isEmailModalOpen}
-        onClose={() => {
-          setIsEmailModalOpen(false);
-          setSelectedPersonForEmail(null);
-        }}
+        birthday={emailTarget}
+        isOpen={Boolean(emailTarget)}
+        onClose={() => setEmailTarget(null)}
         onSuccess={handleRefetchAll}
       />
 
       {/* View Sent Greeting Audit Modal */}
       <ViewBirthdayGreetingModal
-        person={selectedPersonForView}
-        isOpen={isViewModalOpen}
-        onClose={() => {
-          setIsViewModalOpen(false);
-          setSelectedPersonForView(null);
-        }}
-        onSendGreeting={(person) => handleOpenEmail(person)}
+        person={viewTarget}
+        isOpen={Boolean(viewTarget)}
+        onClose={() => setViewTarget(null)}
+        onSendGreeting={(person) => setEmailTarget(person)}
       />
     </div>
   );
