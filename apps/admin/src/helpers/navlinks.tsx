@@ -139,7 +139,7 @@ export const mainNavItems: NavItem[] = [
       },
     ],
   },
-  
+
   {
     href: "/settings",
     label: "Settings",
