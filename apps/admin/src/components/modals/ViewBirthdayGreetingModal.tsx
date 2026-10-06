@@ -53,12 +53,13 @@ export const ViewBirthdayGreetingModal: React.FC<
       : null;
 
   return (
-    <SidebarModal title={fullName} display={isOpen} close={onClose}>
+    <SidebarModal
+      title={fullName}
+      subtitle={`Birthday Outreach Record • ID: ${person.id}`}
+      display={isOpen}
+      close={onClose}
+    >
       <div className="space-y-5">
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-[-1rem] mb-2">
-          Birthday Outreach Record • ID: {person.id}
-        </p>
-
         {/* Header Profile Card */}
         <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
@@ -88,7 +89,7 @@ export const ViewBirthdayGreetingModal: React.FC<
         {/* Delivery Audit Status Card */}
         <div className="rounded-xl border border-emerald-200/80 dark:border-emerald-900/50 bg-emerald-50/40 dark:bg-emerald-950/20 p-3.5 space-y-2">
           <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
-            <MailCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <MailCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>Greeting Successfully Delivered</span>
           </div>
 
@@ -135,7 +136,7 @@ export const ViewBirthdayGreetingModal: React.FC<
               Phone Number
             </p>
             {person.phone ? (
-              <p className="font-semibold text-slate-800 dark:text-slate-200">
+              <p className="font-semibold text-slate-800 dark:text-slate-200 truncate">
                 {person.phone}
               </p>
             ) : (
@@ -162,7 +163,7 @@ export const ViewBirthdayGreetingModal: React.FC<
               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 Email Subject Line
               </label>
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mt-0.5">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mt-0.5 break-words">
                 {greeting.subject}
               </p>
             </div>
@@ -173,7 +174,7 @@ export const ViewBirthdayGreetingModal: React.FC<
                 <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   Banner Heading
                 </label>
-                <p className="text-sm font-medium text-slate-800 dark:text-slate-200 mt-0.5">
+                <p className="text-sm font-medium text-slate-800 dark:text-slate-200 mt-0.5 break-words">
                   {greeting.heading}
                 </p>
               </div>
@@ -202,14 +203,14 @@ export const ViewBirthdayGreetingModal: React.FC<
                 Message Content
               </label>
               <div
-                className="prose prose-sm dark:prose-invert max-w-none text-xs text-slate-700 dark:text-slate-300 p-3.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 leading-relaxed"
+                className="prose prose-sm dark:prose-invert max-w-none text-xs text-slate-700 dark:text-slate-300 p-3.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 leading-relaxed break-words [word-break:break-word] overflow-x-auto [&_p]:my-1.5 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_img]:max-w-full [&_table]:max-w-full [&_table]:w-full"
                 dangerouslySetInnerHTML={{ __html: greeting.message }}
               />
             </div>
 
             {/* CTA Button */}
             {greeting.ctaLabel && greeting.ctaUrl && (
-              <div className="pt-2 border-t border-slate-200/60 dark:border-zinc-700/60 flex items-center justify-between">
+              <div className="pt-2 border-t border-slate-200/60 dark:border-zinc-700/60 flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs text-slate-500 dark:text-slate-400">
                   Call to Action:
                 </span>
@@ -217,10 +218,10 @@ export const ViewBirthdayGreetingModal: React.FC<
                   href={greeting.ctaUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition-colors break-all"
                 >
                   <span>{greeting.ctaLabel}</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3 h-3 shrink-0" />
                 </a>
               </div>
             )}

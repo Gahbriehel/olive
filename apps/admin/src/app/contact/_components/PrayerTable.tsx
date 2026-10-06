@@ -350,7 +350,7 @@ export function PrayerTable(): JSX.Element {
               </div>
               <div className="mt-1">
                 {selectedContact.message ? (
-                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
+                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-words [word-break:break-word]">
                     {selectedContact.message}
                   </p>
                 ) : (

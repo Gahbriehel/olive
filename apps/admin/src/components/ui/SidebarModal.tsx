@@ -8,12 +8,14 @@ import { X } from "lucide-react";
 export interface Props {
   children: ReactNode;
   title: string;
+  subtitle?: ReactNode;
   display: boolean;
   close: () => void;
 }
 
 export const SidebarModal = ({
   title,
+  subtitle,
   children,
   display,
   close,
@@ -51,24 +53,34 @@ export const SidebarModal = ({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 320 }}
-            className="relative z-10 flex h-full w-full max-w-lg flex-col bg-white p-6 shadow-2xl dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-800"
+            className="relative z-10 flex h-full w-full max-w-lg flex-col overflow-hidden bg-white p-6 shadow-2xl dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-800"
           >
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100 dark:border-zinc-800">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 sm:text-xl">
-                {title}
-              </h2>
+            <div className="flex items-start justify-between pb-4 mb-4 border-b border-slate-100 dark:border-zinc-800 shrink-0 gap-3">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 sm:text-xl truncate">
+                  {title}
+                </h2>
+                {subtitle && (
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">
+                    {subtitle}
+                  </div>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={close}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-zinc-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                aria-label="Close modal"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-zinc-800 dark:hover:text-slate-200 transition-colors cursor-pointer shrink-0"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto pr-1">{children}</div>
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pr-1 pb-4">
+              {children}
+            </div>
           </motion.div>
         </div>
       )}

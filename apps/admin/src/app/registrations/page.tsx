@@ -913,16 +913,14 @@ export default function RegistrationsPage() {
         display={!!selectedRegistration}
         close={() => setSelectedRegistration(null)}
         title="Registration Details"
+        subtitle={
+          selectedRegistration?.registrationNumber
+            ? `Registration Code: ${selectedRegistration.registrationNumber}`
+            : undefined
+        }
       >
         {selectedRegistration && (
           <div className="space-y-6">
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-[-1rem] mb-2">
-              Registration Code:{" "}
-              <span className="font-mono font-semibold">
-                {selectedRegistration.registrationNumber}
-              </span>
-            </p>
-
             {/* Header Badge Card */}
             <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
               <div className="flex items-center gap-3">
