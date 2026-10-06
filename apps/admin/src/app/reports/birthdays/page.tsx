@@ -28,6 +28,8 @@ import { SendBirthdayEmailModal } from "@/components/dashboard/SendBirthdayEmail
 import { ViewBirthdayGreetingModal } from "@/components/modals/ViewBirthdayGreetingModal";
 import { birthdayService } from "@/services/birthday.service";
 import { BirthdayPersonItem, BirthdayStatusFilter } from "@/models/birthday";
+import { useAuth } from "@/hooks/useAuth";
+import { getUserRoles, ROLES } from "@/utils/rbac";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
 
@@ -64,6 +66,10 @@ const MONTH_ABBR = [
 ];
 
 export default function BirthdayReportsPage() {
+  const { user } = useAuth();
+  const userRoles = useMemo(() => getUserRoles(user), [user]);
+  const isSuperAdmin = userRoles.includes(ROLES.SUPER_ADMIN);
+
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
 
@@ -196,7 +202,8 @@ export default function BirthdayReportsPage() {
               <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                 {target ? dayjs(target).format("MMM D") : "—"}
               </p>
-              {person.turningAge !== undefined &&
+              {isSuperAdmin &&
+                person.turningAge !== undefined &&
                 person.turningAge !== null && (
                   <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
                     Turning {person.turningAge}
@@ -320,7 +327,7 @@ export default function BirthdayReportsPage() {
         },
       }),
     ] as ColumnDef<BirthdayPersonItem>[];
-  }, []);
+  }, [isSuperAdmin]);
 
   // 12-Month Distribution Summary Data
   const monthlyStats = useMemo(() => {

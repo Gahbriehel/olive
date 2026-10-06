@@ -17,6 +17,8 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { NotAvailable } from "@/components/ui/NotAvailable";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { BirthdayPersonItem } from "@/models/birthday";
+import { useAuth } from "@/hooks/useAuth";
+import { getUserRoles, ROLES } from "@/utils/rbac";
 import dayjs from "dayjs";
 
 interface ViewBirthdayGreetingModalProps {
@@ -29,6 +31,10 @@ interface ViewBirthdayGreetingModalProps {
 export const ViewBirthdayGreetingModal: React.FC<
   ViewBirthdayGreetingModalProps
 > = ({ person, isOpen, onClose, onSendGreeting }) => {
+  const { user } = useAuth();
+  const userRoles = getUserRoles(user);
+  const isSuperAdmin = userRoles.includes(ROLES.SUPER_ADMIN);
+
   if (!person || !isOpen) return null;
 
   const greeting = person.greeting;
@@ -75,7 +81,8 @@ export const ViewBirthdayGreetingModal: React.FC<
                   status={person.membershipStatus || "MEMBER"}
                   size="sm"
                 />
-                {person.turningAge !== undefined &&
+                {isSuperAdmin &&
+                  person.turningAge !== undefined &&
                   person.turningAge !== null && (
                     <span className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300">
                       Turning {person.turningAge}
