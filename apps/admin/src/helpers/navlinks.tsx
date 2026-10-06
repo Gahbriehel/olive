@@ -108,20 +108,6 @@ export const mainNavItems: NavItem[] = [
   },
 
   {
-    label: "Reports",
-    icon: BarChart3,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
-    subs: [
-      {
-        href: "/reports/birthdays",
-        label: "Birthdays",
-        icon: Cake,
-        allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
-      },
-    ],
-  },
-
-  {
     href: "/messaging-center",
     label: "Messaging Center",
     icon: MessageCircle,
@@ -139,6 +125,21 @@ export const mainNavItems: NavItem[] = [
     icon: UserCheck,
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
+
+  {
+    label: "Reports",
+    icon: BarChart3,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+    subs: [
+      {
+        href: "/reports/birthdays",
+        label: "Birthdays",
+        icon: Cake,
+        allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+      },
+    ],
+  },
+  
   {
     href: "/settings",
     label: "Settings",

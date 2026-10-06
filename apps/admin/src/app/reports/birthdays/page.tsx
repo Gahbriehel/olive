@@ -313,21 +313,18 @@ export default function BirthdayReportsPage() {
 
           if (isGreeted) {
             actions.push({
-              title: "View Greeting Record",
-              icon: <Eye className="w-4 h-4 text-slate-500" />,
+              title: "View Record",
               fn: () => handleOpenView(person),
             });
             if (hasEmail) {
               actions.push({
-                title: "Send Another Greeting",
-                icon: <Send className="w-4 h-4 text-indigo-500" />,
+                title: "Send Another Message",
                 fn: () => handleOpenEmail(person),
               });
             }
           } else {
             actions.push({
-              title: "Send Birthday Greeting",
-              icon: <Mail className="w-4 h-4 text-indigo-500" />,
+              title: "Send Birthday Message",
               disabled: !hasEmail,
               fn: () => handleOpenEmail(person),
             });
