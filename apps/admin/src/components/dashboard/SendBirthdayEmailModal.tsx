@@ -10,6 +10,7 @@ import { Input } from "@/components/FormElements/Input";
 import { RichTextEditor } from "@/components/FormElements/RichTextEditor";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { IUpcomingBirthday } from "@/models/dashboard";
+import { BirthdayPersonItem } from "@/models/birthday";
 import { birthdayService } from "@/services/birthday.service";
 import { customToast } from "@/helpers/customToast";
 import { extractErrorMessage } from "@/utils/api-client";
@@ -25,7 +26,7 @@ interface BirthdayEmailFormValues {
 }
 
 interface SendBirthdayEmailModalProps {
-  birthday: IUpcomingBirthday | null;
+  birthday: IUpcomingBirthday | BirthdayPersonItem | null;
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
@@ -93,8 +94,12 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
         `Birthday greeting sent to ${birthday.firstName} ${birthday.lastName}!`,
       );
 
-      // Refresh dashboard data so greeted status updates immediately
-      await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      // Refresh dashboard and birthday report queries
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["birthdays-list"] }),
+        queryClient.invalidateQueries({ queryKey: ["birthday-analytics"] }),
+      ]);
       onSuccess?.();
       onClose();
     } catch (err: unknown) {
@@ -102,8 +107,12 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
         response?: { status?: number; data?: unknown };
       };
       if (axiosError.response?.status === 409) {
-        // Concurrency or duplicate send conflict: refresh dashboard
-        await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+        // Concurrency or duplicate send conflict: refresh data
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+          queryClient.invalidateQueries({ queryKey: ["birthdays-list"] }),
+          queryClient.invalidateQueries({ queryKey: ["birthday-analytics"] }),
+        ]);
       }
       const errorMsg = extractErrorMessage(
         err,
@@ -115,7 +124,14 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
     }
   };
 
-  const targetDate = birthday?.nextBirthday || birthday?.dateOfBirth;
+  const targetDate =
+    ("nextBirthday" in (birthday || {})
+      ? (birthday as IUpcomingBirthday).nextBirthday
+      : null) ||
+    ("birthdayDate" in (birthday || {})
+      ? (birthday as BirthdayPersonItem).birthdayDate
+      : null) ||
+    birthday?.dateOfBirth;
   const formattedDate = targetDate ? dayjs(targetDate).format("MMMM D") : "";
 
   return (
@@ -130,8 +146,8 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
           className="flex flex-col gap-5 pt-2"
         >
           {/* Recipient Details Pill */}
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-pink-50/70 dark:bg-pink-950/30 border border-pink-100 dark:border-pink-900/40">
-            <div className="w-10 h-10 rounded-xl bg-pink-100 dark:bg-pink-900/60 text-pink-600 dark:text-pink-300 font-bold text-sm flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700/60">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold text-sm flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40">
               <Cake className="w-5 h-5" />
             </div>
             <div className="min-w-0 flex-1">

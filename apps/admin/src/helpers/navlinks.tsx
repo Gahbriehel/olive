@@ -13,6 +13,8 @@ import {
   LucideIcon,
   MessageCircle,
   Heart,
+  BarChart3,
+  Cake,
 } from "lucide-react";
 import { ROLES } from "@/utils/rbac";
 
@@ -100,6 +102,20 @@ export const mainNavItems: NavItem[] = [
         href: "/leaderboard",
         label: "Leaderboard",
         icon: Trophy,
+        allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+      },
+    ],
+  },
+
+  {
+    label: "Reports",
+    icon: BarChart3,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+    subs: [
+      {
+        href: "/reports/birthdays",
+        label: "Birthdays",
+        icon: Cake,
         allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
       },
     ],

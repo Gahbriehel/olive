@@ -44,6 +44,8 @@ export const ROUTE_PERMISSIONS: Record<string, string[]> = {
     "MEMBER",
   ],
   "/people": [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+  "/reports": [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+  "/reports/birthdays": [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
 };
 
 /**

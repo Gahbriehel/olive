@@ -49,6 +49,7 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
     pathname?.startsWith("/settings") ||
     pathname?.startsWith("/profile") ||
     pathname?.startsWith("/messaging-center") ||
+    pathname?.startsWith("/reports") ||
     pathname?.startsWith("/contact");
 
   // Fetch user profile on startup / session restore

@@ -40,7 +40,7 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
 
     if (daysUntil === 0) {
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm shadow-pink-500/25 animate-pulse">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-xs shadow-indigo-500/20 animate-pulse">
           🎉 Today!
         </span>
       );
@@ -72,7 +72,7 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-pink-50 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400">
+          <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
             <Cake className="w-4 h-4" />
           </div>
           <CardTitle>Upcoming Birthdays</CardTitle>
@@ -80,10 +80,10 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => router.push("/people")}
+          onClick={() => router.push("/reports/birthdays")}
           rightIcon={<ChevronRight className="w-3.5 h-3.5" />}
         >
-          View People
+          View Reports
         </Button>
       </CardHeader>
 
@@ -201,7 +201,7 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
                         }}
                         aria-label={`Send birthday greeting to ${birthday.firstName}`}
                         title={`Send birthday greeting to ${birthday.firstName}`}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-950/60 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 transition-colors cursor-pointer"
                       >
                         <Mail className="w-4 h-4" />
                       </button>
