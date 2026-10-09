@@ -97,19 +97,6 @@ export enum EmailBounceTabFilter {
   RESOLVED = "RESOLVED",
 }
 
-export interface EmailBounceQueryParams {
-  year?: number;
-  month?: number;
-  search?: string;
-  isResolved?: boolean | string;
-  eventType?: string;
-  bounceType?: string;
-  emailType?: string;
-  recipientType?: string;
-  page?: number;
-  limit?: number;
-}
-
 export interface EmailBounceListResponse {
   data: EmailBounce[];
   total: number;

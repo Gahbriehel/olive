@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   UserPlus,
@@ -15,12 +15,12 @@ import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { ListToolbar } from "@/components/ui/ListToolbar";
 import { FiltersButton } from "@/components/ui/FiltersButton";
 import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/FormElements/Select";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Tabs } from "@/components/ui/Tabs";
 import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
 import { SidebarModal } from "@/components/ui/SidebarModal";
+import { FiltersModal } from "@/components/modals/FiltersModal";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { RegisterPersonForm } from "@/components/Forms/RegisterPersonForm";
 import { PersonForm } from "@/components/Forms/PersonForm";
@@ -29,6 +29,7 @@ import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
 import { customToast } from "@/helpers/customToast";
 import { usePeople } from "@/hooks/usePeople";
+import { useListFilters } from "@/hooks/useListFilters";
 import { useEvents } from "@/hooks/useEvents";
 import { useRegistrations } from "@/hooks/useRegistrations";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,36 +41,57 @@ import {
   IUpdatePersonPayload,
 } from "@/models/person";
 import { IRegistrationPayload } from "@/models/registration";
+import { type FilterField } from "@/models/filters";
+
+const peopleFilterFields: FilterField[] = [
+  {
+    type: "select",
+    key: "membershipStatus",
+    label: "Membership Status",
+    allLabel: "All Statuses",
+    options: [
+      { label: "Member", value: "Member" },
+      { label: "Worker", value: "Worker" },
+      { label: "Leader", value: "Leader" },
+      { label: "Visitor", value: "Visitor" },
+    ],
+  },
+  {
+    type: "select",
+    key: "gender",
+    label: "Gender",
+    allLabel: "All Genders",
+    options: [
+      { label: "Male", value: "Male" },
+      { label: "Female", value: "Female" },
+    ],
+  },
+];
 
 export default function PeoplePage() {
-  const [search, setSearch] = useState("");
-  const [membershipStatus, setMembershipStatus] = useState("All");
-  const [gender, setGender] = useState("All");
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const {
+    page,
+    setPage,
+    limit,
+    setLimit,
+    search,
+    setSearch,
+    activeCount,
+    queryParams,
+    exportParams,
+    openPanel,
+    panelProps,
+  } = useListFilters({ fields: peopleFilterFields });
 
   const [selectedPerson, setSelectedPerson] = useState<IPerson | null>(null);
   const [editingPerson, setEditingPerson] = useState<IPerson | null>(null);
   const [drawerTab, setDrawerTab] = useState("info");
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const { user } = useAuth();
   const userRoles = getUserRoles(user);
   const isSuperAdmin = userRoles.includes(ROLES.SUPER_ADMIN);
-
-  const queryParams = useMemo(
-    () => ({
-      page,
-      limit,
-      search: search || undefined,
-      membershipStatus:
-        membershipStatus !== "All" ? membershipStatus : undefined,
-      gender: gender !== "All" ? gender : undefined,
-    }),
-    [page, limit, search, membershipStatus, gender],
-  );
 
   const {
     people: apiPeople,
@@ -127,37 +149,6 @@ export default function PeoplePage() {
     } catch (err) {
       console.error("Failed to update person:", err);
     }
-  };
-
-  const handleSearchChange = useCallback((newSearch: string) => {
-    setSearch((prevSearch) => {
-      if (prevSearch !== newSearch) {
-        setPage(1);
-      }
-      return newSearch;
-    });
-  }, []);
-
-  const handleLimitChange = (newLimit: number) => {
-    setLimit(newLimit);
-    setPage(1);
-  };
-
-  const handleMembershipChange = (newStatus: string) => {
-    setMembershipStatus(newStatus);
-    setPage(1);
-  };
-
-  const handleGenderChange = (newGender: string) => {
-    setGender(newGender);
-    setPage(1);
-  };
-
-  const activeFilterCount =
-    (membershipStatus !== "All" ? 1 : 0) + (gender !== "All" ? 1 : 0);
-  const clearFilters = () => {
-    handleMembershipChange("All");
-    handleGenderChange("All");
   };
 
   const totalPeople = stats?.total ?? people.length;
@@ -345,9 +336,9 @@ export default function PeoplePage() {
         page={page}
         onPageChange={setPage}
         limit={limit}
-        onLimitChange={handleLimitChange}
+        onLimitChange={setLimit}
         search={search}
-        onSearchChange={handleSearchChange}
+        onSearchChange={setSearch}
         loading={isLoading}
       >
         <ListToolbar
@@ -363,12 +354,7 @@ export default function PeoplePage() {
               fn: () =>
                 downloadCsvExport(
                   "/people/export",
-                  {
-                    search: search || undefined,
-                    membershipStatus:
-                      membershipStatus !== "All" ? membershipStatus : undefined,
-                    gender: gender !== "All" ? gender : undefined,
-                  },
+                  exportParams,
                   `people-${new Date().toISOString().slice(0, 10)}.csv`,
                 ),
             },
@@ -378,68 +364,12 @@ export default function PeoplePage() {
             },
           ]}
           trailing={
-            <FiltersButton
-              onClick={() => setFiltersOpen(true)}
-              activeCount={activeFilterCount}
-            />
+            <FiltersButton onClick={openPanel} activeCount={activeCount} />
           }
         />
       </Table>
 
-      {/* Filters Sidebar Modal */}
-      <SidebarModal
-        display={filtersOpen}
-        close={() => setFiltersOpen(false)}
-        title="Filters"
-      >
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              Membership Status
-            </label>
-            <Select
-              value={membershipStatus}
-              onChange={(e) => handleMembershipChange(e.target.value)}
-            >
-              <option value="All">All Statuses</option>
-              <option value="Member">Member</option>
-              <option value="Worker">Worker</option>
-              <option value="Leader">Leader</option>
-              <option value="Visitor">Visitor</option>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              Gender
-            </label>
-            <Select
-              value={gender}
-              onChange={(e) => handleGenderChange(e.target.value)}
-            >
-              <option value="All">All Genders</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </Select>
-          </div>
-          <div className="flex gap-3 pt-4 mt-2 border-t border-slate-100 dark:border-zinc-800">
-            <Button
-              variant="outline"
-              className="flex-1 justify-center"
-              onClick={clearFilters}
-              disabled={activeFilterCount === 0}
-            >
-              Clear all
-            </Button>
-            <Button
-              variant="primary"
-              className="flex-1 justify-center"
-              onClick={() => setFiltersOpen(false)}
-            >
-              Apply
-            </Button>
-          </div>
-        </div>
-      </SidebarModal>
+      <FiltersModal {...panelProps} />
 
       {/* Person Details Sidebar Modal */}
       <SidebarModal

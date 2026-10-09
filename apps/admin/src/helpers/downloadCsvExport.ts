@@ -16,7 +16,7 @@ function filenameFromContentDisposition(
  */
 export async function downloadCsvExport(
   endpoint: string,
-  params: Record<string, unknown> = {},
+  params: object = {},
   fallbackFilename = "export.csv",
 ): Promise<boolean> {
   try {

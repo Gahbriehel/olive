@@ -1,6 +1,6 @@
 "use client";
 
-import { JSX, useState } from "react";
+import { JSX, useMemo, useState } from "react";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
 import { IContact } from "@/models/contact";
 import { extractMeta } from "@/models/base";
@@ -13,25 +13,18 @@ import { ListToolbar } from "@/components/ui/ListToolbar";
 import { FiltersButton } from "@/components/ui/FiltersButton";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { SidebarModal } from "@/components/ui/SidebarModal";
-import { BaseButton, Button } from "@/components/ui/Button";
-import { Input } from "@/components/FormElements/Input";
-import { Select } from "@/components/FormElements/Select";
+import { FiltersModal } from "@/components/modals/FiltersModal";
+import { BaseButton } from "@/components/ui/Button";
 import { NotAvailable } from "@/components/ui/NotAvailable";
 import { useAuth } from "@/hooks/useAuth";
+import { useListFilters } from "@/hooks/useListFilters";
+import { type FilterField } from "@/models/filters";
 import { ROLES, getUserRoles, hasAuthority } from "@/utils/rbac";
 import { Mail, Phone, Calendar, MessageSquare, Tag, Send } from "lucide-react";
 
 const columnHelper = createColumnHelper<IContact>();
 
 export function InquiryTable(): JSX.Element {
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
-  const [isPrivate, setIsPrivate] = useState<"All" | "Public" | "Private">(
-    "All",
-  );
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<IContact | null>(null);
 
@@ -40,15 +33,42 @@ export function InquiryTable(): JSX.Element {
   const canExport = hasAuthority(userRoles, [ROLES.SUPER_ADMIN, ROLES.ADMIN]);
   const isSuperAdmin = hasAuthority(userRoles, [ROLES.SUPER_ADMIN]);
 
-  const isPrivateFilterValue =
-    isSuperAdmin && isPrivate !== "All" ? isPrivate === "Private" : undefined;
-  const activeFilterCount =
-    (category.trim() ? 1 : 0) + (isPrivateFilterValue !== undefined ? 1 : 0);
-  const clearFilters = () => {
-    setCategory("");
-    setIsPrivate("All");
-    setPage(1);
-  };
+  const filterFields = useMemo<FilterField[]>(
+    () => [
+      {
+        type: "text",
+        key: "category",
+        label: "Category",
+        placeholder: "e.g. General, Partnership...",
+      },
+      ...(isSuperAdmin
+        ? [
+            {
+              type: "boolean",
+              key: "isPrivate",
+              label: "Privacy",
+              trueLabel: "Private only",
+              falseLabel: "Public only",
+            } satisfies FilterField,
+          ]
+        : []),
+    ],
+    [isSuperAdmin],
+  );
+
+  const {
+    page,
+    setPage,
+    limit,
+    setLimit,
+    search,
+    setSearch,
+    activeCount,
+    queryParams,
+    exportParams,
+    openPanel,
+    panelProps,
+  } = useListFilters({ fields: filterFields });
 
   const columns = [
     columnHelper.accessor((_, rowIndex) => padNumberWithZeros(rowIndex + 1), {
@@ -127,16 +147,7 @@ export function InquiryTable(): JSX.Element {
     }),
   ];
 
-  const { data, isLoading, refetch } = useContactQuery(
-    {
-      page,
-      limit,
-      search,
-      category: category.trim() || undefined,
-      isPrivate: isPrivateFilterValue,
-    },
-    "inquiry",
-  );
+  const { data, isLoading, refetch } = useContactQuery(queryParams, "inquiry");
 
   const inquiries = data?.data.items;
 
@@ -149,14 +160,11 @@ export function InquiryTable(): JSX.Element {
         loading={isLoading}
         searchPlaceholder="Search inquiries..."
         search={search}
-        onSearchChange={(query) => {
-          setSearch(query);
-          setPage(1);
-        }}
+        onSearchChange={setSearch}
         page={page}
-        onPageChange={(page) => setPage(page)}
+        onPageChange={setPage}
         limit={limit}
-        onLimitChange={(limit) => setLimit(limit)}
+        onLimitChange={setLimit}
       >
         <ListToolbar
           actions={[
@@ -168,12 +176,7 @@ export function InquiryTable(): JSX.Element {
                     fn: () =>
                       downloadCsvExport(
                         "/contact/submissions/export",
-                        {
-                          type: "inquiry",
-                          search: search || undefined,
-                          category: category.trim() || undefined,
-                          isPrivate: isPrivateFilterValue,
-                        },
+                        { type: "inquiry", ...exportParams },
                         `contact-submissions-${new Date().toISOString().slice(0, 10)}.csv`,
                       ),
                   },
@@ -181,72 +184,12 @@ export function InquiryTable(): JSX.Element {
               : []),
           ]}
           trailing={
-            <FiltersButton
-              onClick={() => setFiltersOpen(true)}
-              activeCount={activeFilterCount}
-            />
+            <FiltersButton onClick={openPanel} activeCount={activeCount} />
           }
         />
       </Table>
 
-      {/* Filters Sidebar Modal */}
-      <SidebarModal
-        display={filtersOpen}
-        close={() => setFiltersOpen(false)}
-        title="Filters"
-      >
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              Category
-            </label>
-            <Input
-              type="text"
-              value={category}
-              onChange={(e) => {
-                setCategory(e.target.value);
-                setPage(1);
-              }}
-              placeholder="e.g. General, Partnership..."
-            />
-          </div>
-          {isSuperAdmin && (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                Privacy
-              </label>
-              <Select
-                value={isPrivate}
-                onChange={(e) => {
-                  setIsPrivate(e.target.value as "All" | "Public" | "Private");
-                  setPage(1);
-                }}
-              >
-                <option value="All">All</option>
-                <option value="Public">Public only</option>
-                <option value="Private">Private only</option>
-              </Select>
-            </div>
-          )}
-          <div className="flex gap-3 pt-4 mt-2 border-t border-slate-100 dark:border-zinc-800">
-            <Button
-              variant="outline"
-              className="flex-1 justify-center"
-              onClick={clearFilters}
-              disabled={activeFilterCount === 0}
-            >
-              Clear all
-            </Button>
-            <Button
-              variant="primary"
-              className="flex-1 justify-center"
-              onClick={() => setFiltersOpen(false)}
-            >
-              Apply
-            </Button>
-          </div>
-        </div>
-      </SidebarModal>
+      <FiltersModal {...panelProps} />
 
       <SidebarModal
         title="Inquiry Details"

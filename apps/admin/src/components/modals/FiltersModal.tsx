@@ -1,337 +1,215 @@
-import { type JSX, useMemo } from "react";
+import { type JSX, type FormEvent, useState } from "react";
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { Controller, useForm } from "react-hook-form";
-
-dayjs.extend(utc);
 
 import { Input } from "@/components/FormElements/Input";
-import { Select, type ISelect } from "@/components/ui/Select";
-import { BaseButton } from "@/components/ui/Button";
+import { Select } from "@/components/FormElements/Select";
+import { Button } from "@/components/ui/Button";
 import { SidebarModal } from "@/components/ui/SidebarModal";
-import { type IQueryParams } from "@/models/base";
-
-export interface Option {
-  label: string;
-  value: string;
-}
-
-interface Inputs {
-  startDate: string;
-  endDate: string;
-  search: string;
-  status: ISelect;
-  eventId: ISelect;
-  teamId: ISelect;
-  membershipStatus: ISelect;
-}
+import {
+  countActiveFilters,
+  type FilterField,
+  type FilterValues,
+} from "@/models/filters";
 
 interface Props {
-  values: IQueryParams;
   display: boolean;
   close: () => void;
-  filters: Array<keyof IQueryParams | "date">;
-  resetFilters?: () => void;
-  applyFilters: (filters: IQueryParams) => void;
-  eventOptions?: Option[];
-  teamOptions?: Option[];
-  statusOptions?: Option[];
-  membershipStatusOptions?: Option[];
+  fields: FilterField[];
+  values: FilterValues;
+  onApply: (values: FilterValues) => void;
+  onClear: () => void;
+  title?: string;
 }
 
-const mapToISelect = (val?: string, options?: Option[]): ISelect => {
-  if (!val) return { value: { _id: "" }, label: "" };
-  const opt = options?.find((o) => o.value === val);
-  return {
-    value: { _id: val },
-    label: opt ? opt.label : val,
-  };
-};
+const DATE_FORMAT = "YYYY-MM-DD";
 
-const emptyDefaultValues: Inputs = {
-  startDate: "",
-  endDate: "",
-  search: "",
-  status: { value: { _id: "" }, label: "" },
-  eventId: { value: { _id: "" }, label: "" },
-  teamId: { value: { _id: "" }, label: "" },
-  membershipStatus: { value: { _id: "" }, label: "" },
-};
+const datePresets = [
+  { label: "Today", range: () => [dayjs(), dayjs()] },
+  { label: "Last 7 Days", range: () => [dayjs().subtract(7, "day"), dayjs()] },
+  {
+    label: "This Month",
+    range: () => [dayjs().startOf("month"), dayjs().endOf("month")],
+  },
+  {
+    label: "Last 3 Months",
+    range: () => [dayjs().subtract(3, "month"), dayjs()],
+  },
+] as const;
 
-export function FiltersModal(props: Props): JSX.Element {
-  const { display, close } = props;
-
+/**
+ * Generic filters sidebar driven by a FilterField schema. Edits are held in a
+ * local draft and only committed on Apply. Pair with useListFilters and spread
+ * its `panelProps`.
+ */
+export function FiltersModal({
+  title = "Filters",
+  display,
+  close,
+  ...rest
+}: Props): JSX.Element {
   return (
-    <SidebarModal title="Filters" display={display} close={close}>
-      {display ? <FiltersModalContent {...props} /> : <div></div>}
+    <SidebarModal title={title} display={display} close={close}>
+      {/* Mount content only while open so the draft re-seeds from the
+          applied values every time the panel opens. */}
+      {display ? <FiltersModalContent {...rest} /> : <div></div>}
     </SidebarModal>
   );
 }
 
 function FiltersModalContent({
+  fields,
   values,
-  filters,
-  resetFilters,
-  applyFilters,
-  eventOptions = [],
-  teamOptions = [],
-  statusOptions = [],
-  membershipStatusOptions = [],
-}: Props): JSX.Element {
-  const defaultValues: Inputs = useMemo(() => {
-    return {
-      startDate: values.startDate ?? "",
-      endDate: values.endDate ?? "",
-      search: values.search ?? "",
-      status: mapToISelect(values.status, statusOptions),
-      eventId: mapToISelect(values.eventId, eventOptions),
-      teamId: mapToISelect(values.teamId, teamOptions),
-      membershipStatus: mapToISelect(
-        values.membershipStatus,
-        membershipStatusOptions,
-      ),
-    };
-  }, [
-    values,
-    eventOptions,
-    teamOptions,
-    statusOptions,
-    membershipStatusOptions,
-  ]);
+  onApply,
+  onClear,
+}: Omit<Props, "display" | "close" | "title">): JSX.Element {
+  const [draft, setDraft] = useState<FilterValues>(values);
+  const [dateError, setDateError] = useState<string>();
 
-  const {
-    control,
-    handleSubmit,
-    setValue,
-    setError,
-    reset,
-    formState: { errors },
-  } = useForm<Inputs>({
-    values: defaultValues,
-  });
+  function setValue(key: keyof FilterValues, value: string): void {
+    setDraft((prev) => ({ ...prev, [key]: value }));
+  }
 
-  function onSubmit(data: Inputs): void {
+  function onSubmit(e: FormEvent): void {
+    e.preventDefault();
     if (
-      data.startDate &&
-      data.endDate &&
-      dayjs(data.endDate).isBefore(data.startDate)
+      draft.startDate &&
+      draft.endDate &&
+      dayjs(draft.endDate).isBefore(draft.startDate)
     ) {
-      setError("endDate", {
-        message: "End date must be after start date",
-      });
+      setDateError("End date must be after start date");
       return;
     }
-    const queryParams: IQueryParams = {
-      startDate: data.startDate || undefined,
-      endDate: data.endDate || undefined,
-      search: data.search || undefined,
-      status: data.status?.value?._id || undefined,
-      eventId: data.eventId?.value?._id || undefined,
-      teamId: data.teamId?.value?._id || undefined,
-      membershipStatus: data.membershipStatus?.value?._id || undefined,
-    };
-    applyFilters(queryParams);
+    onApply(draft);
   }
 
-  function setToday(): void {
-    setValue("startDate", dayjs().format("YYYY-MM-DD"));
-    setValue("endDate", dayjs().format("YYYY-MM-DD"));
-  }
-  function setLast7Days(): void {
-    setValue("startDate", dayjs().subtract(7, "day").format("YYYY-MM-DD"));
-    setValue("endDate", dayjs().format("YYYY-MM-DD"));
-  }
-  function setThisMonth(): void {
-    setValue("startDate", dayjs().startOf("month").format("YYYY-MM-DD"));
-    setValue("endDate", dayjs().endOf("month").format("YYYY-MM-DD"));
-  }
-  function setLast3Months(): void {
-    setValue("startDate", dayjs().subtract(3, "month").format("YYYY-MM-DD"));
-    setValue("endDate", dayjs().format("YYYY-MM-DD"));
+  function clearAll(): void {
+    setDraft({});
+    setDateError(undefined);
+    onClear();
   }
 
-  const presets = [
-    { label: "Today", dateFunction: setToday },
-    { label: "Last 7 Days", dateFunction: setLast7Days },
-    { label: "This Month", dateFunction: setThisMonth },
-    { label: "Last 3 Months", dateFunction: setLast3Months },
-  ] as const;
-
-  const selectOptionsMapped = useMemo(() => {
-    return {
-      status: statusOptions.map((opt) => ({
-        value: { _id: opt.value },
-        label: opt.label,
-      })),
-      eventId: eventOptions.map((opt) => ({
-        value: { _id: opt.value },
-        label: opt.label,
-      })),
-      teamId: teamOptions.map((opt) => ({
-        value: { _id: opt.value },
-        label: opt.label,
-      })),
-      membershipStatus: membershipStatusOptions.map((opt) => ({
-        value: { _id: opt.value },
-        label: opt.label,
-      })),
-    };
-  }, [statusOptions, eventOptions, teamOptions, membershipStatusOptions]);
-
-  const showDateFields =
-    filters.includes("date") ||
-    filters.includes("startDate") ||
-    filters.includes("endDate");
+  const hasAnything =
+    countActiveFilters(fields, draft) + countActiveFilters(fields, values) > 0;
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="flex h-full flex-col overflow-hidden"
-    >
-      <div className="flex-1 space-y-4 overflow-y-auto p-1">
-        {showDateFields && (
-          <>
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:flex-wrap">
-              {presets.map((preset) => (
-                <button
-                  key={encodeURI(preset.label)}
-                  onClick={preset.dateFunction}
-                  className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold duration-300 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 md:px-4 cursor-pointer"
-                  type="button"
-                >
-                  {preset.label}
-                </button>
-              ))}
+    <form onSubmit={onSubmit} className="flex flex-col gap-5">
+      {fields.map((field) => {
+        if (field.type === "dateRange") {
+          return (
+            <div key="dateRange" className="flex flex-col gap-3">
+              {field.label && (
+                <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  {field.label}
+                </label>
+              )}
+              {field.presets !== false && (
+                <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:flex-wrap">
+                  {datePresets.map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => {
+                        const [start, end] = preset.range();
+                        setDraft((prev) => ({
+                          ...prev,
+                          startDate: start.format(DATE_FORMAT),
+                          endDate: end.format(DATE_FORMAT),
+                        }));
+                        setDateError(undefined);
+                      }}
+                      className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold duration-300 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 md:px-4 cursor-pointer"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Input
+                  label="Start Date"
+                  type="date"
+                  value={draft.startDate ?? ""}
+                  onChange={(e) => {
+                    setValue("startDate", e.target.value);
+                    setDateError(undefined);
+                  }}
+                />
+                <Input
+                  label="End Date"
+                  type="date"
+                  value={draft.endDate ?? ""}
+                  error={dateError}
+                  onChange={(e) => {
+                    setValue("endDate", e.target.value);
+                    setDateError(undefined);
+                  }}
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Controller
-                name="startDate"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    label="Start Date"
-                    type="date"
-                    error={errors.startDate?.message}
-                  />
-                )}
-              />
-              <Controller
-                name="endDate"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    label="End Date"
-                    type="date"
-                    error={errors.endDate?.message}
-                  />
-                )}
-              />
-            </div>
-          </>
-        )}
+          );
+        }
 
-        {filters.includes("search") && (
-          <Controller
-            name="search"
-            control={control}
-            render={({ field }) => (
+        if (field.type === "text") {
+          return (
+            <div key={field.key} className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                {field.label}
+              </label>
               <Input
-                {...field}
-                label="Search Keyword"
-                placeholder="Search..."
-                error={errors.search?.message}
+                type="text"
+                value={draft[field.key] ?? ""}
+                onChange={(e) => setValue(field.key, e.target.value)}
+                placeholder={field.placeholder}
               />
-            )}
-          />
-        )}
+            </div>
+          );
+        }
 
-        {filters.includes("status") && (
-          <Controller
-            name="status"
-            control={control}
-            render={({ field: { onChange, value, onBlur } }) => (
-              <Select
-                label="Status"
-                placeholder="Select status..."
-                value={value}
-                onChange={onChange}
-                onBlur={onBlur}
-                options={selectOptionsMapped.status}
-                validationError={errors.status?.message}
-              />
-            )}
-          />
-        )}
+        return (
+          <div key={field.key} className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+              {field.label}
+            </label>
+            <Select
+              value={draft[field.key] ?? ""}
+              onChange={(e) => setValue(field.key, e.target.value)}
+            >
+              <option value="">{field.allLabel ?? "All"}</option>
+              {field.type === "boolean" ? (
+                <>
+                  <option value="true">{field.trueLabel}</option>
+                  <option value="false">{field.falseLabel}</option>
+                </>
+              ) : (
+                field.options.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))
+              )}
+            </Select>
+          </div>
+        );
+      })}
 
-        {filters.includes("eventId") && (
-          <Controller
-            name="eventId"
-            control={control}
-            render={({ field: { onChange, value, onBlur } }) => (
-              <Select
-                label="Event"
-                placeholder="Select event..."
-                value={value}
-                onChange={onChange}
-                onBlur={onBlur}
-                options={selectOptionsMapped.eventId}
-                validationError={errors.eventId?.message}
-              />
-            )}
-          />
-        )}
-
-        {filters.includes("teamId") && (
-          <Controller
-            name="teamId"
-            control={control}
-            render={({ field: { onChange, value, onBlur } }) => (
-              <Select
-                label="Team"
-                placeholder="Select team..."
-                value={value}
-                onChange={onChange}
-                onBlur={onBlur}
-                options={selectOptionsMapped.teamId}
-                validationError={errors.teamId?.message}
-              />
-            )}
-          />
-        )}
-
-        {filters.includes("membershipStatus") && (
-          <Controller
-            name="membershipStatus"
-            control={control}
-            render={({ field: { onChange, value, onBlur } }) => (
-              <Select
-                label="Membership Status"
-                placeholder="Select membership status..."
-                value={value}
-                onChange={onChange}
-                onBlur={onBlur}
-                options={selectOptionsMapped.membershipStatus}
-                validationError={errors.membershipStatus?.message}
-              />
-            )}
-          />
-        )}
-      </div>
-
-      <fieldset className="grid h-20 grid-cols-2 gap-4 border-t border-slate-100 p-4 shadow-xl dark:border-zinc-800 dark:bg-zinc-900 mt-6">
-        <BaseButton
-          text="Clear All"
+      <div className="flex gap-3 pt-4 mt-2 border-t border-slate-100 dark:border-zinc-800">
+        <Button
           type="button"
-          color="outline"
-          onClick={() => {
-            reset(emptyDefaultValues);
-            resetFilters?.();
-          }}
-        />
-        <BaseButton text="Apply Filters" type="submit" color="primary" />
-      </fieldset>
+          variant="outline"
+          className="flex-1 justify-center"
+          onClick={clearAll}
+          disabled={!hasAnything}
+        >
+          Clear all
+        </Button>
+        <Button
+          type="submit"
+          variant="primary"
+          className="flex-1 justify-center"
+        >
+          Apply
+        </Button>
+      </div>
     </form>
   );
 }

@@ -28,6 +28,12 @@ export interface IQueryParams {
   isPrivate?: boolean;
   requiresRegistration?: boolean;
   isFeatured?: boolean;
+  isResolved?: boolean;
+  bounceType?: string;
+  emailType?: string;
+  recipientType?: string;
+  year?: number;
+  month?: number;
 }
 
 export function extractData<T>(resData: unknown): T {

@@ -7,7 +7,7 @@ import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 
 interface ExportCsvButtonProps {
   endpoint: string;
-  params?: Record<string, unknown>;
+  params?: object;
   fallbackFilename: string;
   label?: string;
   className?: string;

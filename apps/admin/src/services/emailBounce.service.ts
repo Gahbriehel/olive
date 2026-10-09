@@ -1,8 +1,12 @@
 import { apiClient } from "@/utils/api-client";
-import { IBaseResponse, extractData, extractMeta } from "@/models/base";
+import {
+  IBaseResponse,
+  IQueryParams,
+  extractData,
+  extractMeta,
+} from "@/models/base";
 import {
   EmailBounce,
-  EmailBounceQueryParams,
   EmailBounceListResponse,
   EmailBounceAnalyticsResponse,
   RemediateBouncePayload,
@@ -13,9 +17,7 @@ export const emailBounceService = {
   /**
    * Retrieves paginated list of email bounce alerts with filtering
    */
-  async getBounces(
-    params?: EmailBounceQueryParams,
-  ): Promise<EmailBounceListResponse> {
+  async getBounces(params?: IQueryParams): Promise<EmailBounceListResponse> {
     const res = await apiClient.get<
       IBaseResponse<EmailBounce[]> | EmailBounceListResponse | EmailBounce[]
     >("/email-bounces", { params });
@@ -42,12 +44,9 @@ export const emailBounceService = {
   /**
    * Retrieves overall email bounce analytics and breakdown trends
    */
-  async getBounceAnalytics(params?: {
-    year?: number;
-    month?: number;
-    emailType?: string;
-    recipientType?: string;
-  }): Promise<EmailBounceAnalyticsResponse> {
+  async getBounceAnalytics(
+    params?: IQueryParams,
+  ): Promise<EmailBounceAnalyticsResponse> {
     const res = await apiClient.get<
       IBaseResponse<EmailBounceAnalyticsResponse> | EmailBounceAnalyticsResponse
     >("/email-bounces/analytics", { params });

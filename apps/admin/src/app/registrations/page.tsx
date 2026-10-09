@@ -19,7 +19,6 @@ import { Button, BaseButton } from "@/components/ui/Button";
 import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
-import { Select } from "@/components/FormElements/Select";
 import { Input } from "@/components/FormElements/Input";
 import { MultiSelect } from "@/components/FormElements/MultiSelect";
 import { RichTextEditor } from "@/components/FormElements/RichTextEditor";
@@ -30,6 +29,7 @@ import { ListToolbar } from "@/components/ui/ListToolbar";
 import { FiltersButton } from "@/components/ui/FiltersButton";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { SidebarModal } from "@/components/ui/SidebarModal";
+import { FiltersModal } from "@/components/modals/FiltersModal";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { getInitials } from "@/utils/formatters";
@@ -38,6 +38,8 @@ import { customToast } from "@/helpers/customToast";
 import { useDashboard } from "@/context/DashboardContext";
 import { useRegistrations } from "@/hooks/useRegistrations";
 import { useTeams } from "@/hooks/useTeams";
+import { useListFilters } from "@/hooks/useListFilters";
+import { type FilterField } from "@/models/filters";
 import { adaptApiRegistrationToRegistration } from "@/models/registration";
 import { adaptApiTeamToTeam } from "@/models/team";
 import { IRegistration } from "@/types/dashboard";
@@ -101,14 +103,8 @@ const transformRegistrationToSelect = (reg: IRegistration): ISelect => ({
 
 export default function RegistrationsPage() {
   const { selectedEventId } = useDashboard();
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("All");
-  const [teamId, setTeamId] = useState("All");
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
   const [selectedRegistration, setSelectedRegistration] =
     useState<IRegistration | null>(null);
-  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const { user } = useAuth();
   const canExport = hasAuthority(getUserRoles(user), [
@@ -126,16 +122,54 @@ export default function RegistrationsPage() {
     Record<string, IRegistration>
   >({});
 
+  const { teams: apiTeams } = useTeams(selectedEventId);
+
+  const teams = useMemo(
+    () => (Array.isArray(apiTeams) ? apiTeams.map(adaptApiTeamToTeam) : []),
+    [apiTeams],
+  );
+
+  const filterFields = useMemo<FilterField[]>(
+    () => [
+      {
+        type: "select",
+        key: "status",
+        label: "Status",
+        allLabel: "All Statuses",
+        options: [
+          { label: "Checked-In", value: "CHECKED_IN" },
+          { label: "Confirmed", value: "CONFIRMED" },
+          { label: "Cancelled", value: "CANCELLED" },
+        ],
+      },
+      {
+        type: "select",
+        key: "teamId",
+        label: "Team",
+        allLabel: "All Teams",
+        options: teams.map((t) => ({ label: t.name, value: t.id })),
+      },
+    ],
+    [teams],
+  );
+
+  const {
+    page,
+    setPage,
+    limit,
+    setLimit,
+    search,
+    setSearch,
+    activeCount,
+    queryParams,
+    exportParams,
+    openPanel,
+    panelProps,
+  } = useListFilters({ fields: filterFields });
+
   const regParams = useMemo(
-    () => ({
-      eventId: selectedEventId,
-      page,
-      limit,
-      search: search || undefined,
-      status: status !== "All" ? status : undefined,
-      teamId: teamId !== "All" ? teamId : undefined,
-    }),
-    [selectedEventId, page, limit, search, status, teamId],
+    () => ({ ...queryParams, eventId: selectedEventId }),
+    [queryParams, selectedEventId],
   );
 
   const {
@@ -144,12 +178,6 @@ export default function RegistrationsPage() {
     refetch,
     isLoading,
   } = useRegistrations(regParams);
-  const { teams: apiTeams } = useTeams(selectedEventId);
-
-  const teams = useMemo(
-    () => (Array.isArray(apiTeams) ? apiTeams.map(adaptApiTeamToTeam) : []),
-    [apiTeams],
-  );
 
   const registrations = useMemo(
     () =>
@@ -159,37 +187,7 @@ export default function RegistrationsPage() {
     [apiRegistrations],
   );
 
-  const handleSearchChange = useCallback((newSearch: string) => {
-    setSearch((prevSearch) => {
-      if (prevSearch !== newSearch) {
-        setPage(1);
-      }
-      return newSearch;
-    });
-  }, []);
-
-  const handleLimitChange = (newLimit: number) => {
-    setLimit(newLimit);
-    setPage(1);
-  };
-
-  const handleStatusChange = (newStatus: string) => {
-    setStatus(newStatus);
-    setPage(1);
-  };
-
-  const handleTeamChange = (newTeamId: string) => {
-    setTeamId(newTeamId);
-    setPage(1);
-  };
-
   const totalReg = meta?.total ?? registrations.length;
-  const activeFilterCount =
-    (status !== "All" ? 1 : 0) + (teamId !== "All" ? 1 : 0);
-  const clearFilters = () => {
-    handleStatusChange("All");
-    handleTeamChange("All");
-  };
 
   // Selected registrants helpers
   const selectedRegistrantList = useMemo(
@@ -316,25 +314,10 @@ export default function RegistrationsPage() {
         if (selectedEventId) {
           payload.eventId = selectedEventId;
         }
-        if (status !== "All") {
-          const statusMap: Record<
-            string,
-            "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CANCELLED"
-          > = {
-            "Checked-In": "CHECKED_IN",
-            Confirmed: "CONFIRMED",
-            Cancelled: "CANCELLED",
-          };
-          if (statusMap[status]) {
-            payload.status = statusMap[status];
-          }
-        }
-        if (teamId !== "All") {
-          payload.teamId = teamId;
-        }
-        if (search.trim()) {
-          payload.search = search.trim();
-        }
+        payload.status = queryParams.status as
+          ISendBatchRegistrantsEmailPayload["status"] | undefined;
+        payload.teamId = queryParams.teamId;
+        payload.search = search.trim() || undefined;
       } else {
         payload.registrationIds = selectedRegistrantIds;
         if (selectedEventId) {
@@ -500,9 +483,9 @@ export default function RegistrationsPage() {
         page={page}
         onPageChange={setPage}
         limit={limit}
-        onLimitChange={handleLimitChange}
+        onLimitChange={setLimit}
         search={search}
-        onSearchChange={handleSearchChange}
+        onSearchChange={setSearch}
         loading={isLoading}
       >
         <ListToolbar
@@ -522,9 +505,7 @@ export default function RegistrationsPage() {
                         "/registrations/export",
                         {
                           eventId: selectedEventId || undefined,
-                          search: search || undefined,
-                          status: status !== "All" ? status : undefined,
-                          teamId: teamId !== "All" ? teamId : undefined,
+                          ...exportParams,
                         },
                         `registrations-${new Date().toISOString().slice(0, 10)}.csv`,
                       ),
@@ -533,70 +514,12 @@ export default function RegistrationsPage() {
               : []),
           ]}
           trailing={
-            <FiltersButton
-              onClick={() => setFiltersOpen(true)}
-              activeCount={activeFilterCount}
-            />
+            <FiltersButton onClick={openPanel} activeCount={activeCount} />
           }
         />
       </Table>
 
-      {/* Filters Sidebar Modal */}
-      <SidebarModal
-        display={filtersOpen}
-        close={() => setFiltersOpen(false)}
-        title="Filters"
-      >
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              Status
-            </label>
-            <Select
-              value={status}
-              onChange={(e) => handleStatusChange(e.target.value)}
-            >
-              <option value="All">All Statuses</option>
-              <option value="CHECKED_IN">Checked-In</option>
-              <option value="CONFIRMED">Confirmed</option>
-              <option value="CANCELLED">Cancelled</option>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              Team
-            </label>
-            <Select
-              value={teamId}
-              onChange={(e) => handleTeamChange(e.target.value)}
-            >
-              <option value="All">All Teams</option>
-              {teams.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div className="flex gap-3 pt-4 mt-2 border-t border-slate-100 dark:border-zinc-800">
-            <Button
-              variant="outline"
-              className="flex-1 justify-center"
-              onClick={clearFilters}
-              disabled={activeFilterCount === 0}
-            >
-              Clear all
-            </Button>
-            <Button
-              variant="primary"
-              className="flex-1 justify-center"
-              onClick={() => setFiltersOpen(false)}
-            >
-              Apply
-            </Button>
-          </div>
-        </div>
-      </SidebarModal>
+      <FiltersModal {...panelProps} />
 
       {/* Compose Batch Email Sidebar Modal */}
       <SidebarModal
@@ -633,8 +556,8 @@ export default function RegistrationsPage() {
               <p className="text-[11px] text-slate-600 dark:text-slate-400">
                 Email will be sent to all matching registrants (
                 {totalReg.toLocaleString()} attendees)
-                {status !== "All" && ` with status: ${status}`}
-                {teamId !== "All" && " for selected team"}.
+                {queryParams.status && ` with status: ${queryParams.status}`}
+                {queryParams.teamId && " for selected team"}.
               </p>
             </div>
           ) : (

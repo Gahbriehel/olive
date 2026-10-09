@@ -20,12 +20,14 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { ActionsList, ActionItem } from "@/components/ui/ActionsList";
 import { ListToolbar } from "@/components/ui/ListToolbar";
+import { FiltersButton } from "@/components/ui/FiltersButton";
 import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { NotAvailable } from "@/components/ui/NotAvailable";
 import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { ViewBounceDetailsModal } from "@/components/modals/ViewBounceDetailsModal";
 import { RemediateBounceModal } from "@/components/modals/RemediateBounceModal";
+import { FiltersModal } from "@/components/modals/FiltersModal";
 import { emailBounceService } from "@/services/emailBounce.service";
 import {
   EmailBounce,
@@ -33,12 +35,50 @@ import {
   EmailBounceAnalyticsResponse,
 } from "@/models/emailBounce";
 import { useAuth } from "@/hooks/useAuth";
+import { useListFilters } from "@/hooks/useListFilters";
+import { type IQueryParams } from "@/models/base";
+import { type FilterField } from "@/models/filters";
 import { getUserRoles, ROLES } from "@/utils/rbac";
 import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { customToast } from "@/helpers/customToast";
 import dayjs from "dayjs";
 
 const columnHelper = createColumnHelper<EmailBounce>();
+
+const bounceFilterFields: FilterField[] = [
+  {
+    type: "select",
+    key: "emailType",
+    label: "Email Type",
+    allLabel: "All Email Types",
+    options: [
+      {
+        label: "Registration Confirmation",
+        value: "REGISTRATION_CONFIRMATION",
+      },
+      { label: "Custom Broadcast", value: "CUSTOM_BROADCAST" },
+      { label: "Admin Welcome", value: "ADMIN_WELCOME" },
+    ],
+  },
+  {
+    type: "select",
+    key: "recipientType",
+    label: "Recipient Type",
+    allLabel: "All Recipients",
+    options: [
+      { label: "Person (Member/Visitor)", value: "PERSON" },
+      { label: "User (Admin/Staff)", value: "USER" },
+    ],
+  },
+];
+
+const tabQueryParams: Record<EmailBounceTabFilter, IQueryParams> = {
+  [EmailBounceTabFilter.ALL]: {},
+  [EmailBounceTabFilter.UNRESOLVED]: { isResolved: false },
+  [EmailBounceTabFilter.RESOLVED]: { isResolved: true },
+  [EmailBounceTabFilter.HARD_BOUNCE]: { bounceType: "Hard" },
+  [EmailBounceTabFilter.SOFT_BOUNCE]: { bounceType: "Soft" },
+};
 
 const MONTH_NAMES = [
   "January",
@@ -75,11 +115,20 @@ export default function EmailBouncesPage() {
   const [tabFilter, setTabFilter] = useState<EmailBounceTabFilter>(
     EmailBounceTabFilter.ALL,
   );
-  const [search, setSearch] = useState<string>("");
-  const [emailTypeFilter, setEmailTypeFilter] = useState<string>("ALL");
-  const [recipientTypeFilter, setRecipientTypeFilter] = useState<string>("ALL");
-  const [page, setPage] = useState<number>(1);
-  const [limit, setLimit] = useState<number>(10);
+  const {
+    page,
+    setPage,
+    limit,
+    setLimit,
+    search,
+    setSearch,
+    activeCount,
+    queryParams,
+    exportParams,
+    openPanel,
+    panelProps,
+  } = useListFilters({ fields: bounceFilterFields });
+  const { emailType, recipientType } = queryParams;
 
   // Modals State
   const [selectedBounce, setSelectedBounce] = useState<EmailBounce | null>(
@@ -99,46 +148,28 @@ export default function EmailBouncesPage() {
       "email-bounces-analytics",
       selectedYear,
       selectedMonth,
-      emailTypeFilter,
-      recipientTypeFilter,
+      emailType,
+      recipientType,
     ],
     queryFn: () =>
       emailBounceService.getBounceAnalytics({
         year: selectedYear,
         month: selectedMonth || undefined,
-        emailType: emailTypeFilter !== "ALL" ? emailTypeFilter : undefined,
-        recipientType:
-          recipientTypeFilter !== "ALL" ? recipientTypeFilter : undefined,
+        emailType,
+        recipientType,
       }),
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
 
-  // Compute table query parameters
-  const computedQueryParams = useMemo(() => {
-    let isResolved: boolean | undefined = undefined;
-    let bounceType: string | undefined = undefined;
-
-    if (tabFilter === EmailBounceTabFilter.UNRESOLVED) {
-      isResolved = false;
-    } else if (tabFilter === EmailBounceTabFilter.RESOLVED) {
-      isResolved = true;
-    } else if (tabFilter === EmailBounceTabFilter.HARD_BOUNCE) {
-      bounceType = "Hard";
-    } else if (tabFilter === EmailBounceTabFilter.SOFT_BOUNCE) {
-      bounceType = "Soft";
-    }
-
-    return {
-      search: search || undefined,
-      isResolved,
-      bounceType,
-      emailType: emailTypeFilter !== "ALL" ? emailTypeFilter : undefined,
-      recipientType:
-        recipientTypeFilter !== "ALL" ? recipientTypeFilter : undefined,
-      page,
-      limit,
-    };
-  }, [tabFilter, search, emailTypeFilter, recipientTypeFilter, page, limit]);
+  // Table query = shared list filters + the active status tab
+  const computedQueryParams = useMemo(
+    () => ({ ...queryParams, ...tabQueryParams[tabFilter] }),
+    [queryParams, tabFilter],
+  );
+  const computedExportParams = useMemo(
+    () => ({ ...exportParams, ...tabQueryParams[tabFilter] }),
+    [exportParams, tabFilter],
+  );
 
   // 2. Fetch Email Bounces List
   const {
@@ -523,13 +554,7 @@ export default function EmailBouncesPage() {
           {canManage && (
             <ExportCsvButton
               endpoint="/email-bounces/export"
-              params={{
-                search: computedQueryParams.search,
-                isResolved: computedQueryParams.isResolved,
-                bounceType: computedQueryParams.bounceType,
-                emailType: computedQueryParams.emailType,
-                recipientType: computedQueryParams.recipientType,
-              }}
+              params={computedExportParams}
               fallbackFilename={`email-bounces-${new Date().toISOString().slice(0, 10)}.csv`}
               label="Export CSV"
             />
@@ -656,19 +681,13 @@ export default function EmailBouncesPage() {
           loading={isListLoading || isFetching}
           searchPlaceholder="Search by email, name, subject, or error code..."
           search={search}
-          onSearchChange={(query: string) => {
-            setSearch(query);
-            setPage(1);
-          }}
+          onSearchChange={setSearch}
           enableSearch={true}
           enablePagination={true}
           page={page}
-          onPageChange={(newPage: number) => setPage(newPage)}
+          onPageChange={setPage}
           limit={limit}
-          onLimitChange={(newLimit: number) => {
-            setLimit(newLimit);
-            setPage(1);
-          }}
+          onLimitChange={setLimit}
           meta={meta}
           emptyMessage="No bounce alerts found matching current criteria"
         >
@@ -682,13 +701,7 @@ export default function EmailBouncesPage() {
                       fn: () =>
                         downloadCsvExport(
                           "/email-bounces/export",
-                          {
-                            search: computedQueryParams.search,
-                            isResolved: computedQueryParams.isResolved,
-                            bounceType: computedQueryParams.bounceType,
-                            emailType: computedQueryParams.emailType,
-                            recipientType: computedQueryParams.recipientType,
-                          },
+                          computedExportParams,
                           `email-bounces-${new Date().toISOString().slice(0, 10)}.csv`,
                         ),
                     },
@@ -696,42 +709,13 @@ export default function EmailBouncesPage() {
                 : []),
             ]}
             trailing={
-              <div className="flex items-center gap-2 flex-wrap">
-                {/* Email Type Filter */}
-                <select
-                  value={emailTypeFilter}
-                  onChange={(e) => {
-                    setEmailTypeFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  className="text-xs font-medium bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-                >
-                  <option value="ALL">All Email Types</option>
-                  <option value="REGISTRATION_CONFIRMATION">
-                    Registration Confirmation
-                  </option>
-                  <option value="CUSTOM_BROADCAST">Custom Broadcast</option>
-                  <option value="ADMIN_WELCOME">Admin Welcome</option>
-                </select>
-
-                {/* Recipient Type Filter */}
-                <select
-                  value={recipientTypeFilter}
-                  onChange={(e) => {
-                    setRecipientTypeFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  className="text-xs font-medium bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-                >
-                  <option value="ALL">All Recipients</option>
-                  <option value="PERSON">Person (Member/Visitor)</option>
-                  <option value="USER">User (Admin/Staff)</option>
-                </select>
-              </div>
+              <FiltersButton onClick={openPanel} activeCount={activeCount} />
             }
           />
         </Table>
       </div>
+
+      <FiltersModal {...panelProps} />
 
       {/* Modal: View Diagnostics Details */}
       <ViewBounceDetailsModal
