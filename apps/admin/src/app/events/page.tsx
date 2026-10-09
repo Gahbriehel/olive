@@ -37,65 +37,89 @@ import { EventsForm } from "@/components/Forms/EventsForm";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { useDashboard } from "@/context/DashboardContext";
 import { useEvents } from "@/hooks/useEvents";
-import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
+import { useListFilters } from "@/hooks/useListFilters";
+import { type FilterField } from "@/models/filters";
 import {
   adaptApiEventToChurchEvent,
   EventCategory,
-  EventStatus,
   getCategoryColor,
 } from "@/models/event";
 import { IChurchEvent } from "@/types/dashboard";
 import { AuthorityGuard } from "@/components/auth/AuthorityGuard";
 import { ROLES } from "@/utils/rbac";
 
+// Rendered inline in the toolbar rather than in the filters panel.
+const eventSelectFields = [
+  {
+    type: "select",
+    key: "status",
+    label: "Status",
+    allLabel: "All Statuses",
+    options: [
+      { label: "Published", value: "PUBLISHED" },
+      { label: "Draft", value: "DRAFT" },
+      { label: "Completed", value: "COMPLETED" },
+      { label: "Cancelled", value: "CANCELLED" },
+    ],
+  },
+  {
+    type: "select",
+    key: "category",
+    label: "Category",
+    allLabel: "All Categories",
+    options: [
+      "GENERAL",
+      "CONFERENCE",
+      "VIGIL",
+      "COMMUNION",
+      "REVIVAL",
+      "WORSHIP",
+      "OUTREACH",
+    ].map((c) => ({ label: c, value: c })),
+  },
+  {
+    type: "boolean",
+    key: "requiresRegistration",
+    label: "Admission Type",
+    allLabel: "All Admission Types",
+    trueLabel: "Registration Required",
+    falseLabel: "Open Admission",
+  },
+] satisfies FilterField[];
+
+const eventFilterFields: FilterField[] = [
+  ...eventSelectFields,
+  {
+    type: "boolean",
+    key: "isFeatured",
+    label: "Featured",
+    trueLabel: "Featured On Website",
+    falseLabel: "Standard",
+  },
+];
+
 export default function EventsPage() {
   const router = useRouter();
   const { setIsCreateEventOpen } = useDashboard();
 
-  // Filters State
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebouncedSearch(search, 400);
-  const [status, setStatus] = useState<string>("All");
-  const [category, setCategory] = useState<string>("All");
-  const [admissionType, setAdmissionType] = useState<string>("All");
-  const [featuredFilter, setFeaturedFilter] = useState<string>("All");
+  const {
+    page,
+    setPage,
+    limit,
+    setLimit,
+    search,
+    setSearch,
+    filters,
+    setFilter,
+    clearFilters,
+    activeCount,
+    queryParams,
+  } = useListFilters({ fields: eventFilterFields, searchDebounceMs: 400 });
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
-
-  // Pagination State
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
 
   // Modals State
   const [editingEvent, setEditingEvent] = useState<IChurchEvent | null>(null);
   const [deletingEvent, setDeletingEvent] = useState<IChurchEvent | null>(null);
-
-  const queryParams = useMemo(() => {
-    let requiresRegistration: boolean | undefined = undefined;
-    if (admissionType === "TICKETED") requiresRegistration = true;
-    if (admissionType === "OPEN") requiresRegistration = false;
-
-    let isFeatured: boolean | undefined = undefined;
-    if (featuredFilter === "FEATURED") isFeatured = true;
-    if (featuredFilter === "STANDARD") isFeatured = false;
-
-    return {
-      page,
-      limit,
-      search: debouncedSearch || undefined,
-      status: status !== "All" ? (status as EventStatus) : undefined,
-      category: category !== "All" ? (category as EventCategory) : undefined,
-      requiresRegistration,
-      isFeatured,
-    };
-  }, [
-    page,
-    limit,
-    debouncedSearch,
-    status,
-    category,
-    admissionType,
-    featuredFilter,
-  ]);
 
   const {
     events: apiEvents,
@@ -111,36 +135,6 @@ export default function EventsPage() {
       Array.isArray(apiEvents) ? apiEvents.map(adaptApiEventToChurchEvent) : [],
     [apiEvents],
   );
-
-  const handleSearchChange = (newSearch: string) => {
-    setSearch(newSearch);
-    setPage(1);
-  };
-
-  const handleLimitChange = (newLimit: number) => {
-    setLimit(newLimit);
-    setPage(1);
-  };
-
-  const handleStatusChange = (newStatus: string) => {
-    setStatus(newStatus);
-    setPage(1);
-  };
-
-  const handleCategoryChange = (newCat: string) => {
-    setCategory(newCat);
-    setPage(1);
-  };
-
-  const handleAdmissionChange = (newAdmission: string) => {
-    setAdmissionType(newAdmission);
-    setPage(1);
-  };
-
-  const handleFeaturedChange = (newFeatured: string) => {
-    setFeaturedFilter(newFeatured);
-    setPage(1);
-  };
 
   // Metrics summary
   const totalEvents = meta?.total ?? events.length;
@@ -339,54 +333,37 @@ export default function EventsPage() {
             <Input
               placeholder="Search by title or location..."
               value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               leftIcon={<Search className="w-4 h-4" />}
             />
           </div>
 
-          {/* Status filter */}
-          <div>
-            <Select
-              value={status}
-              onChange={(e) => handleStatusChange(e.target.value)}
-              leftIcon={<Filter className="w-4 h-4" />}
-            >
-              <option value="All">All Statuses</option>
-              <option value="PUBLISHED">Published</option>
-              <option value="DRAFT">Draft</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="CANCELLED">Cancelled</option>
-            </Select>
-          </div>
-
-          {/* Ministry Category filter */}
-          <div>
-            <Select
-              value={category}
-              onChange={(e) => handleCategoryChange(e.target.value)}
-            >
-              <option value="All">All Categories</option>
-              <option value="GENERAL">GENERAL</option>
-              <option value="CONFERENCE">CONFERENCE</option>
-              <option value="VIGIL">VIGIL</option>
-              <option value="COMMUNION">COMMUNION</option>
-              <option value="REVIVAL">REVIVAL</option>
-              <option value="WORSHIP">WORSHIP</option>
-              <option value="OUTREACH">OUTREACH</option>
-            </Select>
-          </div>
-
-          {/* Admission Type filter */}
-          <div>
-            <Select
-              value={admissionType}
-              onChange={(e) => handleAdmissionChange(e.target.value)}
-            >
-              <option value="All">All Admission Types</option>
-              <option value="TICKETED">Registration Required</option>
-              <option value="OPEN">Open Admission</option>
-            </Select>
-          </div>
+          {eventSelectFields.map((field, idx) => (
+            <div key={field.key}>
+              <Select
+                aria-label={field.label}
+                value={filters[field.key] ?? ""}
+                onChange={(e) => setFilter(field.key, e.target.value)}
+                leftIcon={
+                  idx === 0 ? <Filter className="w-4 h-4" /> : undefined
+                }
+              >
+                <option value="">{field.allLabel}</option>
+                {field.type === "boolean" ? (
+                  <>
+                    <option value="true">{field.trueLabel}</option>
+                    <option value="false">{field.falseLabel}</option>
+                  </>
+                ) : (
+                  field.options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))
+                )}
+              </Select>
+            </div>
+          ))}
         </div>
 
         {/* Sub-bar for quick chips */}
@@ -396,10 +373,10 @@ export default function EventsPage() {
               Quick Filter:
             </span>
             <button
-              onClick={() => handleFeaturedChange("All")}
+              onClick={() => setFilter("isFeatured", "")}
               className={cn(
                 "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer",
-                featuredFilter === "All"
+                !filters.isFeatured
                   ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs"
                   : "bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-zinc-700",
               )}
@@ -407,10 +384,10 @@ export default function EventsPage() {
               All Events
             </button>
             <button
-              onClick={() => handleFeaturedChange("FEATURED")}
+              onClick={() => setFilter("isFeatured", "true")}
               className={cn(
                 "px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all duration-150 cursor-pointer",
-                featuredFilter === "FEATURED"
+                filters.isFeatured === "true"
                   ? "bg-amber-500 text-white shadow-xs"
                   : "bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60",
               )}
@@ -419,10 +396,10 @@ export default function EventsPage() {
               Featured On Website
             </button>
             <button
-              onClick={() => handleAdmissionChange("OPEN")}
+              onClick={() => setFilter("requiresRegistration", "false")}
               className={cn(
                 "px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all duration-150 cursor-pointer",
-                admissionType === "OPEN"
+                filters.requiresRegistration === "false"
                   ? "bg-emerald-600 text-white shadow-xs"
                   : "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60",
               )}
@@ -431,10 +408,10 @@ export default function EventsPage() {
               Open Admission
             </button>
             <button
-              onClick={() => handleAdmissionChange("TICKETED")}
+              onClick={() => setFilter("requiresRegistration", "true")}
               className={cn(
                 "px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all duration-150 cursor-pointer",
-                admissionType === "TICKETED"
+                filters.requiresRegistration === "true"
                   ? "bg-indigo-600 text-white shadow-xs"
                   : "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60",
               )}
@@ -444,19 +421,11 @@ export default function EventsPage() {
             </button>
           </div>
 
-          {(search ||
-            status !== "All" ||
-            category !== "All" ||
-            admissionType !== "All" ||
-            featuredFilter !== "All") && (
+          {(search || activeCount > 0) && (
             <button
               onClick={() => {
                 setSearch("");
-                setStatus("All");
-                setCategory("All");
-                setAdmissionType("All");
-                setFeaturedFilter("All");
-                setPage(1);
+                clearFilters();
               }}
               className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline font-semibold cursor-pointer"
             >
@@ -836,7 +805,7 @@ export default function EventsPage() {
             <span className="text-[11px]">Rows:</span>
             <select
               value={limit}
-              onChange={(e) => handleLimitChange(Number(e.target.value))}
+              onChange={(e) => setLimit(Number(e.target.value))}
               className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-base py-1 px-2 focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer"
             >
               {[5, 10, 20, 50].map((size) => (

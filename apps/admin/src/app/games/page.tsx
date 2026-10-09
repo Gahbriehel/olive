@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import confetti from "canvas-confetti";
 import {
   Edit3,
@@ -37,15 +37,13 @@ import { adaptApiTeamToTeam } from "@/models/team";
 import { useDashboard } from "@/context/DashboardContext";
 import { useGames } from "@/hooks/useGames";
 import { useTeams } from "@/hooks/useTeams";
-import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
+import { useListFilters } from "@/hooks/useListFilters";
 
 export default function GamesPage() {
   const { selectedEventId } = useDashboard();
 
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebouncedSearch(search, 500);
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const { page, setPage, limit, setLimit, search, setSearch, queryParams } =
+    useListFilters({ searchDebounceMs: 500 });
 
   const [selectedGameForScore, setSelectedGameForScore] =
     useState<IGame | null>(null);
@@ -74,12 +72,7 @@ export default function GamesPage() {
     isDeletingGame,
     isClearingScores,
     refetch,
-  } = useGames({
-    eventId: selectedEventId,
-    search: debouncedSearch || undefined,
-    page,
-    limit,
-  });
+  } = useGames({ ...queryParams, eventId: selectedEventId });
 
   const { teams: apiTeams } = useTeams(selectedEventId);
 
@@ -202,16 +195,6 @@ export default function GamesPage() {
     }
   };
 
-  const handleSearchChange = useCallback((newSearch: string) => {
-    setSearch(newSearch);
-    setPage(1);
-  }, []);
-
-  const handleLimitChange = (newLimit: number) => {
-    setLimit(newLimit);
-    setPage(1);
-  };
-
   const handleOpenScoreModal = (game: IGame) => {
     setSelectedGameForScore(game);
     const initialPoints: Record<string, number> = {};
@@ -304,7 +287,7 @@ export default function GamesPage() {
                   "/games/export",
                   {
                     eventId: selectedEventId || undefined,
-                    search: debouncedSearch || undefined,
+                    search: queryParams.search,
                   },
                   `games-${new Date().toISOString().slice(0, 10)}.csv`,
                 ),
@@ -318,7 +301,7 @@ export default function GamesPage() {
             <Input
               type="text"
               value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search games..."
               className="pl-9 text-base h-9 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 focus:border-indigo-500"
             />
@@ -330,7 +313,7 @@ export default function GamesPage() {
             </span>
             <select
               value={limit}
-              onChange={(e) => handleLimitChange(Number(e.target.value))}
+              onChange={(e) => setLimit(Number(e.target.value))}
               className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-base py-1.5 px-2.5 font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all cursor-pointer"
             >
               {[5, 10, 20, 50].map((size) => (

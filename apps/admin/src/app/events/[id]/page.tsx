@@ -49,11 +49,27 @@ import { useTeams } from "@/hooks/useTeams";
 import { useGames } from "@/hooks/useGames";
 import { useEvents } from "@/hooks/useEvents";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
+import { useListFilters } from "@/hooks/useListFilters";
+import { type FilterField } from "@/models/filters";
 import { adaptApiRegistrationToRegistration } from "@/models/registration";
 import { adaptApiTeamToTeam } from "@/models/team";
 import { adaptApiGameToGame } from "@/models/game";
 import { EventCategory, getCategoryColor } from "@/models/event";
 import { cn } from "@/helpers/cn";
+
+const regStatusField = {
+  type: "select",
+  key: "status",
+  label: "Status",
+  allLabel: "All Statuses",
+  options: [
+    { label: "Confirmed", value: "CONFIRMED" },
+    { label: "Checked-In", value: "CHECKED_IN" },
+    { label: "Cancelled", value: "CANCELLED" },
+  ],
+} satisfies FilterField;
+
+const regFilterFields: FilterField[] = [regStatusField];
 
 export default function EventDetailPage() {
   const router = useRouter();
@@ -86,21 +102,21 @@ export default function EventDetailPage() {
     useRegistrations(fullRosterParams);
 
   // Paginated Registrations Query (for the dedicated Registrations tab)
-  const [regPage, setRegPage] = useState(1);
-  const [regLimit, setRegLimit] = useState(10);
-  const [regSearch, setRegSearch] = useState("");
-  const debouncedRegSearch = useDebouncedSearch(regSearch, 400);
-  const [regStatusFilter, setRegStatusFilter] = useState("ALL");
+  const {
+    page: regPage,
+    setPage: setRegPage,
+    limit: regLimit,
+    setLimit: setRegLimit,
+    search: regSearch,
+    setSearch: setRegSearch,
+    filters: regFilters,
+    setFilter: setRegFilter,
+    queryParams: regQueryParams,
+  } = useListFilters({ fields: regFilterFields, searchDebounceMs: 400 });
 
   const paginatedRegParams = useMemo(
-    () => ({
-      eventId,
-      page: regPage,
-      limit: regLimit,
-      search: debouncedRegSearch || undefined,
-      status: regStatusFilter !== "ALL" ? regStatusFilter : undefined,
-    }),
-    [eventId, regPage, regLimit, debouncedRegSearch, regStatusFilter],
+    () => ({ ...regQueryParams, eventId }),
+    [regQueryParams, eventId],
   );
 
   const {
@@ -512,26 +528,22 @@ export default function EventDetailPage() {
                 <Input
                   placeholder="Search by attendee name, email, or registration #..."
                   value={regSearch}
-                  onChange={(e) => {
-                    setRegSearch(e.target.value);
-                    setRegPage(1);
-                  }}
+                  onChange={(e) => setRegSearch(e.target.value)}
                   leftIcon={<Search className="w-4 h-4" />}
                 />
               </div>
               <div>
                 <Select
-                  value={regStatusFilter}
-                  onChange={(e) => {
-                    setRegStatusFilter(e.target.value);
-                    setRegPage(1);
-                  }}
+                  value={regFilters.status ?? ""}
+                  onChange={(e) => setRegFilter("status", e.target.value)}
                   leftIcon={<Filter className="w-4 h-4" />}
                 >
-                  <option value="ALL">All Statuses</option>
-                  <option value="REGISTERED">Registered / Confirmed</option>
-                  <option value="CHECKED_IN">Checked-In</option>
-                  <option value="CANCELLED">Cancelled</option>
+                  <option value="">{regStatusField.allLabel}</option>
+                  {regStatusField.options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </Select>
               </div>
             </div>
@@ -609,10 +621,7 @@ export default function EventDetailPage() {
                     <span className="text-[11px]">Rows:</span>
                     <select
                       value={regLimit}
-                      onChange={(e) => {
-                        setRegLimit(Number(e.target.value));
-                        setRegPage(1);
-                      }}
+                      onChange={(e) => setRegLimit(Number(e.target.value))}
                       className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-base py-1 px-2 focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer"
                     >
                       {[10, 25, 50, 100].map((size) => (

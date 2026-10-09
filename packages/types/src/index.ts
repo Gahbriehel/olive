@@ -142,7 +142,8 @@ export interface IPersonResponse {
 }
 
 // Registration types
-export type ApiRegistrationStatus = "REGISTERED" | "CHECKED_IN" | "CANCELLED";
+export type ApiRegistrationStatus =
+  "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CANCELLED";
 
 export interface IRegistrationResponse {
   id: string;

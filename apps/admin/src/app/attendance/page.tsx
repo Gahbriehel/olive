@@ -33,7 +33,7 @@ import {
   IRegistration,
 } from "@/types/dashboard";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
-import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
+import { useListFilters } from "@/hooks/useListFilters";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
 import { IS_STRICT_RBAC_RESTRICTED } from "@/config/features";
@@ -51,20 +51,13 @@ export default function AttendancePage() {
     currentRole,
   } = useDashboard();
 
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebouncedSearch(search, 500);
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const { page, setPage, limit, setLimit, search, setSearch, queryParams } =
+    useListFilters({ searchDebounceMs: 500 });
   const [checkingInId, setCheckingInId] = useState<string | null>(null);
 
   const regParams = useMemo(
-    () => ({
-      eventId: selectedEventId,
-      page,
-      limit,
-      search: debouncedSearch || undefined,
-    }),
-    [selectedEventId, page, limit, debouncedSearch],
+    () => ({ ...queryParams, eventId: selectedEventId }),
+    [queryParams, selectedEventId],
   );
 
   const {
@@ -72,16 +65,6 @@ export default function AttendancePage() {
     meta,
     refetch,
   } = useRegistrations(regParams);
-
-  const handleSearchChange = (newSearch: string) => {
-    setSearch(newSearch);
-    setPage(1);
-  };
-
-  const handleLimitChange = (newLimit: number) => {
-    setLimit(newLimit);
-    setPage(1);
-  };
 
   const initialRegistrations = useMemo(
     () =>
@@ -322,7 +305,7 @@ export default function AttendancePage() {
               <Input
                 placeholder="Search by attendee name or reg number..."
                 value={search}
-                onChange={(e) => handleSearchChange(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 leftIcon={<Search className="w-4 h-4" />}
               />
 
@@ -396,7 +379,7 @@ export default function AttendancePage() {
                 </span>
                 <select
                   value={limit}
-                  onChange={(e) => handleLimitChange(Number(e.target.value))}
+                  onChange={(e) => setLimit(Number(e.target.value))}
                   className="ml-2 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-base py-1 px-2 font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer"
                 >
                   {[5, 10, 20, 50].map((size) => (

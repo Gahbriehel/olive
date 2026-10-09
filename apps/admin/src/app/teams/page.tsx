@@ -25,15 +25,13 @@ import { IRegistration } from "@/types/dashboard";
 import { useDashboard } from "@/context/DashboardContext";
 import { useTeams } from "@/hooks/useTeams";
 import { useRegistrations } from "@/hooks/useRegistrations";
-import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
+import { useListFilters } from "@/hooks/useListFilters";
 
 export default function TeamsPage() {
   const { selectedEventId } = useDashboard();
 
-  const [search, setSearch] = useState("");
-  const debouncedSearch = useDebouncedSearch(search, 500);
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const { page, setPage, limit, setLimit, search, setSearch, queryParams } =
+    useListFilters({ searchDebounceMs: 500 });
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedTeamForEdit, setSelectedTeamForEdit] = useState<ITeam | null>(
@@ -51,12 +49,7 @@ export default function TeamsPage() {
     isUpdatingTeam,
     isDeletingTeam,
     refetch,
-  } = useTeams({
-    eventId: selectedEventId,
-    search: debouncedSearch,
-    page,
-    limit,
-  });
+  } = useTeams({ ...queryParams, eventId: selectedEventId });
 
   const registrationsParams = useMemo(
     () => ({ eventId: selectedEventId, limit: 1000 }),
@@ -184,7 +177,7 @@ export default function TeamsPage() {
                   "/teams/export",
                   {
                     eventId: selectedEventId || undefined,
-                    search: debouncedSearch || undefined,
+                    search: queryParams.search,
                   },
                   `teams-${new Date().toISOString().slice(0, 10)}.csv`,
                 ),
@@ -198,10 +191,7 @@ export default function TeamsPage() {
             <Input
               type="text"
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search teams by name..."
               className="pl-9 text-base h-9 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 focus:border-indigo-500"
             />
@@ -213,10 +203,7 @@ export default function TeamsPage() {
             </span>
             <select
               value={limit}
-              onChange={(e) => {
-                setLimit(Number(e.target.value));
-                setPage(1);
-              }}
+              onChange={(e) => setLimit(Number(e.target.value))}
               className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-base py-1.5 px-2.5 font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all cursor-pointer"
             >
               {[5, 10, 20, 50].map((size) => (

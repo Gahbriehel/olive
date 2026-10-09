@@ -1,6 +1,7 @@
 import { apiClient } from "@/utils/api-client";
 import { IBaseResponse, extractData, extractMeta } from "@/models/base";
 import { EmailLogItem, EmailLogQueryParams } from "@/models/emailLog";
+import { type ApiRegistrationStatus } from "@/models/registration";
 
 export interface IBatchEmailPayload {
   personIds: string[];
@@ -25,7 +26,7 @@ export interface ISendSinglePersonEmailPayload {
 export interface ISendBatchRegistrantsEmailPayload {
   registrationIds?: string[];
   eventId?: string;
-  status?: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CANCELLED";
+  status?: ApiRegistrationStatus;
   teamId?: string;
   search?: string;
   subject: string;
