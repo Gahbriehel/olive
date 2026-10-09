@@ -2,7 +2,8 @@ import { MembershipStatus, IPersonResponse, membershipMap } from "./person";
 import { ITeamResponse } from "./team";
 import { formatDateTimeDisplay } from "@/utils/formatters";
 
-export type RegistrationStatus = "Confirmed" | "Checked-In" | "Cancelled";
+export type RegistrationStatus =
+  "Pending" | "Confirmed" | "Checked-In" | "Cancelled";
 export type CheckInMethod = "QR Scan" | "Manual Search";
 
 export interface IRegistration {
@@ -41,6 +42,16 @@ export interface AttendanceRecord {
 
 export type ApiRegistrationStatus =
   "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CANCELLED";
+
+export const registrationStatusMap: Record<
+  ApiRegistrationStatus,
+  RegistrationStatus
+> = {
+  PENDING: "Pending",
+  CONFIRMED: "Confirmed",
+  CHECKED_IN: "Checked-In",
+  CANCELLED: "Cancelled",
+};
 
 export interface IRegistrationResponse {
   id: string;
@@ -97,7 +108,7 @@ export function adaptApiRegistrationToRegistration(
     person: person!,
     qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(apiReg.qrCode || apiReg.id)}`,
     qrGenerated: true,
-    status: apiReg.status === "CHECKED_IN" ? "Checked-In" : "Confirmed",
+    status: registrationStatusMap[apiReg.status] ?? "Confirmed",
     googleCalendarSync: apiReg.googleCalendarSync ?? false,
     confirmationSent: true,
     token: apiReg.token,

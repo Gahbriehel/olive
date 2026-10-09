@@ -1,6 +1,11 @@
 import { apiClient } from "@/utils/api-client";
-import { IBaseResponse, extractData, extractMeta } from "@/models/base";
-import { EmailLogItem, EmailLogQueryParams } from "@/models/emailLog";
+import {
+  IBaseResponse,
+  IQueryParams,
+  extractData,
+  extractMeta,
+} from "@/models/base";
+import { EmailLogItem } from "@/models/emailLog";
 import { type ApiRegistrationStatus } from "@/models/registration";
 
 export interface IBatchEmailPayload {
@@ -51,7 +56,7 @@ export interface ISendRegistrantEmailPayload {
 
 export const emailService = {
   async getEmailLogs(
-    params?: EmailLogQueryParams,
+    params?: IQueryParams,
   ): Promise<{ items: EmailLogItem[]; meta?: IBaseResponse["meta"] }> {
     const res = await apiClient.get<IBaseResponse<unknown>>("/email/logs", {
       params,

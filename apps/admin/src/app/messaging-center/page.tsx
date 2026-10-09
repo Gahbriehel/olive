@@ -4,14 +4,16 @@ import { useState, useMemo, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import { Send, X, RotateCcw } from "lucide-react";
+import { Send, X } from "lucide-react";
 import { Input } from "@/components/FormElements/Input";
 import { MultiSelect } from "@/components/FormElements/MultiSelect";
 import { RichTextEditor } from "@/components/FormElements/RichTextEditor";
-import { Select } from "@/components/FormElements/Select";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { BaseButton } from "@/components/ui/Button";
 import { SidebarModal } from "@/components/ui/SidebarModal";
+import { ListToolbar } from "@/components/ui/ListToolbar";
+import { FiltersButton } from "@/components/ui/FiltersButton";
+import { FiltersModal } from "@/components/modals/FiltersModal";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Table } from "@/components/ui/Table";
@@ -23,9 +25,11 @@ import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
 import { customToast } from "@/helpers/customToast";
 import { useEmailLogs } from "@/hooks/useEmailLogs";
 import { useUsers } from "@/hooks/useUsers";
+import { useListFilters } from "@/hooks/useListFilters";
+import { type FilterField } from "@/models/filters";
 import { IQueryParams } from "@/models/base";
 import { adaptApiPersonToPerson, IPerson } from "@/models/person";
-import { EmailLogItem, EmailLogQueryParams } from "@/models/emailLog";
+import { EmailLogItem } from "@/models/emailLog";
 import { emailService, IBatchEmailPayload } from "@/services/email.service";
 import { peopleService } from "@/services/people.service";
 import { ViewEmailLogModal } from "@/components/modals/ViewEmailLogModal";
@@ -111,28 +115,67 @@ export default function MessagingCenterPage() {
   >({});
   const [isSending, setIsSending] = useState(false);
 
-  // Server-side query params & filters for Email Logs
-  const [search, setSearch] = useState("");
-  const [deliveryStatus, setDeliveryStatus] = useState<string>("ALL");
-  const [emailType, setEmailType] = useState<string>("ALL");
-  const [sentByUserId, setSentByUserId] = useState<string>("ALL");
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-
   // Fetch admin users to populate sender filter
   const { users } = useUsers({ limit: 100 });
 
-  const queryParams: EmailLogQueryParams = useMemo(
-    () => ({
-      page,
-      limit,
-      search: search.trim() || undefined,
-      deliveryStatus: deliveryStatus !== "ALL" ? deliveryStatus : undefined,
-      emailType: emailType !== "ALL" ? emailType : undefined,
-      sentByUserId: sentByUserId !== "ALL" ? sentByUserId : undefined,
-    }),
-    [page, limit, search, deliveryStatus, emailType, sentByUserId],
+  const filterFields = useMemo<FilterField[]>(
+    () => [
+      { type: "dateRange", label: "Sent Between" },
+      {
+        type: "select",
+        key: "deliveryStatus",
+        label: "Delivery Status",
+        allLabel: "All Statuses",
+        options: [
+          { label: "Delivered", value: "DELIVERED" },
+          { label: "Bounced", value: "BOUNCED" },
+          { label: "Complained", value: "COMPLAINED" },
+        ],
+      },
+      {
+        type: "select",
+        key: "emailType",
+        label: "Email Type",
+        allLabel: "All Email Types",
+        options: [
+          { label: "People Broadcast", value: "BROADCAST_PEOPLE" },
+          { label: "Single Person", value: "SINGLE_PERSON" },
+          { label: "Registrants Broadcast", value: "BROADCAST_REGISTRANTS" },
+          { label: "Single Registrant", value: "SINGLE_REGISTRANT" },
+          { label: "Birthday Greeting", value: "BIRTHDAY_GREETING" },
+          { label: "Admin Welcome", value: "ADMIN_WELCOME" },
+        ],
+      },
+      ...(users.length > 0
+        ? [
+            {
+              type: "select",
+              key: "sentByUserId",
+              label: "Sender",
+              allLabel: "All Senders",
+              options: users.map((u) => ({
+                label: u.name || u.email,
+                value: u.id,
+              })),
+            } satisfies FilterField,
+          ]
+        : []),
+    ],
+    [users],
   );
+
+  const {
+    page,
+    setPage,
+    limit,
+    setLimit,
+    search,
+    setSearch,
+    activeCount,
+    queryParams,
+    openPanel,
+    panelProps,
+  } = useListFilters({ fields: filterFields });
 
   const {
     items: emailLogs,
@@ -201,45 +244,6 @@ export default function MessagingCenterPage() {
   const clearAllSelected = useCallback(() => {
     setSelectedPersons({});
   }, []);
-
-  const handleSearchChange = useCallback((newSearch: string) => {
-    setSearch(newSearch);
-    setPage(1);
-  }, []);
-
-  const handleLimitChange = useCallback((newLimit: number) => {
-    setLimit(newLimit);
-    setPage(1);
-  }, []);
-
-  const handleStatusChange = useCallback((value: string) => {
-    setDeliveryStatus(value);
-    setPage(1);
-  }, []);
-
-  const handleEmailTypeChange = useCallback((value: string) => {
-    setEmailType(value);
-    setPage(1);
-  }, []);
-
-  const handleSenderChange = useCallback((value: string) => {
-    setSentByUserId(value);
-    setPage(1);
-  }, []);
-
-  const handleResetFilters = useCallback(() => {
-    setSearch("");
-    setDeliveryStatus("ALL");
-    setEmailType("ALL");
-    setSentByUserId("ALL");
-    setPage(1);
-  }, []);
-
-  const isFiltered =
-    Boolean(search) ||
-    deliveryStatus !== "ALL" ||
-    emailType !== "ALL" ||
-    sentByUserId !== "ALL";
 
   const {
     control,
@@ -462,73 +466,6 @@ export default function MessagingCenterPage() {
         </div>
       </div>
 
-      {/* Toolbar Filters */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-xs">
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Status Filter */}
-          <div className="w-full sm:w-40">
-            <Select
-              value={deliveryStatus}
-              onChange={(e) => handleStatusChange(e.target.value)}
-              aria-label="Filter by delivery status"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="DELIVERED">Delivered</option>
-              <option value="BOUNCED">Bounced</option>
-              <option value="COMPLAINED">Complained</option>
-            </Select>
-          </div>
-
-          {/* Email Type Filter */}
-          <div className="w-full sm:w-48">
-            <Select
-              value={emailType}
-              onChange={(e) => handleEmailTypeChange(e.target.value)}
-              aria-label="Filter by email type"
-            >
-              <option value="ALL">All Email Types</option>
-              <option value="BROADCAST_PEOPLE">People Broadcast</option>
-              <option value="SINGLE_PERSON">Single Person</option>
-              <option value="BROADCAST_REGISTRANTS">
-                Registrants Broadcast
-              </option>
-              <option value="SINGLE_REGISTRANT">Single Registrant</option>
-              <option value="BIRTHDAY_GREETING">Birthday Greeting</option>
-              <option value="ADMIN_WELCOME">Admin Welcome</option>
-            </Select>
-          </div>
-
-          {/* Sender Filter */}
-          {users.length > 0 && (
-            <div className="w-full sm:w-48">
-              <Select
-                value={sentByUserId}
-                onChange={(e) => handleSenderChange(e.target.value)}
-                aria-label="Filter by sender"
-              >
-                <option value="ALL">All Senders</option>
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name || u.email}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          )}
-
-          {isFiltered && (
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              className="text-xs font-medium text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 flex items-center gap-1 transition-colors px-2 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Reset filters
-            </button>
-          )}
-        </div>
-      </div>
-
       {/* Email Delivery Logs Table */}
       <div className="flex flex-col gap-4">
         <Table
@@ -537,15 +474,23 @@ export default function MessagingCenterPage() {
           loading={isLoading || isFetching}
           searchPlaceholder="Search logs by recipient email, name, or subject..."
           search={search}
-          onSearchChange={handleSearchChange}
+          onSearchChange={setSearch}
           page={page}
           onPageChange={setPage}
           limit={limit}
-          onLimitChange={handleLimitChange}
+          onLimitChange={setLimit}
           meta={meta}
           emptyMessage="No email communication logs found matching criteria"
-        />
+        >
+          <ListToolbar
+            trailing={
+              <FiltersButton onClick={openPanel} activeCount={activeCount} />
+            }
+          />
+        </Table>
       </div>
+
+      <FiltersModal {...panelProps} />
 
       {/* Compose Broadcast Modal */}
       <SidebarModal

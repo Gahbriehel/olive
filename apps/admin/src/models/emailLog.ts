@@ -44,17 +44,6 @@ export interface EmailLogItem {
   bounce?: EmailLogBounce | null;
 }
 
-export interface EmailLogQueryParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  emailType?: string;
-  deliveryStatus?: string;
-  sentByUserId?: string;
-  startDate?: string;
-  endDate?: string;
-}
-
 export interface EmailLogResponse {
   success: boolean;
   message: string;

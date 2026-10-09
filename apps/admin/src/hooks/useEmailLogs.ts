@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { EmailLogItem, EmailLogQueryParams } from "@/models/emailLog";
+import { IQueryParams } from "@/models/base";
+import { EmailLogItem } from "@/models/emailLog";
 import { emailService } from "@/services/email.service";
 
 const EMPTY_LOGS: EmailLogItem[] = [];
 
-export function useEmailLogs(params?: EmailLogQueryParams) {
+export function useEmailLogs(params?: IQueryParams) {
   const emailLogsQuery = useQuery({
     queryKey: ["email-logs", params],
     queryFn: () => emailService.getEmailLogs(params),

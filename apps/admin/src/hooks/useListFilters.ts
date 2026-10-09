@@ -82,7 +82,7 @@ export function useListFilters({
   );
 
   const exportParams = useMemo<IQueryParams>(
-    () => ({ search: effectiveSearch || undefined, ...filterParams }),
+    () => ({ search: effectiveSearch.trim() || undefined, ...filterParams }),
     [effectiveSearch, filterParams],
   );
 

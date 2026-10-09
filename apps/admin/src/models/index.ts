@@ -25,7 +25,6 @@ export type {
   EmailLogContent,
   EmailLogContext,
   EmailLogBounce,
-  EmailLogQueryParams,
   EmailLogResponse,
   EmailLogDeliveryStatus,
 } from "./emailLog";
