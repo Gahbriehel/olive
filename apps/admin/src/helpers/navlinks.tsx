@@ -107,13 +107,6 @@ export const mainNavItems: NavItem[] = [
       },
     ],
   },
-
-  {
-    href: "/messaging-center",
-    label: "Messaging Center",
-    icon: MessageCircle,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-  },
   {
     href: "/contact",
     label: "Prayers & Inquiries",
@@ -121,12 +114,11 @@ export const mainNavItems: NavItem[] = [
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
   {
-    href: "/users",
-    label: "Users & Roles",
-    icon: UserCheck,
+    href: "/messaging-center",
+    label: "Messaging Center",
+    icon: MessageCircle,
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
-
   {
     label: "Reports",
     icon: BarChart3,
@@ -146,7 +138,12 @@ export const mainNavItems: NavItem[] = [
       },
     ],
   },
-
+  {
+    href: "/users",
+    label: "Users & Roles",
+    icon: UserCheck,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
   {
     href: "/settings",
     label: "Settings",
