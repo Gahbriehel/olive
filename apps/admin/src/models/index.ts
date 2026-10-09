@@ -18,3 +18,14 @@ export type {
 } from "./birthday";
 export { BirthdayStatusFilter } from "./birthday";
 export * from "./emailBounce";
+export type {
+  EmailLogItem,
+  EmailLogRecipient,
+  EmailLogSender,
+  EmailLogContent,
+  EmailLogContext,
+  EmailLogBounce,
+  EmailLogQueryParams,
+  EmailLogResponse,
+  EmailLogDeliveryStatus,
+} from "./emailLog";

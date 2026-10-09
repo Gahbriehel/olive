@@ -1,5 +1,6 @@
 import { apiClient } from "@/utils/api-client";
-import { IBaseResponse, extractData } from "@/models/base";
+import { IBaseResponse, extractData, extractMeta } from "@/models/base";
+import { EmailLogItem, EmailLogQueryParams } from "@/models/emailLog";
 
 export interface IBatchEmailPayload {
   personIds: string[];
@@ -48,6 +49,20 @@ export interface ISendRegistrantEmailPayload {
 }
 
 export const emailService = {
+  async getEmailLogs(
+    params?: EmailLogQueryParams,
+  ): Promise<{ items: EmailLogItem[]; meta?: IBaseResponse["meta"] }> {
+    const res = await apiClient.get<IBaseResponse<unknown>>("/email/logs", {
+      params,
+    });
+    const items = extractData<EmailLogItem[]>(res.data) || [];
+    const meta = extractMeta(res.data);
+    return {
+      items: Array.isArray(items) ? items : [],
+      meta,
+    };
+  },
+
   async sendBatchEmail(payload: IBatchEmailPayload): Promise<unknown> {
     const res = await apiClient.post<IBaseResponse<unknown>>(
       "/email/people/batch",

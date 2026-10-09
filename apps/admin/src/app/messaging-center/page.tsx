@@ -1,18 +1,10 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import {
-  Send,
-  Mail,
-  Phone,
-  User,
-  X,
-  RotateCcw,
-  CheckSquare,
-} from "lucide-react";
+import { Send, X, RotateCcw } from "lucide-react";
 import { Input } from "@/components/FormElements/Input";
 import { MultiSelect } from "@/components/FormElements/MultiSelect";
 import { RichTextEditor } from "@/components/FormElements/RichTextEditor";
@@ -21,16 +13,23 @@ import { ActionsList } from "@/components/ui/ActionsList";
 import { BaseButton } from "@/components/ui/Button";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { Badge } from "@/components/ui/Badge";
 import { Table } from "@/components/ui/Table";
 import { NotAvailable } from "@/components/ui/NotAvailable";
+import { RefreshButton } from "@/components/ui/RefreshButton";
+import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { type ISelect } from "@/components/ui/Select";
 import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
 import { customToast } from "@/helpers/customToast";
-import { usePeople } from "@/hooks/usePeople";
+import { useEmailLogs } from "@/hooks/useEmailLogs";
+import { useUsers } from "@/hooks/useUsers";
 import { IQueryParams } from "@/models/base";
 import { adaptApiPersonToPerson, IPerson } from "@/models/person";
+import { EmailLogItem, EmailLogQueryParams } from "@/models/emailLog";
 import { emailService, IBatchEmailPayload } from "@/services/email.service";
 import { peopleService } from "@/services/people.service";
+import { ViewEmailLogModal } from "@/components/modals/ViewEmailLogModal";
+import dayjs from "dayjs";
 
 interface BroadcastFormValues {
   subject: string;
@@ -40,9 +39,9 @@ interface BroadcastFormValues {
   ctaUrl?: string;
 }
 
-const columnHelper = createColumnHelper<IPerson>();
+const columnHelper = createColumnHelper<EmailLogItem>();
 
-// Query hook for MultiSelect component to dynamically search and paginate people
+// Query hook for MultiSelect component to dynamically search and paginate people inside Compose Modal
 function usePeopleSelectQuery(params: IQueryParams & { name?: string }) {
   const query = useQuery({
     queryKey: ["people-select", params],
@@ -83,42 +82,65 @@ const transformPersonToSelect = (person: IPerson): ISelect => ({
     "Unknown",
 });
 
+const EMAIL_TYPE_FORMATS: Record<
+  string,
+  {
+    label: string;
+    variant: "indigo" | "cyan" | "purple" | "slate" | "emerald" | "amber";
+  }
+> = {
+  BROADCAST_PEOPLE: { label: "People Broadcast", variant: "indigo" },
+  SINGLE_PERSON: { label: "Single Person", variant: "cyan" },
+  BROADCAST_REGISTRANTS: { label: "Registrants Broadcast", variant: "purple" },
+  SINGLE_REGISTRANT: { label: "Single Registrant", variant: "slate" },
+  BIRTHDAY_GREETING: { label: "Birthday Greeting", variant: "emerald" },
+  ADMIN_WELCOME: { label: "Admin Welcome", variant: "amber" },
+};
+
 export default function MessagingCenterPage() {
+  const queryClient = useQueryClient();
+
+  // Modals state
   const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPerson, setSelectedPerson] = useState<IPerson | null>(null);
+  const [selectedLog, setSelectedLog] = useState<EmailLogItem | null>(null);
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+
+  // Recipient selection state for the Compose Broadcast modal
   const [selectedPersons, setSelectedPersons] = useState<
     Record<string, IPerson>
   >({});
   const [isSending, setIsSending] = useState(false);
 
-  // Server-side query params & filters
+  // Server-side query params & filters for Email Logs
   const [search, setSearch] = useState("");
-  const [membershipStatus, setMembershipStatus] = useState("All");
-  const [gender, setGender] = useState("All");
+  const [deliveryStatus, setDeliveryStatus] = useState<string>("ALL");
+  const [emailType, setEmailType] = useState<string>("ALL");
+  const [sentByUserId, setSentByUserId] = useState<string>("ALL");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [isSelectingAllFiltered, setIsSelectingAllFiltered] = useState(false);
 
-  const queryParams = useMemo(
+  // Fetch admin users to populate sender filter
+  const { users } = useUsers({ limit: 100 });
+
+  const queryParams: EmailLogQueryParams = useMemo(
     () => ({
       page,
       limit,
-      search: search || undefined,
-      membershipStatus:
-        membershipStatus !== "All" ? membershipStatus : undefined,
-      gender: gender !== "All" ? gender : undefined,
+      search: search.trim() || undefined,
+      deliveryStatus: deliveryStatus !== "ALL" ? deliveryStatus : undefined,
+      emailType: emailType !== "ALL" ? emailType : undefined,
+      sentByUserId: sentByUserId !== "ALL" ? sentByUserId : undefined,
     }),
-    [page, limit, search, membershipStatus, gender],
+    [page, limit, search, deliveryStatus, emailType, sentByUserId],
   );
 
-  const { people: apiPeople, meta, isLoading } = usePeople(queryParams);
-
-  const people = useMemo(
-    () =>
-      Array.isArray(apiPeople) ? apiPeople.map(adaptApiPersonToPerson) : [],
-    [apiPeople],
-  );
+  const {
+    items: emailLogs,
+    meta,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useEmailLogs(queryParams);
 
   const selectedPersonList = useMemo(
     () => Object.values(selectedPersons),
@@ -130,7 +152,7 @@ export default function MessagingCenterPage() {
   );
   const selectedCount = selectedPersonList.length;
 
-  // Convert selected persons to ISelect[] for the MultiSelect component
+  // Convert selected persons to ISelect[] for the MultiSelect component in modal
   const multiSelectValue: ISelect[] = useMemo(() => {
     return Object.values(selectedPersons).map(transformPersonToSelect);
   }, [selectedPersons]);
@@ -145,7 +167,6 @@ export default function MessagingCenterPage() {
         const person =
           item.value.person ||
           selectedPersons[personId] ||
-          people.find((p) => p.id === personId) ||
           ({
             id: personId,
             name: item.label,
@@ -166,60 +187,24 @@ export default function MessagingCenterPage() {
       });
       setSelectedPersons(next);
     },
-    [people, selectedPersons],
+    [selectedPersons],
   );
 
-  const isAllOnPageSelected = useMemo(() => {
-    return (
-      people.length > 0 && people.every((p) => Boolean(selectedPersons[p.id]))
-    );
-  }, [people, selectedPersons]);
-
-  const isSomeOnPageSelected = useMemo(() => {
-    return (
-      !isAllOnPageSelected && people.some((p) => Boolean(selectedPersons[p.id]))
-    );
-  }, [people, selectedPersons, isAllOnPageSelected]);
-
-  const toggleSelectPerson = useCallback((person: IPerson) => {
+  const toggleRemovePerson = useCallback((personId: string) => {
     setSelectedPersons((prev) => {
       const next = { ...prev };
-      if (next[person.id]) {
-        delete next[person.id];
-      } else {
-        next[person.id] = person;
-      }
+      delete next[personId];
       return next;
     });
   }, []);
-
-  const toggleSelectAllOnPage = useCallback(() => {
-    setSelectedPersons((prev) => {
-      const next = { ...prev };
-      if (isAllOnPageSelected) {
-        people.forEach((p) => {
-          delete next[p.id];
-        });
-      } else {
-        people.forEach((p) => {
-          next[p.id] = p;
-        });
-      }
-      return next;
-    });
-  }, [isAllOnPageSelected, people]);
 
   const clearAllSelected = useCallback(() => {
     setSelectedPersons({});
   }, []);
 
   const handleSearchChange = useCallback((newSearch: string) => {
-    setSearch((prevSearch) => {
-      if (prevSearch !== newSearch) {
-        setPage(1);
-      }
-      return newSearch;
-    });
+    setSearch(newSearch);
+    setPage(1);
   }, []);
 
   const handleLimitChange = useCallback((newLimit: number) => {
@@ -227,54 +212,34 @@ export default function MessagingCenterPage() {
     setPage(1);
   }, []);
 
-  const handleMembershipChange = useCallback((value: string) => {
-    setMembershipStatus(value);
+  const handleStatusChange = useCallback((value: string) => {
+    setDeliveryStatus(value);
     setPage(1);
   }, []);
 
-  const handleGenderChange = useCallback((value: string) => {
-    setGender(value);
+  const handleEmailTypeChange = useCallback((value: string) => {
+    setEmailType(value);
+    setPage(1);
+  }, []);
+
+  const handleSenderChange = useCallback((value: string) => {
+    setSentByUserId(value);
     setPage(1);
   }, []);
 
   const handleResetFilters = useCallback(() => {
-    setMembershipStatus("All");
-    setGender("All");
+    setSearch("");
+    setDeliveryStatus("ALL");
+    setEmailType("ALL");
+    setSentByUserId("ALL");
     setPage(1);
   }, []);
 
-  const handleSelectAllFiltered = useCallback(async () => {
-    const totalCount = meta?.total ?? people.length;
-    if (totalCount <= 0) return;
-
-    try {
-      setIsSelectingAllFiltered(true);
-      const res = await peopleService.getPeople({
-        page: 1,
-        limit: Math.max(totalCount, 50),
-        search: search || undefined,
-        membershipStatus:
-          membershipStatus !== "All" ? membershipStatus : undefined,
-        gender: gender !== "All" ? gender : undefined,
-      });
-
-      const allMatching = res.people.map(adaptApiPersonToPerson);
-      setSelectedPersons((prev) => {
-        const next = { ...prev };
-        allMatching.forEach((p) => {
-          next[p.id] = p;
-        });
-        return next;
-      });
-      customToast.success(
-        `Selected ${allMatching.length} recipient${allMatching.length === 1 ? "" : "s"} matching filter`,
-      );
-    } catch {
-      customToast.error("Failed to select all filtered recipients");
-    } finally {
-      setIsSelectingAllFiltered(false);
-    }
-  }, [meta?.total, people.length, search, membershipStatus, gender]);
+  const isFiltered =
+    Boolean(search) ||
+    deliveryStatus !== "ALL" ||
+    emailType !== "ALL" ||
+    sentByUserId !== "ALL";
 
   const {
     control,
@@ -316,6 +281,7 @@ export default function MessagingCenterPage() {
       reset();
       clearAllSelected();
       setIsBroadcastModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["email-logs"] });
     } catch {
       // apiClient response interceptor already surfaces error toasts
     } finally {
@@ -325,43 +291,6 @@ export default function MessagingCenterPage() {
 
   const columns = useMemo(
     () => [
-      columnHelper.display({
-        id: "select",
-        header: () => (
-          <div className="flex items-center justify-center">
-            <input
-              type="checkbox"
-              checked={isAllOnPageSelected}
-              ref={(el) => {
-                if (el) {
-                  el.indeterminate = isSomeOnPageSelected;
-                }
-              }}
-              onChange={toggleSelectAllOnPage}
-              className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600 dark:accent-indigo-500"
-              aria-label="Select all on this page"
-            />
-          </div>
-        ),
-        cell: ({ row }) => {
-          const person = row.original;
-          const isSelected = Boolean(selectedPersons[person.id]);
-          return (
-            <div
-              className="flex items-center justify-center"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <input
-                type="checkbox"
-                checked={isSelected}
-                onChange={() => toggleSelectPerson(person)}
-                className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600 dark:accent-indigo-500"
-                aria-label={`Select ${person.name || person.firstName}`}
-              />
-            </div>
-          );
-        },
-      }),
       columnHelper.accessor(
         (_, rowIndex) => padNumberWithZeros((page - 1) * limit + rowIndex + 1),
         {
@@ -369,42 +298,136 @@ export default function MessagingCenterPage() {
           header: "S/N",
         },
       ),
-      columnHelper.accessor("firstName", {
-        header: "First Name",
-        cell: (info) => <span>{info.getValue() as string}</span>,
+      columnHelper.accessor("recipient", {
+        header: "Recipient",
+        cell: ({ row }) => {
+          const recipient = row.original.recipient;
+          const email = recipient?.email;
+          const name = recipient?.name;
+          const initial = (name?.[0] || email?.[0] || "?").toUpperCase();
+
+          return (
+            <div className="flex items-center gap-2.5 min-w-0 max-w-[220px]">
+              <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40">
+                {initial}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                  {name || "—"}
+                </p>
+                {email ? (
+                  <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                    <TruncatedTextWithCopy
+                      text={email}
+                      maxLength={22}
+                      textClassName="text-[11px] font-mono text-slate-500 dark:text-slate-400"
+                    />
+                  </div>
+                ) : (
+                  <NotAvailable />
+                )}
+              </div>
+            </div>
+          );
+        },
       }),
-      columnHelper.accessor("lastName", {
-        header: "Last Name",
-        cell: (info) => <span>{info.getValue() as string}</span>,
+      columnHelper.accessor("content", {
+        header: "Subject & Message",
+        cell: ({ row }) => {
+          const content = row.original.content;
+          return (
+            <div className="min-w-0 max-w-[260px] space-y-0.5">
+              <p
+                className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate"
+                title={content?.subject || ""}
+              >
+                {content?.subject || <NotAvailable />}
+              </p>
+              {content?.bodyTextSnippet && (
+                <p
+                  className="text-[11px] text-slate-500 dark:text-slate-400 truncate"
+                  title={content.bodyTextSnippet}
+                >
+                  {content.bodyTextSnippet}
+                </p>
+              )}
+            </div>
+          );
+        },
       }),
-      columnHelper.accessor("email", {
-        header: "Email",
-        cell: (info) => <span>{info.getValue()}</span>,
+      columnHelper.accessor("emailType", {
+        header: "Email Type",
+        cell: ({ getValue }) => {
+          const type = getValue();
+          const config = EMAIL_TYPE_FORMATS[type];
+          return (
+            <Badge
+              variant={config?.variant || "indigo"}
+              size="sm"
+              className="text-[10px] font-medium whitespace-nowrap"
+            >
+              {config?.label || type || "—"}
+            </Badge>
+          );
+        },
       }),
-      columnHelper.accessor("phone", {
-        header: "Phone Number",
-        cell: (info) => <span>{info.getValue()}</span>,
-      }),
-      columnHelper.accessor("gender", {
-        header: "Gender",
-        cell: (info) => <span>{info.getValue()}</span>,
-      }),
-      columnHelper.accessor("membershipStatus", {
-        header: "Membership",
+      columnHelper.accessor("deliveryStatus", {
+        header: "Status",
         cell: (info) => <StatusBadge status={info.getValue()} size="sm" />,
+      }),
+      columnHelper.accessor("sentBy", {
+        header: "Sent By",
+        cell: ({ getValue }) => {
+          const sender = getValue();
+          if (!sender) {
+            return (
+              <span className="text-xs text-slate-400 dark:text-slate-500 italic">
+                Automated
+              </span>
+            );
+          }
+          return (
+            <div className="text-xs min-w-0 max-w-[140px]">
+              <p className="font-semibold text-slate-800 dark:text-slate-200 truncate">
+                {sender.name}
+              </p>
+              <p className="text-[10px] font-mono text-slate-400 truncate">
+                {sender.email}
+              </p>
+            </div>
+          );
+        },
+      }),
+      columnHelper.accessor("createdAt", {
+        header: "Date Sent",
+        cell: ({ getValue }) => {
+          const val = getValue();
+          if (!val) return <NotAvailable />;
+          return (
+            <div className="space-y-0.5 whitespace-nowrap">
+              <p className="text-xs font-medium text-slate-800 dark:text-slate-200">
+                {dayjs(val).format("MMM D, YYYY")}
+              </p>
+              <p className="text-[10px] text-slate-400">
+                {dayjs(val).format("h:mm A")}
+              </p>
+            </div>
+          );
+        },
       }),
       columnHelper.accessor((rowData) => rowData, {
         id: "actions",
         header: "Actions",
         cell: ({ getValue }) => {
+          const item = getValue();
           return (
             <ActionsList
               actions={[
                 {
-                  title: "View",
+                  title: "View Details",
                   fn: () => {
-                    setSelectedPerson(getValue());
-                    setIsModalOpen(true);
+                    setSelectedLog(item);
+                    setIsLogModalOpen(true);
                   },
                 },
               ]}
@@ -413,15 +436,7 @@ export default function MessagingCenterPage() {
         },
       }),
     ],
-    [
-      page,
-      limit,
-      isAllOnPageSelected,
-      isSomeOnPageSelected,
-      selectedPersons,
-      toggleSelectAllOnPage,
-      toggleSelectPerson,
-    ],
+    [page, limit],
   );
 
   return (
@@ -433,60 +448,75 @@ export default function MessagingCenterPage() {
             Messaging Center
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Manage communications and send broadcast messages to members
+            Monitor sent communications and send broadcast emails to members
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {selectedCount > 0 && (
-            <BaseButton
-              className="!h-10"
-              color="outline"
-              text="Clear selected"
-              icon={<X className="w-4 h-4" />}
-              onClick={clearAllSelected}
-            />
-          )}
+          <RefreshButton onRefetch={() => refetch()} />
           <BaseButton
             className="!h-10"
-            text={
-              selectedCount > 0
-                ? `Send broadcast (${selectedCount})`
-                : "Send broadcast"
-            }
+            text="Compose Broadcast"
             icon={<Send className="w-4 h-4" />}
             onClick={() => setIsBroadcastModalOpen(true)}
           />
         </div>
       </div>
 
-      {/* Toolbar Filters & Batch Selection Aid */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-3 rounded-2xl border border-slate-200 dark:border-zinc-800">
+      {/* Toolbar Filters */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-3.5 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-xs">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="w-full sm:w-44">
+          {/* Status Filter */}
+          <div className="w-full sm:w-40">
             <Select
-              value={membershipStatus}
-              onChange={(e) => handleMembershipChange(e.target.value)}
-              aria-label="Filter by membership status"
+              value={deliveryStatus}
+              onChange={(e) => handleStatusChange(e.target.value)}
+              aria-label="Filter by delivery status"
             >
-              <option value="All">All Statuses</option>
-              <option value="Member">Member</option>
-              <option value="Worker">Worker</option>
-              <option value="Leader">Leader</option>
-              <option value="Visitor">Visitor</option>
+              <option value="ALL">All Statuses</option>
+              <option value="DELIVERED">Delivered</option>
+              <option value="BOUNCED">Bounced</option>
+              <option value="COMPLAINED">Complained</option>
             </Select>
           </div>
-          <div className="w-full sm:w-44">
+
+          {/* Email Type Filter */}
+          <div className="w-full sm:w-48">
             <Select
-              value={gender}
-              onChange={(e) => handleGenderChange(e.target.value)}
-              aria-label="Filter by gender"
+              value={emailType}
+              onChange={(e) => handleEmailTypeChange(e.target.value)}
+              aria-label="Filter by email type"
             >
-              <option value="All">All Genders</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
+              <option value="ALL">All Email Types</option>
+              <option value="BROADCAST_PEOPLE">People Broadcast</option>
+              <option value="SINGLE_PERSON">Single Person</option>
+              <option value="BROADCAST_REGISTRANTS">
+                Registrants Broadcast
+              </option>
+              <option value="SINGLE_REGISTRANT">Single Registrant</option>
+              <option value="BIRTHDAY_GREETING">Birthday Greeting</option>
+              <option value="ADMIN_WELCOME">Admin Welcome</option>
             </Select>
           </div>
-          {(membershipStatus !== "All" || gender !== "All") && (
+
+          {/* Sender Filter */}
+          {users.length > 0 && (
+            <div className="w-full sm:w-48">
+              <Select
+                value={sentByUserId}
+                onChange={(e) => handleSenderChange(e.target.value)}
+                aria-label="Filter by sender"
+              >
+                <option value="ALL">All Senders</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name || u.email}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          )}
+
+          {isFiltered && (
             <button
               type="button"
               onClick={handleResetFilters}
@@ -497,55 +527,15 @@ export default function MessagingCenterPage() {
             </button>
           )}
         </div>
-
-        {meta?.total !== undefined && meta.total > 0 && (
-          <div className="flex items-center gap-2">
-            <BaseButton
-              color="outline"
-              className="!h-[42px] !text-xs font-semibold w-full sm:w-auto"
-              icon={<CheckSquare className="w-3.5 h-3.5 text-indigo-500" />}
-              text={
-                isSelectingAllFiltered
-                  ? "Selecting all..."
-                  : `Select all ${meta.total} filtered`
-              }
-              loading={isSelectingAllFiltered}
-              disabled={isSelectingAllFiltered}
-              onClick={handleSelectAllFiltered}
-            />
-          </div>
-        )}
       </div>
 
-      {/* Gmail-style full filter selection helper banner */}
-      {isAllOnPageSelected &&
-        meta?.total !== undefined &&
-        meta.total > people.length && (
-          <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 text-xs text-indigo-900 dark:text-indigo-200 flex flex-col sm:flex-row items-center justify-center gap-2 text-center">
-            <span>
-              All <strong>{people.length}</strong> recipients on this page are
-              selected.
-            </span>
-            <button
-              type="button"
-              onClick={handleSelectAllFiltered}
-              disabled={isSelectingAllFiltered}
-              className="font-semibold underline hover:text-indigo-700 dark:hover:text-indigo-300 cursor-pointer disabled:opacity-50"
-            >
-              {isSelectingAllFiltered
-                ? "Selecting..."
-                : `Select all ${meta.total} recipients matching filters`}
-            </button>
-          </div>
-        )}
-
-      {/* Server-side Paginated & Filtered Table */}
+      {/* Email Delivery Logs Table */}
       <div className="flex flex-col gap-4">
         <Table
-          data={people}
-          columns={columns as Array<ColumnDef<IPerson>>}
-          loading={isLoading}
-          searchPlaceholder="Search recipients by name, email, or phone..."
+          data={emailLogs}
+          columns={columns as Array<ColumnDef<EmailLogItem>>}
+          loading={isLoading || isFetching}
+          searchPlaceholder="Search logs by recipient email, name, or subject..."
           search={search}
           onSearchChange={handleSearchChange}
           page={page}
@@ -553,6 +543,7 @@ export default function MessagingCenterPage() {
           limit={limit}
           onLimitChange={handleLimitChange}
           meta={meta}
+          emptyMessage="No email communication logs found matching criteria"
         />
       </div>
 
@@ -563,7 +554,7 @@ export default function MessagingCenterPage() {
         close={() => setIsBroadcastModalOpen(false)}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-          {/* MultiSelect Element for Recipients in Modal */}
+          {/* MultiSelect Element for Recipients */}
           <div className="flex flex-col gap-1.5">
             <MultiSelect
               label="Recipients"
@@ -582,7 +573,7 @@ export default function MessagingCenterPage() {
             <div className="flex flex-col gap-2 p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-800">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Selected Preview ({selectedCount})
+                  Selected Recipients ({selectedCount})
                 </span>
                 <button
                   type="button"
@@ -607,8 +598,8 @@ export default function MessagingCenterPage() {
                     </span>
                     <button
                       type="button"
-                      onClick={() => toggleSelectPerson(p)}
-                      className="text-slate-400 hover:text-red-500 transition-colors ml-0.5"
+                      onClick={() => toggleRemovePerson(p.id)}
+                      className="text-slate-400 hover:text-red-500 transition-colors ml-0.5 cursor-pointer"
                       title="Remove recipient"
                     >
                       <X className="w-3 h-3" />
@@ -697,8 +688,8 @@ export default function MessagingCenterPage() {
             <BaseButton
               text={
                 selectedCount > 0
-                  ? `Send message (${selectedCount})`
-                  : "Send message"
+                  ? `Send broadcast (${selectedCount})`
+                  : "Send broadcast"
               }
               className="w-full !h-11"
               type="submit"
@@ -718,104 +709,15 @@ export default function MessagingCenterPage() {
         </form>
       </SidebarModal>
 
-      {/* Recipient Details View Modal */}
-      <SidebarModal
-        title="Recipient Details"
-        display={isModalOpen}
-        close={() => setIsModalOpen(false)}
-      >
-        {selectedPerson && (
-          <div className="flex flex-col gap-6 pt-2">
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-800">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white font-bold text-lg shadow-sm">
-                {selectedPerson.firstName
-                  ? selectedPerson.firstName.charAt(0).toUpperCase()
-                  : selectedPerson.name
-                    ? selectedPerson.name.charAt(0).toUpperCase()
-                    : "?"}
-              </div>
-              <div className="flex flex-col min-w-0 flex-1">
-                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 truncate">
-                  {selectedPerson.name ||
-                    `${selectedPerson.firstName} ${selectedPerson.lastName}`.trim() || (
-                      <NotAvailable />
-                    )}
-                </h3>
-                <div className="mt-1">
-                  <StatusBadge
-                    status={selectedPerson.membershipStatus}
-                    size="sm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3">
-              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900">
-                <div className="p-2 rounded-lg bg-indigo-50 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400">
-                  <Mail className="w-4 h-4" />
-                </div>
-                <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-                    Email Address
-                  </span>
-                  {selectedPerson.email ? (
-                    <a
-                      href={`mailto:${selectedPerson.email}`}
-                      className="text-sm font-medium text-slate-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 truncate"
-                    >
-                      {selectedPerson.email}
-                    </a>
-                  ) : (
-                    <NotAvailable />
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900">
-                <div className="p-2 rounded-lg bg-emerald-50 dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400">
-                  <Phone className="w-4 h-4" />
-                </div>
-                <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-                    Phone Number
-                  </span>
-                  {selectedPerson.phone ? (
-                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                      {selectedPerson.phone}
-                    </span>
-                  ) : (
-                    <NotAvailable />
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900">
-                <div className="p-2 rounded-lg bg-purple-50 dark:bg-zinc-800 text-purple-600 dark:text-purple-400">
-                  <User className="w-4 h-4" />
-                </div>
-                <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-                    Gender
-                  </span>
-                  <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                    {selectedPerson.gender || <NotAvailable />}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-2 flex items-center justify-end gap-3 border-t border-slate-200/80 dark:border-zinc-800 pt-5">
-              <BaseButton
-                text="Close"
-                color="outline"
-                className="!h-10 !text-xs font-semibold"
-                onClick={() => setIsModalOpen(false)}
-              />
-            </div>
-          </div>
-        )}
-      </SidebarModal>
+      {/* View Email Log Details Modal */}
+      <ViewEmailLogModal
+        log={selectedLog}
+        isOpen={isLogModalOpen}
+        onClose={() => {
+          setIsLogModalOpen(false);
+          setSelectedLog(null);
+        }}
+      />
     </div>
   );
 }
