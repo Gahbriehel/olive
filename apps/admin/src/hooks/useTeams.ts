@@ -51,6 +51,7 @@ export function useTeams(params?: IQueryParams | string) {
     meta: teamsQuery.data?.meta,
     isLoading: teamsQuery.isLoading,
     isError: teamsQuery.isError,
+    error: teamsQuery.error,
     refetch: teamsQuery.refetch,
     createTeam: createTeamMutation.mutateAsync,
     isCreatingTeam: createTeamMutation.isPending,

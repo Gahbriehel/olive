@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { ErrorState } from "@/components/ui/QueryState";
 import { Input } from "@/components/FormElements/Input";
 import { Tabs } from "@/components/ui/Tabs";
 import { Modal } from "@/components/ui/Modal";
@@ -45,6 +47,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     isUpdatingSettings,
     isUpdatingProfile,
     isChangingPassword,
+    isErrorSettings,
+    settingsError,
+    refetchSettings,
   } = useSettings();
 
   const settings = propSettings ||
@@ -231,39 +236,46 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     }
   };
 
+  // Church settings failed to load: never show (and let admins save) the
+  // blank fallback form in place of the real configuration.
+  const settingsUnavailable =
+    isAdmin && isErrorSettings && !propSettings && !hookSettings;
+  const settingsErrorState = (
+    <Card>
+      <ErrorState
+        resource="church settings"
+        error={settingsError}
+        onRetry={() => (onRefetch ? onRefetch() : refetchSettings())}
+      />
+    </Card>
+  );
+
   return (
-    <div className="space-y-6 animate-fade-in pb-10">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
-            Platform Settings
-          </h1>
-          <p className="text-xs sm:text-sm text-fg-muted">
-            Configure church metadata, user profile credentials, branding, and
-            system defaults.
-          </p>
-        </div>
-        {activeTab === "church-info" && (
-          <div className="flex gap-2 w-full sm:w-auto">
-            <RefreshButton onRefetch={onRefetch} />
-            <Button
-              variant="primary"
-              onClick={handleSaveChurchSettings}
-              loading={isUpdatingSettings}
-              disabled={isUpdatingSettings}
-              leftIcon={<Save className="w-4 h-4" />}
-              className="bg-indigo-600 hover:bg-indigo-500"
-            >
-              Save Configuration
-            </Button>
-          </div>
-        )}
-      </div>
+    <div className="space-y-6 pb-10">
+      <PageHeader
+        title="Platform Settings"
+        description="Configure church metadata, user profile credentials, branding, and system defaults."
+        actions={
+          activeTab === "church-info" && !settingsUnavailable ? (
+            <>
+              <RefreshButton onRefetch={onRefetch} />
+              <Button
+                variant="primary"
+                onClick={handleSaveChurchSettings}
+                loading={isUpdatingSettings}
+                disabled={isUpdatingSettings}
+                leftIcon={<Save className="w-4 h-4" />}
+              >
+                Save Configuration
+              </Button>
+            </>
+          ) : undefined
+        }
+      />
 
       {savedSuccess && (
-        <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-success-text font-bold text-xs flex items-center gap-3">
-          <Check className="w-5 h-5 text-emerald-500" />
+        <div className="p-4 rounded-2xl bg-success-soft border border-success-border text-success-text font-bold text-xs flex items-center gap-3">
+          <Check className="w-5 h-5 text-success-text" />
           Settings successfully saved and synchronized across platform
           instances.
         </div>
@@ -272,12 +284,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {/* Settings Navigation Tabs */}
       <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
 
+      {settingsUnavailable && activeTab !== "profile" && settingsErrorState}
+
       {/* Tab 1: Church Info */}
-      {activeTab === "church-info" && (
+      {activeTab === "church-info" && !settingsUnavailable && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-indigo-500" />
+              <Building2 className="w-5 h-5 text-primary-text" />
               Church & Organization Information
             </CardTitle>
             <CardDescription>
@@ -352,7 +366,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5 text-indigo-500" />
+              <User className="w-5 h-5 text-primary-text" />
               User Profile Self-Service
             </CardTitle>
             <CardDescription>
@@ -408,7 +422,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   loading={isUpdatingProfile}
                   disabled={isUpdatingProfile}
                   leftIcon={<Save className="w-4 h-4" />}
-                  className="bg-indigo-600 hover:bg-indigo-500"
                 >
                   Update Profile
                 </Button>
@@ -420,13 +433,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               className="pt-6 border-t border-border space-y-4 text-xs"
             >
               <h3 className="font-bold text-sm text-fg flex items-center gap-2">
-                <Key className="w-4 h-4 text-indigo-500" />
+                <Key className="w-4 h-4 text-primary-text" />
                 Change Security Password
               </h3>
 
               {passwordSavedSuccess && (
-                <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-success-text font-bold text-xs flex items-center gap-3">
-                  <Check className="w-4 h-4 text-emerald-500" />
+                <div className="p-3 rounded-xl bg-success-soft border border-success-border text-success-text font-bold text-xs flex items-center gap-3">
+                  <Check className="w-4 h-4 text-success-text" />
                   Password successfully updated.
                 </div>
               )}
@@ -473,7 +486,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   loading={isChangingPassword}
                   disabled={isChangingPassword}
                   leftIcon={<Key className="w-4 h-4" />}
-                  className="bg-indigo-600 hover:bg-indigo-500"
                 >
                   Change Password
                 </Button>
@@ -484,7 +496,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       )}
 
       {/* Tab 3: Branding */}
-      {activeTab === "branding" && (
+      {activeTab === "branding" && !settingsUnavailable && (
         <Card>
           <CardHeader>
             <CardTitle>Branding & Visual Tokens</CardTitle>
@@ -511,7 +523,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       },
                     })
                   }
-                  className="w-10 h-10 rounded-xl cursor-pointer border border-slate-200"
+                  className="w-10 h-10 rounded-xl cursor-pointer border border-border-control"
                 />
                 <span className="font-mono font-bold text-fg">
                   {formData.branding?.primaryColor || "#6366f1"}
@@ -538,7 +550,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       )}
 
       {/* Tab 4: Email Config */}
-      {activeTab === "email" && (
+      {activeTab === "email" && !settingsUnavailable && (
         <Card>
           <CardHeader>
             <CardTitle>Email Confirmation & QR Ticket Dispatch</CardTitle>
@@ -586,7 +598,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       )}
 
       {/* Tab 5: Preferences */}
-      {activeTab === "preferences" && (
+      {activeTab === "preferences" && !settingsUnavailable && (
         <Card>
           <CardHeader>
             <CardTitle>General System Preferences</CardTitle>
@@ -600,7 +612,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <p className="font-bold text-fg">
                   Auto-Assign Teams on Registration
                 </p>
-                <p className="text-2xs text-slate-400">
+                <p className="text-2xs text-fg-muted">
                   Balance attendee allocation across the event teams upon signup
                 </p>
               </div>
@@ -618,7 +630,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     },
                   })
                 }
-                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+                className="w-4 h-4 rounded text-primary focus:ring-primary"
               />
             </div>
 
@@ -627,7 +639,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <p className="font-bold text-fg">
                   Enforce QR Code Ticket Requirement
                 </p>
-                <p className="text-2xs text-slate-400">
+                <p className="text-2xs text-fg-muted">
                   Require digital QR code verification at desk terminals
                 </p>
               </div>
@@ -645,7 +657,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     },
                   })
                 }
-                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+                className="w-4 h-4 rounded text-primary focus:ring-primary"
               />
             </div>
           </CardContent>
@@ -661,20 +673,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         maxWidth="sm"
       >
         <div className="space-y-6 py-8 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-            <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-soft">
+            <CheckCircle2 className="h-10 w-10 text-success-text" />
           </div>
 
           <div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-xl font-semibold text-fg">
               Password changed successfully
             </h3>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
+            <p className="mt-2 text-fg-secondary">
               For security reasons, you will be logged out in{" "}
-              <span className="font-medium text-orange-600">{countdown}</span>{" "}
+              <span className="font-medium text-warning-text">{countdown}</span>{" "}
               seconds.
             </p>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-fg-muted">
               Please log in again with your new password.
             </p>
           </div>

@@ -42,7 +42,6 @@ export default function GlobalError({ error, reset }: ErrorProps) {
             variant="primary"
             onClick={() => reset()}
             leftIcon={<RefreshCw className="w-4 h-4" />}
-            className="bg-indigo-600 hover:bg-indigo-500"
           >
             Try Again
           </Button>

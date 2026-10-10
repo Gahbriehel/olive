@@ -4,6 +4,8 @@ import React, { useState, useMemo } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
+  CalendarX,
+  ClipboardList,
   QrCode,
   Users,
   UserCheck,
@@ -16,14 +18,6 @@ import {
   Ticket,
   DoorOpen,
   Search,
-  Mail,
-  Phone,
-  User,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  ChevronDown,
   Filter,
 } from "lucide-react";
 import {
@@ -41,6 +35,15 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Tabs } from "@/components/ui/Tabs";
 import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Pagination } from "@/components/ui/Pagination";
+import {
+  EmptyState,
+  ErrorState,
+  QueryState,
+  SkeletonCardGrid,
+  SkeletonList,
+} from "@/components/ui/QueryState";
 import { EventsForm } from "@/components/Forms/EventsForm";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { useDashboard } from "@/context/DashboardContext";
@@ -48,15 +51,14 @@ import { useRegistrations } from "@/hooks/useRegistrations";
 import { useTeams } from "@/hooks/useTeams";
 import { useGames } from "@/hooks/useGames";
 import { useEvents } from "@/hooks/useEvents";
-import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { useListFilters } from "@/hooks/useListFilters";
 import { type FilterField } from "@/models/filters";
 import { adaptApiRegistrationToRegistration } from "@/models/registration";
 import { adaptApiTeamToTeam } from "@/models/team";
 import { adaptApiGameToGame } from "@/models/game";
 import { EventCategory, getCategoryColor } from "@/models/event";
-import { cn } from "@/helpers/cn";
 import { TeamBadge } from "@/components/ui/TeamBadge";
+import { TeamRostersTab } from "../_components/TeamRostersTab";
 
 const regStatusField = {
   type: "select",
@@ -72,6 +74,10 @@ const regStatusField = {
 
 const regFilterFields: FilterField[] = [regStatusField];
 
+const REG_PAGE_SIZES = [10, 25, 50, 100];
+
+const eventsCrumb = { label: "Events", href: "/events" };
+
 export default function EventDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -80,7 +86,16 @@ export default function EventDetailPage() {
   const initialTab = searchParams.get("tab") || "overview";
 
   const { events, setIsQrScannerOpen } = useDashboard();
-  const { updateEvent, deleteEvent } = useEvents();
+  // Same query (and cache entry) the dashboard context reads `events` from;
+  // used here for its loading / error state.
+  const {
+    updateEvent,
+    deleteEvent,
+    isLoading: isEventsLoading,
+    isError: isEventsError,
+    error: eventsError,
+    refetch: refetchEvents,
+  } = useEvents();
 
   const [activeTab, setActiveTab] = useState(initialTab);
   const [isEditing, setIsEditing] = useState(false);
@@ -88,19 +103,36 @@ export default function EventDetailPage() {
 
   // Teams Query: Fetch all teams for this event (limit: 100)
   const teamsParams = useMemo(() => ({ eventId, limit: 100 }), [eventId]);
-  const { teams: apiTeams } = useTeams(teamsParams);
+  const {
+    teams: apiTeams,
+    isLoading: isTeamsLoading,
+    isError: isTeamsError,
+    refetch: refetchTeams,
+  } = useTeams(teamsParams);
 
   // Games & Leaderboard Query
   const gamesParams = useMemo(() => ({ eventId }), [eventId]);
-  const { games: apiGames, leaderboard } = useGames(gamesParams);
+  const {
+    games: apiGames,
+    leaderboard,
+    isLoadingGames,
+    isLoadingLeaderboard,
+    isError: isGamesError,
+    error: gamesError,
+    refetchGames,
+  } = useGames(gamesParams);
 
   // Full Roster Query (limit: 1000): Complete attendee pool for team roster mapping
   const fullRosterParams = useMemo(
     () => ({ eventId, limit: 1000, page: 1 }),
     [eventId],
   );
-  const { registrations: apiAllRegistrations } =
-    useRegistrations(fullRosterParams);
+  const {
+    registrations: apiAllRegistrations,
+    isLoading: isRosterLoading,
+    isError: isRosterError,
+    refetch: refetchRoster,
+  } = useRegistrations(fullRosterParams);
 
   // Paginated Registrations Query (for the dedicated Registrations tab)
   const {
@@ -112,6 +144,8 @@ export default function EventDetailPage() {
     setSearch: setRegSearch,
     filters: regFilters,
     setFilter: setRegFilter,
+    clearFilters: clearRegFilters,
+    activeCount: regActiveCount,
     queryParams: regQueryParams,
   } = useListFilters({ fields: regFilterFields, searchDebounceMs: 400 });
 
@@ -124,16 +158,10 @@ export default function EventDetailPage() {
     registrations: apiPaginatedRegistrations,
     meta: regMeta,
     isLoading: isPaginatedRegLoading,
+    isError: isPaginatedRegError,
+    error: paginatedRegError,
+    refetch: refetchPaginatedRegs,
   } = useRegistrations(paginatedRegParams);
-
-  // Teams & Roster Filter and Collapsible State (Collapsed by default)
-  const [teamRosterFilter, setTeamRosterFilter] = useState<string>("ALL");
-  const [rosterSearch, setRosterSearch] = useState<string>("");
-  const debouncedRosterSearch = useDebouncedSearch(rosterSearch, 300);
-  const [rosterPage, setRosterPage] = useState<Record<string, number>>({});
-  const [expandedTeams, setExpandedTeams] = useState<Record<string, boolean>>(
-    {},
-  );
 
   const selectedEvent = events.find((e) => e.id === eventId) || events[0];
 
@@ -216,30 +244,6 @@ export default function EventDetailPage() {
     return { teamRosterMap: map, unassignedRoster: unassigned };
   }, [enrichedTeams, allRegistrations]);
 
-  const toggleTeamExpanded = (teamId: string) => {
-    setExpandedTeams((prev) => ({
-      ...prev,
-      [teamId]: !prev[teamId],
-    }));
-  };
-
-  const isAllExpanded = useMemo(() => {
-    if (enrichedTeams.length === 0) return false;
-    return enrichedTeams.every((t) => expandedTeams[t.id]);
-  }, [enrichedTeams, expandedTeams]);
-
-  const handleToggleAllTeams = () => {
-    if (isAllExpanded) {
-      setExpandedTeams({});
-    } else {
-      const allExpanded: Record<string, boolean> = { UNASSIGNED: true };
-      enrichedTeams.forEach((t) => {
-        allExpanded[t.id] = true;
-      });
-      setExpandedTeams(allExpanded);
-    }
-  };
-
   const tabs = [
     { id: "overview", label: "Overview" },
     {
@@ -257,7 +261,41 @@ export default function EventDetailPage() {
 
   if (!selectedEvent) {
     return (
-      <div className="p-8 text-center text-slate-500">Event not found.</div>
+      <div className="space-y-6 animate-fade-in pb-10">
+        <PageHeader
+          title="Event details"
+          breadcrumbs={[eventsCrumb, { label: "Event" }]}
+        />
+        {isEventsLoading ? (
+          <SkeletonCardGrid count={4} />
+        ) : (
+          <div className="rounded-2xl border border-border bg-surface">
+            {isEventsError ? (
+              <ErrorState
+                resource="this event"
+                error={eventsError}
+                onRetry={() => refetchEvents()}
+              />
+            ) : (
+              <EmptyState
+                icon={CalendarX}
+                title="Event not found."
+                description="It may have been deleted, or the link is incorrect."
+                action={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<ArrowLeft className="w-4 h-4" />}
+                    onClick={() => router.push("/events")}
+                  >
+                    Back to events
+                  </Button>
+                }
+              />
+            )}
+          </div>
+        )}
+      </div>
     );
   }
 
@@ -273,77 +311,63 @@ export default function EventDetailPage() {
       ? Math.round((selectedEvent.checkedInCount / totalCount) * 100)
       : 0;
   const completedGames = games.filter((g) => g.status === "Completed").length;
+  const hasRegFilters = Boolean(regSearch) || regActiveCount > 0;
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => router.push("/events")}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border-control bg-surface-raised/80 px-3 text-xs font-semibold text-fg-secondary transition-all hover:bg-subtle hover:text-fg cursor-pointer shadow-xs shrink-0"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back</span>
-          </button>
-          <div className="space-y-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight truncate">
-                {selectedEvent.name}
-              </h1>
-              <Badge color={categoryColor} size="sm">
-                {selectedEvent.category}
+      <PageHeader
+        title={selectedEvent.name}
+        breadcrumbs={[eventsCrumb, { label: selectedEvent.name }]}
+        description={
+          <span className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+            <Badge color={categoryColor} size="sm">
+              {selectedEvent.category}
+            </Badge>
+            {selectedEvent.isFeatured && (
+              <Badge color="gold" size="sm" className="flex items-center gap-1">
+                <Star className="w-3 h-3 fill-current" />
+                FEATURED
               </Badge>
-              {selectedEvent.isFeatured && (
-                <Badge
-                  color="gold"
-                  size="sm"
-                  className="flex items-center gap-1"
-                >
-                  <Star className="w-3 h-3 fill-amber-500" />
-                  FEATURED
-                </Badge>
-              )}
-              <StatusBadge status={selectedEvent.status} size="sm" />
-            </div>
-            <p className="text-xs text-fg-muted flex items-center gap-2">
-              {selectedEvent.requiresRegistration ? (
-                <span className="flex items-center gap-1 text-primary-text font-semibold">
-                  <Ticket className="w-3 h-3" /> Registration Required
-                </span>
-              ) : (
-                <span className="flex items-center gap-1 text-success-text font-semibold">
-                  <DoorOpen className="w-3 h-3" /> Open Admission
-                </span>
-              )}
-              <span>•</span>
-              <span>
-                {new Date(selectedEvent.startDate).toLocaleDateString()}
+            )}
+            <StatusBadge status={selectedEvent.status} size="sm" />
+            {selectedEvent.requiresRegistration ? (
+              <span className="flex items-center gap-1 text-primary-text font-semibold">
+                <Ticket className="w-3 h-3" /> Registration Required
               </span>
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsEditing(true)}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border-control bg-surface-raised/80 px-3.5 text-xs font-semibold text-fg-secondary transition-all hover:bg-subtle hover:text-primary-text cursor-pointer shadow-xs"
-          >
-            <Edit className="w-3.5 h-3.5 text-amber-500" />
-            <span>Edit Event</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setConfirmDeleteOpen(true)}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-danger-border bg-danger-soft px-3.5 text-xs font-semibold text-danger-text transition-all hover:bg-danger-soft hover:border-rose-300 cursor-pointer shadow-xs"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Delete Event</span>
-          </button>
-        </div>
-      </div>
+            ) : (
+              <span className="flex items-center gap-1 text-success-text font-semibold">
+                <DoorOpen className="w-3 h-3" /> Open Admission
+              </span>
+            )}
+            <span aria-hidden="true">•</span>
+            <span>
+              {new Date(selectedEvent.startDate).toLocaleDateString()}
+            </span>
+          </span>
+        }
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9"
+              leftIcon={<Edit className="w-3.5 h-3.5 text-warning" />}
+              onClick={() => setIsEditing(true)}
+            >
+              Edit Event
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 border-danger-border bg-danger-soft text-danger-text hover:bg-danger-soft hover:border-danger"
+              leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+              onClick={() => setConfirmDeleteOpen(true)}
+            >
+              Delete Event
+            </Button>
+          </>
+        }
+      />
 
       {/* Navigation Sub-Tabs */}
       <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
@@ -372,6 +396,7 @@ export default function EventDetailPage() {
               trend="neutral"
               icon={selectedEvent.requiresRegistration ? Users : DoorOpen}
               color="indigo"
+              loading={isPaginatedRegLoading}
             />
             <StatsCard
               title="Checked-In Count"
@@ -392,6 +417,7 @@ export default function EventDetailPage() {
               trend="neutral"
               icon={Shield}
               color="cyan"
+              loading={isTeamsLoading || isLoadingLeaderboard}
             />
             <StatsCard
               title="Games Tournament"
@@ -400,6 +426,7 @@ export default function EventDetailPage() {
               trend="up"
               icon={Gamepad2}
               color="amber"
+              loading={isLoadingGames}
             />
           </StatsCardGroup>
 
@@ -448,8 +475,8 @@ export default function EventDetailPage() {
                 {selectedEvent.highlights &&
                   selectedEvent.highlights.length > 0 && (
                     <div className="p-3 rounded-xl bg-warning-soft space-y-2">
-                      <p className="font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                      <p className="font-bold text-warning-text flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-warning" />
                         Program Highlights:
                       </p>
                       <ul className="space-y-1 pl-1">
@@ -458,7 +485,7 @@ export default function EventDetailPage() {
                             key={i}
                             className="text-xs text-fg-secondary flex items-start gap-1.5"
                           >
-                            <span className="text-amber-500 font-bold">•</span>
+                            <span className="text-warning font-bold">•</span>
                             <span>{h}</span>
                           </li>
                         ))}
@@ -527,6 +554,7 @@ export default function EventDetailPage() {
               </div>
               <div>
                 <Select
+                  aria-label={regStatusField.label}
                   value={regFilters.status ?? ""}
                   onChange={(e) => setRegFilter("status", e.target.value)}
                   leftIcon={<Filter className="w-4 h-4" />}
@@ -541,15 +569,39 @@ export default function EventDetailPage() {
               </div>
             </div>
 
-            {isPaginatedRegLoading ? (
-              <div className="p-12 text-center text-xs text-slate-400">
-                Loading event registrations...
-              </div>
-            ) : paginatedRegistrations.length === 0 ? (
-              <div className="p-12 text-center text-xs text-slate-400">
-                No registrations found matching your criteria.
-              </div>
-            ) : (
+            <QueryState
+              isLoading={isPaginatedRegLoading}
+              isError={isPaginatedRegError}
+              error={paginatedRegError}
+              onRetry={() => refetchPaginatedRegs()}
+              resource="registrations"
+              isEmpty={paginatedRegistrations.length === 0}
+              loading={<SkeletonList rows={Math.min(regLimit, 6)} />}
+              empty={
+                <EmptyState
+                  icon={ClipboardList}
+                  title={
+                    hasRegFilters
+                      ? "No registrations found matching your criteria."
+                      : "No registrations yet."
+                  }
+                  action={
+                    hasRegFilters ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setRegSearch("");
+                          clearRegFilters();
+                        }}
+                      >
+                        Clear filters
+                      </Button>
+                    ) : undefined
+                  }
+                />
+              }
+            >
               <div className="divide-y divide-border-subtle">
                 {paginatedRegistrations.map((r) => (
                   <div
@@ -565,7 +617,7 @@ export default function EventDetailPage() {
                           <p className="font-bold text-fg">{r.name}</p>
                           <StatusBadge status={r.membershipStatus} size="sm" />
                         </div>
-                        <p className="text-2xs text-slate-400">
+                        <p className="text-2xs text-fg-subtle">
                           {r.email} • {r.phone} • Reg #{r.registrationNumber}
                         </p>
                       </div>
@@ -581,558 +633,80 @@ export default function EventDetailPage() {
                   </div>
                 ))}
               </div>
-            )}
 
-            {/* Pagination Controls */}
-            {Boolean(regMeta?.total && regMeta.total > 0) && (
-              <div className="pt-3 border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-fg-muted">
-                <div className="flex items-center gap-4">
-                  <span>
-                    Showing{" "}
-                    <span className="font-semibold text-fg">
-                      {(regPage - 1) * regLimit + 1}
-                    </span>{" "}
-                    to{" "}
-                    <span className="font-semibold text-fg">
-                      {Math.min(regPage * regLimit, regMeta?.total ?? 0)}
-                    </span>{" "}
-                    of{" "}
-                    <span className="font-semibold text-fg">
-                      {regMeta?.total ?? 0}
-                    </span>{" "}
-                    results
-                  </span>
-
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-2xs">Rows:</span>
-                    <select
-                      value={regLimit}
-                      onChange={(e) => setRegLimit(Number(e.target.value))}
-                      className="bg-surface-raised border border-border-control rounded-lg text-base py-1 px-2 focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer"
-                    >
-                      {[10, 25, 50, 100].map((size) => (
-                        <option key={size} value={size}>
-                          {size}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setRegPage(1)}
-                    disabled={regPage <= 1}
-                    className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                    title="First Page"
-                  >
-                    <ChevronsLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRegPage(regPage - 1)}
-                    disabled={regPage <= 1}
-                    className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                    title="Previous Page"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-
-                  <span className="px-3 text-xs">
-                    Page{" "}
-                    <span className="font-semibold text-fg">{regPage}</span> of{" "}
-                    <span className="font-semibold text-fg">
-                      {regMeta?.totalPages || 1}
-                    </span>
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() => setRegPage(regPage + 1)}
-                    disabled={regPage >= (regMeta?.totalPages || 1)}
-                    className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                    title="Next Page"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRegPage(regMeta?.totalPages || 1)}
-                    disabled={regPage >= (regMeta?.totalPages || 1)}
-                    className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                    title="Last Page"
-                  >
-                    <ChevronsRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            )}
+              <Pagination
+                className="pt-3 border-t border-border-subtle"
+                page={regPage}
+                totalPages={regMeta?.totalPages ?? 1}
+                totalItems={regMeta?.total ?? paginatedRegistrations.length}
+                pageSize={regLimit}
+                onPageChange={setRegPage}
+                onPageSizeChange={setRegLimit}
+                pageSizeOptions={REG_PAGE_SIZES}
+              />
+            </QueryState>
           </CardContent>
         </Card>
       )}
 
       {/* Tab Content 3: Teams & Roster (Collapsible Teams with Member Rosters) */}
       {activeTab === "teams" && (
-        <div className="space-y-6">
-          {/* Header & Search Toolbar */}
-          <div className="p-4 rounded-2xl bg-surface border border-border space-y-3 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h2 className="text-sm font-bold text-fg">
-                  House Teams & Attendee Rosters
-                </h2>
-                <p className="text-xs text-fg-muted">
-                  Complete event roster ({allRegistrations.length} total
-                  attendees). Click any team card below to expand its roster.
-                </p>
-              </div>
-              <div className="w-full sm:w-72">
-                <Input
-                  placeholder="Search roster by name, email, or reg #..."
-                  value={rosterSearch}
-                  onChange={(e) => setRosterSearch(e.target.value)}
-                  leftIcon={<Search className="w-3.5 h-3.5" />}
-                />
-              </div>
-            </div>
-
-            {/* Quick Team Filter Chips & Expand All Toggle */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border-subtle text-xs">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setTeamRosterFilter("ALL")}
-                  className={cn(
-                    "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer",
-                    teamRosterFilter === "ALL"
-                      ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-xs"
-                      : "bg-muted text-fg-secondary hover:bg-muted-strong",
-                  )}
-                >
-                  All Teams ({allRegistrations.length})
-                </button>
-                {enrichedTeams.map((t) => {
-                  const count = (teamRosterMap.get(t.id) || []).length;
-                  const isSelected = teamRosterFilter === t.id;
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => {
-                        setTeamRosterFilter(t.id);
-                        // Auto-expand the filtered team
-                        setExpandedTeams((prev) => ({ ...prev, [t.id]: true }));
-                      }}
-                      className={cn(
-                        "px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer",
-                        isSelected
-                          ? "text-white shadow-xs"
-                          : "bg-muted text-fg-secondary hover:bg-muted-strong",
-                      )}
-                      style={{
-                        backgroundColor: isSelected ? t.colorHex : undefined,
-                      }}
-                    >
-                      <span
-                        className="w-2 h-2 rounded-full shrink-0"
-                        style={{
-                          backgroundColor: isSelected ? "#ffffff" : t.colorHex,
-                        }}
-                      />
-                      <span>{t.name}</span>
-                      <span className="opacity-80">({count})</span>
-                    </button>
-                  );
-                })}
-                {unassignedRoster.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTeamRosterFilter("UNASSIGNED");
-                      setExpandedTeams((prev) => ({
-                        ...prev,
-                        UNASSIGNED: true,
-                      }));
-                    }}
-                    className={cn(
-                      "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer",
-                      teamRosterFilter === "UNASSIGNED"
-                        ? "bg-amber-600 text-white shadow-xs"
-                        : "bg-warning-soft text-warning-text hover:bg-amber-100",
-                    )}
-                  >
-                    Unassigned ({unassignedRoster.length})
-                  </button>
-                )}
-              </div>
-
-              {enrichedTeams.length > 0 && (
-                <button
-                  type="button"
-                  onClick={handleToggleAllTeams}
-                  className="px-2.5 py-1 text-xs font-semibold text-primary-text hover:text-primary-text transition-colors cursor-pointer"
-                >
-                  {isAllExpanded
-                    ? "Collapse All Rosters"
-                    : "Expand All Rosters"}
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Teams Rosters List (Collapsible Cards) */}
-          <div className="space-y-4">
-            {enrichedTeams
-              .filter(
-                (t) => teamRosterFilter === "ALL" || teamRosterFilter === t.id,
-              )
-              .map((t, idx) => {
-                const fullTeamMembers = (teamRosterMap.get(t.id) || []).filter(
-                  (m) =>
-                    !debouncedRosterSearch ||
-                    m.name
-                      .toLowerCase()
-                      .includes(debouncedRosterSearch.toLowerCase()) ||
-                    m.email
-                      .toLowerCase()
-                      .includes(debouncedRosterSearch.toLowerCase()) ||
-                    m.registrationNumber
-                      .toLowerCase()
-                      .includes(debouncedRosterSearch.toLowerCase()),
-                );
-
-                const checkedInCount = fullTeamMembers.filter(
-                  (m) => m.status === "Checked-In",
-                ).length;
-
-                // Per-team pagination (10 per page)
-                const teamPage = rosterPage[t.id] || 1;
-                const teamLimit = 10;
-                const totalTeamPages = Math.ceil(
-                  fullTeamMembers.length / teamLimit,
-                );
-                const paginatedTeamMembers = fullTeamMembers.slice(
-                  (teamPage - 1) * teamLimit,
-                  teamPage * teamLimit,
-                );
-
-                const isExpanded = Boolean(expandedTeams[t.id]);
-
-                return (
-                  <Card key={t.id} className="overflow-hidden shadow-xs">
-                    {/* Collapsible Team Header Bar */}
-                    <div
-                      onClick={() => toggleTeamExpanded(t.id)}
-                      className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:bg-subtle transition-colors select-none"
-                      style={{ borderLeft: `4px solid ${t.colorHex}` }}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="w-7 h-7 rounded-lg bg-muted font-bold text-xs flex items-center justify-center text-fg-secondary shrink-0">
-                          #{idx + 1}
-                        </span>
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-base font-bold text-fg">
-                              {t.name}
-                            </h3>
-                            <TeamBadge color={t.colorHex}>
-                              Team Roster
-                            </TeamBadge>
-                          </div>
-                          <p className="text-xs text-fg-muted">
-                            {fullTeamMembers.length} Assigned Member
-                            {fullTeamMembers.length === 1 ? "" : "s"} •{" "}
-                            {checkedInCount} Checked In
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4 self-end sm:self-auto text-xs">
-                        <div className="px-3 py-1.5 rounded-xl bg-subtle font-mono text-fg-secondary">
-                          Score:{" "}
-                          <strong className="text-sm font-bold text-fg">
-                            {t.totalPoints} pts
-                          </strong>
-                        </div>
-                        <div className="flex items-center gap-1 text-slate-400 hover:text-fg-secondary transition-colors">
-                          <span className="text-2xs font-medium hidden sm:inline">
-                            {isExpanded ? "Hide Roster" : "View Roster"}
-                          </span>
-                          <ChevronDown
-                            className={cn(
-                              "w-4 h-4 transition-transform duration-200",
-                              isExpanded && "rotate-180 text-indigo-500",
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Member Roster Content (Expanded) */}
-                    {isExpanded && (
-                      <CardContent className="p-0 border-t border-border-subtle animate-fade-in">
-                        {fullTeamMembers.length === 0 ? (
-                          <div className="p-8 text-center text-xs text-slate-400">
-                            {debouncedRosterSearch
-                              ? `No members found matching "${debouncedRosterSearch}" on this team.`
-                              : "No attendees currently assigned to this team."}
-                          </div>
-                        ) : (
-                          <>
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-left text-xs">
-                                <thead className="bg-subtle text-slate-500 font-semibold border-b border-border-subtle">
-                                  <tr>
-                                    <th className="p-3 pl-4">Member Name</th>
-                                    <th className="p-3">Contact</th>
-                                    <th className="p-3">Reg #</th>
-                                    <th className="p-3">Membership</th>
-                                    <th className="p-3 pr-4 text-right">
-                                      Check-in Status
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border-subtle">
-                                  {paginatedTeamMembers.map((m) => (
-                                    <tr
-                                      key={m.id}
-                                      className="hover:bg-subtle transition-colors"
-                                    >
-                                      {/* Member */}
-                                      <td className="p-3 pl-4 align-middle">
-                                        <div className="flex items-center gap-2.5">
-                                          <div className="w-7 h-7 rounded-full bg-muted text-fg-secondary font-bold flex items-center justify-center text-2xs shrink-0">
-                                            {m.name.charAt(0).toUpperCase()}
-                                          </div>
-                                          <span className="font-semibold text-fg">
-                                            {m.name}
-                                          </span>
-                                        </div>
-                                      </td>
-
-                                      {/* Contact */}
-                                      <td className="p-3 align-middle text-fg-muted">
-                                        <div className="space-y-0.5 text-2xs">
-                                          {m.email && m.email !== "N/A" && (
-                                            <p className="flex items-center gap-1">
-                                              <Mail className="w-3 h-3 text-slate-400" />
-                                              {m.email}
-                                            </p>
-                                          )}
-                                          {m.phone && m.phone !== "N/A" && (
-                                            <p className="flex items-center gap-1">
-                                              <Phone className="w-3 h-3 text-slate-400" />
-                                              {m.phone}
-                                            </p>
-                                          )}
-                                        </div>
-                                      </td>
-
-                                      {/* Reg # */}
-                                      <td className="p-3 align-middle font-mono text-2xs text-fg-secondary">
-                                        {m.registrationNumber}
-                                      </td>
-
-                                      {/* Membership */}
-                                      <td className="p-3 align-middle">
-                                        <StatusBadge
-                                          status={m.membershipStatus}
-                                          size="sm"
-                                        />
-                                      </td>
-
-                                      {/* Check-in */}
-                                      <td className="p-3 pr-4 align-middle text-right">
-                                        <StatusBadge
-                                          status={m.status}
-                                          size="sm"
-                                        />
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-
-                            {/* Team Pagination Bar if > 10 members */}
-                            {totalTeamPages > 1 && (
-                              <div className="p-3 border-t border-border-subtle flex items-center justify-between text-xs text-fg-muted">
-                                <span>
-                                  Showing{" "}
-                                  <span className="font-semibold text-fg">
-                                    {(teamPage - 1) * teamLimit + 1}
-                                  </span>{" "}
-                                  to{" "}
-                                  <span className="font-semibold text-fg">
-                                    {Math.min(
-                                      teamPage * teamLimit,
-                                      fullTeamMembers.length,
-                                    )}
-                                  </span>{" "}
-                                  of{" "}
-                                  <span className="font-semibold text-fg">
-                                    {fullTeamMembers.length}
-                                  </span>{" "}
-                                  members
-                                </span>
-
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setRosterPage((prev) => ({
-                                        ...prev,
-                                        [t.id]: Math.max(
-                                          (prev[t.id] || 1) - 1,
-                                          1,
-                                        ),
-                                      }));
-                                    }}
-                                    disabled={teamPage <= 1}
-                                    className="p-1 rounded-lg border border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                                    title="Previous Page"
-                                  >
-                                    <ChevronLeft className="w-3.5 h-3.5" />
-                                  </button>
-                                  <span className="px-2 text-2xs">
-                                    {teamPage} / {totalTeamPages}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setRosterPage((prev) => ({
-                                        ...prev,
-                                        [t.id]: Math.min(
-                                          (prev[t.id] || 1) + 1,
-                                          totalTeamPages,
-                                        ),
-                                      }));
-                                    }}
-                                    disabled={teamPage >= totalTeamPages}
-                                    className="p-1 rounded-lg border border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                                    title="Next Page"
-                                  >
-                                    <ChevronRight className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </CardContent>
-                    )}
-                  </Card>
-                );
-              })}
-
-            {/* Unassigned Roster (Collapsible) */}
-            {(teamRosterFilter === "ALL" ||
-              teamRosterFilter === "UNASSIGNED") &&
-              unassignedRoster.length > 0 && (
-                <Card className="overflow-hidden border-warning-border shadow-xs">
-                  <div
-                    onClick={() => toggleTeamExpanded("UNASSIGNED")}
-                    className="p-4 bg-warning-soft border-b border-warning-border flex items-center justify-between cursor-pointer hover:bg-warning-soft transition-colors select-none"
-                  >
-                    <div>
-                      <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200 flex items-center gap-2">
-                        <User className="w-4 h-4 text-amber-500" />
-                        Unassigned Registrants Roster
-                      </h3>
-                      <p className="text-xs text-fg-muted">
-                        Attendees registered without team placement (
-                        {unassignedRoster.length})
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 text-warning-text text-xs">
-                      <span className="text-2xs font-medium hidden sm:inline">
-                        {expandedTeams["UNASSIGNED"]
-                          ? "Hide Roster"
-                          : "View Roster"}
-                      </span>
-                      <ChevronDown
-                        className={cn(
-                          "w-4 h-4 transition-transform duration-200",
-                          expandedTeams["UNASSIGNED"] &&
-                            "rotate-180 text-amber-600",
-                        )}
-                      />
-                    </div>
-                  </div>
-                  {expandedTeams["UNASSIGNED"] && (
-                    <CardContent className="p-0 animate-fade-in">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs">
-                          <thead className="bg-subtle text-slate-500 font-semibold border-b border-border-subtle">
-                            <tr>
-                              <th className="p-3 pl-4">Member Name</th>
-                              <th className="p-3">Contact</th>
-                              <th className="p-3">Reg #</th>
-                              <th className="p-3">Membership</th>
-                              <th className="p-3 pr-4 text-right">
-                                Check-in Status
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-border-subtle">
-                            {unassignedRoster.map((m) => (
-                              <tr
-                                key={m.id}
-                                className="hover:bg-subtle transition-colors"
-                              >
-                                <td className="p-3 pl-4 align-middle">
-                                  <span className="font-semibold text-fg">
-                                    {m.name}
-                                  </span>
-                                </td>
-                                <td className="p-3 align-middle text-slate-500">
-                                  {m.email} • {m.phone}
-                                </td>
-                                <td className="p-3 align-middle font-mono">
-                                  {m.registrationNumber}
-                                </td>
-                                <td className="p-3 align-middle">
-                                  <StatusBadge
-                                    status={m.membershipStatus}
-                                    size="sm"
-                                  />
-                                </td>
-                                <td className="p-3 pr-4 align-middle text-right">
-                                  <StatusBadge status={m.status} size="sm" />
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  )}
-                </Card>
-              )}
-          </div>
-        </div>
+        <TeamRostersTab
+          teams={enrichedTeams}
+          teamRosterMap={teamRosterMap}
+          unassignedRoster={unassignedRoster}
+          totalAttendees={allRegistrations.length}
+          isLoading={isTeamsLoading || isRosterLoading || isLoadingLeaderboard}
+          isError={isTeamsError || isRosterError}
+          onRetry={() => {
+            if (isTeamsError) refetchTeams();
+            if (isRosterError) refetchRoster();
+          }}
+        />
       )}
 
       {/* Tab Content 4: Games */}
       {activeTab === "games" && (
-        <div className="space-y-3">
-          {games.map((g, idx) => (
-            <Card key={g.id}>
-              <CardContent className="p-4 flex items-center justify-between text-xs">
-                <div>
-                  <h4 className="font-bold text-sm text-fg">{g.name}</h4>
-                  <p className="text-slate-400">Max Score: {g.maxScore} pts</p>
-                </div>
-                <span className="font-mono text-xs text-indigo-600 font-bold">
-                  Game #{idx + 1}
-                </span>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <QueryState
+          isLoading={isLoadingGames}
+          isError={isGamesError}
+          error={gamesError}
+          onRetry={() => refetchGames()}
+          isEmpty={games.length === 0}
+          resource="games"
+          loading={
+            <div className="rounded-2xl border border-border bg-surface p-4">
+              <SkeletonList rows={3} />
+            </div>
+          }
+          empty={
+            <div className="rounded-2xl border border-border bg-surface">
+              <EmptyState
+                icon={Gamepad2}
+                title="No games yet"
+                description="Games created for this event will be listed here."
+              />
+            </div>
+          }
+        >
+          <div className="space-y-3">
+            {games.map((g, idx) => (
+              <Card key={g.id}>
+                <CardContent className="p-4 flex items-center justify-between text-xs">
+                  <div>
+                    <h4 className="font-bold text-sm text-fg">{g.name}</h4>
+                    <p className="text-fg-subtle">
+                      Max Score: {g.maxScore} pts
+                    </p>
+                  </div>
+                  <span className="font-mono text-xs text-primary-text font-bold">
+                    Game #{idx + 1}
+                  </span>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </QueryState>
       )}
 
       {isEditing && (

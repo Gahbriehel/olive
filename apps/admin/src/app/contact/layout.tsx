@@ -3,7 +3,8 @@
 import { usePathname } from "next/navigation";
 import * as Tabs from "@radix-ui/react-tabs";
 import { TabLink } from "./_components/TabLink";
-import { HeartHandshake, Mail } from "lucide-react";
+import { HeartHandshake, Mail, MessagesSquare } from "lucide-react";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { useContactCounts } from "@/hooks/useContactQuery";
 
 export default function ContactsLayout({
@@ -16,18 +17,12 @@ export default function ContactsLayout({
   const { prayerCount, inquiryCount } = useContactCounts();
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold text-fg tracking-tight">
-            Contact Submissions
-          </h1>
-          <p className="text-fg-muted text-xs">
-            Review and manage inbound Prayer requests and Inquiries
-          </p>
-        </div>
-      </div>
+    <div className="space-y-6 pb-10">
+      <PageHeader
+        title="Prayers & Inquiries"
+        description="Review and manage inbound Prayer requests and Inquiries"
+        icon={MessagesSquare}
+      />
       <Tabs.Root value={activeTab}>
         <Tabs.List className="flex items-center gap-2 p-1.5 bg-surface rounded-2xl w-fit border border-border shadow-xs">
           <TabLink

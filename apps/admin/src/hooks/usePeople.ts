@@ -39,6 +39,7 @@ export function usePeople(params?: IQueryParams) {
     stats: peopleQuery.data?.stats,
     isLoading: peopleQuery.isLoading,
     isError: peopleQuery.isError,
+    error: peopleQuery.error,
     refetch: peopleQuery.refetch,
     createPerson: createPersonMutation.mutateAsync,
     isCreating: createPersonMutation.isPending,

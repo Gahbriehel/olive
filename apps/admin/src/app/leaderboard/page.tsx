@@ -1,27 +1,36 @@
 "use client";
 
 import React from "react";
-import {
-  Trophy,
-  Shield,
-  ChevronUp,
-  MoreHorizontal,
-  ChevronDown,
-} from "lucide-react";
+import { Trophy, Shield, ChevronUp } from "lucide-react";
 import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { ListToolbar } from "@/components/ui/ListToolbar";
-import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { QueryState, EmptyState } from "@/components/ui/QueryState";
 import { Card, CardContent } from "@/components/ui/Card";
 import { useDashboard } from "@/context/DashboardContext";
 import { useTeams } from "@/hooks/useTeams";
 import { useGames } from "@/hooks/useGames";
 import { adaptApiTeamToTeam } from "@/models/team";
 import { LeaderboardEntry } from "@/types/dashboard";
+import { LeaderboardSkeleton, Podium } from "./_components/Podium";
 
 export default function LeaderboardPage() {
   const { selectedEventId } = useDashboard();
-  const { teams: apiTeams } = useTeams(selectedEventId);
-  const { leaderboard, refetch } = useGames(selectedEventId);
+  const {
+    teams: apiTeams,
+    isLoading: isLoadingTeams,
+    isError: isTeamsError,
+    error: teamsError,
+    refetch: refetchTeams,
+  } = useTeams(selectedEventId);
+  const {
+    leaderboard,
+    refetch,
+    isLoadingLeaderboard,
+    isLeaderboardError,
+    leaderboardError,
+    refetchLeaderboard,
+  } = useGames(selectedEventId);
 
   const teams = React.useMemo(
     () => (Array.isArray(apiTeams) ? apiTeams.map(adaptApiTeamToTeam) : []),
@@ -65,179 +74,99 @@ export default function LeaderboardPage() {
     }));
   }, [leaderboard, sortedTeams, teams]);
 
-  const firstPlace = entries[0];
-  const secondPlace = entries[1];
-  const thirdPlace = entries[2];
-
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-slate-900 border border-slate-800 text-white shadow-xl">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-amber-300 animate-bounce" />
-            <span className="text-xs font-bold text-amber-300 uppercase tracking-wide">
-              Official Youth Conference Tournament Standings
-            </span>
+      <PageHeader
+        title="Team Tournament Leaderboard"
+        description="Live scores calculated automatically from games, and trivia."
+        icon={Trophy}
+        actions={
+          <ListToolbar
+            actions={[
+              { title: "Refresh", fn: () => refetch() },
+              ...(selectedEventId
+                ? [
+                    {
+                      title: "Export CSV",
+                      fn: () =>
+                        downloadCsvExport(
+                          `/leaderboard/${selectedEventId}/export`,
+                          {},
+                          `leaderboard-${selectedEventId}-${new Date().toISOString().slice(0, 10)}.csv`,
+                        ),
+                    },
+                  ]
+                : []),
+            ]}
+          />
+        }
+      />
+
+      <QueryState
+        isLoading={isLoadingTeams || isLoadingLeaderboard}
+        isError={isTeamsError || isLeaderboardError}
+        error={teamsError ?? leaderboardError}
+        onRetry={() => {
+          if (isTeamsError) refetchTeams();
+          if (isLeaderboardError) refetchLeaderboard();
+        }}
+        resource="leaderboard"
+        isEmpty={teams.length === 0}
+        loading={<LeaderboardSkeleton />}
+        empty={
+          <div className="bg-surface rounded-2xl border border-border">
+            <EmptyState
+              icon={Trophy}
+              title="No standings yet"
+              description="Create teams and record game scores to see the leaderboard."
+            />
           </div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight">
-            Team Tournament Leaderboard
-          </h1>
-          <p className="text-xs text-amber-100">
-            Live scores calculated automatically from games, and trivia.
-          </p>
-        </div>
-        <ListToolbar
-          actions={[
-            { title: "Refresh", fn: () => refetch() },
-            ...(selectedEventId
-              ? [
-                  {
-                    title: "Export CSV",
-                    fn: () =>
-                      downloadCsvExport(
-                        `/leaderboard/${selectedEventId}/export`,
-                        {},
-                        `leaderboard-${selectedEventId}-${new Date().toISOString().slice(0, 10)}.csv`,
-                      ),
-                  },
-                ]
-              : []),
-          ]}
-          actionsTrigger={
-            <Button
-              variant="outline"
-              className="bg-white/10 hover:bg-white/20 border-white/20 text-white"
-            >
-              <MoreHorizontal className="w-4 h-4" />
-              Actions
-              <ChevronDown className="w-3.5 h-3.5 text-white/60" />
-            </Button>
-          }
-        />
-      </div>
+        }
+      >
+        <Podium entries={entries} />
 
-      {teams.length === 0 ? (
-        <div className="p-12 text-center text-slate-500 bg-surface rounded-2xl border border-border">
-          No data available
-        </div>
-      ) : (
-        <>
-          {/* Visual Podium graphic for Top 3 */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 items-end pt-4 max-w-2xl mx-auto">
-            {/* 2nd Place */}
-            {secondPlace && (
-              <div className="flex flex-col items-center">
-                <div
-                  className="w-12 h-12 rounded-2xl text-white font-black text-lg flex items-center justify-center shadow-lg mb-2 border-2 border-slate-300"
-                  style={{ backgroundColor: secondPlace.colorHex }}
-                >
-                  2
-                </div>
-                <span className="text-xs font-bold text-fg text-center truncate max-w-full">
-                  {secondPlace.teamName}
-                </span>
-                <span className="text-2xs font-mono font-bold text-slate-500">
-                  {secondPlace.totalPoints} pts
-                </span>
-                <div className="w-full h-28 sm:h-36 bg-slate-200 dark:bg-zinc-800 rounded-t-2xl mt-2 flex items-center justify-center font-black text-slate-400 text-xl">
-                  2nd
-                </div>
-              </div>
-            )}
+        {/* Animated Ranking Cards List */}
+        <div className="space-y-3">
+          <h2 className="text-sm font-bold text-fg">Full Team Standings</h2>
+          {entries.map((entry) => (
+            <Card key={entry.teamId} className="hover:shadow-md transition-all">
+              <CardContent className="p-4 flex items-center justify-between text-xs">
+                <div className="flex min-w-0 items-center gap-4">
+                  <span className="shrink-0 w-8 h-8 rounded-xl font-black text-sm flex items-center justify-center bg-muted text-fg-secondary">
+                    #{entry.rank}
+                  </span>
 
-            {/* 1st Place */}
-            {firstPlace && (
-              <div className="flex flex-col items-center">
-                <Trophy className="w-8 h-8 text-amber-400 mb-1 animate-pulse" />
-                <div
-                  className="w-16 h-16 rounded-2xl text-white font-black text-2xl flex items-center justify-center shadow-xl mb-2 ring-4 ring-amber-400/40"
-                  style={{ backgroundColor: firstPlace.colorHex }}
-                >
-                  1
-                </div>
-                <span className="text-sm font-black text-fg text-center truncate max-w-full">
-                  {firstPlace.teamName}
-                </span>
-                <span className="text-xs font-mono font-black text-warning-text">
-                  {firstPlace.totalPoints} pts
-                </span>
-                <div className="w-full h-36 sm:h-48 bg-amber-500/20 border border-amber-500/30 rounded-t-2xl mt-2 flex items-center justify-center font-black text-warning-text text-2xl shadow-lg">
-                  1st
-                </div>
-              </div>
-            )}
-
-            {/* 3rd Place */}
-            {thirdPlace && (
-              <div className="flex flex-col items-center">
-                <div
-                  className="w-12 h-12 rounded-2xl text-white font-black text-lg flex items-center justify-center shadow-lg mb-2 border-2 border-amber-600/40"
-                  style={{ backgroundColor: thirdPlace.colorHex }}
-                >
-                  3
-                </div>
-                <span className="text-xs font-bold text-fg text-center truncate max-w-full">
-                  {thirdPlace.teamName}
-                </span>
-                <span className="text-2xs font-mono font-bold text-slate-500">
-                  {thirdPlace.totalPoints} pts
-                </span>
-                <div className="w-full h-24 sm:h-28 bg-slate-200 dark:bg-zinc-800 rounded-t-2xl mt-2 flex items-center justify-center font-black text-slate-400 text-xl">
-                  3rd
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Animated Ranking Cards List */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-bold text-fg">Full Team Standings</h3>
-            {entries.map((entry) => (
-              <Card
-                key={entry.teamId}
-                className="hover:shadow-md transition-all"
-              >
-                <CardContent className="p-4 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-4 mt-2">
-                    <span className="w-8 h-8 rounded-xl font-black text-sm flex items-center justify-center bg-muted text-fg-secondary">
-                      #{entry.rank}
-                    </span>
-
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-xl text-white font-bold flex items-center justify-center shadow-sm"
-                        style={{ backgroundColor: entry.colorHex }}
-                      >
-                        <Shield className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-sm text-fg">
-                          {entry.teamName}
-                        </h4>
-                      </div>
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div
+                      className="shrink-0 w-10 h-10 rounded-xl text-white font-bold flex items-center justify-center shadow-sm"
+                      style={{ backgroundColor: entry.colorHex }}
+                    >
+                      <Shield className="w-5 h-5" />
                     </div>
+                    <h3 className="min-w-0 truncate font-bold text-sm text-fg">
+                      {entry.teamName}
+                    </h3>
                   </div>
+                </div>
 
-                  <div className="flex items-center gap-4 text-right">
-                    <div>
-                      <p className="text-lg font-black font-mono text-fg leading-none">
-                        {entry.totalPoints.toLocaleString()}
-                      </p>
-                      <p className="text-2xs text-slate-400 mt-0.5">
-                        Total Points
-                      </p>
-                    </div>
-                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 font-bold flex items-center gap-0.5">
-                      <ChevronUp className="w-4 h-4" />
-                    </div>
+                <div className="flex shrink-0 items-center gap-4 text-right">
+                  <div>
+                    <p className="text-lg font-black font-mono text-fg leading-none">
+                      {entry.totalPoints.toLocaleString()}
+                    </p>
+                    <p className="text-2xs text-fg-muted mt-0.5">
+                      Total Points
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </>
-      )}
+                  <div className="p-2 rounded-lg bg-success-soft text-success-text font-bold flex items-center gap-0.5">
+                    <ChevronUp className="w-4 h-4" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </QueryState>
     </div>
   );
 }

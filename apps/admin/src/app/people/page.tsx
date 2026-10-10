@@ -15,6 +15,7 @@ import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { ListToolbar } from "@/components/ui/ListToolbar";
 import { FiltersButton } from "@/components/ui/FiltersButton";
 import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Tabs } from "@/components/ui/Tabs";
 import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
@@ -103,6 +104,8 @@ export default function PeoplePage() {
     isUpdating,
     refetch,
     isLoading,
+    isError,
+    error,
   } = usePeople(queryParams);
   const { events: apiEvents } = useEvents();
   const { registerAttendee, isRegistering } = useRegistrations();
@@ -171,7 +174,7 @@ export default function PeoplePage() {
           const person = row.original;
           return (
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+              <div className="w-9 h-9 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
                 {getInitials(person.name)}
               </div>
               <div>
@@ -193,7 +196,7 @@ export default function PeoplePage() {
               maxLength={28}
               textClassName="font-medium text-fg"
             />
-            <p className="text-2xs text-slate-400">{row.original.phone}</p>
+            <p className="text-2xs text-fg-muted">{row.original.phone}</p>
           </div>
         ),
       },
@@ -203,7 +206,7 @@ export default function PeoplePage() {
         cell: ({ row }) => (
           <div>
             <p className="font-medium">{row.original.gender}</p>
-            <p className="text-2xs text-slate-400">DOB: {row.original.dob}</p>
+            <p className="text-2xs text-fg-muted">DOB: {row.original.dob}</p>
           </div>
         ),
       },
@@ -270,16 +273,10 @@ export default function PeoplePage() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
-          People Directory
-        </h1>
-        <p className="text-xs sm:text-sm text-fg-muted">
-          Central repository of church members, conference attendees, and
-          first-time guests.
-        </p>
-      </div>
+      <PageHeader
+        title="People Directory"
+        description="Central repository of church members, conference attendees, and first-time guests."
+      />
 
       {/* Directory Stats Grid */}
       <StatsCardGroup>
@@ -338,6 +335,10 @@ export default function PeoplePage() {
         search={search}
         onSearchChange={setSearch}
         loading={isLoading}
+        isError={isError}
+        error={error}
+        onRetry={() => refetch()}
+        resource="people"
       >
         <ListToolbar
           create={{
@@ -385,7 +386,7 @@ export default function PeoplePage() {
             {/* Header Badge Card */}
             <div className="p-4 rounded-2xl bg-primary-soft border border-primary-border flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-base flex items-center justify-center">
+                <div className="w-12 h-12 rounded-2xl bg-primary text-white font-bold text-base flex items-center justify-center">
                   {getInitials(selectedPerson.name)}
                 </div>
                 <div>
@@ -405,7 +406,10 @@ export default function PeoplePage() {
                   className="gap-1.5 text-xs font-semibold"
                   onClick={() => setEditingPerson(selectedPerson)}
                 >
-                  <Edit className="w-3.5 h-3.5 text-primary-text" />
+                  <Edit
+                    className="w-3.5 h-3.5 text-primary-text"
+                    aria-hidden="true"
+                  />
                   <span>Edit Profile</span>
                 </Button>
               )}
@@ -423,7 +427,7 @@ export default function PeoplePage() {
               <div className="space-y-4 text-xs">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-xl bg-subtle">
-                    <p className="text-2xs text-slate-400 font-bold uppercase">
+                    <p className="text-2xs text-fg-muted font-bold uppercase">
                       Phone Number
                     </p>
                     <p className="font-semibold text-fg mt-1">
@@ -431,7 +435,7 @@ export default function PeoplePage() {
                     </p>
                   </div>
                   <div className="p-3 rounded-xl bg-subtle">
-                    <p className="text-2xs text-slate-400 font-bold uppercase">
+                    <p className="text-2xs text-fg-muted font-bold uppercase">
                       Email Address
                     </p>
                     <div className="mt-1">
@@ -443,7 +447,7 @@ export default function PeoplePage() {
                     </div>
                   </div>
                   <div className="p-3 rounded-xl bg-subtle">
-                    <p className="text-2xs text-slate-400 font-bold uppercase">
+                    <p className="text-2xs text-fg-muted font-bold uppercase">
                       Gender
                     </p>
                     <p className="font-semibold text-fg mt-1">
@@ -451,7 +455,7 @@ export default function PeoplePage() {
                     </p>
                   </div>
                   <div className="p-3 rounded-xl bg-subtle">
-                    <p className="text-2xs text-slate-400 font-bold uppercase">
+                    <p className="text-2xs text-fg-muted font-bold uppercase">
                       Date of Birth
                     </p>
                     <p className="font-semibold text-fg mt-1">
@@ -460,7 +464,7 @@ export default function PeoplePage() {
                   </div>
                   {selectedPerson.address && (
                     <div className="col-span-2 p-3 rounded-xl bg-subtle">
-                      <p className="text-2xs text-slate-400 font-bold uppercase">
+                      <p className="text-2xs text-fg-muted font-bold uppercase">
                         Address
                       </p>
                       <p className="font-semibold text-fg mt-1">
@@ -472,7 +476,7 @@ export default function PeoplePage() {
 
                 <div className="p-3.5 rounded-xl border border-border space-y-2">
                   <p className="font-bold text-fg flex items-center gap-1.5">
-                    <History className="w-4 h-4 text-indigo-500" />
+                    <History className="w-4 h-4 text-primary-text" />
                     Registration History (
                     {selectedPerson.registrationHistoryCount || 0} Events)
                   </p>
@@ -488,7 +492,7 @@ export default function PeoplePage() {
                             <p className="font-semibold text-fg">
                               {reg.eventTitle}
                             </p>
-                            <p className="text-2xs text-slate-400">
+                            <p className="text-2xs text-fg-muted">
                               {reg.eventDate} • Team: {reg.teamName}
                             </p>
                           </div>
@@ -497,7 +501,7 @@ export default function PeoplePage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-2xs text-slate-400 italic">
+                    <p className="text-2xs text-fg-muted italic">
                       No event registrations recorded.
                     </p>
                   )}
@@ -508,7 +512,7 @@ export default function PeoplePage() {
             {/* Departments Tab */}
             {drawerTab === "departments" && (
               <div className="space-y-2 text-xs">
-                <p className="text-slate-400 text-2xs">
+                <p className="text-fg-muted text-2xs">
                   Church ministry department memberships:
                 </p>
                 {selectedPerson.departments &&
@@ -523,7 +527,7 @@ export default function PeoplePage() {
                     </div>
                   ))
                 ) : (
-                  <div className="p-4 text-center text-slate-400 italic bg-subtle rounded-xl">
+                  <div className="p-4 text-center text-fg-muted italic bg-subtle rounded-xl">
                     No department assigned.
                   </div>
                 )}
@@ -532,7 +536,7 @@ export default function PeoplePage() {
 
             {drawerTab === "attendance" && (
               <div className="space-y-2 text-xs">
-                <p className="text-slate-400 text-2xs">
+                <p className="text-fg-muted text-2xs">
                   Historical event check-in log (
                   {selectedPerson.eventsAttendedCount || 0} Attended):
                 </p>
@@ -545,7 +549,7 @@ export default function PeoplePage() {
                     >
                       <div>
                         <p className="font-bold text-fg">{hist.eventName}</p>
-                        <p className="text-2xs text-slate-400">{hist.date}</p>
+                        <p className="text-2xs text-fg-muted">{hist.date}</p>
                       </div>
                       <StatusBadge
                         status={hist.attended ? "Checked In" : "Not Checked In"}
@@ -554,7 +558,7 @@ export default function PeoplePage() {
                     </div>
                   ))
                 ) : (
-                  <div className="p-4 text-center text-slate-400 italic bg-subtle rounded-xl">
+                  <div className="p-4 text-center text-fg-muted italic bg-subtle rounded-xl">
                     No attendance records found.
                   </div>
                 )}
@@ -563,7 +567,7 @@ export default function PeoplePage() {
 
             {drawerTab === "notes" && (
               <div className="space-y-3 text-xs">
-                <p className="text-slate-400 text-2xs">
+                <p className="text-fg-muted text-2xs">
                   Administrator & Pastoral Notes:
                 </p>
                 {selectedPerson.notes ? (
@@ -571,7 +575,7 @@ export default function PeoplePage() {
                     {selectedPerson.notes}
                   </div>
                 ) : (
-                  <div className="p-4 text-center text-slate-400 italic bg-subtle rounded-xl">
+                  <div className="p-4 text-center text-fg-muted italic bg-subtle rounded-xl">
                     No notes recorded.
                   </div>
                 )}

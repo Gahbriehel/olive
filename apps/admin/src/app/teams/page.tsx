@@ -1,20 +1,19 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { Shield, Users, Search, SearchX, Plus, RotateCw } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Pagination } from "@/components/ui/Pagination";
 import {
-  Shield,
-  Users,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-} from "lucide-react";
-import { Card, CardHeader, CardContent } from "@/components/ui/Card";
+  QueryState,
+  EmptyState,
+  SkeletonCardGrid,
+} from "@/components/ui/QueryState";
+import { TeamCard } from "./_components/TeamCard";
 import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { ListToolbar } from "@/components/ui/ListToolbar";
 import { Input } from "@/components/FormElements/Input";
-import { ActionsList } from "@/components/ui/ActionsList";
 import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
@@ -48,6 +47,9 @@ export default function TeamsPage() {
     isCreatingTeam,
     isUpdatingTeam,
     isDeletingTeam,
+    isLoading: isLoadingTeams,
+    isError: isTeamsError,
+    error: teamsError,
     refetch,
   } = useTeams({ ...queryParams, eventId: selectedEventId });
 
@@ -55,8 +57,13 @@ export default function TeamsPage() {
     () => ({ eventId: selectedEventId, limit: 1000 }),
     [selectedEventId],
   );
-  const { registrations: apiRegistrations, meta: registrationsMeta } =
-    useRegistrations(registrationsParams);
+  const {
+    registrations: apiRegistrations,
+    meta: registrationsMeta,
+    isLoading: isLoadingRegistrations,
+    isError: isRegistrationsError,
+    refetch: refetchRegistrations,
+  } = useRegistrations(registrationsParams);
 
   const teams = useMemo(
     () => (Array.isArray(apiTeams) ? apiTeams.map(adaptApiTeamToTeam) : []),
@@ -126,242 +133,171 @@ export default function TeamsPage() {
 
   const totalItems = meta?.total ?? teams.length;
   const totalPages = meta?.totalPages ?? 1;
-  const displayedTeams = teams;
   const totalAllocated = registrationsMeta?.total ?? registrations.length;
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
-          Event Teams
-        </h1>
-        <p className="text-xs sm:text-sm text-fg-muted">
-          Create and manage event teams.
-        </p>
-      </div>
+      <PageHeader
+        title="Event Teams"
+        description="Create and manage event teams."
+        actions={
+          <ListToolbar
+            create={{
+              label: "Create New Team",
+              onClick: () => setIsCreateOpen(true),
+            }}
+            actions={[
+              { title: "Refresh", fn: () => refetch() },
+              {
+                title: "Export CSV",
+                fn: () =>
+                  downloadCsvExport(
+                    "/teams/export",
+                    {
+                      eventId: selectedEventId || undefined,
+                      search: queryParams.search,
+                    },
+                    `teams-${new Date().toISOString().slice(0, 10)}.csv`,
+                  ),
+              },
+            ]}
+          />
+        }
+      />
 
       {/* Metrics Grid */}
       <StatsCardGroup>
         <StatsCard
           title="Total Teams"
-          value={totalItems.toLocaleString()}
+          value={isTeamsError ? "—" : totalItems.toLocaleString()}
           change="Teams created"
           trend="neutral"
           icon={Shield}
           color="indigo"
+          loading={isLoadingTeams}
         />
         <StatsCard
           title="Allocated Members"
-          value={totalAllocated.toLocaleString()}
-          change="Assigned to teams"
+          value={isRegistrationsError ? "—" : totalAllocated.toLocaleString()}
+          change={
+            isRegistrationsError
+              ? "Couldn't load registrations"
+              : "Assigned to teams"
+          }
           trend="up"
           icon={Users}
           color="emerald"
+          loading={isLoadingRegistrations}
         />
       </StatsCardGroup>
 
-      {/* Toolbar + Search & Rows Per Page Control */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-4 rounded-2xl border border-border shadow-sm">
-        <ListToolbar
-          create={{
-            label: "Create New Team",
-            onClick: () => setIsCreateOpen(true),
-          }}
-          actions={[
-            { title: "Refresh", fn: () => refetch() },
-            {
-              title: "Export CSV",
-              fn: () =>
-                downloadCsvExport(
-                  "/teams/export",
-                  {
-                    eventId: selectedEventId || undefined,
-                    search: queryParams.search,
-                  },
-                  `teams-${new Date().toISOString().slice(0, 10)}.csv`,
-                ),
-            },
-          ]}
-        />
-
-        <div className="flex items-center gap-3 sm:ml-auto">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-subtle" />
-            <Input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search teams by name..."
-              className="pl-9 text-base h-9 bg-surface border-border focus:border-indigo-500"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 text-xs shrink-0">
-            <span className="text-fg-muted font-medium">Rows:</span>
-            <select
-              value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
-              className="bg-surface-raised border border-border-control rounded-lg text-base py-1.5 px-2.5 font-semibold text-fg-secondary focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all cursor-pointer"
-            >
-              {[5, 10, 20, 50].map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </div>
+      {isRegistrationsError && (
+        <div
+          role="alert"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-danger-border bg-danger-soft text-xs text-danger-text"
+        >
+          <span>
+            Couldn&apos;t load team members. Member lists below may be
+            incomplete.
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={<RotateCw className="w-3.5 h-3.5" />}
+            onClick={() => refetchRegistrations()}
+          >
+            Try again
+          </Button>
         </div>
+      )}
+
+      {/* Search */}
+      <div className="w-full sm:w-72">
+        <Input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search teams by name..."
+          aria-label="Search teams"
+          leftIcon={<Search className="w-4 h-4" />}
+          className="h-9"
+        />
       </div>
 
       {/* Teams Grid */}
-      {displayedTeams.length === 0 ? (
-        <div className="p-12 text-center text-slate-500 bg-surface rounded-2xl border border-border">
-          No teams available
-        </div>
-      ) : (
+      <QueryState
+        isLoading={isLoadingTeams}
+        isError={isTeamsError}
+        error={teamsError}
+        onRetry={() => refetch()}
+        resource="teams"
+        isEmpty={teams.length === 0}
+        loading={
+          <SkeletonCardGrid
+            count={4}
+            className="xl:grid-cols-4 lg:grid-cols-4"
+          />
+        }
+        empty={
+          <div className="bg-surface rounded-2xl border border-border">
+            {search ? (
+              <EmptyState
+                icon={SearchX}
+                title="No teams match your search"
+                description={`Nothing found for "${search}".`}
+                action={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSearch("")}
+                  >
+                    Clear search
+                  </Button>
+                }
+              />
+            ) : (
+              <EmptyState
+                icon={Shield}
+                title="No teams yet"
+                description="Create teams to group attendees and track points."
+                action={
+                  <Button
+                    size="sm"
+                    leftIcon={<Plus className="w-4 h-4" />}
+                    onClick={() => setIsCreateOpen(true)}
+                  >
+                    Create team
+                  </Button>
+                }
+              />
+            )}
+          </div>
+        }
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {displayedTeams.map((team) => {
-            const teamRegs = registrations.filter(
-              (r) => r.assignedTeamId === team.id,
-            );
-            return (
-              <Card
-                key={team.id}
-                className="relative overflow-hidden border-t-4 flex flex-col justify-between"
-                style={{ borderTopColor: team.colorHex }}
-              >
-                <div>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: team.colorHex }}
-                        />
-                        <span className="font-bold text-fg text-sm">
-                          {team.name}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-bold text-primary-text">
-                          {team.totalPoints} pts
-                        </span>
-
-                        <ActionsList
-                          actions={[
-                            {
-                              title: "Edit Team",
-                              fn: () => setSelectedTeamForEdit(team),
-                            },
-                            {
-                              title: "Delete Team",
-                              fn: () => setDeletingTeam(team),
-                              destructive: true,
-                            },
-                          ]}
-                        />
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4 pt-1">
-                    <div>
-                      <h3 className="text-xl font-black text-fg tracking-tight">
-                        {teamRegs.length > 0
-                          ? teamRegs.length
-                          : (team.memberCount ?? 0)}{" "}
-                        <span className="text-xs font-normal text-slate-400">
-                          Members
-                        </span>
-                      </h3>
-                    </div>
-
-                    {teamRegs.length > 0 && (
-                      <div className="space-y-1.5 pt-2 border-t border-border-subtle">
-                        {teamRegs.slice(0, 3).map((r) => (
-                          <div
-                            key={r.id}
-                            className="flex items-center justify-between p-2 rounded-lg bg-subtle text-xs"
-                          >
-                            <span className="font-semibold text-fg">
-                              {r.name}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </div>
-              </Card>
-            );
-          })}
+          {teams.map((team) => (
+            <TeamCard
+              key={team.id}
+              team={team}
+              members={registrations.filter(
+                (r) => r.assignedTeamId === team.id,
+              )}
+              onEdit={() => setSelectedTeamForEdit(team)}
+              onDelete={() => setDeletingTeam(team)}
+            />
+          ))}
         </div>
-      )}
 
-      {/* Pagination Controls Bar */}
-      {totalItems > 0 && (
-        <div className="p-4 bg-surface rounded-2xl border border-border shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-fg-muted">
-          <div>
-            Showing{" "}
-            <span className="font-semibold text-fg">
-              {Math.min((page - 1) * limit + 1, totalItems)}
-            </span>{" "}
-            to{" "}
-            <span className="font-semibold text-fg">
-              {Math.min(page * limit, totalItems)}
-            </span>{" "}
-            of <span className="font-semibold text-fg">{totalItems}</span>{" "}
-            results
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => setPage(1)}
-              disabled={page <= 1}
-              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              title="First Page"
-            >
-              <ChevronsLeft className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setPage(page - 1)}
-              disabled={page <= 1}
-              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              title="Previous Page"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-
-            <span className="px-3 text-xs">
-              Page <span className="font-semibold text-fg">{page}</span> of{" "}
-              <span className="font-semibold text-fg">{totalPages}</span>
-            </span>
-
-            <button
-              type="button"
-              onClick={() => setPage(page + 1)}
-              disabled={page >= totalPages}
-              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              title="Next Page"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setPage(totalPages)}
-              disabled={page >= totalPages}
-              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              title="Last Page"
-            >
-              <ChevronsRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
+        <Pagination
+          className="p-4 bg-surface rounded-2xl border border-border shadow-sm"
+          page={page}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={limit}
+          onPageChange={setPage}
+          onPageSizeChange={setLimit}
+        />
+      </QueryState>
 
       {/* Create Team Sidebar Modal */}
       <SidebarModal

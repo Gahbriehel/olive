@@ -92,12 +92,14 @@ page.tsx ──uses──▶ hooks/useX.ts ──calls──▶ services/x.servi
 
 **Rules:**
 1. **Pages never call `apiClient` or `useQuery` directly.** They go through a domain hook in `hooks/`.
-   *Known violations:* `reports/birthdays` and `reports/bounces` call `useQuery` inline.
+   *Known exception:* `messaging-center` uses `useQueryClient` to invalidate after a broadcast. This goes away when the composer is extracted (Phase 5).
 2. **Every API call lives in a `services/*.service.ts` file.** Services unwrap the response envelope with `extractData` / `extractArray` from `models/base.ts`.
 3. **Query keys** start with the domain name followed by the params object: `["teams", params]`. A mutation invalidates its own domain plus any derived domains; for example, a team mutation also invalidates `["leaderboard"]`.
-4. **Hooks return** data, `meta`, `isLoading`, `isError`, `refetch`, and `mutateAsync` functions with their `isPending` flags.
-5. **List pages** use `useListFilters` (pagination, search, filter panel) together with `Table` and `ListToolbar`.
-   *Not yet migrated:* users, birthdays, events, games, teams, attendance.
+4. **Hooks return** data, `meta`, `isLoading`, `isError`, `error`, `refetch`, and `mutateAsync` functions with their `isPending` flags.
+5. **List pages** keep page, limit, search and filters in `useListFilters`.
+   - Tabular data renders in `Table`, with `ListToolbar` for list actions.
+   - Card grids render inside `QueryState` with `Pagination`.
+   - Every page that renders a query shows its error state (with retry) and its loading state, never an empty message instead.
 
 **Global QueryClient** (`app/providers.tsx`): `retry: 1`, `refetchOnWindowFocus: false`.
 
@@ -192,10 +194,10 @@ Tokens are defined once in `apps/admin/src/app/globals.css`. The values live in 
 - No raw Tailwind palette classes (`slate-*`, `indigo-*`, ...). No hex values or arbitrary text sizes in components.
   - `text-white` and `bg-white/NN` are allowed on solid accent fills.
   - Purely categorical colours (the Badge and StatsCard `purple` and `blue` variants) carry a scoped `eslint-disable` that states the reason.
-- **Enforced by lint:** `no-restricted-syntax` in `apps/admin/eslint.config.mjs` errors on raw palette classes and arbitrary text sizes in `components/ui`, `components/FormElements` and `components/layout`. Add a folder to that list once it has been migrated.
-- **Migration status:** shared components are fully on tokens. In pages and feature components about 530 raw classes remain, down from about 3,100. These are mostly single classes with no `dark:` partner, plus deliberately dark screens (login, 404, the QR scanner).
-  - Leaving these as they were was intentional. Converting one blindly can change how it looks in one theme. Migrate them by hand, a page at a time.
-  - The biggest remaining files are `events/page.tsx`, `QrScannerModal`, the login page and `events/[id]`.
+- **Enforced by lint:** `no-restricted-syntax` in `apps/admin/eslint.config.mjs` errors on raw palette classes and arbitrary text sizes in `components/ui`, `components/FormElements`, `components/layout` and every route under `src/app/`.
+  - The login page and `not-found.tsx` are excluded, because those screens are always dark by design.
+  - Add a folder to the list once it has been migrated.
+- **Migration status:** shared components and all pages are on tokens. About 200 raw classes remain, down from about 3,100. They are in `components/modals/*` (mostly `QrScannerModal`), `components/Forms/*` and the always-dark login and 404 screens. Migrate these by hand: converting a class blindly can change how it looks in one theme.
 
 ### 6.2 Primitives: one per job
 
@@ -208,9 +210,9 @@ Each row is the **only** approved way to do that job. Items marked *(target)* do
 | Team colour chip | `ui/TeamBadge` | Picks dark or white text from the team colour's lightness. |
 | Card / KPI | `ui/Card`, `ui/StatsCard` | |
 | Data list | `ui/Table` + `ui/ListToolbar` + `useListFilters` | Server-paginated tables don't sort (§7). |
-| Pagination outside a table | `Pagination` *(target)* | Replaces 6 hand-written pagers. |
-| Page title and actions | `PageHeader` *(target)* | Renders the page's only `<h1>`. |
-| Loading / error / empty | `QueryState` + `Skeleton` *(target)* | Never show an empty message while loading or after an error. |
+| Pagination | `ui/Pagination` | `Table` uses it internally. Card grids use it directly. |
+| Page title and actions | `ui/PageHeader` | Renders the page's only `<h1>`. Takes `title`, `description`, `icon`, `actions`, and `breadcrumbs` for nested pages (event detail, reports). |
+| Loading / error / empty | `ui/QueryState` | Renders loading, then error, then empty, then content. Also provides `EmptyState`, `ErrorState`, `SkeletonCardGrid` and `SkeletonList`. `Table` has the same states built in, through `loading`, `isError`, `error`, `onRetry`, `resource` and `emptyState`. Never show an empty message while loading or after an error. |
 | Form field | `FormElements/*`, all built on `ui/FormField` | `FormField` owns the label (`htmlFor`), required marker, `hint`, in-flow error and `aria-invalid`/`aria-describedby`. New controls use `useFieldIds`, `fieldAria` and `controlClass`. |
 | Select | `ui/Select` (searchable, async, paginated) or `FormElements/Select` (native, for short fixed lists) | Both share the FormField contract. Multi-value: `FormElements/MultiSelect`. Pagination inside a dropdown: `FormElements/SelectPagination`. |
 | Create/edit/detail overlay | `ui/SidebarModal` (side panel) | Built on Headless UI `Dialog`. Gives focus trap, Escape, scroll lock and ARIA. Props: `isOpen`, `onClose`, `title`, `description`, `footer`. |
@@ -256,9 +258,9 @@ Source: the October 2026 admin UI/UX audit.
 | Phase | Scope | Status |
 |---|---|---|
 | 0 | Functional bugs: confirm-modal `tone`/errors, Table server-sort, stats labelling, PersonForm role badge, password-dialog dismissal, EventsForm category error, removal of the dead `autoAssignTeams` event toggle | **Done** |
-| 1 | Register tokens in `@theme`; migrate primitives to token utilities; lint against raw palette classes | **Done** for shared components, with lint enforcement. Pages are partly migrated (§6.1). |
+| 1 | Register tokens in `@theme`; migrate primitives to token utilities; lint against raw palette classes | **Done** for shared components and all pages, with lint enforcement. Modals and forms are still in progress (§6.1). |
 | 2 | Consolidate primitives: Button API, overlays on Headless UI Dialog with shared footer, `FormField` across all inputs, MultiSelect on Combobox, one `SelectPagination`, `Spinner`, `StatusBadge` table, `TeamBadge`; remove dead code (`ui/Drawer`, `helpers/copyToClipboard`, `useDebounce`, `react-spinners`) | **Done** |
-| 3 | `PageHeader`, `Pagination`, `QueryState`/`Skeleton`, breadcrumbs; move all lists to `useListFilters` | Planned |
+| 3 | `PageHeader`, `Pagination`, `QueryState`/`Skeleton`, breadcrumbs; move all lists to `useListFilters`; error and loading states on every page; inline queries moved into `hooks/` | **Done**. The dark hero banners were removed and every page uses `PageHeader`. |
 | 4 | Toasts through `MutationCache`; unsaved-changes guard; yup schemas; confirmations for bulk sends | Planned |
 | 5 | Shell clean-up (theme toggle, topbar menus on Radix, mobile drawer); split large pages; share one `EmailComposer` and one `ContactTable` | Planned |
 

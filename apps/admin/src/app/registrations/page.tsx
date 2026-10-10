@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
 import {
   Users,
   Calendar,
@@ -15,6 +14,7 @@ import {
 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
@@ -36,6 +36,7 @@ import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
 import { customToast } from "@/helpers/customToast";
 import { useDashboard } from "@/context/DashboardContext";
 import { useRegistrations } from "@/hooks/useRegistrations";
+import { useRegistrationsSelectQuery } from "@/hooks/useRegistrationsSelect";
 import { useTeams } from "@/hooks/useTeams";
 import { useListFilters } from "@/hooks/useListFilters";
 import { type FilterField } from "@/models/filters";
@@ -43,12 +44,10 @@ import { adaptApiRegistrationToRegistration } from "@/models/registration";
 import { adaptApiTeamToTeam } from "@/models/team";
 import { IRegistration } from "@/types/dashboard";
 import { type ISelect } from "@/components/ui/Select";
-import { type IQueryParams } from "@/models/base";
 import {
   emailService,
   ISendBatchRegistrantsEmailPayload,
 } from "@/services/email.service";
-import { registrationsService } from "@/services/registrations.service";
 import { uploadsService } from "@/services/uploads.service";
 import { Spinner } from "@/components/ui/Spinner";
 import { TeamBadge } from "@/components/ui/TeamBadge";
@@ -61,35 +60,6 @@ interface EmailFormValues {
   ctaUrl?: string;
   includeQrPass: boolean;
   imageUrl?: string;
-}
-
-// Query hook for MultiSelect component to search and paginate registrants
-function useRegistrationsSelectQuery(params: IQueryParams & { name?: string }) {
-  const { selectedEventId } = useDashboard();
-  const query = useQuery({
-    queryKey: ["registrations-select", selectedEventId, params],
-    queryFn: async () => {
-      const searchTerm = params.name || params.search || undefined;
-      const res = await registrationsService.getRegistrations({
-        eventId: selectedEventId || undefined,
-        page: params.page,
-        limit: params.limit || 20,
-        search: searchTerm,
-      });
-      return {
-        items: res.registrations.map(adaptApiRegistrationToRegistration),
-        totalCount: res.meta?.total ?? res.registrations.length,
-      };
-    },
-    staleTime: 1000 * 60,
-  });
-
-  return {
-    data: query.data,
-    isLoading: query.isLoading,
-    isError: query.isError,
-    refetch: query.refetch,
-  };
 }
 
 const transformRegistrationToSelect = (reg: IRegistration): ISelect => ({
@@ -178,6 +148,8 @@ export default function RegistrationsPage() {
     meta,
     refetch,
     isLoading,
+    isError,
+    error,
   } = useRegistrations(regParams);
 
   const registrations = useMemo(
@@ -370,7 +342,7 @@ export default function RegistrationsPage() {
             <TruncatedTextWithCopy
               text={row.original.email}
               maxLength={28}
-              textClassName="text-2xs text-slate-400"
+              textClassName="text-2xs text-fg-muted"
             />
           </div>
         ),
@@ -409,7 +381,7 @@ export default function RegistrationsPage() {
               Opted In
             </span>
           ) : (
-            <span className="text-slate-400">Off</span>
+            <span className="text-fg-muted">Off</span>
           ),
       },
       {
@@ -442,16 +414,10 @@ export default function RegistrationsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
-          Registrations Manager
-        </h1>
-        <p className="text-xs sm:text-sm text-fg-muted">
-          Real-time roster of confirmed registrants, QR ticket dispatches, and
-          assigned tournament teams.
-        </p>
-      </div>
+      <PageHeader
+        title="Registrations Manager"
+        description="Real-time roster of confirmed registrants, QR ticket dispatches, and assigned tournament teams."
+      />
 
       {/* Metrics Grid */}
       <StatsCardGroup>
@@ -483,6 +449,10 @@ export default function RegistrationsPage() {
         search={search}
         onSearchChange={setSearch}
         loading={isLoading}
+        isError={isError}
+        error={error}
+        onRetry={() => refetch()}
+        resource="registrations"
       >
         <ListToolbar
           create={{
@@ -544,7 +514,7 @@ export default function RegistrationsPage() {
 
           {/* All Registrants Notice */}
           {sendToAllRegistrants ? (
-            <div className="p-3.5 rounded-2xl bg-primary-soft border border-primary-border text-xs text-indigo-900 dark:text-indigo-200 flex flex-col gap-1.5">
+            <div className="p-3.5 rounded-2xl bg-primary-soft border border-primary-border text-xs text-fg flex flex-col gap-1.5">
               <div className="flex items-center gap-2 font-semibold">
                 <Users className="w-4 h-4 text-primary-text shrink-0" />
                 <span>Target: All Event Registrants</span>
@@ -585,7 +555,7 @@ export default function RegistrationsPage() {
                     <button
                       type="button"
                       onClick={() => setSelectedRegistrants({})}
-                      className="text-primary-text hover:text-indigo-700 text-2xs font-medium"
+                      className="text-primary-text hover:underline text-2xs font-medium"
                     >
                       Clear all
                     </button>
@@ -596,20 +566,21 @@ export default function RegistrationsPage() {
                         key={r.id}
                         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-surface border border-border-control text-fg shadow-xs"
                       >
-                        <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-2xs flex items-center justify-center font-bold">
+                        <span className="w-4 h-4 rounded-full bg-primary text-white text-2xs flex items-center justify-center font-bold">
                           {getInitials(r.name)}
                         </span>
                         <span className="max-w-[130px] truncate font-medium">
                           {r.name}
                         </span>
-                        <span className="text-2xs text-slate-400 font-mono">
+                        <span className="text-2xs text-fg-muted font-mono">
                           ({r.registrationNumber})
                         </span>
                         <button
                           type="button"
                           onClick={() => removeRecipient(r.id)}
-                          className="text-slate-400 hover:text-red-500 transition-colors ml-0.5"
+                          className="text-fg-subtle hover:text-danger-text transition-colors ml-0.5"
                           title="Remove recipient"
+                          aria-label={`Remove ${r.name}`}
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -640,7 +611,7 @@ export default function RegistrationsPage() {
             {/* Placeholder Tags */}
             <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
               <span className="text-2xs text-fg-muted flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-indigo-500" />
+                <Sparkles className="w-3 h-3 text-primary-text" />
                 Placeholders:
               </span>
               {[
@@ -697,7 +668,7 @@ export default function RegistrationsPage() {
               <label className="text-xs font-bold text-fg block">
                 Announcement Flyer Image (Optional)
               </label>
-              <span className="text-2xs text-slate-400">
+              <span className="text-2xs text-fg-muted">
                 Max 3MB (JPEG, PNG, WEBP)
               </span>
             </div>
@@ -717,7 +688,7 @@ export default function RegistrationsPage() {
                 {isUploadingFlyer ? (
                   <Spinner size="sm" />
                 ) : (
-                  <Upload className="w-4 h-4 text-indigo-500" />
+                  <Upload className="w-4 h-4 text-primary-text" />
                 )}
                 <span>
                   {isUploadingFlyer ? "Uploading..." : "Upload Image File"}
@@ -744,6 +715,7 @@ export default function RegistrationsPage() {
                   onClick={() => setValue("imageUrl", "")}
                   className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 hover:bg-black/80 text-white transition-colors"
                   title="Remove image"
+                  aria-label="Remove image"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -795,7 +767,7 @@ export default function RegistrationsPage() {
           </div>
 
           {/* Form Action Buttons */}
-          <div className="mt-6 flex flex-col gap-3 pt-4 sm:flex-row-reverse sm:border-t sm:border-gray-100 dark:sm:border-zinc-800">
+          <div className="mt-6 flex flex-col gap-3 pt-4 sm:flex-row-reverse sm:border-t sm:border-border-subtle">
             <Button
               className="w-full !h-11"
               type="submit"
@@ -842,7 +814,7 @@ export default function RegistrationsPage() {
             {/* Header Badge Card */}
             <div className="p-4 rounded-2xl bg-primary-soft border border-primary-border flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-base flex items-center justify-center">
+                <div className="w-12 h-12 rounded-2xl bg-primary text-white font-bold text-base flex items-center justify-center">
                   {getInitials(selectedRegistration.name)}
                 </div>
                 <div>
@@ -860,7 +832,7 @@ export default function RegistrationsPage() {
             {/* Info Sections */}
             <div className="space-y-4">
               <h4 className="font-bold text-sm text-fg border-b border-border pb-2 flex items-center gap-2">
-                <Users className="w-4 h-4 text-indigo-500" />
+                <Users className="w-4 h-4 text-primary-text" />
                 Attendee & Team Profile
               </h4>
 
@@ -891,7 +863,7 @@ export default function RegistrationsPage() {
                       {selectedRegistration.team.name}
                     </TeamBadge>
                   ) : (
-                    <span className="text-slate-400">None</span>
+                    <span className="text-fg-muted">None</span>
                   )}
                 </div>
               </div>
@@ -899,7 +871,7 @@ export default function RegistrationsPage() {
 
             <div className="space-y-4">
               <h4 className="font-bold text-sm text-fg border-b border-border pb-2 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-indigo-500" />
+                <Calendar className="w-4 h-4 text-primary-text" />
                 Registration Details
               </h4>
 

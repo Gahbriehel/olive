@@ -12,10 +12,6 @@ import {
   SortingState,
 } from "@tanstack/react-table";
 import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
   Search,
   ArrowUpDown,
   ArrowUp,
@@ -25,7 +21,9 @@ import {
 import { Input } from "@/components/FormElements/Input";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { NotAvailable } from "@/components/ui/NotAvailable";
-import { Spinner } from "@/components/ui/Spinner";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { Pagination } from "@/components/ui/Pagination";
+import { EmptyState, ErrorState } from "@/components/ui/QueryState";
 
 export interface TableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -50,6 +48,14 @@ export interface TableProps<TData, TValue> {
   search?: string;
   onSearchChange?: (search: string) => void;
   loading?: boolean;
+  /** Show an error state (with retry) instead of the empty message. */
+  isError?: boolean;
+  error?: unknown;
+  onRetry?: () => void;
+  /** Noun for the error message: "Couldn't load {resource}". */
+  resource?: string;
+  /** Replaces the default empty message (e.g. with a create action). */
+  emptyState?: ReactNode;
   children?: ReactNode;
 }
 
@@ -71,6 +77,11 @@ export function Table<TData, TValue>({
   search,
   onSearchChange,
   loading = false,
+  isError = false,
+  error,
+  onRetry,
+  resource = "records",
+  emptyState,
   children,
 }: TableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -154,16 +165,6 @@ export function Table<TData, TValue>({
     ? (meta?.totalPages ??
       (totalItems > 0 ? Math.ceil(totalItems / currentLimit) : 1))
     : table.getPageCount();
-
-  const startItem = totalItems === 0 ? 0 : (currentPage - 1) * currentLimit + 1;
-  const endItem = Math.min(currentPage * currentLimit, totalItems);
-
-  const canGoPrevious = isServerPaginated
-    ? currentPage > 1
-    : table.getCanPreviousPage();
-  const canGoNext = isServerPaginated
-    ? currentPage < totalPages
-    : table.getCanNextPage();
 
   const handlePageChange = (newPage: number) => {
     if (isServerPaginated && onPageChange) {
@@ -262,17 +263,23 @@ export function Table<TData, TValue>({
             </thead>
             <tbody className="divide-y divide-border-subtle">
               {loading ? (
+                Array.from({ length: Math.min(currentLimit, 8) }, (_, i) => (
+                  <tr key={`skeleton-${i}`} aria-hidden="true">
+                    {columns.map((_, j) => (
+                      <td key={j} className="p-3.5">
+                        <Skeleton className="h-3.5 w-full max-w-40" />
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : isError ? (
                 <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="p-12 text-center text-fg-subtle"
-                  >
-                    <div className="flex flex-col items-center justify-center gap-3">
-                      <Spinner size="lg" />
-                      <p className="font-semibold text-xs text-primary-text">
-                        Loading records...
-                      </p>
-                    </div>
+                  <td colSpan={columns.length}>
+                    <ErrorState
+                      resource={resource}
+                      error={error}
+                      onRetry={onRetry}
+                    />
                   </td>
                 </tr>
               ) : table.getRowModel().rows.length > 0 ? (
@@ -305,14 +312,10 @@ export function Table<TData, TValue>({
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="p-12 text-center text-fg-subtle"
-                  >
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <FileSpreadsheet className="w-8 h-8 opacity-40" />
-                      <p className="font-medium text-xs">{emptyMessage}</p>
-                    </div>
+                  <td colSpan={columns.length}>
+                    {emptyState ?? (
+                      <EmptyState icon={FileSpreadsheet} title={emptyMessage} />
+                    )}
                   </td>
                 </tr>
               )}
@@ -320,82 +323,17 @@ export function Table<TData, TValue>({
           </table>
         </div>
 
-        {/* Pagination Bar */}
-        {enablePagination && totalPages > 0 && (
-          <div className="p-3.5 border-t border-border bg-subtle flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-fg-muted">
-            <div className="flex items-center gap-4">
-              <span>
-                Showing{" "}
-                <span className="font-semibold text-fg">{startItem}</span> to{" "}
-                <span className="font-semibold text-fg">{endItem}</span> of{" "}
-                <span className="font-semibold text-fg">{totalItems}</span>{" "}
-                results
-              </span>
-
-              {/* Rows per page selector */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-2xs">Rows:</span>
-                <select
-                  value={currentLimit}
-                  onChange={(e) => handleLimitChange(Number(e.target.value))}
-                  className="bg-surface-raised border border-border-control rounded-lg text-base py-1 px-2 focus:ring-1 focus:ring-primary outline-none cursor-pointer"
-                >
-                  {pageSizeOptions.map((size) => (
-                    <option key={size} value={size}>
-                      {size}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Page Navigation Controls */}
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => handlePageChange(1)}
-                disabled={!canGoPrevious}
-                className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                title="First Page"
-              >
-                <ChevronsLeft className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={!canGoPrevious}
-                className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                title="Previous Page"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              <span className="px-3 text-xs">
-                Page{" "}
-                <span className="font-semibold text-fg">{currentPage}</span> of{" "}
-                <span className="font-semibold text-fg">{totalPages}</span>
-              </span>
-
-              <button
-                type="button"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={!canGoNext}
-                className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                title="Next Page"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePageChange(totalPages)}
-                disabled={!canGoNext}
-                className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                title="Last Page"
-              >
-                <ChevronsRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+        {enablePagination && !isError && totalPages > 0 && (
+          <Pagination
+            className="border-t border-border bg-subtle p-3.5"
+            page={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={currentLimit}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handleLimitChange}
+            pageSizeOptions={pageSizeOptions}
+          />
         )}
       </div>
     </div>

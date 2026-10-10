@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/QueryState";
 import { IUpcomingBirthday } from "@/models/dashboard";
 import { SendBirthdayEmailModal } from "./SendBirthdayEmailModal";
 import dayjs from "dayjs";
@@ -110,12 +111,11 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
             ))}
           </div>
         ) : birthdays.length === 0 ? (
-          <div className="text-center py-6 px-4 text-sm text-fg-muted flex flex-col items-center justify-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-fg-subtle">
-              <Cake className="w-5 h-5" />
-            </div>
-            <p>No upcoming birthdays in the next 30 days</p>
-          </div>
+          <EmptyState
+            icon={Cake}
+            title="No upcoming birthdays in the next 30 days"
+            className="py-8"
+          />
         ) : (
           birthdays.map((birthday) => {
             const fullName =
@@ -187,7 +187,7 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
                       >
                         <MailCheck className="w-4 h-4" />
                       </button>
-                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-slate-900 dark:bg-slate-800 px-2.5 py-1 text-2xs font-medium text-white shadow-lg shadow-black/20 border border-slate-700/50 animate-in fade-in duration-150">
+                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-fg px-2.5 py-1 text-2xs font-medium text-surface shadow-lg animate-in fade-in duration-150">
                         {greetedReason}
                       </div>
                     </div>
@@ -201,11 +201,11 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
                         }}
                         aria-label={`Send birthday greeting to ${birthday.firstName}`}
                         title={`Send birthday greeting to ${birthday.firstName}`}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-primary-soft transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-fg-muted hover:text-primary-text hover:bg-primary-soft transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                       >
                         <Mail className="w-4 h-4" />
                       </button>
-                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-slate-900 dark:bg-slate-800 px-2.5 py-1 text-2xs font-medium text-white shadow-lg shadow-black/20 border border-slate-700/50 animate-in fade-in duration-150">
+                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-fg px-2.5 py-1 text-2xs font-medium text-surface shadow-lg animate-in fade-in duration-150">
                         Send greeting to {birthday.firstName}
                       </div>
                     </div>
@@ -221,7 +221,7 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
                       >
                         <Mail className="w-4 h-4 opacity-50" />
                       </button>
-                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-slate-900 dark:bg-slate-800 px-2.5 py-1 text-2xs font-medium text-white shadow-lg shadow-black/20 border border-slate-700/50 animate-in fade-in duration-150">
+                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-fg px-2.5 py-1 text-2xs font-medium text-surface shadow-lg animate-in fade-in duration-150">
                         No email address on record
                       </div>
                     </div>

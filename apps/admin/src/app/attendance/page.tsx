@@ -9,10 +9,6 @@ import {
   Users,
   UserX,
   TrendingUp,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
 } from "lucide-react";
 import {
   Card,
@@ -41,6 +37,13 @@ import { useDashboard } from "@/context/DashboardContext";
 import { useRegistrations } from "@/hooks/useRegistrations";
 import { adaptApiRegistrationToRegistration } from "@/models/registration";
 import { TeamBadge } from "@/components/ui/TeamBadge";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Pagination } from "@/components/ui/Pagination";
+import {
+  EmptyState,
+  QueryState,
+  SkeletonList,
+} from "@/components/ui/QueryState";
 
 export default function AttendancePage() {
   const {
@@ -64,6 +67,9 @@ export default function AttendancePage() {
   const {
     registrations: apiRegistrations,
     meta,
+    isLoading,
+    isError,
+    error,
     refetch,
   } = useRegistrations(regParams);
 
@@ -193,39 +199,22 @@ export default function AttendancePage() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-      {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-slate-900 text-white shadow-xl">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wide">
-              Live Check-in Desk Terminal
-            </span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-            Event Attendance Terminal
-          </h1>
-          <p className="text-xs text-slate-300">
-            Scanning terminal active at Registration Desks. Fast badge scanning
-            and manual attendee search.
-          </p>
-        </div>
-
-        <div className="flex gap-2">
-          <RefreshButton
-            onRefetch={refetch}
-            className="px-3 bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
-          />
-          <Button
-            variant="primary"
-            onClick={() => setIsQrScannerOpen(true)}
-            leftIcon={<QrCode className="w-5 h-5" />}
-            className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-3 shadow-lg"
-          >
-            Launch Gate QR Scanner
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Event Attendance Terminal"
+        description="Scanning terminal active at Registration Desks. Fast badge scanning and manual attendee search."
+        actions={
+          <>
+            <RefreshButton onRefetch={refetch} />
+            <Button
+              variant="primary"
+              onClick={() => setIsQrScannerOpen(true)}
+              leftIcon={<QrCode className="w-5 h-5" />}
+            >
+              Launch Gate QR Scanner
+            </Button>
+          </>
+        }
+      />
 
       {/* Stats Cards */}
       <StatsCardGroup>
@@ -236,6 +225,7 @@ export default function AttendancePage() {
           trend="neutral"
           icon={Users}
           color="indigo"
+          loading={isLoading}
         />
         <StatsCard
           title="Checked-In"
@@ -244,6 +234,7 @@ export default function AttendancePage() {
           trend="up"
           icon={UserCheck}
           color="emerald"
+          loading={isLoading}
         />
         <StatsCard
           title="Pending Check-in"
@@ -252,6 +243,7 @@ export default function AttendancePage() {
           trend="neutral"
           icon={UserX}
           color="amber"
+          loading={isLoading}
         />
         <StatsCard
           title="Check-in Rate"
@@ -260,6 +252,7 @@ export default function AttendancePage() {
           trend="up"
           icon={TrendingUp}
           color="cyan"
+          loading={isLoading}
         />
       </StatsCardGroup>
 
@@ -268,12 +261,12 @@ export default function AttendancePage() {
         <CardContent className="p-6 space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-slate-500">
+              <p className="text-xs font-semibold text-fg-muted">
                 Live Attendance Goal Progress
               </p>
               <h3 className="text-2xl font-black text-fg mt-0.5">
                 {checkedInCount.toLocaleString()}{" "}
-                <span className="text-sm font-normal text-slate-400">
+                <span className="text-sm font-normal text-fg-muted">
                   / {totalReg.toLocaleString()} Registrants
                 </span>
               </h3>
@@ -284,7 +277,7 @@ export default function AttendancePage() {
           </div>
           <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+              className="h-full bg-success rounded-full transition-all duration-500"
               style={{ width: `${checkinPct}%` }}
             />
           </div>
@@ -311,24 +304,39 @@ export default function AttendancePage() {
               />
 
               <div className="space-y-2 max-h-72 overflow-y-auto">
-                {registrations.length === 0 ? (
-                  <div className="p-8 text-center text-slate-500 text-sm">
-                    No data available
-                  </div>
-                ) : (
-                  registrations.map((r) => (
+                <QueryState
+                  isLoading={isLoading}
+                  isError={isError}
+                  error={error}
+                  onRetry={() => refetch()}
+                  resource="registrations"
+                  isEmpty={registrations.length === 0}
+                  loading={<SkeletonList rows={4} className="p-1" />}
+                  empty={
+                    <EmptyState
+                      icon={Search}
+                      title={
+                        search.trim()
+                          ? "No attendees match your search"
+                          : "No registrations for this event"
+                      }
+                      className="py-8"
+                    />
+                  }
+                >
+                  {registrations.map((r) => (
                     <div
                       key={r.id}
                       className="flex items-center justify-between p-3 rounded-xl bg-subtle text-xs"
                     >
                       <div>
                         <p className="font-bold text-fg">{r.name}</p>
-                        <p className="text-2xs text-slate-400 flex items-center gap-1">
+                        <p className="text-2xs text-fg-muted flex items-center gap-1">
                           <span>{r.registrationNumber} •</span>
                           <TruncatedTextWithCopy
                             text={r.email}
                             maxLength={24}
-                            textClassName="text-2xs text-slate-400"
+                            textClassName="text-2xs text-fg-muted"
                           />
                         </p>
                       </div>
@@ -346,89 +354,28 @@ export default function AttendancePage() {
                               ? "Only Super Admins can execute check-ins"
                               : undefined
                           }
-                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Check-In
                         </Button>
                       )}
                     </div>
-                  ))
-                )}
+                  ))}
+                </QueryState>
               </div>
             </CardContent>
           </div>
 
           {/* Pagination Controls inside Manual Check-in Card Footer */}
-          {totalItems > 0 && (
-            <div className="p-4 border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-fg-muted">
-              <div className="flex items-center gap-2">
-                <span>
-                  Showing{" "}
-                  <span className="font-semibold text-fg">
-                    {Math.min((page - 1) * limit + 1, totalItems)}
-                  </span>{" "}
-                  to{" "}
-                  <span className="font-semibold text-fg">
-                    {Math.min(page * limit, totalItems)}
-                  </span>{" "}
-                  of <span className="font-semibold text-fg">{totalItems}</span>
-                </span>
-                <select
-                  value={limit}
-                  onChange={(e) => setLimit(Number(e.target.value))}
-                  className="ml-2 bg-surface-raised border border-border-control rounded-lg text-base py-1 px-2 font-semibold text-fg-secondary outline-none cursor-pointer"
-                >
-                  {[5, 10, 20, 50].map((size) => (
-                    <option key={size} value={size}>
-                      {size}/page
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => setPage(1)}
-                  disabled={page <= 1}
-                  className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  title="First Page"
-                >
-                  <ChevronsLeft className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPage(page - 1)}
-                  disabled={page <= 1}
-                  className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  title="Previous Page"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </button>
-                <span className="px-2 text-xs">
-                  Page <span className="font-semibold text-fg">{page}</span> of{" "}
-                  <span className="font-semibold text-fg">{totalPages}</span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPage(page + 1)}
-                  disabled={page >= totalPages}
-                  className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  title="Next Page"
-                >
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPage(totalPages)}
-                  disabled={page >= totalPages}
-                  className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  title="Last Page"
-                >
-                  <ChevronsRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
+          {!isLoading && !isError && totalItems > 0 && (
+            <Pagination
+              className="p-4 border-t border-border-subtle"
+              page={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={limit}
+              onPageChange={setPage}
+              onPageSizeChange={setLimit}
+            />
           )}
         </Card>
 
@@ -440,9 +387,12 @@ export default function AttendancePage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {attendanceLog.length === 0 ? (
-              <div className="p-8 text-center text-slate-500 text-sm">
-                No data available
-              </div>
+              <EmptyState
+                icon={UserCheck}
+                title="No check-ins yet"
+                description="Scanned and manual check-ins will appear here."
+                className="py-8"
+              />
             ) : (
               attendanceLog.map((log) => (
                 <div
@@ -450,12 +400,12 @@ export default function AttendancePage() {
                   className="flex items-center justify-between p-3 rounded-xl bg-subtle border border-border-subtle text-xs animate-fade-in"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-success-text font-bold flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-success-soft text-success-text font-bold flex items-center justify-center">
                       <UserCheck className="w-4 h-4" />
                     </div>
                     <div>
                       <p className="font-bold text-fg">{log.attendeeName}</p>
-                      <p className="text-2xs text-slate-400">
+                      <p className="text-2xs text-fg-muted">
                         {log.method} • {log.checkedInBy}
                       </p>
                     </div>
@@ -465,7 +415,7 @@ export default function AttendancePage() {
                     <TeamBadge color={log.teamColor} className="mb-1">
                       {log.teamName}
                     </TeamBadge>
-                    <p className="text-2xs text-slate-400 flex items-center gap-1 justify-end">
+                    <p className="text-2xs text-fg-muted flex items-center gap-1 justify-end">
                       <Clock className="w-3 h-3" />
                       {log.time}
                     </p>

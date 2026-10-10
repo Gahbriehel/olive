@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import {
   MailWarning,
@@ -14,6 +13,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Table } from "@/components/ui/Table";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { ErrorState } from "@/components/ui/QueryState";
 import { Tabs } from "@/components/ui/Tabs";
 import { Badge } from "@/components/ui/Badge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -28,14 +29,15 @@ import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { ViewBounceDetailsModal } from "@/components/modals/ViewBounceDetailsModal";
 import { RemediateBounceModal } from "@/components/modals/RemediateBounceModal";
 import { FiltersModal } from "@/components/modals/FiltersModal";
-import { emailBounceService } from "@/services/emailBounce.service";
-import {
-  EmailBounce,
-  EmailBounceTabFilter,
-  EmailBounceAnalyticsResponse,
-} from "@/models/emailBounce";
+import { EmailBounce, EmailBounceTabFilter } from "@/models/emailBounce";
 import { useAuth } from "@/hooks/useAuth";
 import { useListFilters } from "@/hooks/useListFilters";
+import {
+  useEmailBounceAnalytics,
+  useEmailBounces,
+  useInvalidateEmailBounces,
+  useResolveEmailBounce,
+} from "@/hooks/useEmailBounces";
 import { type IQueryParams } from "@/models/base";
 import { type FilterField } from "@/models/filters";
 import { getUserRoles, ROLES } from "@/utils/rbac";
@@ -96,7 +98,6 @@ const MONTH_NAMES = [
 ];
 
 export default function EmailBouncesPage() {
-  const queryClient = useQueryClient();
   const { user } = useAuth();
   const userRoles = useMemo(() => getUserRoles(user), [user]);
   const canManage =
@@ -138,27 +139,18 @@ export default function EmailBouncesPage() {
     null,
   );
 
-  // 1. Fetch Analytics Data
+  // 1. Analytics Data
   const {
-    data: analyticsData,
+    analytics: analyticsData,
     isLoading: isAnalyticsLoading,
+    isError: isAnalyticsError,
+    error: analyticsError,
     refetch: refetchAnalytics,
-  } = useQuery<EmailBounceAnalyticsResponse>({
-    queryKey: [
-      "email-bounces-analytics",
-      selectedYear,
-      selectedMonth,
-      emailType,
-      recipientType,
-    ],
-    queryFn: () =>
-      emailBounceService.getBounceAnalytics({
-        year: selectedYear,
-        month: selectedMonth || undefined,
-        emailType,
-        recipientType,
-      }),
-    staleTime: 1000 * 60 * 2, // 2 minutes
+  } = useEmailBounceAnalytics({
+    year: selectedYear,
+    month: selectedMonth,
+    emailType,
+    recipientType,
   });
 
   // Table query = shared list filters + the active status tab
@@ -171,22 +163,16 @@ export default function EmailBouncesPage() {
     [exportParams, tabFilter],
   );
 
-  // 2. Fetch Email Bounces List
+  // 2. Email Bounces List
   const {
-    data: bounceResponse,
+    bounces,
+    response: bounceResponse,
     isLoading: isListLoading,
     isFetching,
+    isError: isListError,
+    error: listError,
     refetch: refetchList,
-  } = useQuery({
-    queryKey: ["email-bounces-list", computedQueryParams],
-    queryFn: () => emailBounceService.getBounces(computedQueryParams),
-    staleTime: 1000 * 30, // 30 seconds
-  });
-
-  const bounces = useMemo(
-    () => bounceResponse?.data || [],
-    [bounceResponse?.data],
-  );
+  } = useEmailBounces(computedQueryParams);
 
   const meta = useMemo(
     () => ({
@@ -212,11 +198,9 @@ export default function EmailBouncesPage() {
   };
 
   // 3. Mark Resolved Mutation
-  const resolveMutation = useMutation({
-    mutationFn: (id: string) => emailBounceService.resolveBounce(id),
+  const invalidateBounces = useInvalidateEmailBounces();
+  const resolveMutation = useResolveEmailBounce({
     onSuccess: (updated) => {
-      queryClient.invalidateQueries({ queryKey: ["email-bounces-list"] });
-      queryClient.invalidateQueries({ queryKey: ["email-bounces-analytics"] });
       if (selectedBounce?.id === updated.id) {
         setSelectedBounce((prev) => (prev ? { ...prev, ...updated } : null));
       }
@@ -291,7 +275,7 @@ export default function EmailBouncesPage() {
                   size="sm"
                 />
                 {item.eventType && (
-                  <p className="text-2xs text-slate-400 font-mono truncate max-w-[120px]">
+                  <p className="text-2xs text-fg-muted font-mono truncate max-w-[120px]">
                     {item.eventType}
                   </p>
                 )}
@@ -337,15 +321,23 @@ export default function EmailBouncesPage() {
             const isResolved = getValue();
             if (isResolved) {
               return (
-                <span className="inline-flex items-center gap-1 text-2xs font-semibold text-success-text bg-success-soft border border-success-border px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                <Badge
+                  variant="emerald"
+                  size="sm"
+                  className="font-semibold whitespace-nowrap"
+                >
                   <CheckCircle2 className="w-3 h-3" /> Resolved
-                </span>
+                </Badge>
               );
             }
             return (
-              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-warning-text bg-warning-soft border border-warning-border px-2.5 py-0.5 rounded-full whitespace-nowrap">
+              <Badge
+                variant="amber"
+                size="sm"
+                className="font-semibold whitespace-nowrap"
+              >
                 <AlertTriangle className="w-3 h-3" /> Action Needed
-              </span>
+              </Badge>
             );
           },
         }),
@@ -360,7 +352,7 @@ export default function EmailBouncesPage() {
                 <p className="text-xs font-medium text-fg">
                   {dayjs(val).format("MMM D, YYYY")}
                 </p>
-                <p className="text-2xs text-slate-400">
+                <p className="text-2xs text-fg-muted">
                   {dayjs(val).format("h:mm A")}
                 </p>
               </div>
@@ -503,81 +495,79 @@ export default function EmailBouncesPage() {
   );
 
   return (
-    <div className="space-y-5 sm:space-y-6 pb-12 min-w-0 max-w-full">
-      {/* Page Header */}
-      <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-danger-soft text-danger-text border border-danger-border shadow-xs shrink-0">
-              <MailWarning className="w-5 h-5" />
+    <div className="space-y-6 pb-10 min-w-0 max-w-full">
+      <PageHeader
+        title="Email Bounces & Delivery Issues"
+        description="Monitor Resend webhooks, remediate invalid emails, and resend critical communications."
+        icon={MailWarning}
+        breadcrumbs={[{ label: "Reports" }, { label: "Email Bounces" }]}
+        actions={
+          <>
+            {/* Year Selector (≥16px on mobile to avoid iOS zoom) */}
+            <div className="flex items-center gap-1.5 bg-surface border border-border rounded-xl px-2.5 py-1 shadow-xs">
+              <Calendar className="w-3.5 h-3.5 text-fg-subtle" />
+              <select
+                aria-label="Year"
+                value={selectedYear}
+                onChange={(e) => {
+                  setSelectedYear(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="text-base sm:text-xs font-semibold bg-transparent text-fg focus:outline-none cursor-pointer"
+              >
+                {[
+                  currentYear - 2,
+                  currentYear - 1,
+                  currentYear,
+                  currentYear + 1,
+                ].map((yr) => (
+                  <option key={yr} value={yr} className="bg-surface">
+                    {yr}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl font-bold text-fg truncate">
-                Email Bounces & Delivery Issues
-              </h1>
-              <p className="text-xs text-fg-muted truncate">
-                Monitor Resend webhooks, remediate invalid emails, and resend
-                critical communications.
-              </p>
-            </div>
-          </div>
-        </div>
 
-        {/* Header Controls: Year/Month Selector, Refresh, & CSV Export */}
-        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 flex-wrap">
-          {/* Year Selector */}
-          <div className="flex items-center gap-1.5 bg-surface border border-border rounded-xl px-2.5 py-1 shadow-xs">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <select
-              value={selectedYear}
-              onChange={(e) => {
-                setSelectedYear(Number(e.target.value));
-                setPage(1);
-              }}
-              className="text-xs font-semibold bg-transparent text-fg focus:outline-none cursor-pointer"
-            >
-              {[
-                currentYear - 2,
-                currentYear - 1,
-                currentYear,
-                currentYear + 1,
-              ].map((yr) => (
-                <option key={yr} value={yr} className="dark:bg-zinc-900">
-                  {yr}
-                </option>
-              ))}
-            </select>
-          </div>
+            <RefreshButton onRefetch={handleRefreshAll} />
 
-          <RefreshButton onRefetch={handleRefreshAll} />
-
-          {canManage && (
-            <ExportCsvButton
-              endpoint="/email-bounces/export"
-              params={computedExportParams}
-              fallbackFilename={`email-bounces-${new Date().toISOString().slice(0, 10)}.csv`}
-              label="Export CSV"
-            />
-          )}
-        </div>
-      </div>
+            {canManage && (
+              <ExportCsvButton
+                endpoint="/email-bounces/export"
+                params={computedExportParams}
+                fallbackFilename={`email-bounces-${new Date().toISOString().slice(0, 10)}.csv`}
+                label="Export CSV"
+              />
+            )}
+          </>
+        }
+      />
 
       {/* KPI Stats Cards */}
-      <StatsCardGroup>
-        {kpiStats.map((kpi, idx) => (
-          <StatsCard
-            key={idx}
-            title={kpi.title}
-            value={kpi.value}
-            change={kpi.description}
-            trend="neutral"
-            icon={kpi.icon}
-            color={kpi.color}
-            className={kpi.className}
-            loading={kpi.loading}
+      {isAnalyticsError ? (
+        <div className="rounded-2xl border border-border bg-surface shadow-xs">
+          <ErrorState
+            resource="bounce analytics"
+            error={analyticsError}
+            onRetry={() => refetchAnalytics()}
           />
-        ))}
-      </StatsCardGroup>
+        </div>
+      ) : (
+        <StatsCardGroup>
+          {kpiStats.map((kpi, idx) => (
+            <StatsCard
+              key={idx}
+              title={kpi.title}
+              value={kpi.value}
+              change={kpi.description}
+              trend="neutral"
+              icon={kpi.icon}
+              color={kpi.color}
+              className={kpi.className}
+              loading={kpi.loading}
+            />
+          ))}
+        </StatsCardGroup>
+      )}
 
       {/* Top Failing Domains & Categories Banner */}
       {analyticsData &&
@@ -589,10 +579,10 @@ export default function EmailBouncesPage() {
               <div className="p-3.5 rounded-2xl bg-surface/90 border border-border shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-fg-secondary flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5 text-indigo-500" />
+                    <Globe className="w-3.5 h-3.5 text-primary-text" />
                     Top Failing Domains
                   </span>
-                  <span className="text-2xs text-slate-400">
+                  <span className="text-2xs text-fg-muted">
                     High bounce rate clusters
                   </span>
                 </div>
@@ -603,7 +593,7 @@ export default function EmailBouncesPage() {
                       className="inline-flex items-center gap-1 text-2xs font-mono font-medium px-2 py-0.5 rounded-lg bg-muted text-fg-secondary border border-border-control"
                     >
                       @{dom.domain}
-                      <span className="text-rose-500 font-bold">
+                      <span className="text-danger-text font-bold">
                         ({dom.count})
                       </span>
                     </span>
@@ -617,10 +607,10 @@ export default function EmailBouncesPage() {
               <div className="p-3.5 rounded-2xl bg-surface/90 border border-border shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-fg-secondary flex items-center gap-1.5">
-                    <Tag className="w-3.5 h-3.5 text-purple-500" />
+                    <Tag className="w-3.5 h-3.5 text-info-text" />
                     Failures by Email Type
                   </span>
-                  <span className="text-2xs text-slate-400">
+                  <span className="text-2xs text-fg-muted">
                     Distribution by campaign
                   </span>
                 </div>
@@ -689,6 +679,10 @@ export default function EmailBouncesPage() {
           limit={limit}
           onLimitChange={setLimit}
           meta={meta}
+          isError={isListError}
+          error={listError}
+          onRetry={() => refetchList()}
+          resource="email bounces"
           emptyMessage="No bounce alerts found matching current criteria"
         >
           <ListToolbar
@@ -735,12 +729,7 @@ export default function EmailBouncesPage() {
         isOpen={Boolean(remediateTarget)}
         bounce={remediateTarget}
         onClose={() => setRemediateTarget(null)}
-        onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ["email-bounces-list"] });
-          queryClient.invalidateQueries({
-            queryKey: ["email-bounces-analytics"],
-          });
-        }}
+        onSuccess={invalidateBounces}
       />
     </div>
   );

@@ -38,6 +38,7 @@ export function useRegistrations(params?: IQueryParams) {
     meta: registrationsQuery.data?.meta,
     isLoading: registrationsQuery.isLoading,
     isError: registrationsQuery.isError,
+    error: registrationsQuery.error,
     refetch: registrationsQuery.refetch,
     registerAttendee: registerMutation.mutateAsync,
     isRegistering: registerMutation.isPending,

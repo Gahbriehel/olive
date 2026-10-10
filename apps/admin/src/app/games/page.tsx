@@ -3,30 +3,28 @@
 import React, { useState, useMemo } from "react";
 import confetti from "canvas-confetti";
 import {
-  Edit3,
   Gamepad2,
   Award,
   Trophy,
   Users,
   Search,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
+  SearchX,
+  Plus,
 } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Pagination } from "@/components/ui/Pagination";
+import {
+  QueryState,
+  EmptyState,
+  SkeletonCardGrid,
+  SkeletonList,
+} from "@/components/ui/QueryState";
+import { GameCard } from "./_components/GameCard";
 import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { ListToolbar } from "@/components/ui/ListToolbar";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/FormElements/Input";
-import { ActionsList } from "@/components/ui/ActionsList";
 import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
@@ -72,10 +70,20 @@ export default function GamesPage() {
     isUpdatingGame,
     isDeletingGame,
     isClearingScores,
+    isLoading: isLoadingGames,
+    isError: isGamesError,
+    error: gamesError,
+    refetchGames,
     refetch,
   } = useGames({ ...queryParams, eventId: selectedEventId });
 
-  const { teams: apiTeams } = useTeams(selectedEventId);
+  const {
+    teams: apiTeams,
+    isLoading: isLoadingTeams,
+    isError: isTeamsError,
+    error: teamsError,
+    refetch: refetchTeams,
+  } = useTeams(selectedEventId);
 
   const teams = useMemo(
     () => (Array.isArray(apiTeams) ? apiTeams.map(adaptApiTeamToTeam) : []),
@@ -213,7 +221,6 @@ export default function GamesPage() {
 
   const totalItems = meta?.total ?? games.length;
   const totalPages = meta?.totalPages ?? 1;
-  const displayedGames = games;
 
   const gamesWithScoresCount = games.filter(
     (g) => g.scores && g.scores.length > 0,
@@ -223,15 +230,33 @@ export default function GamesPage() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
-          Youth Conference Games
-        </h1>
-        <p className="text-xs sm:text-sm text-fg-muted">
-          Tournament competition list, point allocations, and score submissions.
-        </p>
-      </div>
+      <PageHeader
+        title="Youth Conference Games"
+        description="Tournament competition list, point allocations, and score submissions."
+        actions={
+          <ListToolbar
+            create={{
+              label: "Create New Game",
+              onClick: () => setIsCreateOpen(true),
+            }}
+            actions={[
+              { title: "Refresh", fn: () => refetch() },
+              {
+                title: "Export CSV",
+                fn: () =>
+                  downloadCsvExport(
+                    "/games/export",
+                    {
+                      eventId: selectedEventId || undefined,
+                      search: queryParams.search,
+                    },
+                    `games-${new Date().toISOString().slice(0, 10)}.csv`,
+                  ),
+              },
+            ]}
+          />
+        }
+      />
 
       {/* Metrics Grid */}
       <StatsCardGroup>
@@ -242,6 +267,7 @@ export default function GamesPage() {
           trend="neutral"
           icon={Gamepad2}
           color="indigo"
+          loading={isLoadingGames}
         />
         <StatsCard
           title="Games Scored"
@@ -250,6 +276,7 @@ export default function GamesPage() {
           trend="up"
           icon={Award}
           color="emerald"
+          loading={isLoadingGames}
         />
         <StatsCard
           title="Max Point Pool"
@@ -258,234 +285,100 @@ export default function GamesPage() {
           trend="neutral"
           icon={Trophy}
           color="cyan"
+          loading={isLoadingGames}
         />
         <StatsCard
           title="Participating Teams"
-          value={totalTeams.toLocaleString()}
+          value={isTeamsError ? "—" : totalTeams.toLocaleString()}
           change="Registered teams"
           trend="neutral"
           icon={Users}
           color="amber"
+          loading={isLoadingTeams}
         />
       </StatsCardGroup>
 
-      {/* Toolbar + Search & Rows Per Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-4 rounded-2xl border border-border shadow-sm">
-        <ListToolbar
-          create={{
-            label: "Create New Game",
-            onClick: () => setIsCreateOpen(true),
-          }}
-          actions={[
-            { title: "Refresh", fn: () => refetch() },
-            {
-              title: "Export CSV",
-              fn: () =>
-                downloadCsvExport(
-                  "/games/export",
-                  {
-                    eventId: selectedEventId || undefined,
-                    search: queryParams.search,
-                  },
-                  `games-${new Date().toISOString().slice(0, 10)}.csv`,
-                ),
-            },
-          ]}
+      {/* Search */}
+      <div className="w-full sm:w-72">
+        <Input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search games..."
+          aria-label="Search games"
+          leftIcon={<Search className="w-4 h-4" />}
+          className="h-9"
         />
-
-        <div className="flex items-center gap-3 sm:ml-auto">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-subtle" />
-            <Input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search games..."
-              className="pl-9 text-base h-9 bg-surface border-border focus:border-indigo-500"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 text-xs shrink-0">
-            <span className="text-fg-muted font-medium">Rows:</span>
-            <select
-              value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
-              className="bg-surface-raised border border-border-control rounded-lg text-base py-1.5 px-2.5 font-semibold text-fg-secondary focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all cursor-pointer"
-            >
-              {[5, 10, 20, 50].map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
       </div>
 
       {/* Games List */}
-      {displayedGames.length === 0 ? (
-        <div className="p-12 text-center text-slate-500 bg-surface rounded-2xl border border-border">
-          No data available
-        </div>
-      ) : (
+      <QueryState
+        isLoading={isLoadingGames}
+        isError={isGamesError}
+        error={gamesError}
+        onRetry={() => refetchGames()}
+        resource="games"
+        isEmpty={games.length === 0}
+        loading={<SkeletonCardGrid count={4} className="xl:grid-cols-2" />}
+        empty={
+          <div className="bg-surface rounded-2xl border border-border">
+            {search ? (
+              <EmptyState
+                icon={SearchX}
+                title="No games match your search"
+                description={`Nothing found for "${search}".`}
+                action={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSearch("")}
+                  >
+                    Clear search
+                  </Button>
+                }
+              />
+            ) : (
+              <EmptyState
+                icon={Gamepad2}
+                title="No games yet"
+                description="Create a game to start recording team scores."
+                action={
+                  <Button
+                    size="sm"
+                    leftIcon={<Plus className="w-4 h-4" />}
+                    onClick={() => setIsCreateOpen(true)}
+                  >
+                    Create game
+                  </Button>
+                }
+              />
+            )}
+          </div>
+        }
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {displayedGames.map((game) => (
-            <Card key={game.id} className="flex flex-col justify-between">
-              <div>
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base font-bold text-fg">
-                      {game.name}
-                    </CardTitle>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-slate-400">
-                        Max {game.maxScore} pts
-                      </span>
-
-                      <ActionsList
-                        actions={[
-                          {
-                            title: "Edit Game",
-                            fn: () => setSelectedGameForEdit(game),
-                          },
-                          ...(game.scores && game.scores.length > 0
-                            ? [
-                                {
-                                  title: "Clear Scores",
-                                  fn: () => setClearScoresTarget(game),
-                                  destructive: true,
-                                },
-                              ]
-                            : []),
-                          {
-                            title: "Delete Game",
-                            fn: () => setDeletingGame(game),
-                            destructive: true,
-                          },
-                        ]}
-                      />
-                    </div>
-                  </div>
-                  {game.description && (
-                    <CardDescription>{game.description}</CardDescription>
-                  )}
-                </CardHeader>
-
-                <CardContent className="space-y-3 pt-1 text-xs">
-                  <div className="p-3 rounded-xl bg-subtle space-y-1.5">
-                    <p className="font-bold text-fg-secondary">
-                      Tournament Results
-                    </p>
-                    {game.scores.length > 0 ? (
-                      <div className="grid grid-cols-2 gap-2 mt-1">
-                        {game.scores.map((s) => (
-                          <div
-                            key={s.teamId}
-                            className="flex items-center justify-between p-1.5 rounded-xl bg-surface-raised border border-slate-100 dark:border-zinc-700/60 font-semibold"
-                          >
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              {s.teamColor && (
-                                <span
-                                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                                  style={{ backgroundColor: s.teamColor }}
-                                />
-                              )}
-                              <span className="truncate">{s.teamName}</span>
-                            </div>
-                            <span className="font-mono text-primary-text shrink-0 ml-1">
-                              +{s.points}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-slate-400 italic">
-                        No scores submitted yet.
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </div>
-
-              <div className="p-4 pt-0">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-center"
-                  onClick={() => handleOpenScoreModal(game)}
-                  leftIcon={<Edit3 className="w-4 h-4 text-indigo-500" />}
-                >
-                  Submit / Edit Game Scores
-                </Button>
-              </div>
-            </Card>
+          {games.map((game) => (
+            <GameCard
+              key={game.id}
+              game={game}
+              onEdit={() => setSelectedGameForEdit(game)}
+              onClearScores={() => setClearScoresTarget(game)}
+              onDelete={() => setDeletingGame(game)}
+              onManageScores={() => handleOpenScoreModal(game)}
+            />
           ))}
         </div>
-      )}
 
-      {/* Pagination Controls Bar - Always rendered when items exist */}
-      {totalItems > 0 && (
-        <div className="p-4 bg-surface rounded-2xl border border-border shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-fg-muted">
-          <div>
-            Showing{" "}
-            <span className="font-semibold text-fg">
-              {Math.min((page - 1) * limit + 1, totalItems)}
-            </span>{" "}
-            to{" "}
-            <span className="font-semibold text-fg">
-              {Math.min(page * limit, totalItems)}
-            </span>{" "}
-            of <span className="font-semibold text-fg">{totalItems}</span>{" "}
-            results
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => setPage(1)}
-              disabled={page <= 1}
-              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              title="First Page"
-            >
-              <ChevronsLeft className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setPage(page - 1)}
-              disabled={page <= 1}
-              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              title="Previous Page"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-
-            <span className="px-3 text-xs">
-              Page <span className="font-semibold text-fg">{page}</span> of{" "}
-              <span className="font-semibold text-fg">{totalPages}</span>
-            </span>
-
-            <button
-              type="button"
-              onClick={() => setPage(page + 1)}
-              disabled={page >= totalPages}
-              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              title="Next Page"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setPage(totalPages)}
-              disabled={page >= totalPages}
-              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              title="Last Page"
-            >
-              <ChevronsRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
+        <Pagination
+          className="p-4 bg-surface rounded-2xl border border-border shadow-sm"
+          page={page}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={limit}
+          onPageChange={setPage}
+          onPageSizeChange={setLimit}
+        />
+      </QueryState>
 
       {/* Score Submission Modal */}
       <Modal
@@ -495,49 +388,66 @@ export default function GamesPage() {
         description={`Award or update team points for ${selectedGameForScore?.name} (Max Points: ${selectedGameForScore?.maxScore})`}
       >
         <div className="space-y-4 text-xs">
-          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-            {teams.map((team) => (
-              <div
-                key={team.id}
-                className="p-3 rounded-xl border border-border bg-subtle space-y-2"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: team.colorHex }}
-                    />
-                    <span className="font-bold text-fg">{team.name}</span>
+          <QueryState
+            isLoading={isLoadingTeams}
+            isError={isTeamsError}
+            error={teamsError}
+            onRetry={() => refetchTeams()}
+            resource="teams"
+            isEmpty={teams.length === 0}
+            loading={<SkeletonList rows={3} />}
+            empty={
+              <EmptyState
+                icon={Users}
+                title="No teams yet"
+                description="Create teams for this event before recording scores."
+              />
+            }
+          >
+            <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+              {teams.map((team) => (
+                <div
+                  key={team.id}
+                  className="p-3 rounded-xl border border-border bg-subtle space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: team.colorHex }}
+                      />
+                      <span className="font-bold text-fg">{team.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        value={scoreInputs[team.id] ?? 0}
+                        onChange={(e) =>
+                          setScoreInputs({
+                            ...scoreInputs,
+                            [team.id]: Number(e.target.value),
+                          })
+                        }
+                        className="w-24 text-right font-mono"
+                      />
+                      <span className="text-fg-muted font-mono">pts</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      value={scoreInputs[team.id] ?? 0}
-                      onChange={(e) =>
-                        setScoreInputs({
-                          ...scoreInputs,
-                          [team.id]: Number(e.target.value),
-                        })
-                      }
-                      className="w-24 text-right font-mono"
-                    />
-                    <span className="text-slate-400 font-mono">pts</span>
-                  </div>
+                  <Input
+                    placeholder="Score notes (optional)..."
+                    value={scoreNotes[team.id] || ""}
+                    onChange={(e) =>
+                      setScoreNotes({
+                        ...scoreNotes,
+                        [team.id]: e.target.value,
+                      })
+                    }
+                    className="text-xs"
+                  />
                 </div>
-                <Input
-                  placeholder="Score notes (optional)..."
-                  value={scoreNotes[team.id] || ""}
-                  onChange={(e) =>
-                    setScoreNotes({
-                      ...scoreNotes,
-                      [team.id]: e.target.value,
-                    })
-                  }
-                  className="text-xs"
-                />
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </QueryState>
 
           <div className="pt-3 border-t border-border-subtle flex items-center justify-between gap-2">
             <Button

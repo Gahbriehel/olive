@@ -69,6 +69,8 @@ export function useSettings() {
     settings: effectiveSettings,
     isLoadingSettings: settingsQuery.isLoading,
     isErrorSettings: settingsQuery.isError,
+    settingsError: settingsQuery.error,
+    refetchSettings: settingsQuery.refetch,
     updateSettings: updateSettingsMutation.mutateAsync,
     isUpdatingSettings: updateSettingsMutation.isPending,
 

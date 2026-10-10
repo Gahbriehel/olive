@@ -244,9 +244,9 @@ export const Sidebar: React.FC = () => {
             <Church className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="font-bold text-sm leading-tight text-fg tracking-tight truncate">
+            <p className="font-bold text-sm leading-tight text-fg tracking-tight truncate">
               {churchName}
-            </h1>
+            </p>
             <p className="text-2xs font-medium text-primary-text">
               Admin Portal
             </p>

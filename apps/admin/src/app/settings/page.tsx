@@ -7,7 +7,7 @@ import { SettingsView } from "@/components/views/SettingsView";
 
 import { useAuth } from "@/hooks/useAuth";
 import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
-import { Spinner } from "@/components/ui/Spinner";
+import { LoadingState } from "@/components/ui/Spinner";
 
 function SettingsContent() {
   const searchParams = useSearchParams();
@@ -20,11 +20,7 @@ function SettingsContent() {
     useSettings();
 
   if (isLoadingSettings && !settings && isAdmin) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Spinner size="lg" />
-      </div>
-    );
+    return <LoadingState label="Loading settings..." className="h-64" />;
   }
 
   return (
@@ -40,11 +36,7 @@ function SettingsContent() {
 export default function SettingsPage() {
   return (
     <Suspense
-      fallback={
-        <div className="flex h-64 items-center justify-center">
-          <Spinner size="lg" />
-        </div>
-      }
+      fallback={<LoadingState label="Loading settings..." className="h-64" />}
     >
       <SettingsContent />
     </Suspense>

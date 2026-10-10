@@ -19,7 +19,10 @@ const eslintConfig = defineConfig([
       "src/components/ui/**/*.tsx",
       "src/components/FormElements/**/*.tsx",
       "src/components/layout/**/*.tsx",
+      "src/app/**/*.tsx",
     ],
+    // Intentionally always-dark screens; see docs/architecture.md §6.1.
+    ignores: ["src/app/(auth)/login/page.tsx", "src/app/not-found.tsx"],
     rules: {
       "no-restricted-syntax": [
         "error",

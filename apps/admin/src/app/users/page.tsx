@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Check,
   X,
@@ -18,6 +18,7 @@ import {
   CardDescription,
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { ListToolbar } from "@/components/ui/ListToolbar";
 import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
@@ -35,6 +36,7 @@ import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
 import { useAuth } from "@/hooks/useAuth";
 import { useUsers } from "@/hooks/useUsers";
+import { useListFilters } from "@/hooks/useListFilters";
 import {
   IAdminUser,
   ICreateUserPayload,
@@ -126,23 +128,23 @@ const permissionsMatrix: PermissionMatrixItem[] = [
 ];
 
 export default function UsersPage() {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-
-  const queryParams = useMemo(
-    () => ({
-      page,
-      limit,
-      search: search || undefined,
-    }),
-    [page, limit, search],
-  );
+  const {
+    page,
+    setPage,
+    limit,
+    setLimit,
+    search,
+    setSearch,
+    queryParams,
+    exportParams,
+  } = useListFilters({});
 
   const {
     users,
     meta,
     isLoading,
+    isError,
+    error,
     refetch,
     createUser,
     updateUser,
@@ -229,20 +231,6 @@ export default function UsersPage() {
     }
   };
 
-  const handleSearchChange = useCallback((newSearch: string) => {
-    setSearch((prevSearch) => {
-      if (prevSearch !== newSearch) {
-        setPage(1);
-      }
-      return newSearch;
-    });
-  }, []);
-
-  const handleLimitChange = (newLimit: number) => {
-    setLimit(newLimit);
-    setPage(1);
-  };
-
   const totalUsers = meta?.total ?? users.length;
   // No aggregate endpoint yet: these breakdowns only cover the loaded page.
   const statsArePartial = totalUsers > users.length;
@@ -279,7 +267,7 @@ export default function UsersPage() {
           const u = row.original;
           return (
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+              <div className="w-9 h-9 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
                 {getInitials(u.name)}
               </div>
               <div>
@@ -287,7 +275,7 @@ export default function UsersPage() {
                 <TruncatedTextWithCopy
                   text={u.email}
                   maxLength={28}
-                  textClassName="text-2xs text-slate-400"
+                  textClassName="text-2xs text-fg-muted"
                 />
               </div>
             </div>
@@ -312,7 +300,7 @@ export default function UsersPage() {
         accessorKey: "lastActive",
         header: "Last Activity",
         cell: ({ row }) => (
-          <span className="text-slate-500 text-xs">
+          <span className="text-fg-muted text-xs">
             {row.original.lastActive}
           </span>
         ),
@@ -358,7 +346,7 @@ export default function UsersPage() {
         cell: ({ row }) => (
           <div>
             <p className="font-bold text-fg">{row.original.item}</p>
-            <p className="text-2xs font-mono text-slate-400">
+            <p className="text-2xs font-mono text-fg-muted">
               {row.original.route}
             </p>
           </div>
@@ -369,7 +357,7 @@ export default function UsersPage() {
         header: () => (
           <div className="text-center">
             <p className="font-bold text-fg">Super Admin</p>
-            <span className="text-2xs font-mono text-indigo-500">
+            <span className="text-2xs font-mono text-primary-text">
               SUPER_ADMIN
             </span>
           </div>
@@ -377,7 +365,7 @@ export default function UsersPage() {
         cell: ({ row }) => (
           <div className="text-center">
             {row.original.superAdmin ? (
-              <Check className="w-4 h-4 text-emerald-500 mx-auto" />
+              <Check className="w-4 h-4 text-success-text mx-auto" />
             ) : (
               <X className="w-4 h-4 text-fg-subtle mx-auto" />
             )}
@@ -389,13 +377,13 @@ export default function UsersPage() {
         header: () => (
           <div className="text-center">
             <p className="font-bold text-fg">Church Admin</p>
-            <span className="text-2xs font-mono text-indigo-500">ADMIN</span>
+            <span className="text-2xs font-mono text-primary-text">ADMIN</span>
           </div>
         ),
         cell: ({ row }) => (
           <div className="text-center">
             {row.original.churchAdmin ? (
-              <Check className="w-4 h-4 text-emerald-500 mx-auto" />
+              <Check className="w-4 h-4 text-success-text mx-auto" />
             ) : (
               <X className="w-4 h-4 text-fg-subtle mx-auto" />
             )}
@@ -407,7 +395,7 @@ export default function UsersPage() {
         header: () => (
           <div className="text-center">
             <p className="font-bold text-fg">Event Coordinator</p>
-            <span className="text-2xs font-mono text-indigo-500">
+            <span className="text-2xs font-mono text-primary-text">
               COORDINATOR
             </span>
           </div>
@@ -415,7 +403,7 @@ export default function UsersPage() {
         cell: ({ row }) => (
           <div className="text-center">
             {row.original.coordinator ? (
-              <Check className="w-4 h-4 text-emerald-500 mx-auto" />
+              <Check className="w-4 h-4 text-success-text mx-auto" />
             ) : (
               <X className="w-4 h-4 text-fg-subtle mx-auto" />
             )}
@@ -427,7 +415,7 @@ export default function UsersPage() {
         header: () => (
           <div className="text-center">
             <p className="font-bold text-fg">Registration Desk</p>
-            <span className="text-2xs font-mono text-indigo-500">
+            <span className="text-2xs font-mono text-primary-text">
               REGISTRATION_DESK
             </span>
           </div>
@@ -435,7 +423,7 @@ export default function UsersPage() {
         cell: ({ row }) => (
           <div className="text-center">
             {row.original.regDesk ? (
-              <Check className="w-4 h-4 text-emerald-500 mx-auto" />
+              <Check className="w-4 h-4 text-success-text mx-auto" />
             ) : (
               <X className="w-4 h-4 text-fg-subtle mx-auto" />
             )}
@@ -448,20 +436,17 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
-          Users & Permission Control
-        </h1>
-        <p className="text-xs sm:text-sm text-fg-muted">
-          Manage system access, assign roles, and synchronize user contact
-          directory.
-        </p>
-      </div>
+      <PageHeader
+        title="Users & Permission Control"
+        description="Manage system access, assign roles, and synchronize user contact directory."
+      />
 
       {successMessage && (
-        <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-success-text font-bold text-xs flex items-center gap-3 animate-fade-in">
-          <Check className="w-5 h-5 text-emerald-500" />
+        <div
+          role="status"
+          className="p-4 rounded-2xl bg-success-soft border border-success-border text-success-text font-bold text-xs flex items-center gap-3 animate-fade-in"
+        >
+          <Check className="w-5 h-5 text-success-text" />
           {successMessage}
         </div>
       )}
@@ -512,96 +497,124 @@ export default function UsersPage() {
           </StatsCardGroup>
 
           {/* Tabs */}
-          <div className="flex items-center gap-2 border-b border-border text-xs">
+          <div
+            role="tablist"
+            aria-label="User management views"
+            className="flex items-center gap-2 border-b border-border text-xs"
+          >
             <button
+              type="button"
+              role="tab"
+              id="users-tab-users"
+              aria-selected={activeTab === "users"}
+              aria-controls="users-tabpanel"
               onClick={() => setActiveTab("users")}
               className={`pb-2.5 px-3 font-bold border-b-2 transition-colors ${
                 activeTab === "users"
-                  ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
-                  : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                  ? "border-primary text-primary-text"
+                  : "border-transparent text-fg-muted hover:text-fg"
               }`}
             >
               Administrator & User Directory ({users.length})
             </button>
             <button
+              type="button"
+              role="tab"
+              id="users-tab-permissions"
+              aria-selected={activeTab === "permissions"}
+              aria-controls="users-tabpanel"
               onClick={() => setActiveTab("permissions")}
               className={`pb-2.5 px-3 font-bold border-b-2 transition-colors ${
                 activeTab === "permissions"
-                  ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
-                  : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                  ? "border-primary text-primary-text"
+                  : "border-transparent text-fg-muted hover:text-fg"
               }`}
             >
               RBAC Role Permission Matrix
             </button>
           </div>
 
-          {activeTab === "users" ? (
-            <Table
-              columns={userColumns}
-              data={users}
-              searchPlaceholder="Search users by name, email, or role..."
-              enableSearch={true}
-              enablePagination={true}
-              defaultPageSize={10}
-              emptyMessage="No users found"
-              meta={meta}
-              page={page}
-              onPageChange={setPage}
-              limit={limit}
-              onLimitChange={handleLimitChange}
-              search={search}
-              onSearchChange={handleSearchChange}
-              loading={isLoading}
-            >
-              <ListToolbar
-                create={{
-                  label: "Invite User",
-                  onClick: () => setIsCreateOpen(true),
-                  icon: <UserPlus className="w-4 h-4" />,
-                  show: canManageUsers,
-                }}
-                actions={[
-                  { title: "Refresh", fn: () => refetch() },
-                  ...(canManageUsers
-                    ? [
-                        {
-                          title: "Export CSV",
-                          fn: () =>
-                            downloadCsvExport(
-                              "/users/export",
-                              { search: search || undefined },
-                              `users-${new Date().toISOString().slice(0, 10)}.csv`,
-                            ),
-                        },
-                      ]
-                    : []),
-                ]}
-              />
-            </Table>
-          ) : (
-            <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Role Access Control Matrix</CardTitle>
-                  <CardDescription>
-                    System permission rules governing module access per role
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+          <div
+            role="tabpanel"
+            id="users-tabpanel"
+            aria-labelledby={
+              activeTab === "users"
+                ? "users-tab-users"
+                : "users-tab-permissions"
+            }
+          >
+            {activeTab === "users" ? (
               <Table
-                columns={permissionColumns}
-                data={permissionsMatrix}
-                enableSearch={false}
-                enablePagination={false}
-              />
-            </div>
-          )}
+                columns={userColumns}
+                data={users}
+                searchPlaceholder="Search users by name, email, or role..."
+                enableSearch={true}
+                enablePagination={true}
+                defaultPageSize={10}
+                emptyMessage="No users found"
+                meta={meta}
+                page={page}
+                onPageChange={setPage}
+                limit={limit}
+                onLimitChange={setLimit}
+                search={search}
+                onSearchChange={setSearch}
+                loading={isLoading}
+                isError={isError}
+                error={error}
+                onRetry={() => refetch()}
+                resource="users"
+              >
+                <ListToolbar
+                  create={{
+                    label: "Invite User",
+                    onClick: () => setIsCreateOpen(true),
+                    icon: <UserPlus className="w-4 h-4" />,
+                    show: canManageUsers,
+                  }}
+                  actions={[
+                    { title: "Refresh", fn: () => refetch() },
+                    ...(canManageUsers
+                      ? [
+                          {
+                            title: "Export CSV",
+                            fn: () =>
+                              downloadCsvExport(
+                                "/users/export",
+                                exportParams,
+                                `users-${new Date().toISOString().slice(0, 10)}.csv`,
+                              ),
+                          },
+                        ]
+                      : []),
+                  ]}
+                />
+              </Table>
+            ) : (
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Role Access Control Matrix</CardTitle>
+                    <CardDescription>
+                      System permission rules governing module access per role
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+                <Table
+                  columns={permissionColumns}
+                  data={permissionsMatrix}
+                  enableSearch={false}
+                  enablePagination={false}
+                />
+              </div>
+            )}
+          </div>
         </>
       ) : (
         /* Team Access & Onboarding Notice Card for Non-Super Admins */
         <div className="p-8 sm:p-12 text-center rounded-3xl bg-subtle border border-border space-y-4 shadow-sm my-4 animate-fade-in">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 text-primary-text flex items-center justify-center mx-auto">
-            <UserPlus className="w-7 h-7" />
+          <div className="w-14 h-14 rounded-2xl bg-primary-soft text-primary-text flex items-center justify-center mx-auto">
+            <UserPlus className="w-7 h-7" aria-hidden="true" />
           </div>
           <div className="space-y-1.5 max-w-md mx-auto">
             <h3 className="font-bold text-lg text-fg">
@@ -609,12 +622,9 @@ export default function UsersPage() {
             </h3>
             <p className="text-xs sm:text-sm text-fg-muted leading-relaxed">
               Ready to add someone new to the team? You can invite new team
-              members anytime using the{" "}
-              <strong className="text-primary-text font-semibold">
-                Invite User
-              </strong>{" "}
-              button above. To review the full directory or request role updates
-              for existing users, please contact a Super Administrator.
+              members anytime with the button below. To review the full
+              directory or request role updates for existing users, please
+              contact a Super Administrator.
             </p>
           </div>
           <div className="pt-2 flex justify-center">

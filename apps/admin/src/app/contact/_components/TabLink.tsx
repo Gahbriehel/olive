@@ -23,9 +23,9 @@ export function TabLink({ value, href, children, icon, count }: TabLinkProps) {
       value={value}
       asChild
       className={clsx(
-        "flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50",
+        "flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
         isActive
-          ? "bg-indigo-600 text-white shadow-xs shadow-indigo-500/20"
+          ? "bg-primary text-white shadow-xs"
           : "text-fg-secondary hover:text-fg hover:bg-muted",
       )}
     >

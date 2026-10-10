@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { Send, X } from "lucide-react";
 import { Input } from "@/components/FormElements/Input";
@@ -17,6 +17,7 @@ import { FiltersModal } from "@/components/modals/FiltersModal";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Table } from "@/components/ui/Table";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { NotAvailable } from "@/components/ui/NotAvailable";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
@@ -24,14 +25,13 @@ import { type ISelect } from "@/components/ui/Select";
 import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
 import { customToast } from "@/helpers/customToast";
 import { useEmailLogs } from "@/hooks/useEmailLogs";
+import { usePeopleSelectQuery } from "@/hooks/usePeopleSelect";
 import { useUsers } from "@/hooks/useUsers";
 import { useListFilters } from "@/hooks/useListFilters";
 import { type FilterField } from "@/models/filters";
-import { IQueryParams } from "@/models/base";
-import { adaptApiPersonToPerson, IPerson } from "@/models/person";
+import { IPerson } from "@/models/person";
 import { EmailLogItem } from "@/models/emailLog";
 import { emailService, IBatchEmailPayload } from "@/services/email.service";
-import { peopleService } from "@/services/people.service";
 import { ViewEmailLogModal } from "@/components/modals/ViewEmailLogModal";
 import dayjs from "dayjs";
 
@@ -44,33 +44,6 @@ interface BroadcastFormValues {
 }
 
 const columnHelper = createColumnHelper<EmailLogItem>();
-
-// Query hook for MultiSelect component to dynamically search and paginate people inside Compose Modal
-function usePeopleSelectQuery(params: IQueryParams & { name?: string }) {
-  const query = useQuery({
-    queryKey: ["people-select", params],
-    queryFn: async () => {
-      const searchTerm = params.name || params.search || undefined;
-      const res = await peopleService.getPeople({
-        page: params.page,
-        limit: params.limit || 20,
-        search: searchTerm,
-      });
-      return {
-        items: res.people.map(adaptApiPersonToPerson),
-        totalCount: res.meta?.total ?? res.people.length,
-      };
-    },
-    staleTime: 1000 * 60,
-  });
-
-  return {
-    data: query.data,
-    isLoading: query.isLoading,
-    isError: query.isError,
-    refetch: query.refetch,
-  };
-}
 
 const transformPersonToSelect = (person: IPerson): ISelect => ({
   value: {
@@ -182,6 +155,8 @@ export default function MessagingCenterPage() {
     meta,
     isLoading,
     isFetching,
+    isError,
+    error,
     refetch,
   } = useEmailLogs(queryParams);
 
@@ -391,7 +366,7 @@ export default function MessagingCenterPage() {
           return (
             <div className="text-xs min-w-0 max-w-[140px]">
               <p className="font-semibold text-fg truncate">{sender.name}</p>
-              <p className="text-2xs font-mono text-slate-400 truncate">
+              <p className="text-2xs font-mono text-fg-muted truncate">
                 {sender.email}
               </p>
             </div>
@@ -408,7 +383,7 @@ export default function MessagingCenterPage() {
               <p className="text-xs font-medium text-fg">
                 {dayjs(val).format("MMM D, YYYY")}
               </p>
-              <p className="text-2xs text-slate-400">
+              <p className="text-2xs text-fg-muted">
                 {dayjs(val).format("h:mm A")}
               </p>
             </div>
@@ -440,28 +415,22 @@ export default function MessagingCenterPage() {
   );
 
   return (
-    <div className="space-y-6 animate-fade-in pb-10">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
-            Messaging Center
-          </h1>
-          <p className="text-xs sm:text-sm text-fg-muted">
-            Monitor sent communications and send broadcast emails to members
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <RefreshButton onRefetch={() => refetch()} />
-          <Button
-            className="!h-10"
-            onClick={() => setIsBroadcastModalOpen(true)}
-            leftIcon={<Send className="w-4 h-4" />}
-          >
-            Compose Broadcast
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-6 pb-10">
+      <PageHeader
+        title="Messaging Center"
+        description="Monitor sent communications and send broadcast emails to members"
+        actions={
+          <>
+            <RefreshButton onRefetch={() => refetch()} />
+            <Button
+              onClick={() => setIsBroadcastModalOpen(true)}
+              leftIcon={<Send className="w-4 h-4" />}
+            >
+              Compose Broadcast
+            </Button>
+          </>
+        }
+      />
 
       {/* Email Delivery Logs Table */}
       <div className="flex flex-col gap-4">
@@ -477,6 +446,10 @@ export default function MessagingCenterPage() {
           limit={limit}
           onLimitChange={setLimit}
           meta={meta}
+          isError={isError}
+          error={error}
+          onRetry={() => refetch()}
+          resource="email logs"
           emptyMessage="No email communication logs found matching criteria"
         >
           <ListToolbar
@@ -520,7 +493,7 @@ export default function MessagingCenterPage() {
                 <button
                   type="button"
                   onClick={clearAllSelected}
-                  className="text-2xs font-medium text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                  className="text-2xs font-medium text-fg-muted hover:text-danger-text transition-colors cursor-pointer"
                 >
                   Clear all
                 </button>
@@ -532,7 +505,7 @@ export default function MessagingCenterPage() {
                     key={p.id}
                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-surface border border-border-control text-fg shadow-xs"
                   >
-                    <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-2xs flex items-center justify-center font-bold">
+                    <span className="w-4 h-4 rounded-full bg-primary text-white text-2xs flex items-center justify-center font-bold">
                       {(p.firstName?.[0] || p.name?.[0] || "?").toUpperCase()}
                     </span>
                     <span className="max-w-[130px] truncate">
@@ -541,7 +514,7 @@ export default function MessagingCenterPage() {
                     <button
                       type="button"
                       onClick={() => toggleRemovePerson(p.id)}
-                      className="text-slate-400 hover:text-red-500 transition-colors ml-0.5 cursor-pointer"
+                      className="text-fg-subtle hover:text-danger-text transition-colors ml-0.5 cursor-pointer"
                       title="Remove recipient"
                     >
                       <X className="w-3 h-3" />
@@ -626,9 +599,9 @@ export default function MessagingCenterPage() {
             />
           </div>
 
-          <div className="mt-8 flex flex-col gap-3 pt-6 sm:flex-row-reverse sm:border-t sm:border-gray-50 dark:sm:border-slate-900">
+          <div className="mt-8 flex flex-col gap-3 pt-6 sm:flex-row-reverse sm:border-t sm:border-border-subtle">
             <Button
-              className="w-full !h-11"
+              className="w-full"
               type="submit"
               disabled={isSending || selectedCount === 0}
               loading={isSending}
@@ -640,7 +613,7 @@ export default function MessagingCenterPage() {
             </Button>
             <Button
               variant="outline"
-              className="w-full !h-11"
+              className="w-full"
               type="button"
               onClick={() => setIsBroadcastModalOpen(false)}
             >

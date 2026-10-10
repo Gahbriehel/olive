@@ -48,6 +48,7 @@ export function useUsers(params?: IQueryParams) {
     meta: usersQuery.data?.meta,
     isLoading: usersQuery.isLoading,
     isError: usersQuery.isError,
+    error: usersQuery.error,
     createUser: createUserMutation.mutateAsync,
     isCreating: createUserMutation.isPending,
     updateUser: updateUserMutation.mutateAsync,

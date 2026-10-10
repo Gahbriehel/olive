@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import {
   Cake,
@@ -15,6 +14,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Table } from "@/components/ui/Table";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { ErrorState } from "@/components/ui/QueryState";
 import { Tabs } from "@/components/ui/Tabs";
 import { Badge } from "@/components/ui/Badge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -26,9 +27,10 @@ import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { NotAvailable } from "@/components/ui/NotAvailable";
 import { SendBirthdayEmailModal } from "@/components/dashboard/SendBirthdayEmailModal";
 import { ViewBirthdayGreetingModal } from "@/components/modals/ViewBirthdayGreetingModal";
-import { birthdayService } from "@/services/birthday.service";
 import { BirthdayPersonItem, BirthdayStatusFilter } from "@/models/birthday";
 import { useAuth } from "@/hooks/useAuth";
+import { useListFilters } from "@/hooks/useListFilters";
+import { useBirthdayAnalytics, useBirthdays } from "@/hooks/useBirthdays";
 import { getUserRoles, ROLES } from "@/utils/rbac";
 import { clsx } from "clsx";
 import dayjs from "dayjs";
@@ -81,9 +83,11 @@ export default function BirthdayReportsPage() {
   const [statusFilter, setStatusFilter] = useState<BirthdayStatusFilter>(
     BirthdayStatusFilter.ALL,
   );
-  const [search, setSearch] = useState<string>("");
-  const [page, setPage] = useState<number>(1);
-  const [limit, setLimit] = useState<number>(10);
+  // Pagination + table search. Year, month and status stay page state: they
+  // drive the analytics cards too, not just the list.
+  const { page, setPage, limit, setLimit, search, setSearch } = useListFilters(
+    {},
+  );
 
   // Modal State (Selected person drives modal open/close)
   const [emailTarget, setEmailTarget] = useState<BirthdayPersonItem | null>(
@@ -96,45 +100,30 @@ export default function BirthdayReportsPage() {
     setPage(1);
   };
 
-  // 1. Fetch Birthday Analytics
+  // 1. Birthday Analytics
   const {
-    data: analyticsData,
+    analytics: analyticsData,
     isLoading: isAnalyticsLoading,
+    isError: isAnalyticsError,
+    error: analyticsError,
     refetch: refetchAnalytics,
-  } = useQuery({
-    queryKey: ["birthday-analytics", selectedYear, selectedMonth],
-    queryFn: () =>
-      birthdayService.getBirthdayAnalytics({
-        year: selectedYear,
-        month: selectedMonth || undefined,
-      }),
-  });
+  } = useBirthdayAnalytics({ year: selectedYear, month: selectedMonth });
 
-  // 2. Fetch Paginated Birthdays List
+  // 2. Paginated Birthdays List
   const {
-    data: listData,
+    birthdays,
+    meta: listMeta,
     isLoading: isListLoading,
+    isError: isListError,
+    error: listError,
     refetch: refetchList,
-  } = useQuery({
-    queryKey: [
-      "birthdays-list",
-      selectedYear,
-      selectedMonth,
-      statusFilter,
-      search,
-      page,
-      limit,
-    ],
-    queryFn: () =>
-      birthdayService.getBirthdays({
-        year: selectedYear,
-        month: selectedMonth || undefined,
-        status:
-          statusFilter === BirthdayStatusFilter.ALL ? undefined : statusFilter,
-        search: search.trim() || undefined,
-        page,
-        limit,
-      }),
+  } = useBirthdays({
+    year: selectedYear,
+    month: selectedMonth,
+    status: statusFilter,
+    search,
+    page,
+    limit,
   });
 
   const handleRefetchAll = () =>
@@ -158,7 +147,7 @@ export default function BirthdayReportsPage() {
 
             return (
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary-soft text-primary-text font-bold text-xs flex items-center justify-center shrink-0 border border-indigo-100 dark:border-zinc-700">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary-soft text-primary-text font-bold text-xs flex items-center justify-center shrink-0 border border-primary-border">
                   {initials || <Cake className="w-4 h-4" />}
                 </div>
                 <div className="min-w-0 max-w-[180px] sm:max-w-[240px]">
@@ -220,9 +209,13 @@ export default function BirthdayReportsPage() {
           const days = Number(getValue());
           if (days === 0) {
             return (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-bold bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-xs shadow-indigo-500/20 animate-pulse whitespace-nowrap">
+              <Badge
+                variant="indigo"
+                size="sm"
+                className="font-bold whitespace-nowrap animate-pulse"
+              >
                 🎉 Today!
-              </span>
+              </Badge>
             );
           }
           if (days === 1) {
@@ -266,9 +259,13 @@ export default function BirthdayReportsPage() {
 
             return (
               <div className="flex flex-col gap-0.5 whitespace-nowrap">
-                <span className="inline-flex items-center gap-1 text-2xs font-semibold text-success-text bg-success-soft border border-success-border px-2.5 py-0.5 rounded-full w-fit">
+                <Badge
+                  variant="emerald"
+                  size="sm"
+                  className="font-semibold w-fit"
+                >
                   <CheckCircle2 className="w-3 h-3" /> Greeted
-                </span>
+                </Badge>
                 <span className="text-2xs text-fg-muted truncate max-w-[140px]">
                   By {senderName}
                 </span>
@@ -278,16 +275,24 @@ export default function BirthdayReportsPage() {
 
           if (person.status === "MISSED") {
             return (
-              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-danger-text bg-danger-soft border border-danger-border px-2.5 py-0.5 rounded-full w-fit whitespace-nowrap">
+              <Badge
+                variant="rose"
+                size="sm"
+                className="font-semibold w-fit whitespace-nowrap"
+              >
                 <AlertCircle className="w-3 h-3" /> Missed
-              </span>
+              </Badge>
             );
           }
 
           return (
-            <span className="inline-flex items-center gap-1 text-2xs font-semibold text-warning-text bg-warning-soft border border-warning-border px-2.5 py-0.5 rounded-full w-fit whitespace-nowrap">
+            <Badge
+              variant="amber"
+              size="sm"
+              className="font-semibold w-fit whitespace-nowrap"
+            >
               <Clock className="w-3 h-3" /> Pending
-            </span>
+            </Badge>
           );
         },
       }),
@@ -420,143 +425,154 @@ export default function BirthdayReportsPage() {
   );
 
   return (
-    <div className="space-y-5 sm:space-y-6 pb-12 min-w-0 max-w-full">
-      {/* Page Header */}
-      <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-primary-soft text-primary-text border border-primary-border shadow-xs shrink-0">
-              <Cake className="w-5 h-5" />
+    <div className="space-y-6 pb-10 min-w-0 max-w-full">
+      <PageHeader
+        title="Birthday Outreach & Analytics"
+        description="Monitor member birthdays, track outreach coverage, and send blessings."
+        icon={Cake}
+        breadcrumbs={[{ label: "Reports" }, { label: "Birthdays" }]}
+        actions={
+          <>
+            {/* Year Selector (≥16px on mobile to avoid iOS zoom) */}
+            <div className="flex items-center gap-1.5 bg-surface border border-border rounded-xl px-2.5 py-1 shadow-xs">
+              <Calendar className="w-3.5 h-3.5 text-fg-subtle" />
+              <select
+                aria-label="Year"
+                value={selectedYear}
+                onChange={(e) => {
+                  setSelectedYear(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="text-base sm:text-xs font-semibold text-fg bg-transparent border-none focus:outline-hidden cursor-pointer"
+              >
+                {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl font-bold text-fg truncate">
-                Birthday Outreach & Analytics
-              </h1>
-              <p className="text-xs text-fg-muted truncate">
-                Monitor member birthdays, track outreach coverage, and send
-                blessings.
-              </p>
-            </div>
-          </div>
-        </div>
 
-        {/* Global Controls: Year Selector & Refresh */}
-        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-          <div className="flex items-center gap-1.5 bg-surface border border-border rounded-xl px-2.5 py-1 shadow-xs">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <select
-              value={selectedYear}
-              onChange={(e) => {
-                setSelectedYear(Number(e.target.value));
-                setPage(1);
-              }}
-              className="text-xs font-semibold text-fg bg-transparent border-none focus:outline-hidden cursor-pointer"
-            >
-              {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <RefreshButton onRefetch={handleRefetchAll} showText text="Refresh" />
-        </div>
-      </div>
-
-      {/* Analytics KPI Summary Cards */}
-      <div className="w-full">
-        <StatsCardGroup className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 w-full">
-          {kpiStats.map((stat) => (
-            <StatsCard
-              key={stat.title}
-              {...stat}
-              loading={isAnalyticsLoading}
+            <RefreshButton
+              onRefetch={handleRefetchAll}
+              showText
+              text="Refresh"
             />
-          ))}
-        </StatsCardGroup>
-      </div>
+          </>
+        }
+      />
 
-      {/* 12-Month Coverage Breakdown Strip */}
-      <div className="rounded-2xl border border-border bg-surface/90 p-3.5 sm:p-4 shadow-xs space-y-3 min-w-0 max-w-full">
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-indigo-500" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-fg-secondary">
-              12-Month Outreach Distribution ({selectedYear})
-            </h3>
-          </div>
-          {selectedMonth !== null && (
-            <button
-              type="button"
-              onClick={() => setMonthFilter(null)}
-              className="text-xs font-semibold text-primary-text hover:underline cursor-pointer"
-            >
-              Show Full Year
-            </button>
-          )}
+      {isAnalyticsError ? (
+        <div className="rounded-2xl border border-border bg-surface shadow-xs">
+          <ErrorState
+            resource="birthday analytics"
+            error={analyticsError}
+            onRetry={() => refetchAnalytics()}
+          />
         </div>
+      ) : (
+        <>
+          {/* Analytics KPI Summary Cards */}
+          <div className="w-full">
+            <StatsCardGroup className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 w-full">
+              {kpiStats.map((stat) => (
+                <StatsCard
+                  key={stat.title}
+                  {...stat}
+                  loading={isAnalyticsLoading}
+                />
+              ))}
+            </StatsCardGroup>
+          </div>
 
-        {/* Responsive Month Grid */}
-        <div className="overflow-x-auto no-scrollbar -mx-1 px-1 py-0.5">
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-12 gap-2 min-w-[320px]">
-            {monthlyStats.map(({ monthNum, abbr, total, completed, rate }) => {
-              const isSelected = selectedMonth === monthNum;
-
-              return (
+          {/* 12-Month Coverage Breakdown Strip */}
+          <div className="rounded-2xl border border-border bg-surface/90 p-3.5 sm:p-4 shadow-xs space-y-3 min-w-0 max-w-full">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary-text" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-fg-secondary">
+                  12-Month Outreach Distribution ({selectedYear})
+                </h3>
+              </div>
+              {selectedMonth !== null && (
                 <button
-                  key={abbr}
                   type="button"
-                  onClick={() => setMonthFilter(isSelected ? null : monthNum)}
-                  className={clsx(
-                    "flex flex-col items-start p-2 sm:p-2.5 rounded-xl border transition-all text-left cursor-pointer",
-                    isSelected
-                      ? "border-indigo-600 bg-primary-soft shadow-xs ring-2 ring-indigo-500/20"
-                      : "border-border hover:border-border-control bg-subtle",
-                  )}
+                  onClick={() => setMonthFilter(null)}
+                  className="text-xs font-semibold text-primary-text hover:underline cursor-pointer"
                 >
-                  <div className="w-full flex items-center justify-between mb-1">
-                    <span
-                      className={clsx(
-                        "text-xs font-bold",
-                        isSelected ? "text-primary-text" : "text-fg",
-                      )}
-                    >
-                      {abbr}
-                    </span>
-                    {total > 0 && (
-                      <span className="text-2xs font-mono text-fg-muted">
-                        {completed}/{total}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="w-full">
-                    <div className="text-2xs font-semibold text-fg-secondary truncate">
-                      {total} {total === 1 ? "b'day" : "b'days"}
-                    </div>
-                    {total > 0 ? (
-                      <div className="mt-1 flex items-center gap-1">
-                        <div className="flex-1 h-1.5 bg-muted-strong rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-emerald-500 rounded-full transition-all"
-                            style={{ width: `${Math.min(100, rate)}%` }}
-                          />
-                        </div>
-                        <span className="text-2xs font-mono text-success-text">
-                          {rate.toFixed(0)}%
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-2xs text-fg-subtle">None</span>
-                    )}
-                  </div>
+                  Show Full Year
                 </button>
-              );
-            })}
+              )}
+            </div>
+
+            {/* Responsive Month Grid */}
+            <div className="overflow-x-auto no-scrollbar -mx-1 px-1 py-0.5">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-12 gap-2 min-w-[320px]">
+                {monthlyStats.map(
+                  ({ monthNum, abbr, total, completed, rate }) => {
+                    const isSelected = selectedMonth === monthNum;
+
+                    return (
+                      <button
+                        key={abbr}
+                        type="button"
+                        onClick={() =>
+                          setMonthFilter(isSelected ? null : monthNum)
+                        }
+                        className={clsx(
+                          "flex flex-col items-start p-2 sm:p-2.5 rounded-xl border transition-all text-left cursor-pointer",
+                          isSelected
+                            ? "border-primary bg-primary-soft shadow-xs ring-2 ring-primary/20"
+                            : "border-border hover:border-border-control bg-subtle",
+                        )}
+                      >
+                        <div className="w-full flex items-center justify-between mb-1">
+                          <span
+                            className={clsx(
+                              "text-xs font-bold",
+                              isSelected ? "text-primary-text" : "text-fg",
+                            )}
+                          >
+                            {abbr}
+                          </span>
+                          {total > 0 && (
+                            <span className="text-2xs font-mono text-fg-muted">
+                              {completed}/{total}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="w-full">
+                          <div className="text-2xs font-semibold text-fg-secondary truncate">
+                            {total} {total === 1 ? "b'day" : "b'days"}
+                          </div>
+                          {total > 0 ? (
+                            <div className="mt-1 flex items-center gap-1">
+                              <div className="flex-1 h-1.5 bg-muted-strong rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-success rounded-full transition-all"
+                                  style={{ width: `${Math.min(100, rate)}%` }}
+                                />
+                              </div>
+                              <span className="text-2xs font-mono text-success-text">
+                                {rate.toFixed(0)}%
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-2xs text-fg-subtle">
+                              None
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  },
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
 
       {/* Member Birthday Directory Table Section */}
       <div className="rounded-2xl border border-border bg-surface/90 p-3.5 sm:p-6 shadow-xs space-y-4 min-w-0 max-w-full overflow-hidden">
@@ -592,29 +608,22 @@ export default function BirthdayReportsPage() {
         {/* Data Table with ListToolbar and ActionsList */}
         <Table
           columns={columns}
-          data={listData?.data || []}
+          data={birthdays}
           searchPlaceholder="Search member by name, email, or phone..."
           search={search}
-          onSearchChange={(val) => {
-            setSearch(val);
-            setPage(1);
-          }}
+          onSearchChange={setSearch}
           enableSearch={true}
           enablePagination={true}
           page={page}
           onPageChange={setPage}
           limit={limit}
-          onLimitChange={(newLimit) => {
-            setLimit(newLimit);
-            setPage(1);
-          }}
-          meta={{
-            total: listData?.total ?? 0,
-            page: listData?.page ?? 1,
-            limit: listData?.limit ?? limit,
-            totalPages: listData?.totalPages ?? 1,
-          }}
+          onLimitChange={setLimit}
+          meta={listMeta}
           loading={isListLoading}
+          isError={isListError}
+          error={listError}
+          onRetry={() => refetchList()}
+          resource="birthdays"
           emptyMessage="No birthday records found for the selected cycle and filters."
         >
           <ListToolbar actions={[{ title: "Refresh", fn: handleRefetchAll }]} />

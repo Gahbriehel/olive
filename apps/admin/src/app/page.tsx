@@ -18,10 +18,10 @@ export default function Home() {
   }, [user, isLoading, router]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+    <div className="min-h-screen bg-app text-fg flex items-center justify-center">
       <div className="text-center space-y-3">
         <Spinner size="lg" className="mx-auto" />
-        <p className="text-sm text-slate-400 font-medium">Redirecting...</p>
+        <p className="text-sm text-fg-muted font-medium">Redirecting...</p>
       </div>
     </div>
   );

@@ -15,6 +15,7 @@ import { ActionsList } from "@/components/ui/ActionsList";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { FiltersModal } from "@/components/modals/FiltersModal";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { NotAvailable } from "@/components/ui/NotAvailable";
 import { useAuth } from "@/hooks/useAuth";
 import { useListFilters } from "@/hooks/useListFilters";
@@ -71,10 +72,14 @@ export function PrayerTable(): JSX.Element {
   } = useListFilters({ fields: filterFields });
 
   const columns = [
-    columnHelper.accessor((_, rowIndex) => padNumberWithZeros(rowIndex + 1), {
-      id: "s/n",
-      header: "S/N",
-    }),
+    columnHelper.accessor(
+      // Number across pages, not just within the current one.
+      (_, rowIndex) => padNumberWithZeros((page - 1) * limit + rowIndex + 1),
+      {
+        id: "s/n",
+        header: "S/N",
+      },
+    ),
     columnHelper.accessor("name", {
       header: "Name",
     }),
@@ -147,7 +152,10 @@ export function PrayerTable(): JSX.Element {
     }),
   ];
 
-  const { data, isLoading, refetch } = useContactQuery(queryParams, "prayer");
+  const { data, isLoading, isError, error, refetch } = useContactQuery(
+    queryParams,
+    "prayer",
+  );
 
   const prayers = data?.data.items;
 
@@ -158,6 +166,10 @@ export function PrayerTable(): JSX.Element {
         meta={data?.meta || extractMeta(data)}
         columns={columns as Array<ColumnDef<IContact>>}
         loading={isLoading}
+        isError={isError}
+        error={error}
+        onRetry={() => refetch()}
+        resource="prayer requests"
         searchPlaceholder="Search prayers..."
         search={search}
         onSearchChange={setSearch}
@@ -200,7 +212,7 @@ export function PrayerTable(): JSX.Element {
           <div className="flex flex-col gap-6 pt-2">
             {/* Header Avatar & Sender Info */}
             <div className="flex items-center gap-4 p-4 rounded-2xl bg-subtle border border-border">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white font-bold text-lg shadow-sm">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-white font-bold text-lg shadow-sm">
                 {selectedContact.name
                   ? selectedContact.name.charAt(0).toUpperCase()
                   : "?"}
@@ -210,10 +222,10 @@ export function PrayerTable(): JSX.Element {
                   {selectedContact.name || <NotAvailable />}
                 </h3>
                 {selectedContact.category ? (
-                  <span className="inline-flex items-center gap-1 mt-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary-soft text-primary-text border border-primary-border w-fit">
+                  <Badge variant="indigo" className="mt-1 w-fit font-semibold">
                     <Tag className="w-3 h-3" />
                     {selectedContact.category}
-                  </span>
+                  </Badge>
                 ) : (
                   <div className="mt-1">
                     <NotAvailable />
@@ -307,17 +319,13 @@ export function PrayerTable(): JSX.Element {
               {selectedContact.email && (
                 <a
                   href={`mailto:${selectedContact.email}`}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors shadow-xs shadow-indigo-500/20"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold text-xs transition-colors shadow-xs"
                 >
                   <Send className="w-3.5 h-3.5" />
                   Reply via Email
                 </a>
               )}
-              <Button
-                variant="outline"
-                className="!h-10 !text-xs font-semibold"
-                onClick={() => setIsModalOpen(false)}
-              >
+              <Button variant="outline" onClick={() => setIsModalOpen(false)}>
                 Close
               </Button>
             </div>
