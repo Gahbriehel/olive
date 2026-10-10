@@ -23,8 +23,9 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
 }) => {
   if (!log) return null;
 
-  const createdAtFormatted = log.createdAt
-    ? dayjs(log.createdAt).format("MMMM D, YYYY [at] h:mm A")
+  const sentDate = log.sentAt || log.createdAt;
+  const createdAtFormatted = sentDate
+    ? dayjs(sentDate).format("MMMM D, YYYY [at] h:mm A")
     : null;
 
   const remediatedAtFormatted = log.bounce?.remediatedAt
@@ -166,7 +167,7 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
                 Subject
               </span>
               <p className="font-semibold text-fg text-sm">
-                {log.content?.subject || "—"}
+                {log.subject || log.content?.subject || "—"}
               </p>
             </div>
 
@@ -179,14 +180,36 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
               </div>
             )}
 
-            {log.content?.bodyTextSnippet && (
+            {(log.content?.message || log.content?.bodyTextSnippet) && (
               <div>
                 <span className="text-2xs uppercase font-bold text-fg-muted block mb-0.5">
-                  Message Body Preview
+                  Message Content
                 </span>
-                <div className="p-3 rounded-lg bg-subtle border border-border-control text-fg-secondary whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
-                  {log.content.bodyTextSnippet}
-                </div>
+                {log.content.message ? (
+                  <div
+                    className="p-3 rounded-lg bg-subtle border border-border-control text-fg-secondary leading-relaxed max-h-56 overflow-y-auto text-xs space-y-2"
+                    dangerouslySetInnerHTML={{
+                      __html: log.content.message,
+                    }}
+                  />
+                ) : (
+                  <div className="p-3 rounded-lg bg-subtle border border-border-control text-fg-secondary whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
+                    {log.content.bodyTextSnippet}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {log.content?.ctaUrl && (
+              <div className="pt-1">
+                <a
+                  href={log.content.ctaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline"
+                >
+                  {log.content.ctaLabel || "Open Action Link"} &rarr;
+                </a>
               </div>
             )}
           </div>

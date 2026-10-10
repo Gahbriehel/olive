@@ -1,9 +1,12 @@
-export type EmailLogDeliveryStatus = "DELIVERED" | "BOUNCED" | "COMPLAINED";
+export type EmailLogDeliveryStatus =
+  "DELIVERABLE" | "DELIVERED" | "BOUNCED" | "COMPLAINED" | string;
 export type EmailDeliveryStatus = EmailLogDeliveryStatus;
 
 export interface EmailLogRecipient {
+  id?: string;
   email: string | null;
   name: string | null;
+  type?: string;
 }
 
 export interface EmailLogSender {
@@ -13,9 +16,12 @@ export interface EmailLogSender {
 }
 
 export interface EmailLogContent {
-  subject: string | null;
-  heading: string | null;
-  bodyTextSnippet: string | null;
+  subject?: string | null;
+  heading?: string | null;
+  bodyTextSnippet?: string | null;
+  message?: string | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
 }
 
 export interface EmailLogContext {
@@ -35,12 +41,14 @@ export interface EmailLogItem {
   id: string;
   resendEmailId: string;
   emailType: string;
+  subject?: string;
   deliveryStatus: EmailLogDeliveryStatus;
-  createdAt: string; // ISO 8601
+  sentAt?: string; // ISO 8601
+  createdAt?: string; // ISO 8601
   recipient: EmailLogRecipient;
   sentBy: EmailLogSender | null; // null if automated / system triggered
   content: EmailLogContent;
-  context: EmailLogContext;
+  context?: EmailLogContext;
   bounce?: EmailLogBounce | null;
 }
 

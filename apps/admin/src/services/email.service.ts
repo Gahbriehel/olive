@@ -61,7 +61,7 @@ export const emailService = {
     const res = await apiClient.get<IBaseResponse<unknown>>("/email/logs", {
       params,
     });
-    const items = extractData<EmailLogItem[]>(res.data) || [];
+    const items = extractData<EmailLogItem[]>(res.data.data) || [];
     const meta = extractMeta(res.data);
     return {
       items: Array.isArray(items) ? items : [],

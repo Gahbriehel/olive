@@ -41,6 +41,7 @@ const EMAIL_TYPE_FORMATS: Record<
   SINGLE_REGISTRANT: { label: "Single Registrant", variant: "slate" },
   BIRTHDAY_GREETING: { label: "Birthday Greeting", variant: "emerald" },
   ADMIN_WELCOME: { label: "Admin Welcome", variant: "amber" },
+  CUSTOM_BROADCAST: { label: "Custom Broadcast", variant: "indigo" },
 };
 
 export default function MessagingCenterPage() {
@@ -61,6 +62,7 @@ export default function MessagingCenterPage() {
         label: "Delivery Status",
         allLabel: "All Statuses",
         options: [
+          { label: "Deliverable", value: "DELIVERABLE" },
           { label: "Delivered", value: "DELIVERED" },
           { label: "Bounced", value: "BOUNCED" },
           { label: "Complained", value: "COMPLAINED" },
@@ -72,6 +74,7 @@ export default function MessagingCenterPage() {
         label: "Email Type",
         allLabel: "All Email Types",
         options: [
+          { label: "Custom Broadcast", value: "CUSTOM_BROADCAST" },
           { label: "People Broadcast", value: "BROADCAST_PEOPLE" },
           { label: "Single Person", value: "SINGLE_PERSON" },
           { label: "Registrants Broadcast", value: "BROADCAST_REGISTRANTS" },
@@ -166,21 +169,28 @@ export default function MessagingCenterPage() {
       columnHelper.accessor("content", {
         header: "Subject & Message",
         cell: ({ row }) => {
+          const subject = row.original.subject || row.original.content?.subject;
           const content = row.original.content;
+          const snippet =
+            content?.bodyTextSnippet ||
+            (content?.message
+              ? content.message
+                  .replace(/<[^>]*>/g, "")
+                  .replace(/&nbsp;/g, " ")
+                  .trim()
+              : "");
+
           return (
             <div className="min-w-0 max-w-[260px] space-y-0.5">
               <p
                 className="text-xs font-semibold text-fg truncate"
-                title={content?.subject || ""}
+                title={subject || ""}
               >
-                {content?.subject || <NotAvailable />}
+                {subject || <NotAvailable />}
               </p>
-              {content?.bodyTextSnippet && (
-                <p
-                  className="text-2xs text-fg-muted truncate"
-                  title={content.bodyTextSnippet}
-                >
-                  {content.bodyTextSnippet}
+              {snippet && (
+                <p className="text-2xs text-fg-muted truncate" title={snippet}>
+                  {snippet}
                 </p>
               )}
             </div>
@@ -226,7 +236,8 @@ export default function MessagingCenterPage() {
           );
         },
       }),
-      columnHelper.accessor("createdAt", {
+      columnHelper.accessor((row) => row.sentAt || row.createdAt, {
+        id: "dateSent",
         header: "Date Sent",
         cell: ({ getValue }) => {
           const val = getValue();

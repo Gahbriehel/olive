@@ -73,6 +73,12 @@ export function extractData<T>(resData: unknown): T {
     if ("bounces" in obj && Array.isArray(obj.bounces)) {
       return obj.bounces as T;
     }
+    if ("data" in obj && Array.isArray(obj.data)) {
+      return obj.data as T;
+    }
+    if ("logs" in obj && Array.isArray(obj.logs)) {
+      return obj.logs as T;
+    }
   }
   return current as T;
 }
@@ -105,7 +111,39 @@ export function extractMeta(
     if ("meta" in dataObj && dataObj.meta && typeof dataObj.meta === "object") {
       return dataObj.meta as IBaseResponse["meta"];
     }
+    if (
+      "total" in dataObj ||
+      "page" in dataObj ||
+      "totalPages" in dataObj ||
+      "limit" in dataObj
+    ) {
+      return {
+        total: typeof dataObj.total === "number" ? dataObj.total : undefined,
+        page: typeof dataObj.page === "number" ? dataObj.page : undefined,
+        limit: typeof dataObj.limit === "number" ? dataObj.limit : undefined,
+        totalPages:
+          typeof dataObj.totalPages === "number"
+            ? dataObj.totalPages
+            : undefined,
+      };
+    }
   }
+
+  if (
+    "total" in obj ||
+    "page" in obj ||
+    "totalPages" in obj ||
+    "limit" in obj
+  ) {
+    return {
+      total: typeof obj.total === "number" ? obj.total : undefined,
+      page: typeof obj.page === "number" ? obj.page : undefined,
+      limit: typeof obj.limit === "number" ? obj.limit : undefined,
+      totalPages:
+        typeof obj.totalPages === "number" ? obj.totalPages : undefined,
+    };
+  }
+
   return undefined;
 }
 
