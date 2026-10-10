@@ -2,9 +2,20 @@
 
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { Input } from "@/components/FormElements/Input";
 import { Button, DeleteButton } from "@/components/ui/Button";
+import {
+  FormField,
+  controlClass,
+  controlErrorClass,
+  fieldAria,
+  useFieldIds,
+} from "@/components/ui/FormField";
+import { FormFooter } from "@/components/ui/FormFooter";
+import { useUnsavedChangesGuard } from "@/components/ui/UnsavedChanges";
 import { cn } from "@/helpers/cn";
+import { HEX_COLOR_PATTERN, teamSchema } from "./schemas/teamSchema";
 
 export interface TeamFormValues {
   name: string;
@@ -19,6 +30,8 @@ interface TeamsFormProps {
   isLoading?: boolean;
   isDeleting?: boolean;
 }
+
+const DEFAULT_COLOR = "#6366F1";
 
 const PRESET_COLORS = [
   { name: "Indigo", hex: "#6366F1" },
@@ -40,27 +53,24 @@ export const TeamsForm: React.FC<TeamsFormProps> = ({
   isDeleting = false,
 }) => {
   const isEditing = Boolean(initialValues?.id || onDelete);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeletingState, setIsDeletingState] = useState(false);
+  const colorIds = useFieldIds();
 
-  const { control, handleSubmit, setValue, watch, formState } =
-    useForm<TeamFormValues>({
-      defaultValues: {
-        name: initialValues?.name || "",
-        color: initialValues?.color || "#6366F1",
-      },
-    });
+  const { control, handleSubmit, formState } = useForm<TeamFormValues>({
+    resolver: yupResolver(teamSchema),
+    mode: "onTouched",
+    defaultValues: {
+      name: initialValues?.name || "",
+      color: initialValues?.color || DEFAULT_COLOR,
+    },
+  });
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const currentColor = watch("color");
+  const { guard } = useUnsavedChangesGuard(
+    formState.isDirty && !formState.isSubmitSuccessful,
+  );
 
   const onFormSubmit = async (data: TeamFormValues) => {
-    try {
-      setIsSubmitting(true);
-      await onSubmit(data);
-    } finally {
-      setIsSubmitting(false);
-    }
+    await onSubmit(data);
   };
 
   const handlePerformDelete = async () => {
@@ -73,20 +83,16 @@ export const TeamsForm: React.FC<TeamsFormProps> = ({
     }
   };
 
-  const isPending = isLoading || isSubmitting || formState.isSubmitting;
+  const isPending = isLoading || formState.isSubmitting;
   const isDeletingPending = isDeleting || isDeletingState;
 
   return (
-    <form
-      onSubmit={handleSubmit(onFormSubmit)}
-      className="flex flex-col h-full space-y-5 p-1"
-    >
-      <div className="flex-1 space-y-5 overflow-y-auto pr-1">
+    <form onSubmit={handleSubmit(onFormSubmit)} noValidate>
+      <div className="space-y-5">
         {/* Name */}
         <Controller
           name="name"
           control={control}
-          rules={{ required: "Team name is required" }}
           render={({ field, fieldState: { error } }) => (
             <Input
               {...field}
@@ -98,101 +104,123 @@ export const TeamsForm: React.FC<TeamsFormProps> = ({
           )}
         />
 
-        {/* Color Picker & Presets */}
-        <div className="space-y-2">
-          <label className="block text-xs font-semibold text-fg-secondary">
-            Team Color <span className="text-rose-500">*</span>
-          </label>
-          <div className="flex items-center gap-3">
-            <Controller
-              name="color"
-              control={control}
-              rules={{ required: "Team color is required" }}
-              render={({ field, fieldState: { error } }) => (
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={field.value || "#6366F1"}
-                      onChange={(e) => field.onChange(e.target.value)}
-                      className="w-10 h-10 rounded-xl border border-border-control cursor-pointer p-1 bg-surface-raised"
-                    />
-                    <Input
-                      type="text"
-                      value={field.value}
-                      onChange={(e) => field.onChange(e.target.value)}
-                      placeholder="#6366F1"
-                      className="font-mono"
-                      error={error?.message}
-                    />
-                  </div>
-                </div>
-              )}
-            />
-          </div>
+        {/* Colour: picker, hex input and presets share one label + error */}
+        <Controller
+          name="color"
+          control={control}
+          render={({ field, fieldState: { error } }) => {
+            const aria = fieldAria({
+              errorId: colorIds.errorId,
+              hintId: colorIds.hintId,
+              error: error?.message,
+            });
+            const pickerValue = HEX_COLOR_PATTERN.test(field.value)
+              ? field.value
+              : DEFAULT_COLOR;
 
-          <div className="flex flex-wrap gap-2 pt-1">
-            {PRESET_COLORS.map((preset) => (
-              <button
-                key={preset.hex}
-                type="button"
-                onClick={() => setValue("color", preset.hex)}
-                className={cn(
-                  "w-7 h-7 rounded-full transition-transform flex items-center justify-center border-2",
-                  currentColor === preset.hex
-                    ? "scale-110 border-slate-900 dark:border-white shadow-md"
-                    : "border-transparent hover:scale-105",
-                )}
-                style={{ backgroundColor: preset.hex }}
-                title={preset.name}
-              />
-            ))}
-          </div>
-        </div>
+            return (
+              <FormField
+                id={colorIds.id}
+                label="Team Colour"
+                required
+                error={error?.message}
+                errorId={colorIds.errorId}
+              >
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    aria-label="Pick team colour"
+                    value={pickerValue}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    {...aria}
+                    className="h-10 w-10 shrink-0 cursor-pointer rounded-xl border border-border-control bg-surface-raised p-1"
+                  />
+                  <input
+                    ref={field.ref}
+                    id={colorIds.id}
+                    name={field.name}
+                    type="text"
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    onBlur={field.onBlur}
+                    placeholder={DEFAULT_COLOR}
+                    aria-required
+                    {...aria}
+                    className={cn(
+                      controlClass,
+                      "font-mono",
+                      error && controlErrorClass,
+                    )}
+                  />
+                </div>
+
+                <div
+                  role="group"
+                  aria-label="Preset colours"
+                  className="flex flex-wrap gap-2 pt-1"
+                >
+                  {PRESET_COLORS.map((preset) => {
+                    const selected =
+                      field.value?.toUpperCase() === preset.hex.toUpperCase();
+                    return (
+                      <button
+                        key={preset.hex}
+                        type="button"
+                        onClick={() => {
+                          field.onChange(preset.hex);
+                          field.onBlur();
+                        }}
+                        aria-label={`Use colour ${preset.name} ${preset.hex}`}
+                        aria-pressed={selected}
+                        title={preset.name}
+                        className={cn(
+                          "flex h-7 w-7 items-center justify-center rounded-full border-2 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                          selected
+                            ? "scale-110 border-slate-900 shadow-md dark:border-white"
+                            : "border-transparent hover:scale-105",
+                        )}
+                        style={{ backgroundColor: preset.hex }}
+                      />
+                    );
+                  })}
+                </div>
+              </FormField>
+            );
+          }}
+        />
       </div>
 
-      {/* Footer Buttons */}
-      <fieldset
-        className={cn("grid h-20 grid-cols-2 gap-4 border-t border-border p-4")}
-      >
-        {isEditing ? (
-          <>
+      <FormFooter
+        destructive={
+          isEditing && onDelete ? (
             <DeleteButton
               text="Delete"
               title="Delete Team"
               onClick={handlePerformDelete}
               loading={isDeletingPending}
+              disabled={isPending}
             />
-            <Button
-              type="submit"
-              loading={isPending}
-              disabled={isPending || isDeletingPending}
-              variant="primary"
-            >
-              Submit
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              loading={isPending}
-              disabled={isPending}
-              variant="primary"
-            >
-              Submit
-            </Button>
-          </>
-        )}
-      </fieldset>
+          ) : undefined
+        }
+      >
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => guard(onCancel)}
+          disabled={isPending}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          variant="primary"
+          loading={isPending}
+          disabled={isDeletingPending}
+        >
+          {isEditing ? "Save changes" : "Create team"}
+        </Button>
+      </FormFooter>
     </form>
   );
 };

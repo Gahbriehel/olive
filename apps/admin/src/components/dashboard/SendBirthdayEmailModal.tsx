@@ -1,29 +1,23 @@
 "use client";
 
-import React, { useEffect, useState, useId } from "react";
+import React, { useEffect, useId } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { useQueryClient } from "@tanstack/react-query";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { Cake, Send, Image as ImageIcon } from "lucide-react";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { Button } from "@/components/ui/Button";
+import { useUnsavedChangesGuard } from "@/components/ui/UnsavedChanges";
 import { Input } from "@/components/FormElements/Input";
 import { RichTextEditor } from "@/components/FormElements/RichTextEditor";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { IUpcomingBirthday } from "@/models/dashboard";
 import { BirthdayPersonItem } from "@/models/birthday";
-import { birthdayService } from "@/services/birthday.service";
-import { customToast } from "@/helpers/customToast";
-import { extractErrorMessage } from "@/utils/api-client";
+import { useSendBirthdayGreeting } from "@/hooks/useBirthdays";
+import {
+  birthdayGreetingSchema,
+  type BirthdayGreetingFormValues,
+} from "@/components/Forms/schemas/birthdayGreetingSchema";
 import dayjs from "dayjs";
-
-interface BirthdayEmailFormValues {
-  subject: string;
-  heading: string;
-  message: string;
-  imageUrl?: string;
-  ctaLabel?: string;
-  ctaUrl?: string;
-}
 
 interface SendBirthdayEmailModalProps {
   birthday: IUpcomingBirthday | BirthdayPersonItem | null;
@@ -32,6 +26,29 @@ interface SendBirthdayEmailModalProps {
   onSuccess?: () => void;
 }
 
+/**
+ * Cancel button rendered inside the SidebarModal (where the unsaved-changes
+ * context lives); reports the form's dirty state and guards Cancel.
+ */
+const GuardedCancel: React.FC<{
+  isDirty: boolean;
+  disabled: boolean;
+  onCancel: () => void;
+}> = ({ isDirty, disabled, onCancel }) => {
+  const { guard } = useUnsavedChangesGuard(isDirty);
+  return (
+    <Button
+      variant="outline"
+      type="button"
+      disabled={disabled}
+      onClick={() => guard(onCancel)}
+      className="w-full sm:w-auto"
+    >
+      Cancel
+    </Button>
+  );
+};
+
 export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
   birthday,
   isOpen,
@@ -39,15 +56,16 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
   onSuccess,
 }) => {
   const formId = useId();
-  const queryClient = useQueryClient();
-  const [isSending, setIsSending] = useState(false);
+  const { mutateAsync: sendGreeting } = useSendBirthdayGreeting();
 
   const {
     control,
     handleSubmit,
     reset,
-    formState: { errors },
-  } = useForm<BirthdayEmailFormValues>({
+    formState: { errors, isDirty, isSubmitting, isSubmitSuccessful },
+  } = useForm({
+    resolver: yupResolver(birthdayGreetingSchema),
+    mode: "onTouched",
     defaultValues: {
       subject: "",
       heading: "",
@@ -72,12 +90,11 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
     }
   }, [birthday, isOpen, reset]);
 
-  const onSubmit = async (formData: BirthdayEmailFormValues) => {
+  const onSubmit = async (formData: BirthdayGreetingFormValues) => {
     if (!birthday) return;
 
     try {
-      setIsSending(true);
-      await birthdayService.sendBirthdayGreeting({
+      await sendGreeting({
         personId: birthday.id,
         subject: formData.subject.trim(),
         heading: formData.heading.trim(),
@@ -90,39 +107,12 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
           : undefined,
         ctaUrl: formData.ctaUrl?.trim() ? formData.ctaUrl.trim() : undefined,
       });
-
-      customToast.success(
-        `Birthday greeting sent to ${birthday.firstName} ${birthday.lastName}!`,
-      );
-
-      // Refresh dashboard and birthday report queries
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
-        queryClient.invalidateQueries({ queryKey: ["birthdays-list"] }),
-        queryClient.invalidateQueries({ queryKey: ["birthday-analytics"] }),
-      ]);
-      onSuccess?.();
-      onClose();
-    } catch (err: unknown) {
-      const axiosError = err as {
-        response?: { status?: number; data?: unknown };
-      };
-      if (axiosError.response?.status === 409) {
-        // Concurrency or duplicate send conflict: refresh data
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
-          queryClient.invalidateQueries({ queryKey: ["birthdays-list"] }),
-          queryClient.invalidateQueries({ queryKey: ["birthday-analytics"] }),
-        ]);
-      }
-      const errorMsg = extractErrorMessage(
-        err,
-        "Failed to send birthday greeting",
-      );
-      customToast.error(errorMsg);
-    } finally {
-      setIsSending(false);
+    } catch {
+      // The API client interceptor already toasted the error.
+      return;
     }
+    onSuccess?.();
+    onClose();
   };
 
   const targetDate =
@@ -140,20 +130,16 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
       footer={
         birthday && (
           <>
-            <Button
-              variant="outline"
-              type="button"
-              disabled={isSending}
-              onClick={onClose}
-              className="w-full sm:w-auto"
-            >
-              Cancel
-            </Button>
+            <GuardedCancel
+              isDirty={isDirty && !isSubmitSuccessful}
+              disabled={isSubmitting}
+              onCancel={onClose}
+            />
             <Button
               type="submit"
               form={formId}
-              disabled={isSending || !birthday.email || birthday.isGreeted}
-              loading={isSending}
+              disabled={isSubmitting || !birthday.email || birthday.isGreeted}
+              loading={isSubmitting}
               rightIcon={<Send className="w-4 h-4" />}
               className="w-full sm:w-auto"
             >
@@ -170,6 +156,7 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
         <form
           id={formId}
           onSubmit={handleSubmit(onSubmit)}
+          noValidate
           className="flex flex-col gap-5 pt-2"
         >
           {/* Recipient Details Pill */}
@@ -198,7 +185,6 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
           <Controller
             name="subject"
             control={control}
-            rules={{ required: "Subject is required" }}
             render={({ field }) => (
               <Input
                 {...field}
@@ -214,7 +200,6 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
           <Controller
             name="heading"
             control={control}
-            rules={{ required: "Email heading is required" }}
             render={({ field }) => (
               <Input
                 {...field}
@@ -245,7 +230,6 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
           <Controller
             name="message"
             control={control}
-            rules={{ required: "Message body is required" }}
             render={({ field }) => (
               <RichTextEditor
                 {...field}

@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { usePerson } from "@/hooks/usePeople";
 import { Input } from "@/components/FormElements/Input";
 import { Select, type ISelect } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
+import { FormFooter } from "@/components/ui/FormFooter";
+import { useUnsavedChangesGuard } from "@/components/ui/UnsavedChanges";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getInitials } from "@/utils/formatters";
-import { peopleService } from "@/services/people.service";
 import {
   IPerson,
   IPersonPayload,
@@ -16,18 +18,12 @@ import {
   ApiMembershipStatus,
   reverseMembershipMap,
 } from "@/models/person";
-import { cn } from "@/helpers/cn";
+import {
+  personSchema,
+  type PersonFormValues,
+} from "@/components/Forms/schemas/personSchema";
 
-export interface PersonFormValues {
-  firstName: string;
-  lastName: string;
-  email?: string;
-  phone?: string;
-  gender: ApiGender;
-  membershipStatus: ApiMembershipStatus;
-  dateOfBirth?: string;
-  address?: string;
-}
+export type { PersonFormValues };
 
 export interface PersonFormProps {
   initialValues?: IPerson | Partial<IPersonPayload & { id?: string }>;
@@ -112,40 +108,39 @@ export const PersonForm: React.FC<PersonFormProps> = ({
   const person = isEditing ? (initialValues as IPerson) : null;
   const personId = person?.id;
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   // When editing, fetch fresh details from backend if needed
-  const { data: fullPerson } = useQuery({
-    queryKey: ["person", personId],
-    queryFn: () => (personId ? peopleService.getPersonById(personId) : null),
-    initialData: person?.raw,
-    staleTime: 1000 * 60,
-    enabled: Boolean(isEditing && personId),
+  const { data: fullPerson } = usePerson(
+    isEditing ? personId : undefined,
+    person?.raw,
+  );
+
+  const { control, handleSubmit, reset, formState } = useForm({
+    resolver: yupResolver(personSchema),
+    mode: "onTouched",
+    defaultValues: {
+      firstName: initialValues?.firstName || "",
+      lastName: initialValues?.lastName || "",
+      email:
+        (person?.raw?.email ??
+          (initialValues?.email && initialValues.email !== "N/A"
+            ? initialValues.email
+            : "")) ||
+        "",
+      phone:
+        (person?.raw?.phone ??
+          (initialValues?.phone && initialValues.phone !== "N/A"
+            ? initialValues.phone
+            : "")) ||
+        "",
+      gender: resolveGender(initialValues),
+      membershipStatus: resolveMembershipStatus(initialValues),
+      dateOfBirth: resolveDob(initialValues),
+      address: person?.raw?.address || initialValues?.address || "",
+    },
   });
 
-  const { control, handleSubmit, reset, formState } = useForm<PersonFormValues>(
-    {
-      defaultValues: {
-        firstName: initialValues?.firstName || "",
-        lastName: initialValues?.lastName || "",
-        email:
-          (person?.raw?.email ??
-            (initialValues?.email && initialValues.email !== "N/A"
-              ? initialValues.email
-              : "")) ||
-          "",
-        phone:
-          (person?.raw?.phone ??
-            (initialValues?.phone && initialValues.phone !== "N/A"
-              ? initialValues.phone
-              : "")) ||
-          "",
-        gender: resolveGender(initialValues),
-        membershipStatus: resolveMembershipStatus(initialValues),
-        dateOfBirth: resolveDob(initialValues),
-        address: person?.raw?.address || initialValues?.address || "",
-      },
-    },
+  const { guard } = useUnsavedChangesGuard(
+    formState.isDirty && !formState.isSubmitSuccessful,
   );
 
   // Keep form updated when fresh details arrive in edit mode
@@ -168,32 +163,24 @@ export const PersonForm: React.FC<PersonFormProps> = ({
   }, [fullPerson, isEditing, initialValues, reset]);
 
   const onFormSubmit = async (data: PersonFormValues) => {
-    try {
-      setIsSubmitting(true);
-      const payload: IPersonPayload = {
-        firstName: data.firstName.trim(),
-        lastName: data.lastName.trim(),
-        email: data.email?.trim() || undefined,
-        phone: data.phone?.trim() || undefined,
-        gender: data.gender,
-        membershipStatus: data.membershipStatus,
-        dateOfBirth: data.dateOfBirth || undefined,
-        address: data.address?.trim() || undefined,
-      };
-      await onSubmit(payload);
-    } finally {
-      setIsSubmitting(false);
-    }
+    const payload: IPersonPayload = {
+      firstName: data.firstName.trim(),
+      lastName: data.lastName.trim(),
+      email: data.email?.trim() || undefined,
+      phone: data.phone?.trim() || undefined,
+      gender: data.gender,
+      membershipStatus: data.membershipStatus,
+      dateOfBirth: data.dateOfBirth || undefined,
+      address: data.address?.trim() || undefined,
+    };
+    await onSubmit(payload);
   };
 
-  const isPending = isLoading || isSubmitting || formState.isSubmitting;
+  const isPending = isLoading || formState.isSubmitting;
 
   return (
-    <form
-      onSubmit={handleSubmit(onFormSubmit)}
-      className="flex flex-col h-full space-y-5 p-1"
-    >
-      <div className="flex-1 space-y-4 overflow-y-auto pr-1">
+    <form onSubmit={handleSubmit(onFormSubmit)} noValidate>
+      <div className="space-y-4">
         {/* Person Identity Card (Edit Mode) */}
         {isEditing && person && (
           <div className="p-3.5 rounded-2xl bg-primary-soft border border-primary-border flex items-center justify-between">
@@ -223,10 +210,6 @@ export const PersonForm: React.FC<PersonFormProps> = ({
           <Controller
             name="firstName"
             control={control}
-            rules={{
-              required: "First name is required",
-              maxLength: { value: 100, message: "Max 100 characters" },
-            }}
             render={({ field, fieldState: { error } }) => (
               <Input
                 {...field}
@@ -241,10 +224,6 @@ export const PersonForm: React.FC<PersonFormProps> = ({
           <Controller
             name="lastName"
             control={control}
-            rules={{
-              required: "Last name is required",
-              maxLength: { value: 100, message: "Max 100 characters" },
-            }}
             render={({ field, fieldState: { error } }) => (
               <Input
                 {...field}
@@ -262,12 +241,6 @@ export const PersonForm: React.FC<PersonFormProps> = ({
           <Controller
             name="email"
             control={control}
-            rules={{
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: "Invalid email format",
-              },
-            }}
             render={({ field, fieldState: { error } }) => (
               <Input
                 {...field}
@@ -381,33 +354,19 @@ export const PersonForm: React.FC<PersonFormProps> = ({
         />
       </div>
 
-      {/* Footer Buttons */}
-      <fieldset
-        className={cn("grid h-20 grid-cols-2 gap-4 border-t border-border p-4")}
-      >
+      <FormFooter>
         <Button
           type="button"
           variant="outline"
-          onClick={onCancel}
+          onClick={() => guard(onCancel)}
           disabled={isPending}
         >
           Cancel
         </Button>
-        <Button
-          type="submit"
-          loading={isPending}
-          disabled={isPending}
-          variant="primary"
-        >
-          {isPending
-            ? isEditing
-              ? "Saving..."
-              : "Adding..."
-            : isEditing
-              ? "Save Changes"
-              : "Add Person"}
+        <Button type="submit" loading={isPending} variant="primary">
+          {isEditing ? "Save changes" : "Add person"}
         </Button>
-      </fieldset>
+      </FormFooter>
     </form>
   );
 };

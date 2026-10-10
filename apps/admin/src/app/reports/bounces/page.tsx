@@ -28,6 +28,7 @@ import { NotAvailable } from "@/components/ui/NotAvailable";
 import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { ViewBounceDetailsModal } from "@/components/modals/ViewBounceDetailsModal";
 import { RemediateBounceModal } from "@/components/modals/RemediateBounceModal";
+import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { FiltersModal } from "@/components/modals/FiltersModal";
 import { EmailBounce, EmailBounceTabFilter } from "@/models/emailBounce";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,14 +36,12 @@ import { useListFilters } from "@/hooks/useListFilters";
 import {
   useEmailBounceAnalytics,
   useEmailBounces,
-  useInvalidateEmailBounces,
   useResolveEmailBounce,
 } from "@/hooks/useEmailBounces";
 import { type IQueryParams } from "@/models/base";
 import { type FilterField } from "@/models/filters";
 import { getUserRoles, ROLES } from "@/utils/rbac";
 import { downloadCsvExport } from "@/helpers/downloadCsvExport";
-import { customToast } from "@/helpers/customToast";
 import dayjs from "dayjs";
 
 const columnHelper = createColumnHelper<EmailBounce>();
@@ -138,6 +137,7 @@ export default function EmailBouncesPage() {
   const [remediateTarget, setRemediateTarget] = useState<EmailBounce | null>(
     null,
   );
+  const [resolveTarget, setResolveTarget] = useState<EmailBounce | null>(null);
 
   // 1. Analytics Data
   const {
@@ -197,17 +197,12 @@ export default function EmailBouncesPage() {
     refetchList();
   };
 
-  // 3. Mark Resolved Mutation
-  const invalidateBounces = useInvalidateEmailBounces();
+  // 3. Mark Resolved Mutation (always confirmed first via resolveTarget)
   const resolveMutation = useResolveEmailBounce({
     onSuccess: (updated) => {
       if (selectedBounce?.id === updated.id) {
         setSelectedBounce((prev) => (prev ? { ...prev, ...updated } : null));
       }
-      customToast.success("Email bounce marked as resolved");
-    },
-    onError: () => {
-      customToast.error("Failed to mark bounce as resolved");
     },
   });
 
@@ -374,7 +369,7 @@ export default function EmailBouncesPage() {
                     },
                     {
                       title: "Mark as Resolved",
-                      fn: () => resolveMutation.mutate(item.id),
+                      fn: () => setResolveTarget(item),
                     },
                   ]
                 : []),
@@ -392,7 +387,7 @@ export default function EmailBouncesPage() {
           },
         }),
       ] as ColumnDef<EmailBounce>[],
-    [canManage, resolveMutation],
+    [canManage],
   );
 
   // Summary Metrics computed from Analytics Response or local fallback
@@ -721,7 +716,32 @@ export default function EmailBouncesPage() {
           setSelectedBounce(null);
           setRemediateTarget(bounce);
         }}
-        onResolve={(bounce) => resolveMutation.mutate(bounce.id)}
+        onResolve={(bounce) => setResolveTarget(bounce)}
+      />
+
+      {/* Confirm: Mark bounce as resolved */}
+      <ConfirmActionModal
+        display={Boolean(resolveTarget)}
+        close={() => setResolveTarget(null)}
+        fn={async () => {
+          if (resolveTarget)
+            await resolveMutation.mutateAsync(resolveTarget.id);
+        }}
+        actionName="Mark resolved"
+        tone="default"
+        title="Mark this bounce as resolved?"
+        description={
+          <>
+            This closes the alert for{" "}
+            <span className="font-mono font-semibold text-fg">
+              {resolveTarget?.email}
+            </span>{" "}
+            without changing the email address on file. To correct the address,
+            use Fix &amp; Remediate instead.
+          </>
+        }
+        confirmLabel="Mark resolved"
+        loading={resolveMutation.isPending}
       />
 
       {/* Modal: Remediate Bounced Email Address */}
@@ -729,7 +749,6 @@ export default function EmailBouncesPage() {
         isOpen={Boolean(remediateTarget)}
         bounce={remediateTarget}
         onClose={() => setRemediateTarget(null)}
-        onSuccess={invalidateBounces}
       />
     </div>
   );

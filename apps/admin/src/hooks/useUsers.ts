@@ -13,6 +13,7 @@ export function useUsers(params?: IQueryParams) {
   });
 
   const createUserMutation = useMutation({
+    meta: { successMessage: "User invited" },
     mutationFn: (payload: ICreateUserPayload) =>
       usersService.createUser(payload),
     onSuccess: () => {
@@ -22,6 +23,7 @@ export function useUsers(params?: IQueryParams) {
   });
 
   const updateUserMutation = useMutation({
+    meta: { successMessage: "User updated" },
     mutationFn: ({
       id,
       payload,
@@ -36,6 +38,7 @@ export function useUsers(params?: IQueryParams) {
   });
 
   const deleteUserMutation = useMutation({
+    meta: { successMessage: "User deleted" },
     mutationFn: (id: string) => usersService.deleteUser(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });

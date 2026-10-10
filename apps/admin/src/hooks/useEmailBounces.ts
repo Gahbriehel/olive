@@ -3,6 +3,7 @@ import { emailBounceService } from "@/services/emailBounce.service";
 import {
   EmailBounce,
   EmailBounceAnalyticsResponse,
+  RemediateBouncePayload,
 } from "@/models/emailBounce";
 import { IQueryParams } from "@/models/base";
 
@@ -85,11 +86,31 @@ export function useResolveEmailBounce(options?: {
 }) {
   const invalidate = useInvalidateEmailBounces();
   return useMutation({
+    meta: { successMessage: "Bounce marked as resolved" },
     mutationFn: (id: string) => emailBounceService.resolveBounce(id),
     onSuccess: (updated) => {
       invalidate();
       options?.onSuccess?.(updated);
     },
     onError: () => options?.onError?.(),
+  });
+}
+
+/**
+ * Corrects the recipient's email, resolves the bounce and optionally resends
+ * the original message; refreshes the bounce list + analytics.
+ */
+export function useRemediateBounce() {
+  const invalidate = useInvalidateEmailBounces();
+  return useMutation({
+    meta: { successMessage: "Email updated and bounce remediated" },
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: RemediateBouncePayload;
+    }) => emailBounceService.remediateBounce(id, payload),
+    onSuccess: () => invalidate(),
   });
 }

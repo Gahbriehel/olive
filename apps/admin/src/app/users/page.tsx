@@ -169,12 +169,6 @@ export default function UsersPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<IAdminUser | null>(null);
   const [deletingUser, setDeletingUser] = useState<IAdminUser | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  const showNotification = (msg: string) => {
-    setSuccessMessage(msg);
-    setTimeout(() => setSuccessMessage(null), 3000);
-  };
 
   const handleCreateSubmit = async (data: UserFormValues) => {
     const payload: ICreateUserPayload = {
@@ -189,7 +183,6 @@ export default function UsersPage() {
     try {
       await createUser(payload);
       setIsCreateOpen(false);
-      showNotification("New user account created successfully!");
     } catch (err) {
       console.error("Failed to create user:", err);
     }
@@ -210,25 +203,16 @@ export default function UsersPage() {
     try {
       await updateUser({ id: editingUser.id, payload });
       setEditingUser(null);
-      showNotification("User account & roles updated successfully!");
     } catch (err) {
       console.error("Failed to update user:", err);
     }
   };
 
+  // Errors propagate so ConfirmActionModal shows them inline.
   const handleDeletePerform = async () => {
     if (!deletingUser) return;
-
-    try {
-      await deleteUser(deletingUser.id);
-      setDeletingUser(null);
-      if (editingUser?.id === deletingUser.id) {
-        setEditingUser(null);
-      }
-      showNotification("User account deleted successfully.");
-    } catch (err) {
-      console.error("Failed to delete user:", err);
-    }
+    await deleteUser(deletingUser.id);
+    setDeletingUser(null);
   };
 
   const totalUsers = meta?.total ?? users.length;
@@ -441,16 +425,6 @@ export default function UsersPage() {
         description="Manage system access, assign roles, and synchronize user contact directory."
       />
 
-      {successMessage && (
-        <div
-          role="status"
-          className="p-4 rounded-2xl bg-success-soft border border-success-border text-success-text font-bold text-xs flex items-center gap-3 animate-fade-in"
-        >
-          <Check className="w-5 h-5 text-success-text" />
-          {successMessage}
-        </div>
-      )}
-
       {canAccessUserDirectory ? (
         <>
           {/* Metrics Cards */}
@@ -662,7 +636,11 @@ export default function UsersPage() {
           <UserForm
             initialValues={editingUser}
             onSubmit={handleEditSubmit}
-            onDelete={() => setDeletingUser(editingUser)}
+            // DeleteButton in the form already confirms; delete directly.
+            onDelete={async () => {
+              await deleteUser(editingUser.id);
+              setEditingUser(null);
+            }}
             onCancel={() => setEditingUser(null)}
             isLoading={isUpdating}
             isDeleting={isDeleting}

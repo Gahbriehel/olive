@@ -2,10 +2,13 @@
 
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { Input } from "@/components/FormElements/Input";
 import { TextArea } from "@/components/FormElements/TextArea";
 import { Button, DeleteButton } from "@/components/ui/Button";
-import { cn } from "@/helpers/cn";
+import { FormFooter } from "@/components/ui/FormFooter";
+import { useUnsavedChangesGuard } from "@/components/ui/UnsavedChanges";
+import { gameSchema, type GameSchemaValues } from "./schemas/gameSchema";
 
 export interface GameFormValues {
   name: string;
@@ -31,10 +34,11 @@ export const GamesForm: React.FC<GamesFormProps> = ({
   isDeleting = false,
 }) => {
   const isEditing = Boolean(initialValues?.id || onDelete);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeletingState, setIsDeletingState] = useState(false);
 
-  const { control, handleSubmit, formState } = useForm<GameFormValues>({
+  const { control, handleSubmit, formState } = useForm<GameSchemaValues>({
+    resolver: yupResolver(gameSchema),
+    mode: "onTouched",
     defaultValues: {
       name: initialValues?.name || "",
       description: initialValues?.description || "",
@@ -42,16 +46,15 @@ export const GamesForm: React.FC<GamesFormProps> = ({
     },
   });
 
-  const onFormSubmit = async (data: GameFormValues) => {
-    try {
-      setIsSubmitting(true);
-      await onSubmit({
-        ...data,
-        maxScore: Number(data.maxScore) || 100,
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const { guard } = useUnsavedChangesGuard(
+    formState.isDirty && !formState.isSubmitSuccessful,
+  );
+
+  const onFormSubmit = async (data: GameSchemaValues) => {
+    await onSubmit({
+      ...data,
+      maxScore: Number(data.maxScore) || 100,
+    });
   };
 
   const handlePerformDelete = async () => {
@@ -64,20 +67,16 @@ export const GamesForm: React.FC<GamesFormProps> = ({
     }
   };
 
-  const isPending = isLoading || isSubmitting || formState.isSubmitting;
+  const isPending = isLoading || formState.isSubmitting;
   const isDeletingPending = isDeleting || isDeletingState;
 
   return (
-    <form
-      onSubmit={handleSubmit(onFormSubmit)}
-      className="flex flex-col h-full space-y-5 p-1"
-    >
-      <div className="flex-1 space-y-4 overflow-y-auto pr-1">
+    <form onSubmit={handleSubmit(onFormSubmit)} noValidate>
+      <div className="space-y-4">
         {/* Name */}
         <Controller
           name="name"
           control={control}
-          rules={{ required: "Game name is required" }}
           render={({ field, fieldState: { error } }) => (
             <Input
               {...field}
@@ -93,14 +92,13 @@ export const GamesForm: React.FC<GamesFormProps> = ({
         <Controller
           name="maxScore"
           control={control}
-          rules={{
-            required: "Max score is required",
-            min: { value: 1, message: "Max score must be at least 1" },
-          }}
           render={({ field, fieldState: { error } }) => (
             <Input
               {...field}
               type="number"
+              inputMode="numeric"
+              min={1}
+              step={1}
               label="Maximum Score / Points"
               placeholder="e.g. 100"
               required
@@ -124,48 +122,36 @@ export const GamesForm: React.FC<GamesFormProps> = ({
         />
       </div>
 
-      {/* Footer Buttons */}
-      <fieldset
-        className={cn("grid h-20 grid-cols-2 gap-4 border-t border-border p-4")}
-      >
-        {isEditing ? (
-          <>
+      <FormFooter
+        destructive={
+          isEditing && onDelete ? (
             <DeleteButton
               text="Delete"
               title="Delete Game"
               onClick={handlePerformDelete}
               loading={isDeletingPending}
+              disabled={isPending}
             />
-            <Button
-              type="submit"
-              loading={isPending}
-              disabled={isPending || isDeletingPending}
-              variant="primary"
-            >
-              Submit
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              loading={isPending}
-              disabled={isPending}
-              variant="primary"
-            >
-              Submit
-            </Button>
-          </>
-        )}
-      </fieldset>
+          ) : undefined
+        }
+      >
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => guard(onCancel)}
+          disabled={isPending}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          variant="primary"
+          loading={isPending}
+          disabled={isDeletingPending}
+        >
+          {isEditing ? "Save changes" : "Create game"}
+        </Button>
+      </FormFooter>
     </form>
   );
 };

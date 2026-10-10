@@ -1,22 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { Input } from "@/components/FormElements/Input";
 import { Select, type ISelect } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
+import { FormFooter } from "@/components/ui/FormFooter";
+import { useUnsavedChangesGuard } from "@/components/ui/UnsavedChanges";
 import { IRegistrationPayload } from "@/models/registration";
-import { cn } from "@/helpers/cn";
+import {
+  registerPersonSchema,
+  type RegisterPersonFormValues,
+} from "@/components/Forms/schemas/registerPersonSchema";
 
-export interface RegisterPersonFormValues {
-  eventId: string;
-  firstName: string;
-  lastName: string;
-  email?: string;
-  phone?: string;
-  gender?: "MALE" | "FEMALE" | "OTHER";
-  dateOfBirth?: string;
-}
+export type { RegisterPersonFormValues };
 
 interface RegisterPersonFormProps {
   events: { id: string; title: string }[];
@@ -35,6 +33,8 @@ const GENDER_OPTIONS: ISelect[] = [
   { value: { _id: "OTHER" }, label: "Other" },
 ];
 
+const NO_EVENT: ISelect = { value: { _id: "" }, label: "Select event" };
+
 export const RegisterPersonForm: React.FC<RegisterPersonFormProps> = ({
   events,
   defaultEventId,
@@ -42,80 +42,76 @@ export const RegisterPersonForm: React.FC<RegisterPersonFormProps> = ({
   onCancel,
   isLoading = false,
 }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const eventOptions: ISelect[] = events.map((e) => ({
     value: { _id: e.id },
     label: e.title,
   }));
 
-  const initialEventId =
-    defaultEventId || (events.length > 0 ? events[0].id : "");
+  const fallbackEventId = defaultEventId || events[0]?.id || "";
 
-  const { control, handleSubmit, formState } =
-    useForm<RegisterPersonFormValues>({
-      defaultValues: {
-        eventId: initialEventId,
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        gender: "MALE",
-        dateOfBirth: "",
-      },
-    });
+  const { control, handleSubmit, formState, getValues, resetField } = useForm({
+    resolver: yupResolver(registerPersonSchema),
+    mode: "onTouched",
+    defaultValues: {
+      eventId: fallbackEventId,
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      gender: "MALE",
+      dateOfBirth: "",
+    },
+  });
+
+  // Events can arrive after mount: preselect the default once they do, as
+  // the field's default so it neither shows one event while holding another
+  // nor marks the form dirty.
+  useEffect(() => {
+    if (!getValues("eventId") && fallbackEventId) {
+      resetField("eventId", { defaultValue: fallbackEventId });
+    }
+  }, [fallbackEventId, getValues, resetField]);
+
+  const { guard } = useUnsavedChangesGuard(
+    formState.isDirty && !formState.isSubmitSuccessful,
+  );
 
   const onFormSubmit = async (data: RegisterPersonFormValues) => {
-    try {
-      setIsSubmitting(true);
-      const { eventId, ...payload } = data;
-      await onSubmit(eventId, payload);
-    } finally {
-      setIsSubmitting(false);
-    }
+    const { eventId, ...payload } = data;
+    await onSubmit(eventId, payload);
   };
 
-  const isPending = isLoading || isSubmitting || formState.isSubmitting;
+  const isPending = isLoading || formState.isSubmitting;
 
   return (
-    <form
-      onSubmit={handleSubmit(onFormSubmit)}
-      className="flex flex-col h-full space-y-5 p-1"
-    >
-      <div className="flex-1 space-y-4 overflow-y-auto pr-1">
+    <form onSubmit={handleSubmit(onFormSubmit)} noValidate>
+      <div className="space-y-4">
         {/* Event Selection */}
         <Controller
           name="eventId"
           control={control}
-          rules={{ required: "Target event is required" }}
           render={({
             field: { value, onChange, onBlur },
             fieldState: { error },
-          }) => {
-            const selectedOpt =
-              eventOptions.find((opt) => opt.value._id === value) ||
-              eventOptions[0];
-
-            return (
-              <Select
-                label="Target Event"
-                value={
-                  selectedOpt || { value: { _id: "" }, label: "Select Event" }
-                }
-                onChange={(opt) => onChange(opt.value._id as string)}
-                onBlur={onBlur}
-                options={eventOptions}
-                validationError={error}
-              />
-            );
-          }}
+          }) => (
+            <Select
+              label="Target Event"
+              required
+              value={
+                eventOptions.find((opt) => opt.value._id === value) ?? NO_EVENT
+              }
+              onChange={(opt) => onChange(opt.value._id as string)}
+              onBlur={onBlur}
+              options={eventOptions}
+              validationError={error}
+            />
+          )}
         />
 
         {/* First Name */}
         <Controller
           name="firstName"
           control={control}
-          rules={{ required: "First name is required" }}
           render={({ field, fieldState: { error } }) => (
             <Input
               {...field}
@@ -131,7 +127,6 @@ export const RegisterPersonForm: React.FC<RegisterPersonFormProps> = ({
         <Controller
           name="lastName"
           control={control}
-          rules={{ required: "Last name is required" }}
           render={({ field, fieldState: { error } }) => (
             <Input
               {...field}
@@ -215,27 +210,19 @@ export const RegisterPersonForm: React.FC<RegisterPersonFormProps> = ({
         />
       </div>
 
-      {/* Footer Buttons */}
-      <fieldset
-        className={cn("grid h-20 grid-cols-2 gap-4 border-t border-border p-4")}
-      >
+      <FormFooter>
         <Button
           type="button"
           variant="outline"
-          onClick={onCancel}
+          onClick={() => guard(onCancel)}
           disabled={isPending}
         >
           Cancel
         </Button>
-        <Button
-          type="submit"
-          loading={isPending}
-          disabled={isPending}
-          variant="primary"
-        >
-          Register Person
+        <Button type="submit" loading={isPending} variant="primary">
+          Register attendee
         </Button>
-      </fieldset>
+      </FormFooter>
     </form>
   );
 };

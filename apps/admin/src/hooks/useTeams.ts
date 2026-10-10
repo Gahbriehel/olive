@@ -17,6 +17,7 @@ export function useTeams(params?: IQueryParams | string) {
   });
 
   const createTeamMutation = useMutation({
+    meta: { successMessage: "Team created" },
     mutationFn: (dto: ITeamPayload) => teamsService.createTeam(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });
@@ -25,6 +26,7 @@ export function useTeams(params?: IQueryParams | string) {
   });
 
   const updateTeamMutation = useMutation({
+    meta: { successMessage: "Team updated" },
     mutationFn: ({
       id,
       payload,
@@ -39,6 +41,7 @@ export function useTeams(params?: IQueryParams | string) {
   });
 
   const deleteTeamMutation = useMutation({
+    meta: { successMessage: "Team deleted" },
     mutationFn: (id: string) => teamsService.deleteTeam(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teams"] });

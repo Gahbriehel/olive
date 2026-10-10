@@ -28,7 +28,6 @@ import { PersonForm } from "@/components/Forms/PersonForm";
 import { getInitials, capitalizeWords } from "@/utils/formatters";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
-import { customToast } from "@/helpers/customToast";
 import { usePeople } from "@/hooks/usePeople";
 import { useListFilters } from "@/hooks/useListFilters";
 import { useEvents } from "@/hooks/useEvents";
@@ -148,7 +147,6 @@ export default function PeoplePage() {
       if (selectedPerson?.id === editingPerson.id && updated) {
         setSelectedPerson(adaptApiPersonToPerson(updated));
       }
-      customToast.success("Person updated successfully!");
     } catch (err) {
       console.error("Failed to update person:", err);
     }

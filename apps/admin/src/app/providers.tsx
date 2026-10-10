@@ -1,15 +1,29 @@
 "use client";
 
 import React, { useState } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  MutationCache,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import { Provider } from "react-redux";
 import { Toaster } from "react-hot-toast";
 import { store } from "@/store";
+import { customToast } from "@/helpers/customToast";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
+        // One success toast per user action: mutations declare
+        // `meta: { successMessage }` and this cache shows it. Errors are
+        // toasted by the API client interceptor.
+        mutationCache: new MutationCache({
+          onSuccess: (_data, _variables, _context, mutation) => {
+            const message = mutation.meta?.successMessage;
+            if (message) customToast.success(message);
+          },
+        }),
         defaultOptions: {
           queries: {
             refetchOnWindowFocus: false,
@@ -23,41 +37,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         {children}
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              borderRadius: "12px",
-              fontSize: "14px",
-              fontWeight: 500,
-              padding: "12px 16px",
-              boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.4)",
-            },
-            success: {
-              style: {
-                background: "#065f46",
-                color: "#ffffff",
-                border: "1px solid #10b981",
-              },
-              iconTheme: {
-                primary: "#10b981",
-                secondary: "#ffffff",
-              },
-            },
-            error: {
-              style: {
-                background: "#881337",
-                color: "#ffffff",
-                border: "1px solid #f43f5e",
-              },
-              iconTheme: {
-                primary: "#f43f5e",
-                secondary: "#ffffff",
-              },
-            },
-          }}
-        />
+        <Toaster position="top-right" />
       </QueryClientProvider>
     </Provider>
   );

@@ -18,6 +18,7 @@ export function useRegistrations(params?: IQueryParams) {
   });
 
   const registerMutation = useMutation({
+    meta: { successMessage: "Attendee registered" },
     mutationFn: ({
       eventId,
       dto,

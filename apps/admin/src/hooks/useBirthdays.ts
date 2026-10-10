@@ -1,6 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 import { birthdayService } from "@/services/birthday.service";
-import { BirthdayPersonItem, BirthdayStatusFilter } from "@/models/birthday";
+import {
+  BirthdayPersonItem,
+  BirthdayStatusFilter,
+  SendBirthdayGreetingPayload,
+} from "@/models/birthday";
 
 const EMPTY_BIRTHDAYS: BirthdayPersonItem[] = [];
 
@@ -72,4 +82,30 @@ export function useBirthdays({
     error: query.error,
     refetch: query.refetch,
   };
+}
+
+function invalidateBirthdayQueries(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+    queryClient.invalidateQueries({ queryKey: ["birthdays-list"] }),
+    queryClient.invalidateQueries({ queryKey: ["birthday-analytics"] }),
+  ]);
+}
+
+/** Sends a birthday greeting email and refreshes dashboard/report data. */
+export function useSendBirthdayGreeting() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    meta: { successMessage: "Birthday greeting sent" },
+    mutationFn: (payload: SendBirthdayGreetingPayload) =>
+      birthdayService.sendBirthdayGreeting(payload),
+    onSuccess: () => invalidateBirthdayQueries(queryClient),
+    onError: (error) => {
+      // 409: already greeted / concurrent send. Refresh so the UI catches up.
+      if (isAxiosError(error) && error.response?.status === 409) {
+        void invalidateBirthdayQueries(queryClient);
+      }
+    },
+  });
 }

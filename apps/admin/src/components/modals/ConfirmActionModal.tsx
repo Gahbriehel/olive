@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type JSX, type ReactNode } from "react";
+import { isAxiosError } from "axios";
 import { AlertTriangle, HelpCircle } from "lucide-react";
 
 import { capitalizeFirstLetter } from "@/helpers/capitalizeFirstLetter";
@@ -64,9 +65,13 @@ export function ConfirmActionModal({
         close();
       }
     } catch (err) {
-      setError(
-        extractErrorMessage(err, "Something went wrong. Please try again."),
-      );
+      // The dialog stays open either way. API failures are already toasted by
+      // the API client interceptor, so only other errors are shown inline.
+      if (!isAxiosError(err)) {
+        setError(
+          extractErrorMessage(err, "Something went wrong. Please try again."),
+        );
+      }
     } finally {
       setInternalLoading(false);
     }

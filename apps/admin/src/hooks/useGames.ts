@@ -33,6 +33,7 @@ export function useGames(params?: IQueryParams | string) {
   });
 
   const createGameMutation = useMutation({
+    meta: { successMessage: "Game created" },
     mutationFn: (dto: IGamePayload) => gamesService.createGame(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["games"] });
@@ -40,6 +41,7 @@ export function useGames(params?: IQueryParams | string) {
   });
 
   const updateGameMutation = useMutation({
+    meta: { successMessage: "Game updated" },
     mutationFn: ({
       id,
       payload,
@@ -54,6 +56,7 @@ export function useGames(params?: IQueryParams | string) {
   });
 
   const deleteGameMutation = useMutation({
+    meta: { successMessage: "Game deleted" },
     mutationFn: (id: string) => gamesService.deleteGame(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["games"] });
@@ -62,6 +65,7 @@ export function useGames(params?: IQueryParams | string) {
   });
 
   const recordScoreMutation = useMutation({
+    meta: { successMessage: "Score recorded" },
     mutationFn: (dto: IRecordScorePayload) => gamesService.recordScore(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["games"] });
@@ -71,6 +75,7 @@ export function useGames(params?: IQueryParams | string) {
   });
 
   const updateScoreMutation = useMutation({
+    meta: { successMessage: "Score recorded" },
     mutationFn: ({
       id,
       payload,
@@ -86,6 +91,7 @@ export function useGames(params?: IQueryParams | string) {
   });
 
   const clearGameScoresMutation = useMutation({
+    meta: { successMessage: "Scores cleared" },
     mutationFn: (gameId: string) => gamesService.clearGameScores(gameId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["games"] });

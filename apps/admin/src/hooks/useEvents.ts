@@ -20,6 +20,7 @@ export function useEvents(params?: AdminEventFilters | IQueryParams) {
   });
 
   const createEventMutation = useMutation({
+    meta: { successMessage: "Event created" },
     mutationFn: (dto: CreateOrUpdateEventPayload | IEventPayload) =>
       eventsService.createEvent(dto),
     onSuccess: () => {
@@ -28,6 +29,7 @@ export function useEvents(params?: AdminEventFilters | IQueryParams) {
   });
 
   const updateEventMutation = useMutation({
+    meta: { successMessage: "Event updated" },
     mutationFn: ({
       id,
       dto,
@@ -41,6 +43,7 @@ export function useEvents(params?: AdminEventFilters | IQueryParams) {
   });
 
   const deleteEventMutation = useMutation({
+    meta: { successMessage: "Event deleted" },
     mutationFn: (id: string) => eventsService.deleteEvent(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });

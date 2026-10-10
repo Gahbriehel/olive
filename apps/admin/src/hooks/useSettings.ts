@@ -22,6 +22,7 @@ export function useSettings() {
   });
 
   const updateSettingsMutation = useMutation({
+    meta: { successMessage: "Settings saved" },
     mutationFn: (newSettings: Partial<IChurchSettings>) =>
       settingsService.updateSettings(newSettings),
     onSuccess: (data) => {
@@ -37,6 +38,7 @@ export function useSettings() {
   });
 
   const updateProfileMutation = useMutation({
+    meta: { successMessage: "Profile updated" },
     mutationFn: (payload: IUpdateProfilePayload) =>
       settingsService.updateProfile(payload),
     onSuccess: (data) => {
@@ -47,6 +49,7 @@ export function useSettings() {
   });
 
   const changePasswordMutation = useMutation({
+    meta: { successMessage: "Password changed" },
     mutationFn: (payload: IChangePasswordPayload) =>
       authService.changePassword(payload),
   });

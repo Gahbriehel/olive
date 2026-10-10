@@ -19,6 +19,7 @@ export function usePeople(params?: IQueryParams) {
   });
 
   const createPersonMutation = useMutation({
+    meta: { successMessage: "Person added" },
     mutationFn: (dto: IPersonPayload) => peopleService.createPerson(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["people"] });
@@ -26,6 +27,7 @@ export function usePeople(params?: IQueryParams) {
   });
 
   const updatePersonMutation = useMutation({
+    meta: { successMessage: "Person updated" },
     mutationFn: ({ id, dto }: { id: string; dto: IUpdatePersonPayload }) =>
       peopleService.updatePerson(id, dto),
     onSuccess: () => {
@@ -46,4 +48,15 @@ export function usePeople(params?: IQueryParams) {
     updatePerson: updatePersonMutation.mutateAsync,
     isUpdating: updatePersonMutation.isPending,
   };
+}
+
+/** One person's full record (e.g. for the edit form); seeded with what the list already has. */
+export function usePerson(id?: string, initialData?: IPersonResponse) {
+  return useQuery({
+    queryKey: ["person", id],
+    queryFn: () => peopleService.getPersonById(id as string),
+    initialData,
+    staleTime: 1000 * 60,
+    enabled: Boolean(id),
+  });
 }

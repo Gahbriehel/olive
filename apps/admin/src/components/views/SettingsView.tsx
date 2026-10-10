@@ -228,7 +228,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         newPassword: "",
       });
 
-      customToast.success("Password changed successfully.");
       setCountdown(10);
       setPasswordSavedSuccess(true);
     } catch (err: unknown) {

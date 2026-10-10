@@ -2,12 +2,15 @@
 
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { Input } from "@/components/FormElements/Input";
 import { Select, type ISelect } from "@/components/ui/Select";
 import { Button, DeleteButton } from "@/components/ui/Button";
+import { FormFooter } from "@/components/ui/FormFooter";
+import { useUnsavedChangesGuard } from "@/components/ui/UnsavedChanges";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { IAdminUser } from "@/models/dashboard";
-import { cn } from "@/helpers/cn";
+import { userSchema } from "./schemas/userSchema";
 
 export interface UserFormValues {
   firstName: string;
@@ -45,7 +48,6 @@ export const UserForm: React.FC<UserFormProps> = ({
   isDeleting = false,
 }) => {
   const isEditing = Boolean(initialValues?.id || onDelete);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeletingState, setIsDeletingState] = useState(false);
 
   const defaultFirstName =
@@ -58,6 +60,8 @@ export const UserForm: React.FC<UserFormProps> = ({
       : "");
 
   const { control, handleSubmit, formState } = useForm<UserFormValues>({
+    resolver: yupResolver(userSchema),
+    mode: "onTouched",
     defaultValues: {
       firstName: defaultFirstName,
       lastName: defaultLastName,
@@ -69,13 +73,12 @@ export const UserForm: React.FC<UserFormProps> = ({
     },
   });
 
+  const { guard } = useUnsavedChangesGuard(
+    formState.isDirty && !formState.isSubmitSuccessful,
+  );
+
   const onFormSubmit = async (data: UserFormValues) => {
-    try {
-      setIsSubmitting(true);
-      await onSubmit(data);
-    } finally {
-      setIsSubmitting(false);
-    }
+    await onSubmit(data);
   };
 
   const handlePerformDelete = async () => {
@@ -88,21 +91,17 @@ export const UserForm: React.FC<UserFormProps> = ({
     }
   };
 
-  const isPending = isLoading || isSubmitting || formState.isSubmitting;
+  const isPending = isLoading || formState.isSubmitting;
   const isDeletingPending = isDeleting || isDeletingState;
 
   return (
-    <form
-      onSubmit={handleSubmit(onFormSubmit)}
-      className="flex flex-col h-full space-y-5 p-1"
-    >
-      <div className="flex-1 space-y-4 overflow-y-auto pr-1">
+    <form onSubmit={handleSubmit(onFormSubmit)} noValidate>
+      <div className="space-y-4">
         {/* First & Last Name Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Controller
             name="firstName"
             control={control}
-            rules={{ required: "First name is required" }}
             render={({ field, fieldState: { error } }) => (
               <Input
                 {...field}
@@ -117,7 +116,6 @@ export const UserForm: React.FC<UserFormProps> = ({
           <Controller
             name="lastName"
             control={control}
-            rules={{ required: "Last name is required" }}
             render={({ field, fieldState: { error } }) => (
               <Input
                 {...field}
@@ -134,13 +132,6 @@ export const UserForm: React.FC<UserFormProps> = ({
         <Controller
           name="email"
           control={control}
-          rules={{
-            required: "Email address is required",
-            pattern: {
-              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              message: "Invalid email address format",
-            },
-          }}
           render={({ field, fieldState: { error } }) => (
             <Input
               {...field}
@@ -172,7 +163,6 @@ export const UserForm: React.FC<UserFormProps> = ({
         <Controller
           name="role"
           control={control}
-          rules={{ required: "Role assignment is required" }}
           render={({
             field: { value, onChange, onBlur },
             fieldState: { error },
@@ -212,16 +202,6 @@ export const UserForm: React.FC<UserFormProps> = ({
         <Controller
           name="password"
           control={control}
-          rules={
-            !isEditing
-              ? {
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters",
-                  },
-                }
-              : undefined
-          }
           render={({ field, fieldState: { error } }) => (
             <Input
               {...field}
@@ -242,48 +222,36 @@ export const UserForm: React.FC<UserFormProps> = ({
         />
       </div>
 
-      {/* Action Buttons Footer */}
-      <fieldset
-        className={cn("grid h-20 grid-cols-2 gap-4 border-t border-border p-4")}
-      >
-        {isEditing ? (
-          <>
+      <FormFooter
+        destructive={
+          isEditing && onDelete ? (
             <DeleteButton
               text="Delete User"
               title="Delete User Account"
               onClick={handlePerformDelete}
               loading={isDeletingPending}
+              disabled={isPending}
             />
-            <Button
-              type="submit"
-              loading={isPending}
-              disabled={isPending || isDeletingPending}
-              variant="primary"
-            >
-              Save Changes
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              loading={isPending}
-              disabled={isPending}
-              variant="primary"
-            >
-              Create User
-            </Button>
-          </>
-        )}
-      </fieldset>
+          ) : undefined
+        }
+      >
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => guard(onCancel)}
+          disabled={isPending}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          variant="primary"
+          loading={isPending}
+          disabled={isDeletingPending}
+        >
+          {isEditing ? "Save changes" : "Invite user"}
+        </Button>
+      </FormFooter>
     </form>
   );
 };

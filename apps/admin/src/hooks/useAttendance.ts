@@ -6,6 +6,7 @@ export function useAttendance() {
   const queryClient = useQueryClient();
 
   const checkInMutation = useMutation({
+    meta: { successMessage: "Attendee checked in" },
     mutationFn: (dto: ICheckInPayload) =>
       attendanceService.checkInAttendee(dto),
     onSuccess: () => {

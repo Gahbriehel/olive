@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import {
   Upload,
   Image as ImageIcon,
@@ -21,7 +22,7 @@ import { Select, type ISelect } from "@/components/ui/Select";
 import { Button, DeleteButton } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/helpers/cn";
-import { uploadsService } from "@/services/uploads.service";
+import { useUploadFlyer } from "@/hooks/useUploads";
 import { formatDateTimeInput, toISOInEventTimezone } from "@/utils/formatters";
 import {
   EventCategory,
@@ -30,23 +31,12 @@ import {
   getCategoryColor,
 } from "@/models/event";
 import { Spinner } from "@/components/ui/Spinner";
+import { FormFooter } from "@/components/ui/FormFooter";
+import { useUnsavedChangesGuard } from "@/components/ui/UnsavedChanges";
+import { eventSchema, type EventFormValues } from "./schemas/eventSchema";
 
 export type EventStatusEnum = EventStatus;
-
-export interface EventFormValues {
-  title: string;
-  description?: string;
-  category: EventCategory;
-  location?: string;
-  capacity?: number | string;
-  startDate: string;
-  endDate: string;
-  status: EventStatusEnum;
-  imageUrl?: string;
-  googleCalendarSync?: boolean;
-  requiresRegistration?: boolean;
-  isFeatured?: boolean;
-}
+export type { EventFormValues };
 
 interface EventsFormProps {
   initialValues?: Partial<CreateOrUpdateEventPayload> & {
@@ -85,64 +75,77 @@ export const EventsForm: React.FC<EventsFormProps> = ({
   isDeleting = false,
 }) => {
   const isEditing = Boolean(initialValues?.id || onDelete);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeletingState, setIsDeletingState] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Dynamic Registration Mode & Highlights state
-  const [requiresRegistration, setRequiresRegistration] = useState<boolean>(
-    initialValues?.requiresRegistration !== undefined
-      ? Boolean(initialValues.requiresRegistration)
-      : true,
-  );
-
-  const [isFeatured, setIsFeatured] = useState<boolean>(
-    initialValues?.isFeatured !== undefined
-      ? Boolean(initialValues.isFeatured)
-      : false,
-  );
-
-  const [highlights, setHighlights] = useState<string[]>(() => {
-    if (
-      Array.isArray(initialValues?.highlights) &&
-      initialValues.highlights.length > 0
-    ) {
-      return initialValues.highlights;
-    }
-    return [];
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    trigger,
+    getFieldState,
+    formState,
+  } = useForm<EventFormValues>({
+    resolver: yupResolver(eventSchema),
+    mode: "onTouched",
+    defaultValues: {
+      title: initialValues?.title || "",
+      category: (initialValues?.category as EventCategory) || "GENERAL",
+      description: initialValues?.description || "",
+      location: initialValues?.location || "",
+      capacity:
+        initialValues?.capacity !== undefined &&
+        initialValues?.capacity !== null
+          ? String(initialValues.capacity)
+          : "",
+      startDate: formatDateTimeInput(initialValues?.startDate) || "",
+      endDate: formatDateTimeInput(initialValues?.endDate) || "",
+      status: (initialValues?.status as EventStatusEnum) || "DRAFT",
+      imageUrl: initialValues?.imageUrl || "",
+      googleCalendarSync: initialValues?.googleCalendarSync ?? false,
+      requiresRegistration:
+        initialValues?.requiresRegistration !== undefined
+          ? Boolean(initialValues.requiresRegistration)
+          : true,
+      isFeatured:
+        initialValues?.isFeatured !== undefined
+          ? Boolean(initialValues.isFeatured)
+          : false,
+      highlights: Array.isArray(initialValues?.highlights)
+        ? [...initialValues.highlights]
+        : [],
+    },
   });
 
-  const { control, handleSubmit, watch, setValue, formState } =
-    useForm<EventFormValues>({
-      defaultValues: {
-        title: initialValues?.title || "",
-        category: (initialValues?.category as EventCategory) || "GENERAL",
-        description: initialValues?.description || "",
-        location: initialValues?.location || "",
-        capacity:
-          initialValues?.capacity !== undefined &&
-          initialValues?.capacity !== null
-            ? initialValues.capacity
-            : "",
-        startDate: formatDateTimeInput(initialValues?.startDate) || "",
-        endDate: formatDateTimeInput(initialValues?.endDate) || "",
-        status: (initialValues?.status as EventStatusEnum) || "DRAFT",
-        imageUrl: initialValues?.imageUrl || "",
-        googleCalendarSync: initialValues?.googleCalendarSync ?? false,
-      },
-    });
+  const { guard } = useUnsavedChangesGuard(
+    formState.isDirty && !formState.isSubmitSuccessful,
+  );
 
   // eslint-disable-next-line react-hooks/incompatible-library
-  const startDateValue = watch("startDate");
   const imageUrlValue = watch("imageUrl");
   const categoryValue = watch("category");
+  const requiresRegistration = watch("requiresRegistration");
+  const highlights = watch("highlights");
+
+  // The end-date rule depends on the start date, so re-check it once the
+  // user has already interacted with the end date (or tried to submit).
+  const revalidateEndDate = () => {
+    if (getFieldState("endDate", formState).isTouched || formState.isSubmitted)
+      void trigger("endDate");
+  };
+
+  const setHighlights = (next: string[]) =>
+    setValue("highlights", next, { shouldDirty: true });
+
+  const { uploadFlyer } = useUploadFlyer();
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
       setIsUploading(true);
-      const uploadedUrl = await uploadsService.uploadFlyer(file);
+      const uploadedUrl = await uploadFlyer(file);
       setValue("imageUrl", uploadedUrl, {
         shouldValidate: true,
         shouldDirty: true,
@@ -155,52 +158,44 @@ export const EventsForm: React.FC<EventsFormProps> = ({
   };
 
   const handleAddHighlight = () => {
-    setHighlights((prev) => [...prev, ""]);
+    setHighlights([...highlights, ""]);
   };
 
   const handleUpdateHighlight = (index: number, val: string) => {
-    setHighlights((prev) => {
-      const copy = [...prev];
-      copy[index] = val;
-      return copy;
-    });
+    const copy = [...highlights];
+    copy[index] = val;
+    setHighlights(copy);
   };
 
   const handleRemoveHighlight = (index: number) => {
-    setHighlights((prev) => prev.filter((_, i) => i !== index));
+    setHighlights(highlights.filter((_, i) => i !== index));
   };
 
   const onFormSubmit = async (data: EventFormValues) => {
-    try {
-      setIsSubmitting(true);
-      const cleanedHighlights = highlights
-        .map((h) => h.trim())
-        .filter((h) => h.length > 0);
+    const cleanedHighlights = data.highlights
+      .map((h) => h.trim())
+      .filter((h) => h.length > 0);
 
-      const payload: CreateOrUpdateEventPayload = {
-        title: data.title.trim(),
-        description: data.description?.trim() || undefined,
-        category: data.category || "GENERAL",
-        startDate: toISOInEventTimezone(data.startDate),
-        endDate: toISOInEventTimezone(data.endDate),
-        location: data.location?.trim() || undefined,
-        imageUrl: data.imageUrl?.trim() || undefined,
-        status: data.status || "DRAFT",
-        googleCalendarSync: Boolean(data.googleCalendarSync),
-        requiresRegistration,
-        capacity:
-          requiresRegistration && data.capacity && Number(data.capacity) > 0
-            ? Number(data.capacity)
-            : null,
-        highlights:
-          cleanedHighlights.length > 0 ? cleanedHighlights : undefined,
-        isFeatured,
-      };
+    const payload: CreateOrUpdateEventPayload = {
+      title: data.title.trim(),
+      description: data.description?.trim() || undefined,
+      category: data.category || "GENERAL",
+      startDate: toISOInEventTimezone(data.startDate),
+      endDate: toISOInEventTimezone(data.endDate),
+      location: data.location?.trim() || undefined,
+      imageUrl: data.imageUrl?.trim() || undefined,
+      status: data.status || "DRAFT",
+      googleCalendarSync: Boolean(data.googleCalendarSync),
+      requiresRegistration: data.requiresRegistration,
+      capacity:
+        data.requiresRegistration && data.capacity && Number(data.capacity) > 0
+          ? Number(data.capacity)
+          : null,
+      highlights: cleanedHighlights.length > 0 ? cleanedHighlights : undefined,
+      isFeatured: data.isFeatured,
+    };
 
-      await onSubmit(payload);
-    } finally {
-      setIsSubmitting(false);
-    }
+    await onSubmit(payload);
   };
 
   const handlePerformDelete = async () => {
@@ -213,15 +208,12 @@ export const EventsForm: React.FC<EventsFormProps> = ({
     }
   };
 
-  const isPending = isLoading || isSubmitting || formState.isSubmitting;
+  const isPending = isLoading || formState.isSubmitting;
   const isDeletingPending = isDeleting || isDeletingState;
 
   return (
-    <form
-      onSubmit={handleSubmit(onFormSubmit)}
-      className="flex flex-col h-full space-y-6 p-1"
-    >
-      <div className="flex-1 space-y-6 overflow-y-auto pr-1">
+    <form onSubmit={handleSubmit(onFormSubmit)} noValidate>
+      <div className="space-y-6">
         {/* SECTION 1: BASIC DETAILS & TIMING */}
         <div className="p-4 sm:p-5 rounded-2xl bg-surface border border-border space-y-4 shadow-xs">
           <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
@@ -241,7 +233,6 @@ export const EventsForm: React.FC<EventsFormProps> = ({
           <Controller
             name="title"
             control={control}
-            rules={{ required: "Event title is required" }}
             render={({ field, fieldState: { error } }) => (
               <Input
                 {...field}
@@ -259,7 +250,6 @@ export const EventsForm: React.FC<EventsFormProps> = ({
             <Controller
               name="category"
               control={control}
-              rules={{ required: "Ministry category is required" }}
               render={({
                 field: { value, onChange, onBlur },
                 fieldState: { error },
@@ -316,10 +306,13 @@ export const EventsForm: React.FC<EventsFormProps> = ({
             <Controller
               name="startDate"
               control={control}
-              rules={{ required: "Start date is required" }}
               render={({ field, fieldState: { error } }) => (
                 <Input
                   {...field}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    revalidateEndDate();
+                  }}
                   type="datetime-local"
                   label="Start Date & Time"
                   required
@@ -332,18 +325,6 @@ export const EventsForm: React.FC<EventsFormProps> = ({
             <Controller
               name="endDate"
               control={control}
-              rules={{
-                required: "End date is required",
-                validate: (val) => {
-                  if (
-                    startDateValue &&
-                    new Date(val) < new Date(startDateValue)
-                  ) {
-                    return "End date must be after start date";
-                  }
-                  return true;
-                },
-              }}
               render={({ field, fieldState: { error } }) => (
                 <Input
                   {...field}
@@ -395,11 +376,18 @@ export const EventsForm: React.FC<EventsFormProps> = ({
             </h3>
           </div>
 
-          <Switch
-            label="Require Online Registration"
-            description="Turn on for ticketed seating, capacity limits, and team assignment."
-            checked={requiresRegistration}
-            onChange={setRequiresRegistration}
+          <Controller
+            name="requiresRegistration"
+            control={control}
+            render={({ field: { value, onChange, name } }) => (
+              <Switch
+                name={name}
+                label="Require Online Registration"
+                description="Turn on for ticketed seating, capacity limits, and team assignment."
+                checked={Boolean(value)}
+                onChange={onChange}
+              />
+            )}
           />
 
           {!requiresRegistration ? (
@@ -511,22 +499,29 @@ export const EventsForm: React.FC<EventsFormProps> = ({
             </h3>
           </div>
 
-          <Switch
-            label="Feature on Website Banner"
-            description="Pins this event to the top hero carousel on the church web portal."
-            color="amber"
-            icon={
-              <Star
-                className={cn(
-                  "h-4 w-4 transition-colors",
-                  isFeatured
-                    ? "fill-amber-500 text-amber-500"
-                    : "text-slate-400",
-                )}
+          <Controller
+            name="isFeatured"
+            control={control}
+            render={({ field: { value, onChange, name } }) => (
+              <Switch
+                name={name}
+                label="Feature on Website Banner"
+                description="Pins this event to the top hero carousel on the church web portal."
+                color="amber"
+                icon={
+                  <Star
+                    className={cn(
+                      "h-4 w-4 transition-colors",
+                      value
+                        ? "fill-amber-500 text-amber-500"
+                        : "text-slate-400",
+                    )}
+                  />
+                }
+                checked={Boolean(value)}
+                onChange={onChange}
               />
-            }
-            checked={isFeatured}
-            onChange={setIsFeatured}
+            )}
           />
 
           <Controller
@@ -605,50 +600,36 @@ export const EventsForm: React.FC<EventsFormProps> = ({
         </div>
       </div>
 
-      {/* FOOTER BUTTONS */}
-      <fieldset
-        className={cn(
-          "grid h-20 grid-cols-2 gap-4 border-t border-border pt-4",
-        )}
-      >
-        {isEditing ? (
-          <>
+      <FormFooter
+        destructive={
+          isEditing && onDelete ? (
             <DeleteButton
               text="Delete Event"
               title="Delete Event"
               onClick={handlePerformDelete}
               loading={isDeletingPending}
+              disabled={isPending || isUploading}
             />
-            <Button
-              type="submit"
-              loading={isPending}
-              disabled={isPending || isDeletingPending}
-              variant="primary"
-            >
-              Save Changes
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              loading={isPending}
-              disabled={isPending}
-              variant="primary"
-            >
-              Create Event
-            </Button>
-          </>
-        )}
-      </fieldset>
+          ) : undefined
+        }
+      >
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => guard(onCancel)}
+          disabled={isPending}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          variant="primary"
+          loading={isPending}
+          disabled={isPending || isUploading || isDeletingPending}
+        >
+          {isEditing ? "Save changes" : "Create event"}
+        </Button>
+      </FormFooter>
     </form>
   );
 };

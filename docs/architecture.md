@@ -108,8 +108,11 @@ page.tsx ──uses──▶ hooks/useX.ts ──calls──▶ services/x.servi
 - **Requests:** adds `Authorization: Bearer <access token>` and removes empty query params.
 - **Responses:** the API wraps payloads in the `IBaseResponse<T>` envelope (`{ success, data, message, meta }`). Pagination details are in `meta`: `{ total, page, limit, totalPages }`.
 - **On 401:** refreshes once via `POST /auth/refresh`, then retries the original request. If the refresh fails, it clears the tokens and redirects to `/login`.
-- **Toasts (current):** shows a success toast after *every* POST/PUT/PATCH/DELETE and an error toast after every failure.
-  **Target:** remove the automatic success toast. Each mutation hook passes `meta.successMessage` instead, and a global `MutationCache.onSuccess` shows it, so each action produces exactly one toast.
+- **Toasts:** each user action produces exactly one toast.
+  - **Success:** a mutation declares `meta: { successMessage: "Event created" }` in its hook. The global `MutationCache` in `app/providers.tsx` shows it. The type is in `src/types/react-query.d.ts`. Successful responses themselves never toast.
+  - **Errors:** the response interceptor toasts them. It stays silent for 401s, which the token refresh or redirect handles; for the refresh call itself; and for login, which shows an inline error.
+  - **Components never toast API success or API errors themselves.** Use `customToast` only for client-side messages. Identical messages are merged, so a loop of score saves shows one toast.
+  - Toast styling uses the design tokens, so toasts follow light and dark mode.
 
 ### 3.4 Authentication and authorization
 
@@ -224,17 +227,24 @@ Each row is the **only** approved way to do that job. Items marked *(target)* do
 
 ### 6.3 Interaction conventions
 
-- **Destructive actions always confirm** through `ConfirmActionModal` with `tone="danger"`. Anything that deletes or irreversibly changes data (delete, clear scores, bulk sends) passes `tone="danger"` explicitly.
+- **Destructive actions always confirm** through `ConfirmActionModal` with `tone="danger"`. Anything that deletes or irreversibly changes data (delete, clear scores) passes `tone="danger"` explicitly.
+- **Actions with wide or outward effects also confirm,** using the default tone. Bulk email sends state the recipient count; marking a bounce resolved also confirms.
   - Non-destructive confirmations (e.g. sign out) use the default tone with a specific `confirmLabel`.
   - If the action throws, the dialog stays open and shows the error inside it.
 - **Overlays:** forms and detail views open in the side panel; confirmations and short decisions use a centered modal.
   - *Known exceptions:* "Manage Scores" and "Remediate bounce".
 - **Forms:**
-  - Use react-hook-form.
-  - Footer: Cancel on the left, primary action on the right; Delete is separate and is disabled while saving.
-  - Submit shows `loading` and blocks double-submit.
-  - *(target)* Closing a form with unsaved changes asks for confirmation through the confirmation modal.
-  - *(target)* Validation uses yup schemas through `yupResolver` (both dependencies are already installed but unused).
+  - **Setup:** react-hook-form with a yup schema, `useForm({ resolver: yupResolver(schema), mode: "onTouched" })`. Build schemas from the shared rules in `models/validation.ts` (`requiredText`, `email`, `requiredEmail`, `phone`, `url`). Don't write inline `rules` or duplicate regexes.
+  - **Footer:** use `ui/FormFooter`, which sticks to the bottom of the panel.
+    - Delete (`DeleteButton`) goes in `destructive`, on the far left, and is disabled while saving.
+    - On the right, Cancel comes first and the primary action last.
+    - Cancel is always present, in both create and edit mode.
+    - Labels are "Create X" and "Save changes". Never use a bare "Submit".
+  - **Submitting:** the submit button shows `loading` and blocks a double submit. It is also disabled while an upload is in progress.
+  - **Unsaved changes:** a form inside a `Modal` or `SidebarModal` calls `useUnsavedChangesGuard(isDirty)` from `ui/UnsavedChanges`.
+    - Escape, backdrop clicks and the close button then ask "Discard unsaved changes?". So does the form's Cancel, when wrapped in `guard(onCancel)`.
+    - Reloading or leaving the page gets the browser's own prompt.
+    - Closing the overlay after a successful save never prompts.
 - **Feedback:** one toast per user action (§3.3). Errors that belong to a specific field are shown on that field, not in a toast.
 
 ---
@@ -261,7 +271,7 @@ Source: the October 2026 admin UI/UX audit.
 | 1 | Register tokens in `@theme`; migrate primitives to token utilities; lint against raw palette classes | **Done** for shared components and all pages, with lint enforcement. Modals and forms are still in progress (§6.1). |
 | 2 | Consolidate primitives: Button API, overlays on Headless UI Dialog with shared footer, `FormField` across all inputs, MultiSelect on Combobox, one `SelectPagination`, `Spinner`, `StatusBadge` table, `TeamBadge`; remove dead code (`ui/Drawer`, `helpers/copyToClipboard`, `useDebounce`, `react-spinners`) | **Done** |
 | 3 | `PageHeader`, `Pagination`, `QueryState`/`Skeleton`, breadcrumbs; move all lists to `useListFilters`; error and loading states on every page; inline queries moved into `hooks/` | **Done**. The dark hero banners were removed and every page uses `PageHeader`. |
-| 4 | Toasts through `MutationCache`; unsaved-changes guard; yup schemas; confirmations for bulk sends | Planned |
+| 4 | Toasts through `MutationCache`; unsaved-changes guard; yup schemas; shared `FormFooter`; confirmations for bulk sends and bounce resolve; mutations moved out of components into hooks | **Done** |
 | 5 | Shell clean-up (theme toggle, topbar menus on Radix, mobile drawer); split large pages; share one `EmailComposer` and one `ContactTable` | Planned |
 
 Update the status column in the same PR that completes a phase.

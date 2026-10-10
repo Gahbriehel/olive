@@ -40,55 +40,6 @@ apiClient.interceptors.request.use((config) => {
 });
 
 /**
- * Safely extracts server success message from various API response shapes:
- * - { message: "..." }
- * - { data: { message: "..." } }
- * - { data: { data: { message: "..." } } }
- */
-export function extractServerMessage(
-  resData: unknown,
-  defaultMsg: string,
-): string {
-  if (!resData || typeof resData !== "object") return defaultMsg;
-
-  const dataObj = resData as Record<string, unknown>;
-
-  // 1. Direct string message on response root
-  if (typeof dataObj.message === "string" && dataObj.message.trim()) {
-    return dataObj.message.trim();
-  }
-
-  // 2. Nested message inside data object (e.g. response.data.data.message)
-  if (
-    dataObj.data &&
-    typeof dataObj.data === "object" &&
-    dataObj.data !== null
-  ) {
-    const innerData = dataObj.data as Record<string, unknown>;
-    if (typeof innerData.message === "string" && innerData.message.trim()) {
-      return innerData.message.trim();
-    }
-
-    // 3. Deeply nested message (e.g. response.data.data.data.message)
-    if (
-      innerData.data &&
-      typeof innerData.data === "object" &&
-      innerData.data !== null
-    ) {
-      const deepInnerData = innerData.data as Record<string, unknown>;
-      if (
-        typeof deepInnerData.message === "string" &&
-        deepInnerData.message.trim()
-      ) {
-        return deepInnerData.message.trim();
-      }
-    }
-  }
-
-  return defaultMsg;
-}
-
-/**
  * Safely extracts server error message from various Axios error shapes:
  * - NestJS validation array: { message: ["...", "..."] }
  * - Direct string message: { message: "..." }
@@ -223,44 +174,31 @@ export function extractErrorMessage(
 let isRefreshing = false;
 
 apiClient.interceptors.response.use(
-  (response) => {
-    const method = response.config.method?.toUpperCase();
-    const url = response.config.url || "";
-    const isMutation =
-      method && ["POST", "PUT", "PATCH", "DELETE"].includes(method);
-
-    if (
-      isMutation &&
-      !url.includes("/auth/refresh") &&
-      !url.includes("/auth/me")
-    ) {
-      const defaultFallback =
-        method === "POST"
-          ? "Successfully created"
-          : method === "DELETE"
-            ? "Successfully deleted"
-            : "Successfully saved changes";
-
-      const serverMessage = extractServerMessage(
-        response.data,
-        defaultFallback,
-      );
-      customToast.success(serverMessage);
-    }
-    return response;
-  },
+  // Success toasts come from mutation meta (MutationCache in app/providers.tsx),
+  // so successful responses pass through silently.
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
     const url = originalRequest?.url || "";
 
-    // Show red error toast for server response failures
-    if (error.response?.status === 403) {
+    // Error toasts. Skipped for: the refresh call itself; 401s, which the
+    // refresh/redirect flow below handles; and login, which shows its own
+    // inline error.
+    const status = error.response?.status;
+    const isSilent =
+      url.includes("/auth/refresh") ||
+      url.includes("/auth/login") ||
+      (status === 401 && !url.includes("/auth/change-password"));
+
+    if (isSilent) {
+      // no toast
+    } else if (status === 403) {
       const errorMessage = extractErrorMessage(
         error,
         "You do not have administrative permission to perform this action.",
       );
       customToast.error(errorMessage);
-    } else if (!url.includes("/auth/refresh")) {
+    } else {
       const errorMessage = extractErrorMessage(error, "Server request failed");
       customToast.error(errorMessage);
     }
