@@ -1,36 +1,148 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Olive Platform
+
+> **Church Administration & Public Web Platform** — Frontend monorepo for church management, public engagement, event operations, and community connection.
+
+Paired with the **[Dove API](../dove)** (`/dove`), the NestJS REST backend.
+
+---
+
+## Overview
+
+Olive provides the modern frontend interfaces for a comprehensive Church Management System. Built as a high-performance monorepo, Olive contains both the authenticated administration dashboard used by church staff and leadership, and the public-facing church website used by congregation members, attendees, and visitors.
+
+---
+
+## Product Roadmap & Status
+
+Olive is built in synchronized phases with the **Dove** backend:
+
+| Phase | Name | Focus | Status |
+|---|---|---|---|
+| **Phase 1** | **Church Events Platform** | Youth Conference & event lifecycle, public registration, attendance desk, QR check-in, teams, games, live leaderboard, attendee directory | **Completed & Verified** ✅ |
+| **Phase 2** | **Church Relationship Platform** | Self-service member profiles, magic link auth, PWA introduction, visitor follow-up, department/ministry management, weekly attendance | **In Progress** 🚧 |
+| **Phase 3** | **Church Lifestyle Platform** | PWA engagement: devotionals, sermons, digital giving, prayer requests, push notifications, unified church calendar | Planned 📅 |
+| **Phase 4** | **Church Operating System** | Multi-church SaaS, church finances, workforce/volunteer scheduling, enterprise analytics | Planned 📅 |
+
+See [`docs/ROADMAP.md`](./docs/ROADMAP.md) for the complete multi-phase roadmap and [`docs/ROADMAP_STATUS.md`](./docs/ROADMAP_STATUS.md) for current implementation verification.
+
+---
+
+## System Architecture
+
+```
+                    ┌──────────────────────────────┐
+                    │    Dove REST API (external)  │
+                    │    /api/v1  ·  JWT auth      │
+                    │    (NestJS 11 + Prisma 6)    │
+                    └──────────────┬───────────────┘
+                                   │ HTTPS / JSON
+               ┌───────────────────┴───────────────────┐
+               │                                       │
+    ┌──────────▼──────────┐                 ┌──────────▼──────────┐
+    │ apps/admin          │                 │ apps/web            │
+    │ Staff dashboard     │                 │ Public church site  │
+    │ (authenticated)     │                 │ (anonymous)         │
+    └──────────┬──────────┘                 └──────────┬──────────┘
+               │                                       │
+               └───────────────┬───────────────────────┘
+                               │ workspace deps
+                   ┌───────────▼───────────┐
+                   │ packages/types        │ API contract types
+                   │ packages/ui           │ shared UI primitives
+                   └───────────────────────┘
+```
+
+---
+
+## Repository Structure
+
+| Path | Purpose | Tech Stack |
+|---|---|---|
+| [`apps/admin`](./apps/admin) | Authenticated administrative portal for pastors, staff, desk workers, and coordinators. | Next.js 16 (App Router), React 19, Tailwind CSS v4, TanStack Query v5, Redux Toolkit, Headless UI |
+| [`apps/web`](./apps/web) | Public-facing church website: landing, about, events catalog, event self-registration, public leaderboard, contact forms. | Next.js 16 (App Router), React 19, Tailwind CSS v4, TanStack Query v5 |
+| [`packages/types`](./packages/types) | Shared TypeScript definitions representing the Dove REST API contract. | TypeScript |
+| [`packages/ui`](./packages/ui) | Shared brand-neutral UI utilities (e.g. `cn()`). | TypeScript |
+| [`docs/`](./docs) | System architecture, roadmap, and multi-tenancy documentation. | Markdown |
+
+---
+
+## Tech Stack & Tooling
+
+- **Runtime & Workspaces:** Bun (`bun@1.3.13`)
+- **Monorepo Engine:** Turborepo (`^2.4.4`)
+- **Framework:** Next.js 16.2 (App Router), React 19.2
+- **Styling:** Tailwind CSS v4 (Design tokens in `:root` and `.dark`, zero raw palette classes)
+- **Server State & Data Fetching:** TanStack Query v5 (`@tanstack/react-query`)
+- **Form Handling & Validation:** `react-hook-form` + `yup`
+- **Icons:** `lucide-react`
+- **Linting & Formatting:** ESLint 9, Prettier 3, Husky git hooks
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- [Bun](https://bun.sh/) 1.3+
+- Running instance of the **Dove** backend API at `http://localhost:3000` (see `/dove` repository)
+
+### 1. Install Dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+bun install
+```
+
+### 2. Configure Environment
+
+Copy `.env.example` in `apps/admin` and `apps/web`:
+
+```bash
+# apps/admin/.env.local
+NEXT_PUBLIC_API_URL="http://localhost:3000/api/v1"
+
+# apps/web/.env.local
+NEXT_PUBLIC_API_URL="http://localhost:3000/api/v1"
+```
+
+### 3. Start Development Servers
+
+Run all workspace applications concurrently:
+
+```bash
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Admin Dashboard:** [http://localhost:3001](http://localhost:3001) (or 3000 if backend is on another port)
+- **Public Website:** [http://localhost:3002](http://localhost:3002)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Common Scripts
 
-## Learn More
+Run from the monorepo root:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+bun dev             # Start all apps in watch mode
+bun build           # Build production bundles
+bun lint            # Run ESLint across all apps
+bun format          # Auto-format codebase with Prettier
+bun check-types     # Type-check all workspaces with TypeScript
+bun check-all       # Run format, lint, and type checks
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Documentation
 
-## Deploy on Vercel
+| Document | Description |
+|---|---|
+| [`docs/ROADMAP.md`](./docs/ROADMAP.md) | Multi-phase product roadmap paired with Dove backend |
+| [`docs/ROADMAP_STATUS.md`](./docs/ROADMAP_STATUS.md) | Current implementation status and Phase 1 verification |
+| [`docs/architecture.md`](./docs/architecture.md) | Frontend architecture, design system tokens, and data flow |
+| [`docs/multi-tenancy-architecture.md`](./docs/multi-tenancy-architecture.md) | Multi-tenancy & custom domain SaaS architecture |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+Private — All rights reserved.

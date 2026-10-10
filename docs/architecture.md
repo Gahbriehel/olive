@@ -4,18 +4,31 @@
 > If code and this document disagree, one of them is a bug: fix the code or update this file in the same PR.
 > Each section says whether it describes how things are **now** (current) or how they should be (**target**).
 
-Related: [Multi-tenancy & custom website strategy](./multi-tenancy-architecture.md) (future SaaS roadmap).
+Related:
+- Product Roadmap: [ROADMAP.md](./ROADMAP.md)
+- Roadmap Status & Verification: [ROADMAP_STATUS.md](./ROADMAP_STATUS.md)
+- Paired Backend: [Dove API](../../dove) (`/dove`)
+- Multi-tenancy & custom website strategy: [Multi-tenancy Architecture](./multi-tenancy-architecture.md) (future SaaS roadmap)
 
 ---
 
 ## 1. System overview
 
-Olive is a church administration platform covering events, registrations, attendance, teams and games, people, messaging and reports. This repository holds the **frontends only**. The backend REST API is a separate service, reached at `NEXT_PUBLIC_API_URL`, which defaults to `http://localhost:3000/api/v1`.
+Olive is a church administration platform covering events, registrations, attendance, teams and games, people, messaging and reports. This repository holds the **frontends only**. The backend REST API is **Dove** (located at `/dove`, built with NestJS 11, Prisma 6, and MySQL 8), reached at `NEXT_PUBLIC_API_URL`, which defaults to `http://localhost:3000/api/v1`.
+
+Platform capabilities advance in synchronized product phases paired with Dove:
+- **Phase 1: Church Events Platform** (Completed & Verified ✅) — Events lifecycle, public registration, attendance desk, QR check-in, teams, games, live leaderboard, attendee directory, messaging logs.
+- **Phase 2: Church Relationship Platform** (In Progress 🚧) — Self-service member profiles, magic link auth, PWA introduction, visitor follow-up, department management, weekly attendance.
+- **Phase 3: Church Lifestyle Platform** (Planned 📅) — Devotionals, sermons, digital giving, prayer requests, notifications, calendar.
+- **Phase 4: Church Operating System** (Planned 📅) — Multi-church SaaS, finances, volunteer workforce scheduling.
+
+See [`docs/ROADMAP.md`](./ROADMAP.md) for the cross-repo product roadmap and [`docs/ROADMAP_STATUS.md`](./ROADMAP_STATUS.md) for current phase status and verification.
 
 ```
                     ┌──────────────────────────────┐
-                    │   Olive REST API (external)  │
+                    │     Dove REST API (backend)  │
                     │   /api/v1  ·  JWT auth       │
+                    │   (NestJS 11 + Prisma 6)     │
                     └──────────────┬───────────────┘
                                    │ HTTPS / JSON
               ┌────────────────────┴────────────────────┐
@@ -269,6 +282,8 @@ Each row is the **only** approved way to do that job. Items marked *(target)* do
 ---
 
 ## 8. UI remediation roadmap
+
+> **Note:** This section tracks the frontend design system and component refactoring milestones from the October 2026 Admin UI/UX audit. For overall platform and backend product phases (Phase 1–4), refer to [`docs/ROADMAP.md`](./ROADMAP.md).
 
 Source: the October 2026 admin UI/UX audit.
 
