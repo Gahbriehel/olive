@@ -64,7 +64,9 @@ export const ViewBounceDetailsModal: React.FC<ViewBounceDetailsModalProps> = ({
                 variant="outline"
                 loading={isResolving}
                 onClick={() => onResolve(bounce)}
-                leftIcon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                leftIcon={
+                  <CheckCircle2 className="w-4 h-4 text-success-text" />
+                }
               >
                 Mark Resolved
               </Button>
@@ -125,7 +127,7 @@ export const ViewBounceDetailsModal: React.FC<ViewBounceDetailsModalProps> = ({
 
           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border-control text-xs">
             <div>
-              <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">
+              <span className="text-2xs uppercase font-bold text-fg-muted block mb-0.5">
                 Event Webhook
               </span>
               <span className="font-semibold text-fg font-mono text-2xs">
@@ -133,7 +135,7 @@ export const ViewBounceDetailsModal: React.FC<ViewBounceDetailsModalProps> = ({
               </span>
             </div>
             <div>
-              <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">
+              <span className="text-2xs uppercase font-bold text-fg-muted block mb-0.5">
                 Bounce Category
               </span>
               <span className="font-semibold text-fg">
@@ -145,7 +147,7 @@ export const ViewBounceDetailsModal: React.FC<ViewBounceDetailsModalProps> = ({
 
         {/* Recipient Details & Entity Binding */}
         <div className="space-y-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
             <User className="w-3.5 h-3.5" /> Recipient & Message Context
           </h4>
           <div className="p-3.5 rounded-xl border border-border bg-surface space-y-2.5 text-xs">
@@ -201,11 +203,11 @@ export const ViewBounceDetailsModal: React.FC<ViewBounceDetailsModalProps> = ({
 
         {/* Diagnostic Server Reason */}
         <div className="space-y-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
             <Terminal className="w-3.5 h-3.5" /> SMTP Diagnostic Reason
           </h4>
           <div className="p-3.5 rounded-xl border border-danger-border bg-danger-soft text-xs space-y-2">
-            <p className="font-mono text-xs text-rose-900 dark:text-rose-200 break-words leading-relaxed whitespace-pre-wrap">
+            <p className="font-mono text-xs text-danger-text break-words leading-relaxed whitespace-pre-wrap">
               {bounce.reason ||
                 "No diagnostic code returned by the destination mail server."}
             </p>
@@ -214,13 +216,13 @@ export const ViewBounceDetailsModal: React.FC<ViewBounceDetailsModalProps> = ({
 
         {/* Timestamps & Audit Log */}
         <div className="space-y-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5" /> Audit & Timestamps
           </h4>
           <div className="p-3.5 rounded-xl border border-border bg-surface space-y-2 text-xs">
             <div className="flex items-center justify-between">
               <span className="text-fg-muted flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-slate-400" /> Recorded At:
+                <Calendar className="w-3.5 h-3.5 text-fg-subtle" /> Recorded At:
               </span>
               <span className="font-medium text-fg">
                 {createdAtFormatted || "—"}
@@ -230,7 +232,7 @@ export const ViewBounceDetailsModal: React.FC<ViewBounceDetailsModalProps> = ({
             {bounce.isResolved && (
               <div className="flex items-center justify-between">
                 <span className="text-fg-muted flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />{" "}
+                  <CheckCircle2 className="w-3.5 h-3.5 text-success-text" />{" "}
                   Resolved At:
                 </span>
                 <span className="font-medium text-fg">

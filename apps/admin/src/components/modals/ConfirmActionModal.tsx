@@ -93,9 +93,7 @@ export function ConfirmActionModal({
         {/* Icon */}
         <div
           className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
-            isDestructive
-              ? "bg-rose-100 dark:bg-rose-950/50"
-              : "bg-indigo-100 dark:bg-indigo-950/50"
+            isDestructive ? "bg-danger-soft" : "bg-primary-soft"
           }`}
         >
           {isDestructive ? (

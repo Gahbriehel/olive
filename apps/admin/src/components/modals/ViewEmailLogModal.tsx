@@ -49,7 +49,7 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
       title="Email Log Details"
       description={
         <span className="flex items-center gap-1.5 font-mono text-xs">
-          <Mail className="w-3.5 h-3.5 text-indigo-500" />
+          <Mail className="w-3.5 h-3.5 text-primary-text" />
           {log.recipient?.email || "No recipient email"}
         </span>
       }
@@ -72,7 +72,7 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border-control text-xs">
             <div>
-              <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">
+              <span className="text-2xs uppercase font-bold text-fg-muted block mb-0.5">
                 Sent At
               </span>
               <span className="font-medium text-fg">
@@ -80,7 +80,7 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
               </span>
             </div>
             <div>
-              <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">
+              <span className="text-2xs uppercase font-bold text-fg-muted block mb-0.5">
                 Resend Message ID
               </span>
               <div className="font-mono text-fg-secondary truncate">
@@ -99,8 +99,8 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
 
         {/* Recipient Card */}
         <div className="space-y-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-            <User className="w-3.5 h-3.5 text-slate-500" /> Recipient Details
+          <h4 className="text-xs font-bold uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
+            <User className="w-3.5 h-3.5 text-fg-subtle" /> Recipient Details
           </h4>
           <div className="p-3.5 rounded-xl border border-border bg-surface space-y-2 text-xs">
             <div className="flex items-center justify-between">
@@ -127,8 +127,8 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
 
         {/* Sender Info */}
         <div className="space-y-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-            <Send className="w-3.5 h-3.5 text-slate-500" /> Sender Information
+          <h4 className="text-xs font-bold uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
+            <Send className="w-3.5 h-3.5 text-fg-subtle" /> Sender Information
           </h4>
           <div className="p-3.5 rounded-xl border border-border bg-surface space-y-2 text-xs">
             {log.sentBy ? (
@@ -148,7 +148,7 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
               </>
             ) : (
               <div className="flex items-center gap-2 text-fg-secondary italic">
-                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                <span className="w-2 h-2 rounded-full bg-primary"></span>
                 Automated / System Triggered
               </div>
             )}
@@ -157,12 +157,12 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
 
         {/* Content Section */}
         <div className="space-y-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-            <FileText className="w-3.5 h-3.5 text-slate-500" /> Email Content
+          <h4 className="text-xs font-bold uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
+            <FileText className="w-3.5 h-3.5 text-fg-subtle" /> Email Content
           </h4>
           <div className="p-3.5 rounded-xl border border-border bg-surface space-y-3 text-xs">
             <div>
-              <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">
+              <span className="text-2xs uppercase font-bold text-fg-muted block mb-0.5">
                 Subject
               </span>
               <p className="font-semibold text-fg text-sm">
@@ -172,7 +172,7 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
 
             {log.content?.heading && (
               <div>
-                <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">
+                <span className="text-2xs uppercase font-bold text-fg-muted block mb-0.5">
                   Heading
                 </span>
                 <p className="text-fg font-medium">{log.content.heading}</p>
@@ -181,7 +181,7 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
 
             {log.content?.bodyTextSnippet && (
               <div>
-                <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">
+                <span className="text-2xs uppercase font-bold text-fg-muted block mb-0.5">
                   Message Body Preview
                 </span>
                 <div className="p-3 rounded-lg bg-subtle border border-border-control text-fg-secondary whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
@@ -197,8 +197,8 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
           log.context?.userId ||
           log.context?.registrationId) && (
           <div className="space-y-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-              <Hash className="w-3.5 h-3.5 text-slate-500" /> Associated Context
+            <h4 className="text-xs font-bold uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
+              <Hash className="w-3.5 h-3.5 text-fg-subtle" /> Associated Context
             </h4>
             <div className="p-3.5 rounded-xl border border-border bg-surface space-y-2 text-xs">
               {log.context.personId && (
@@ -235,13 +235,13 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
         {/* Bounce Details (if available) */}
         {log.bounce && (
           <div className="space-y-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-rose-500 flex items-center gap-1.5">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-danger-text flex items-center gap-1.5">
               <ShieldAlert className="w-3.5 h-3.5" /> Bounce Classification
             </h4>
             <div className="p-3.5 rounded-xl border border-danger-border bg-danger-soft space-y-2 text-xs">
               <div className="flex items-center justify-between">
                 <span className="text-danger-text">Type:</span>
-                <span className="font-semibold text-rose-900 dark:text-rose-100">
+                <span className="font-semibold text-danger-text">
                   {log.bounce.bounceType}
                   {log.bounce.bounceSubType
                     ? ` (${log.bounce.bounceSubType})`

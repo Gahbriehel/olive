@@ -1,224 +1,262 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Search,
-  Calendar,
-  Ticket,
-  Shield,
-  Gamepad2,
+  Combobox,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+} from "@headlessui/react";
+import {
   ArrowRight,
+  Moon,
+  Plus,
+  QrCode,
+  Search,
+  Settings,
+  Sun,
+  User,
+  type LucideIcon,
 } from "lucide-react";
 import { useDashboard } from "@/context/DashboardContext";
 import { useAuth } from "@/hooks/useAuth";
-import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
-import { User } from "lucide-react";
+import { filterNavItems, mainNavItems, type NavItem } from "@/helpers/navlinks";
+import {
+  getUserRoles,
+  hasAuthority,
+  ROLES,
+  ROUTE_PERMISSIONS,
+} from "@/utils/rbac";
 
+interface Command {
+  id: string;
+  label: string;
+  group: "Pages" | "Actions";
+  icon: LucideIcon;
+  /** Shown after the label, e.g. the parent section. */
+  hint?: string;
+  run: () => void;
+}
+
+interface NavEntry {
+  label: string;
+  icon: LucideIcon;
+  hint?: string;
+  href: string;
+}
+
+/** Flattens the role-filtered sidebar tree; children carry their section as a hint. */
+function flattenNav(items: NavItem[], parent?: string): NavEntry[] {
+  return items.flatMap((item) => [
+    ...(item.href
+      ? [{ label: item.label, icon: item.icon, hint: parent, href: item.href }]
+      : []),
+    ...(item.subs ? flattenNav(item.subs, item.label) : []),
+  ]);
+}
+
+/**
+ * ⌘K command palette: jump to any page the user can access, or run a
+ * shell action. Built on Headless UI Dialog + Combobox (focus trap, Escape,
+ * arrow-key navigation).
+ */
 export const CommandMenu: React.FC = () => {
   const router = useRouter();
-  const { isSearchOpen, setIsSearchOpen } = useDashboard();
+  const {
+    isSearchOpen,
+    setIsSearchOpen,
+    setIsCreateEventOpen,
+    setIsQrScannerOpen,
+    darkMode,
+    setDarkMode,
+  } = useDashboard();
   const { user } = useAuth();
-  const userRoles = getUserRoles(user);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setIsSearchOpen(!isSearchOpen);
       }
-      if (e.key === "Escape" && isSearchOpen) {
-        setIsSearchOpen(false);
-      }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [isSearchOpen, setIsSearchOpen]);
 
-  if (!isSearchOpen) return null;
+  const commands = useMemo<Command[]>(() => {
+    const roles = getUserRoles(user);
+    const can = (route: string) =>
+      hasAuthority(roles, ROUTE_PERMISSIONS[route] ?? []);
 
-  const quickActions = [
-    {
-      label: "Go to Attendance Live Check-in",
-      href: "/attendance",
-      icon: Search,
-      allowedRoles: [
-        ROLES.SUPER_ADMIN,
-        ROLES.ADMIN,
-        ROLES.COORDINATOR,
-        ROLES.REGISTRATION_DESK,
-        "MEMBER",
-      ],
-    },
-    {
-      label: "View Registrations Directory",
-      href: "/registrations",
-      icon: Ticket,
-      allowedRoles: [
-        ROLES.SUPER_ADMIN,
-        ROLES.ADMIN,
-        ROLES.COORDINATOR,
-        ROLES.REGISTRATION_DESK,
-        "MEMBER",
-      ],
-    },
-    {
-      label: "Open Team Management & Drag-Drop",
-      href: "/teams",
-      icon: Shield,
-      allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
-    },
-    {
-      label: "Check Leaderboard Standings",
-      href: "/leaderboard",
-      icon: Gamepad2,
-      allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
-    },
-    {
-      label: "Manage Games & Enter Scores",
-      href: "/games",
-      icon: Gamepad2,
-      allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
-    },
-    {
-      label: "Church Settings & Branding",
-      href: "/settings?tab=church-info",
-      icon: Calendar,
-      allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-    },
-    {
-      label: "My Profile & Security Settings",
-      href: "/settings?tab=profile",
-      icon: User,
-      allowedRoles: [
-        ROLES.SUPER_ADMIN,
-        ROLES.ADMIN,
-        ROLES.COORDINATOR,
-        ROLES.REGISTRATION_DESK,
-        "MEMBER",
-      ],
-    },
-  ].filter((act) => hasAuthority(userRoles, act.allowedRoles));
+    const pages: Command[] = flattenNav(
+      filterNavItems(mainNavItems, roles),
+    ).map((page) => ({
+      id: `page:${page.href}`,
+      group: "Pages",
+      label: page.label,
+      icon: page.icon,
+      hint: page.hint,
+      run: () => router.push(page.href),
+    }));
 
-  const searchResults = [
-    {
-      type: "Person",
-      title: "Jordan Miller",
-      detail: "Member • Team Tempest • YC26-1001",
-      href: "/people",
-    },
-    {
-      type: "Person",
-      title: "Chloe Bennett",
-      detail: "Visitor • Team Lumin • YC26-1002",
-      href: "/people",
-    },
-    {
-      type: "Event",
-      title: "Youth Conference 2026: IGNITE",
-      detail: "1,248 Registered • Live",
-      href: "/events/evt-1",
-    },
-    {
-      type: "Team",
-      title: "Team Tempest",
-      detail: "Cyan • 314 Members • 1,620 Points",
-      href: "/teams",
-    },
-  ].filter(
-    (r) =>
-      query === "" ||
-      r.title.toLowerCase().includes(query.toLowerCase()) ||
-      r.detail.toLowerCase().includes(query.toLowerCase()),
-  );
+    const actions: Command[] = [
+      ...(can("/events")
+        ? [
+            {
+              id: "action:create-event",
+              group: "Actions" as const,
+              label: "Create event",
+              icon: Plus,
+              run: () => setIsCreateEventOpen(true),
+            },
+          ]
+        : []),
+      ...(can("/attendance")
+        ? [
+            {
+              id: "action:qr-scanner",
+              group: "Actions" as const,
+              label: "Open QR check-in scanner",
+              icon: QrCode,
+              run: () => setIsQrScannerOpen(true),
+            },
+          ]
+        : []),
+      {
+        id: "action:profile",
+        group: "Actions",
+        label: "My profile & password",
+        icon: User,
+        run: () => router.push("/settings?tab=profile"),
+      },
+      ...(hasAuthority(roles, [ROLES.SUPER_ADMIN, ROLES.ADMIN])
+        ? [
+            {
+              id: "action:church-settings",
+              group: "Actions" as const,
+              label: "Church settings & branding",
+              icon: Settings,
+              run: () => router.push("/settings?tab=church-info"),
+            },
+          ]
+        : []),
+      {
+        id: "action:theme",
+        group: "Actions",
+        label: darkMode ? "Switch to light mode" : "Switch to dark mode",
+        icon: darkMode ? Sun : Moon,
+        run: () => setDarkMode(!darkMode),
+      },
+    ];
 
-  const handleNavigate = (href: string) => {
-    router.push(href);
+    return [...pages, ...actions];
+  }, [
+    user,
+    router,
+    darkMode,
+    setDarkMode,
+    setIsCreateEventOpen,
+    setIsQrScannerOpen,
+  ]);
+
+  const q = query.trim().toLowerCase();
+  const results = q
+    ? commands.filter(
+        (c) =>
+          c.label.toLowerCase().includes(q) ||
+          c.hint?.toLowerCase().includes(q),
+      )
+    : commands;
+
+  const close = () => {
     setIsSearchOpen(false);
+    setQuery("");
+  };
+
+  const onSelect = (command: Command | null) => {
+    if (!command) return;
+    close();
+    command.run();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-overlay backdrop-blur-sm animate-fade-in">
-      <div className="fixed inset-0" onClick={() => setIsSearchOpen(false)} />
-      <div className="relative w-full max-w-xl bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden z-10 animate-fade-in">
-        {/* Search Header */}
-        <div className="flex items-center px-4 py-3 border-b border-border-subtle">
-          <Search className="w-5 h-5 text-fg-subtle mr-3 shrink-0" />
-          <input
-            autoFocus
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type a command or search attendees, teams, events..."
-            className="w-full text-base bg-transparent text-fg placeholder:text-fg-subtle focus:outline-none"
-          />
-          <kbd className="px-2 py-0.5 text-2xs font-mono bg-muted text-fg-muted rounded border border-border-control ml-2">
-            ESC
-          </kbd>
-        </div>
+    <Dialog open={isSearchOpen} onClose={close} className="relative z-50">
+      <DialogBackdrop
+        transition
+        className="fixed inset-0 bg-overlay backdrop-blur-sm transition-opacity duration-150 data-closed:opacity-0"
+      />
+      <div className="fixed inset-0 flex items-start justify-center px-4 pt-16 sm:pt-24">
+        <DialogPanel
+          transition
+          className="w-full max-w-xl overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl transition duration-150 ease-out data-closed:scale-95 data-closed:opacity-0"
+        >
+          <Combobox onChange={onSelect}>
+            <div className="flex items-center border-b border-border-subtle px-4 py-3">
+              <Search
+                className="mr-3 h-5 w-5 shrink-0 text-fg-subtle"
+                aria-hidden="true"
+              />
+              <ComboboxInput
+                autoFocus
+                aria-label="Jump to a page or action"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Jump to a page or action…"
+                className="w-full bg-transparent text-base text-fg placeholder:text-fg-subtle focus:outline-none"
+              />
+              <kbd className="ml-2 rounded border border-border-control bg-muted px-2 py-0.5 font-mono text-2xs text-fg-muted">
+                ESC
+              </kbd>
+            </div>
 
-        {/* Results Body */}
-        <div className="p-3 max-h-80 overflow-y-auto space-y-4 text-xs">
-          {query.length > 0 ? (
-            <div>
-              <p className="px-2 mb-1.5 text-2xs font-bold text-fg-subtle uppercase">
-                Search Results
-              </p>
-              {searchResults.length > 0 ? (
-                <div className="space-y-1">
-                  {searchResults.map((res, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleNavigate(res.href)}
-                      className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-muted transition-colors text-left"
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-fg">
-                            {res.title}
+            {results.length > 0 ? (
+              <ComboboxOptions
+                static
+                className="max-h-80 space-y-3 overflow-y-auto p-3 text-xs"
+              >
+                {(["Pages", "Actions"] as const).map((group) => {
+                  const items = results.filter((c) => c.group === group);
+                  if (items.length === 0) return null;
+                  return (
+                    <div key={group}>
+                      <p className="mb-1.5 px-2 text-2xs font-bold uppercase text-fg-subtle">
+                        {group}
+                      </p>
+                      {items.map((command) => (
+                        <ComboboxOption
+                          key={command.id}
+                          value={command}
+                          className="group flex cursor-pointer items-center justify-between rounded-xl p-2.5 font-medium text-fg-secondary data-focus:bg-muted data-focus:text-fg"
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <command.icon className="h-4 w-4 text-primary-text" />
+                            {command.label}
+                            {command.hint && (
+                              <span className="text-2xs text-fg-subtle">
+                                {command.hint}
+                              </span>
+                            )}
                           </span>
-                          <span className="px-1.5 py-0.5 text-2xs rounded font-mono bg-primary-soft text-primary-text">
-                            {res.type}
-                          </span>
-                        </div>
-                        <p className="text-2xs text-fg-subtle mt-0.5">
-                          {res.detail}
-                        </p>
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-fg-subtle shrink-0" />
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <p className="p-4 text-center text-fg-subtle">
-                  No matching records found for &quot;{query}&quot;
-                </p>
-              )}
-            </div>
-          ) : (
-            <div>
-              <p className="px-2 mb-1.5 text-2xs font-bold text-fg-subtle uppercase">
-                Quick Actions
+                          <ArrowRight className="h-4 w-4 text-fg-subtle opacity-0 group-data-focus:opacity-100" />
+                        </ComboboxOption>
+                      ))}
+                    </div>
+                  );
+                })}
+              </ComboboxOptions>
+            ) : (
+              <p className="p-6 text-center text-xs text-fg-muted">
+                Nothing matches &quot;{query}&quot;
               </p>
-              <div className="space-y-1">
-                {quickActions.map((action, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleNavigate(action.href)}
-                    className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-muted transition-colors text-fg-secondary text-left font-medium"
-                  >
-                    <span className="flex items-center gap-2.5">
-                      <action.icon className="w-4 h-4 text-primary-text" />
-                      {action.label}
-                    </span>
-                    <kbd className="text-2xs font-mono text-fg-subtle">↵</kbd>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </Combobox>
+        </DialogPanel>
       </div>
-    </div>
+    </Dialog>
   );
 };

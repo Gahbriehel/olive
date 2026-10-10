@@ -4,13 +4,14 @@ import React, { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Church, Sun, Moon, ChevronRight } from "lucide-react";
+import { Dialog, DialogBackdrop, DialogPanel } from "@headlessui/react";
+import { X, Church, ChevronRight } from "lucide-react";
 import { clsx } from "clsx";
 import { useDashboard } from "@/context/DashboardContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useSettings } from "@/hooks/useSettings";
-import { mainNavItems, type NavItem } from "@/helpers/navlinks";
-import { getUserRoles, hasAuthority } from "@/utils/rbac";
+import { filterNavItems, mainNavItems, type NavItem } from "@/helpers/navlinks";
+import { getUserRoles } from "@/utils/rbac";
 
 function isRouteActive(href: string | undefined, pathname: string): boolean {
   if (!href) return false;
@@ -26,31 +27,6 @@ function containsActivePath(subs: NavItem[], pathname: string): boolean {
       isRouteActive(sub.href, pathname) ||
       (sub.subs ? containsActivePath(sub.subs, pathname) : false),
   );
-}
-
-function filterNavItems(items: NavItem[], userRoles: string[]): NavItem[] {
-  return items
-    .filter((item) => {
-      if (item.allowedRoles && item.allowedRoles.length > 0) {
-        return hasAuthority(userRoles, item.allowedRoles);
-      }
-      return true;
-    })
-    .map((item) => {
-      if (item.subs) {
-        return {
-          ...item,
-          subs: filterNavItems(item.subs, userRoles),
-        };
-      }
-      return item;
-    })
-    .filter((item) => {
-      if (item.subs && item.subs.length === 0 && !item.href) {
-        return false;
-      }
-      return true;
-    });
 }
 
 interface NavItemLinkProps {
@@ -221,8 +197,7 @@ const NavSubMenu: React.FC<NavSubMenuProps> = ({
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
-  const { isMobileOpen, setIsMobileOpen, darkMode, setDarkMode } =
-    useDashboard();
+  const { isMobileOpen, setIsMobileOpen } = useDashboard();
   const { settings } = useSettings();
   const { user } = useAuth();
 
@@ -234,17 +209,18 @@ export const Sidebar: React.FC = () => {
 
   const churchName =
     settings?.churchName || user?.church?.name || "Church Events";
+  const closeMobile = () => setIsMobileOpen(false);
 
-  const navContent = (
-    <div className="flex flex-col h-full bg-surface border-r border-border text-fg-secondary">
+  const navContent = (isMobile: boolean) => (
+    <div className="flex h-full flex-col border-r border-border bg-surface text-fg-secondary">
       {/* Brand Header */}
-      <div className="p-5 flex items-center justify-between border-b border-border-subtle">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20">
-            <Church className="w-5 h-5" />
+      <div className="flex items-center justify-between border-b border-border-subtle p-5">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-md shadow-primary/20">
+            <Church className="h-5 w-5" aria-hidden="true" />
           </div>
-          <div>
-            <p className="font-bold text-sm leading-tight text-fg tracking-tight truncate">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold leading-tight tracking-tight text-fg">
               {churchName}
             </p>
             <p className="text-2xs font-medium text-primary-text">
@@ -252,66 +228,48 @@ export const Sidebar: React.FC = () => {
             </p>
           </div>
         </div>
-        {/* Mobile close button */}
-        <button
-          onClick={() => setIsMobileOpen(false)}
-          className="lg:hidden p-2 text-fg-subtle hover:text-fg-secondary rounded-xl"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {isMobile && (
+          <button
+            type="button"
+            onClick={closeMobile}
+            aria-label="Close navigation"
+            className="rounded-xl p-2 text-fg-subtle hover:bg-muted hover:text-fg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       {/* Navigation Links */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-        <div>
-          <p className="px-3 mb-2 text-2xs font-bold tracking-wider text-fg-subtle uppercase">
-            Modules
-          </p>
-          <nav className="space-y-1">
-            {visibleNavItems.map((item) =>
-              item.subs && item.subs.length > 0 ? (
-                <NavSubMenu
-                  key={item.label}
-                  item={item}
-                  pathname={pathname}
-                  onNavigate={() => setIsMobileOpen(false)}
-                />
-              ) : (
-                <NavItemLink
-                  key={item.href || item.label}
-                  item={item}
-                  pathname={pathname}
-                  onNavigate={() => setIsMobileOpen(false)}
-                />
-              ),
-            )}
-          </nav>
-        </div>
-      </div>
-
-      {/* Footer info */}
-      <div className="p-4 border-t border-border-subtle bg-subtle text-2xs text-fg-muted flex items-center justify-between">
-        <div>
-          <p className="font-semibold text-fg-secondary">SaaS v1.4.2</p>
-          <p className="text-2xs">Multi-Church Engine</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="p-1.5 rounded-lg text-fg-muted hover:bg-muted-strong transition-colors cursor-pointer"
-            title="Toggle Dark / Light Mode"
-          >
-            {darkMode ? (
-              <Sun className="w-4 h-4 text-warning" />
+      <div className="flex-1 overflow-y-auto px-3 py-4">
+        <p
+          id={isMobile ? "nav-heading-mobile" : "nav-heading"}
+          className="mb-2 px-3 text-2xs font-bold uppercase tracking-wider text-fg-subtle"
+        >
+          Modules
+        </p>
+        <nav
+          aria-labelledby={isMobile ? "nav-heading-mobile" : "nav-heading"}
+          className="space-y-1"
+        >
+          {visibleNavItems.map((item) =>
+            item.subs && item.subs.length > 0 ? (
+              <NavSubMenu
+                key={item.label}
+                item={item}
+                pathname={pathname}
+                onNavigate={closeMobile}
+              />
             ) : (
-              <Moon className="w-4 h-4 text-fg-secondary" />
-            )}
-          </button>
-          <div
-            className="w-2 h-2 rounded-full bg-success"
-            title="System Operational"
-          />
-        </div>
+              <NavItemLink
+                key={item.href || item.label}
+                item={item}
+                pathname={pathname}
+                onNavigate={closeMobile}
+              />
+            ),
+          )}
+        </nav>
       </div>
     </div>
   );
@@ -319,22 +277,28 @@ export const Sidebar: React.FC = () => {
   return (
     <>
       {/* Desktop Persistent Sidebar */}
-      <aside className="hidden lg:block fixed inset-y-0 left-0 w-72 z-30">
-        {navContent}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 lg:block">
+        {navContent(false)}
       </aside>
 
-      {/* Mobile Backdrop & Drawer Sheet */}
-      {isMobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-50">
-          <div
-            className="fixed inset-0 bg-overlay backdrop-blur-sm animate-fade-in"
-            onClick={() => setIsMobileOpen(false)}
-          />
-          <div className="fixed inset-y-0 left-0 w-72 max-w-[80vw] z-50 animate-slide-in-right">
-            {navContent}
-          </div>
-        </div>
-      )}
+      {/* Mobile drawer: a real dialog (focus trap, Escape, scroll lock) sliding in from the left */}
+      <Dialog
+        open={isMobileOpen}
+        onClose={closeMobile}
+        className="relative z-50 lg:hidden"
+      >
+        <DialogBackdrop
+          transition
+          className="fixed inset-0 bg-overlay backdrop-blur-sm transition-opacity duration-200 ease-out data-closed:opacity-0"
+        />
+        <DialogPanel
+          transition
+          aria-label="Navigation"
+          className="fixed inset-y-0 left-0 w-72 max-w-[80vw] transition duration-300 ease-out data-closed:-translate-x-full"
+        >
+          {navContent(true)}
+        </DialogPanel>
+      </Dialog>
     </>
   );
 };

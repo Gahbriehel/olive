@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useEffect, useId } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Cake, Send, Image as ImageIcon } from "lucide-react";
+import { Cake, Send } from "lucide-react";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { Button } from "@/components/ui/Button";
 import { useUnsavedChangesGuard } from "@/components/ui/UnsavedChanges";
-import { Input } from "@/components/FormElements/Input";
-import { RichTextEditor } from "@/components/FormElements/RichTextEditor";
+import { EmailComposer } from "@/components/email/EmailComposer";
+import { trimOrUndefined } from "@/components/email/emailFields";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { IUpcomingBirthday } from "@/models/dashboard";
 import { BirthdayPersonItem } from "@/models/birthday";
@@ -62,7 +62,7 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
     control,
     handleSubmit,
     reset,
-    formState: { errors, isDirty, isSubmitting, isSubmitSuccessful },
+    formState: { isDirty, isSubmitting, isSubmitSuccessful },
   } = useForm({
     resolver: yupResolver(birthdayGreetingSchema),
     mode: "onTouched",
@@ -99,13 +99,9 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
         subject: formData.subject.trim(),
         heading: formData.heading.trim(),
         message: formData.message.trim(),
-        imageUrl: formData.imageUrl?.trim()
-          ? formData.imageUrl.trim()
-          : undefined,
-        ctaLabel: formData.ctaLabel?.trim()
-          ? formData.ctaLabel.trim()
-          : undefined,
-        ctaUrl: formData.ctaUrl?.trim() ? formData.ctaUrl.trim() : undefined,
+        imageUrl: trimOrUndefined(formData.imageUrl),
+        ctaLabel: trimOrUndefined(formData.ctaLabel),
+        ctaUrl: trimOrUndefined(formData.ctaUrl),
       });
     } catch {
       // The API client interceptor already toasted the error.
@@ -153,122 +149,41 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
       onClose={onClose}
     >
       {birthday && (
-        <form
-          id={formId}
+        <EmailComposer
+          control={control}
+          formId={formId}
           onSubmit={handleSubmit(onSubmit)}
-          noValidate
-          className="flex flex-col gap-5 pt-2"
-        >
-          {/* Recipient Details Pill */}
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-subtle border border-border-control">
-            <div className="w-10 h-10 rounded-xl bg-primary-soft text-primary-text font-bold text-sm flex items-center justify-center shrink-0 border border-primary-border">
-              <Cake className="w-5 h-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h4 className="text-sm font-bold text-fg truncate">
-                  {birthday.firstName} {birthday.lastName}
-                </h4>
-                <StatusBadge
-                  status={birthday.membershipStatus || "MEMBER"}
-                  size="sm"
-                />
+          recipients={
+            <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-subtle border border-border-control">
+              <div className="w-10 h-10 rounded-xl bg-primary-soft text-primary-text font-bold text-sm flex items-center justify-center shrink-0 border border-primary-border">
+                <Cake className="w-5 h-5" />
               </div>
-              <p className="text-xs text-fg-muted truncate">
-                {birthday.email || "No email on record"}
-                {formattedDate && ` • Birthday: ${formattedDate}`}
-              </p>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="text-sm font-bold text-fg truncate">
+                    {birthday.firstName} {birthday.lastName}
+                  </h4>
+                  <StatusBadge
+                    status={birthday.membershipStatus || "MEMBER"}
+                    size="sm"
+                  />
+                </div>
+                <p className="text-xs text-fg-muted truncate">
+                  {birthday.email || "No email on record"}
+                  {formattedDate && ` • Birthday: ${formattedDate}`}
+                </p>
+              </div>
             </div>
-          </div>
-
-          {/* Message Subject */}
-          <Controller
-            name="subject"
-            control={control}
-            render={({ field }) => (
-              <Input
-                {...field}
-                label="Message Subject"
-                placeholder="e.g. Happy Birthday! 🎂"
-                error={errors.subject?.message}
-                required
-              />
-            )}
-          />
-
-          {/* Email Heading */}
-          <Controller
-            name="heading"
-            control={control}
-            render={({ field }) => (
-              <Input
-                {...field}
-                label="Email Heading"
-                placeholder="e.g. Wishing You a Blessed Birthday!"
-                error={errors.heading?.message}
-                required
-              />
-            )}
-          />
-
-          {/* Optional Card Image URL */}
-          <Controller
-            name="imageUrl"
-            control={control}
-            render={({ field }) => (
-              <Input
-                {...field}
-                label="Birthday Card Image URL (Optional)"
-                placeholder="e.g. /public/uploads/birthday-card.png or https://..."
-                icon={<ImageIcon className="w-4 h-4 text-slate-400" />}
-                error={errors.imageUrl?.message}
-              />
-            )}
-          />
-
-          {/* Message Body */}
-          <Controller
-            name="message"
-            control={control}
-            render={({ field }) => (
-              <RichTextEditor
-                {...field}
-                label="Message Body"
-                placeholder="Write your birthday greetings here..."
-                error={errors.message?.message}
-                required
-              />
-            )}
-          />
-
-          {/* Optional Call to Action */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border-subtle">
-            <Controller
-              name="ctaLabel"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  label="CTA Button Label (Optional)"
-                  placeholder="e.g. Visit Church Portal"
-                  error={errors.ctaLabel?.message}
-                />
-              )}
-            />
-            <Controller
-              name="ctaUrl"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  label="CTA Button URL (Optional)"
-                  placeholder="https://..."
-                  error={errors.ctaUrl?.message}
-                />
-              )}
-            />
-          </div>
-        </form>
+          }
+          image={{ label: "Birthday Card Image" }}
+          placeholders={{
+            subject: "e.g. Happy Birthday! 🎂",
+            heading: "e.g. Wishing You a Blessed Birthday!",
+            message: "Write your birthday greetings here...",
+            imageUrl: "e.g. /public/uploads/birthday-card.png or https://...",
+            ctaLabel: "e.g. Visit Church Portal",
+          }}
+        />
       )}
     </SidebarModal>
   );

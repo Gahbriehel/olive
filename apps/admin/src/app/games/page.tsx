@@ -1,31 +1,13 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import confetti from "canvas-confetti";
-import {
-  Gamepad2,
-  Award,
-  Trophy,
-  Users,
-  Search,
-  SearchX,
-  Plus,
-} from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Search } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Pagination } from "@/components/ui/Pagination";
-import {
-  QueryState,
-  EmptyState,
-  SkeletonCardGrid,
-  SkeletonList,
-} from "@/components/ui/QueryState";
-import { GameCard } from "./_components/GameCard";
+import { QueryState, SkeletonCardGrid } from "@/components/ui/QueryState";
 import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { ListToolbar } from "@/components/ui/ListToolbar";
-import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/FormElements/Input";
-import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { GamesForm } from "@/components/Forms/GamesForm";
@@ -36,6 +18,11 @@ import { useDashboard } from "@/context/DashboardContext";
 import { useGames } from "@/hooks/useGames";
 import { useTeams } from "@/hooks/useTeams";
 import { useListFilters } from "@/hooks/useListFilters";
+import { GameCard } from "./_components/GameCard";
+import { GamesEmptyState } from "./_components/GamesEmptyState";
+import { GamesStats } from "./_components/GamesStats";
+import { ManageScoresModal } from "./_components/ManageScoresModal";
+import { useScoreEditor } from "./_components/useScoreEditor";
 
 export default function GamesPage() {
   const { selectedEventId } = useDashboard();
@@ -43,11 +30,6 @@ export default function GamesPage() {
   const { page, setPage, limit, setLimit, search, setSearch, queryParams } =
     useListFilters({ searchDebounceMs: 500 });
 
-  const [selectedGameForScore, setSelectedGameForScore] =
-    useState<IGame | null>(null);
-  const [scoreInputs, setScoreInputs] = useState<Record<string, number>>({});
-  const [scoreNotes, setScoreNotes] = useState<Record<string, string>>({});
-  const [scoreIds, setScoreIds] = useState<Record<string, string>>({});
   const [clearScoresTarget, setClearScoresTarget] = useState<IGame | null>(
     null,
   );
@@ -98,62 +80,18 @@ export default function GamesPage() {
     [apiGames, teams],
   );
 
-  const handleUpdateGameScores = async () => {
-    if (!selectedGameForScore) return;
-    const gameId = selectedGameForScore.id;
-    const updatedScores = Object.entries(scoreInputs).map(
-      ([teamId, points]) => ({
-        teamId,
-        points: Number(points),
-        scoreId: scoreIds[teamId],
-        notes: scoreNotes[teamId],
-      }),
-    );
-
-    for (const score of updatedScores) {
-      try {
-        if (score.scoreId) {
-          await apiUpdateScore({
-            id: score.scoreId,
-            payload: {
-              gameId,
-              teamId: score.teamId,
-              points: score.points,
-              notes: score.notes,
-            },
-          });
-        } else {
-          await apiRecordScore({
-            gameId,
-            teamId: score.teamId,
-            points: score.points,
-            notes: score.notes,
-          });
-        }
-      } catch (err) {
-        console.error("Failed to submit score:", err);
-      }
-    }
-
-    try {
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
-    } catch {
-      // fallback
-    }
-
-    setSelectedGameForScore(null);
-  };
+  const scoreEditor = useScoreEditor({
+    teams,
+    recordScore: apiRecordScore,
+    updateScore: apiUpdateScore,
+  });
 
   // Errors propagate so ConfirmActionModal can show them inline.
   const handleClearGameScores = async () => {
     if (!clearScoresTarget) return;
     await apiClearGameScores(clearScoresTarget.id);
     setClearScoresTarget(null);
-    setSelectedGameForScore(null);
+    scoreEditor.close();
   };
 
   const handleCreateGame = async (data: {
@@ -201,32 +139,8 @@ export default function GamesPage() {
     }
   };
 
-  const handleOpenScoreModal = (game: IGame) => {
-    setSelectedGameForScore(game);
-    const initialPoints: Record<string, number> = {};
-    const initialNotes: Record<string, string> = {};
-    const initialIds: Record<string, string> = {};
-    teams.forEach((t) => {
-      const existing = game.scores.find((s) => s.teamId === t.id);
-      initialPoints[t.id] = existing ? existing.points : 0;
-      initialNotes[t.id] = existing?.notes || "";
-      if (existing?.id) {
-        initialIds[t.id] = existing.id;
-      }
-    });
-    setScoreInputs(initialPoints);
-    setScoreNotes(initialNotes);
-    setScoreIds(initialIds);
-  };
-
   const totalItems = meta?.total ?? games.length;
   const totalPages = meta?.totalPages ?? 1;
-
-  const gamesWithScoresCount = games.filter(
-    (g) => g.scores && g.scores.length > 0,
-  ).length;
-  const totalMaxPoints = games.reduce((sum, g) => sum + g.maxScore, 0);
-  const totalTeams = teams.length;
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
@@ -258,45 +172,14 @@ export default function GamesPage() {
         }
       />
 
-      {/* Metrics Grid */}
-      <StatsCardGroup>
-        <StatsCard
-          title="Total Games"
-          value={totalItems.toLocaleString()}
-          change="Tournament schedule"
-          trend="neutral"
-          icon={Gamepad2}
-          color="indigo"
-          loading={isLoadingGames}
-        />
-        <StatsCard
-          title="Games Scored"
-          value={`${gamesWithScoresCount} / ${games.length}`}
-          change="Scores recorded"
-          trend="up"
-          icon={Award}
-          color="emerald"
-          loading={isLoadingGames}
-        />
-        <StatsCard
-          title="Max Point Pool"
-          value={totalMaxPoints.toLocaleString()}
-          change="Total points available"
-          trend="neutral"
-          icon={Trophy}
-          color="cyan"
-          loading={isLoadingGames}
-        />
-        <StatsCard
-          title="Participating Teams"
-          value={isTeamsError ? "—" : totalTeams.toLocaleString()}
-          change="Registered teams"
-          trend="neutral"
-          icon={Users}
-          color="amber"
-          loading={isLoadingTeams}
-        />
-      </StatsCardGroup>
+      <GamesStats
+        games={games}
+        totalItems={totalItems}
+        gamesLoading={isLoadingGames}
+        teamCount={teams.length}
+        teamsLoading={isLoadingTeams}
+        teamsError={isTeamsError}
+      />
 
       {/* Search */}
       <div className="w-full sm:w-72">
@@ -321,39 +204,11 @@ export default function GamesPage() {
         isEmpty={games.length === 0}
         loading={<SkeletonCardGrid count={4} className="xl:grid-cols-2" />}
         empty={
-          <div className="bg-surface rounded-2xl border border-border">
-            {search ? (
-              <EmptyState
-                icon={SearchX}
-                title="No games match your search"
-                description={`Nothing found for "${search}".`}
-                action={
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSearch("")}
-                  >
-                    Clear search
-                  </Button>
-                }
-              />
-            ) : (
-              <EmptyState
-                icon={Gamepad2}
-                title="No games yet"
-                description="Create a game to start recording team scores."
-                action={
-                  <Button
-                    size="sm"
-                    leftIcon={<Plus className="w-4 h-4" />}
-                    onClick={() => setIsCreateOpen(true)}
-                  >
-                    Create game
-                  </Button>
-                }
-              />
-            )}
-          </div>
+          <GamesEmptyState
+            search={search}
+            onClearSearch={() => setSearch("")}
+            onCreate={() => setIsCreateOpen(true)}
+          />
         }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -364,7 +219,7 @@ export default function GamesPage() {
               onEdit={() => setSelectedGameForEdit(game)}
               onClearScores={() => setClearScoresTarget(game)}
               onDelete={() => setDeletingGame(game)}
-              onManageScores={() => handleOpenScoreModal(game)}
+              onManageScores={() => scoreEditor.open(game)}
             />
           ))}
         </div>
@@ -381,96 +236,15 @@ export default function GamesPage() {
       </QueryState>
 
       {/* Score Submission Modal */}
-      <Modal
-        isOpen={!!selectedGameForScore}
-        onClose={() => setSelectedGameForScore(null)}
-        title={`Manage Scores: ${selectedGameForScore?.name}`}
-        description={`Award or update team points for ${selectedGameForScore?.name} (Max Points: ${selectedGameForScore?.maxScore})`}
-      >
-        <div className="space-y-4 text-xs">
-          <QueryState
-            isLoading={isLoadingTeams}
-            isError={isTeamsError}
-            error={teamsError}
-            onRetry={() => refetchTeams()}
-            resource="teams"
-            isEmpty={teams.length === 0}
-            loading={<SkeletonList rows={3} />}
-            empty={
-              <EmptyState
-                icon={Users}
-                title="No teams yet"
-                description="Create teams for this event before recording scores."
-              />
-            }
-          >
-            <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-              {teams.map((team) => (
-                <div
-                  key={team.id}
-                  className="p-3 rounded-xl border border-border bg-subtle space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: team.colorHex }}
-                      />
-                      <span className="font-bold text-fg">{team.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        value={scoreInputs[team.id] ?? 0}
-                        onChange={(e) =>
-                          setScoreInputs({
-                            ...scoreInputs,
-                            [team.id]: Number(e.target.value),
-                          })
-                        }
-                        className="w-24 text-right font-mono"
-                      />
-                      <span className="text-fg-muted font-mono">pts</span>
-                    </div>
-                  </div>
-                  <Input
-                    placeholder="Score notes (optional)..."
-                    value={scoreNotes[team.id] || ""}
-                    onChange={(e) =>
-                      setScoreNotes({
-                        ...scoreNotes,
-                        [team.id]: e.target.value,
-                      })
-                    }
-                    className="text-xs"
-                  />
-                </div>
-              ))}
-            </div>
-          </QueryState>
-
-          <div className="pt-3 border-t border-border-subtle flex items-center justify-between gap-2">
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={() => setClearScoresTarget(selectedGameForScore)}
-            >
-              Clear Scores
-            </Button>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setSelectedGameForScore(null)}
-              >
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={handleUpdateGameScores}>
-                Save Game Scores
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Modal>
+      <ManageScoresModal
+        editor={scoreEditor}
+        teams={teams}
+        teamsLoading={isLoadingTeams}
+        teamsError={isTeamsError}
+        teamsErrorValue={teamsError}
+        onRetryTeams={() => refetchTeams()}
+        onClearScores={setClearScoresTarget}
+      />
 
       {/* Clear Game Scores Confirmation Modal */}
       {clearScoresTarget && (

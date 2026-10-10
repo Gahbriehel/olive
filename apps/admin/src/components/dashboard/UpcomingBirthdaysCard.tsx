@@ -41,7 +41,7 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
 
     if (daysUntil === 0) {
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-2xs font-bold bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-xs shadow-indigo-500/20 animate-pulse">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-2xs font-bold bg-primary text-white shadow-xs animate-pulse">
           🎉 Today!
         </span>
       );

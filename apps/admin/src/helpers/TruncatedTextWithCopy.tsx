@@ -66,7 +66,7 @@ export function TruncatedTextWithCopy({
           aria-label={`Copy ${text} to clipboard`}
         >
           {isCopied ? (
-            <CopyCheck className="w-4 h-4 text-emerald-500 animate-in fade-in zoom-in-75 duration-200" />
+            <CopyCheck className="w-4 h-4 text-success-text animate-in fade-in zoom-in-75 duration-200" />
           ) : (
             <Copy className="w-4 h-4" />
           )}

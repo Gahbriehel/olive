@@ -1,5 +1,5 @@
-import { InquiryTable } from "../_components/InquiryTable";
+import { ContactTable } from "../_components/ContactTable";
 
 export default function InquiryPage() {
-  return <InquiryTable />;
+  return <ContactTable type="inquiry" />;
 }

@@ -16,6 +16,7 @@ import {
   hasAuthority,
   getDefaultRouteForUser,
   ROUTE_PERMISSIONS,
+  KNOWN_ROUTES,
 } from "@/utils/rbac";
 import { Spinner } from "@/components/ui/Spinner";
 
@@ -34,24 +35,11 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const isAuthPage = pathname?.startsWith("/login");
-  const isKnownRoute =
-    pathname === "/" ||
-    pathname?.startsWith("/login") ||
-    pathname?.startsWith("/dashboard") ||
-    pathname?.startsWith("/events") ||
-    pathname?.startsWith("/people") ||
-    pathname?.startsWith("/registrations") ||
-    pathname?.startsWith("/teams") ||
-    pathname?.startsWith("/attendance") ||
-    pathname?.startsWith("/games") ||
-    pathname?.startsWith("/scores") ||
-    pathname?.startsWith("/leaderboard") ||
-    pathname?.startsWith("/users") ||
-    pathname?.startsWith("/settings") ||
-    pathname?.startsWith("/profile") ||
-    pathname?.startsWith("/messaging-center") ||
-    pathname?.startsWith("/reports") ||
-    pathname?.startsWith("/contact");
+  const isKnownRoute = KNOWN_ROUTES.some((route) =>
+    route === "/"
+      ? pathname === "/"
+      : pathname === route || pathname?.startsWith(`${route}/`),
+  );
 
   // Fetch user profile on startup / session restore
   useEffect(() => {

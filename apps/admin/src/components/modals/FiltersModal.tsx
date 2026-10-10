@@ -136,7 +136,7 @@ export function FiltersModal({
                           }));
                           setDateError(undefined);
                         }}
-                        className="cursor-pointer rounded-full border border-border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 md:px-4 dark:text-zinc-300"
+                        className="cursor-pointer rounded-full border border-border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 md:px-4 text-fg-secondary"
                       >
                         {preset.label}
                       </button>

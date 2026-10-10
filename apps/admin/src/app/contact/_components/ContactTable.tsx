@@ -6,6 +6,7 @@ import { IContact } from "@/models/contact";
 import { extractMeta } from "@/models/base";
 import { formatDate } from "@/helpers/formatDate";
 import { useContactQuery } from "@/hooks/useContactQuery";
+import { type IContactSubmissionType } from "@/services/contact";
 import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
 import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { Table } from "@/components/ui/Table";
@@ -21,11 +22,54 @@ import { useAuth } from "@/hooks/useAuth";
 import { useListFilters } from "@/hooks/useListFilters";
 import { type FilterField } from "@/models/filters";
 import { ROLES, getUserRoles, hasAuthority } from "@/utils/rbac";
-import { Mail, Phone, Calendar, MessageSquare, Tag, Send } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  Calendar,
+  MessageSquare,
+  HeartHandshake,
+  Tag,
+  Send,
+  type LucideIcon,
+} from "lucide-react";
 
 const columnHelper = createColumnHelper<IContact>();
 
-export function InquiryTable(): JSX.Element {
+export type ContactType = IContactSubmissionType;
+
+interface ContactTypeConfig {
+  /** Plural noun passed to Table for empty/error copy. */
+  resource: string;
+  searchPlaceholder: string;
+  detailTitle: string;
+  messageLabel: string;
+  messageIcon: LucideIcon;
+}
+
+const CONTACT_TYPE_CONFIG: Record<ContactType, ContactTypeConfig> = {
+  prayer: {
+    resource: "prayer requests",
+    searchPlaceholder: "Search prayers...",
+    detailTitle: "Prayer Request Details",
+    messageLabel: "Prayer Request Message",
+    messageIcon: HeartHandshake,
+  },
+  inquiry: {
+    resource: "inquiries",
+    searchPlaceholder: "Search inquiries...",
+    detailTitle: "Inquiry Details",
+    messageLabel: "Inquiry Message",
+    messageIcon: MessageSquare,
+  },
+};
+
+interface ContactTableProps {
+  type: ContactType;
+}
+
+export function ContactTable({ type }: ContactTableProps): JSX.Element {
+  const config = CONTACT_TYPE_CONFIG[type];
+  const MessageIcon = config.messageIcon;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<IContact | null>(null);
 
@@ -154,23 +198,23 @@ export function InquiryTable(): JSX.Element {
 
   const { data, isLoading, isError, error, refetch } = useContactQuery(
     queryParams,
-    "inquiry",
+    type,
   );
 
-  const inquiries = data?.data.items;
+  const contacts = data?.data.items;
 
   return (
     <>
       <Table
-        data={inquiries ?? []}
+        data={contacts ?? []}
         meta={data?.meta || extractMeta(data)}
         columns={columns as Array<ColumnDef<IContact>>}
         loading={isLoading}
         isError={isError}
         error={error}
         onRetry={() => refetch()}
-        resource="inquiries"
-        searchPlaceholder="Search inquiries..."
+        resource={config.resource}
+        searchPlaceholder={config.searchPlaceholder}
         search={search}
         onSearchChange={setSearch}
         page={page}
@@ -188,7 +232,7 @@ export function InquiryTable(): JSX.Element {
                     fn: () =>
                       downloadCsvExport(
                         "/contact/submissions/export",
-                        { type: "inquiry", ...exportParams },
+                        { type, ...exportParams },
                         `contact-submissions-${new Date().toISOString().slice(0, 10)}.csv`,
                       ),
                   },
@@ -204,7 +248,7 @@ export function InquiryTable(): JSX.Element {
       <FiltersModal {...panelProps} />
 
       <SidebarModal
-        title="Inquiry Details"
+        title={config.detailTitle}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       >
@@ -297,11 +341,11 @@ export function InquiryTable(): JSX.Element {
               </div>
             </div>
 
-            {/* Inquiry Message Card */}
+            {/* Message Card */}
             <div className="flex flex-col gap-2 p-4 rounded-xl border border-border bg-subtle">
               <div className="flex items-center gap-2 text-xs font-semibold text-fg-muted uppercase tracking-wider">
-                <MessageSquare className="w-4 h-4 text-primary-text" />
-                Inquiry Message
+                <MessageIcon className="w-4 h-4 text-primary-text" />
+                {config.messageLabel}
               </div>
               <div className="mt-1">
                 {selectedContact.message ? (

@@ -120,7 +120,7 @@ function RemediateBounceForm({
         </div>
         {bounce.reason && (
           <div className="pt-2 border-t border-border-control">
-            <span className="text-2xs font-bold uppercase text-slate-400 block mb-0.5">
+            <span className="text-2xs font-bold uppercase text-fg-muted block mb-0.5">
               Failure Diagnostic
             </span>
             <p className="font-mono text-2xs text-fg-secondary truncate">
@@ -176,7 +176,7 @@ function RemediateBounceForm({
                 checked={field.value}
                 onChange={(e) => field.onChange(e.target.checked)}
                 onBlur={field.onBlur}
-                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 mt-0.5"
+                className="rounded border-border-control text-primary focus:ring-primary mt-0.5"
               />
               <div>
                 <span className="font-semibold text-fg">

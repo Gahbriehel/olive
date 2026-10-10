@@ -89,7 +89,7 @@ export const ViewBirthdayGreetingModal: React.FC<
         {/* Header Profile Card */}
         <div className="p-4 rounded-2xl bg-primary-soft border border-primary-border flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-base flex items-center justify-center shrink-0 shadow-xs">
+            <div className="w-12 h-12 rounded-2xl bg-primary text-white font-bold text-base flex items-center justify-center shrink-0 shadow-xs">
               {initials || <Cake className="w-5 h-5" />}
             </div>
             <div className="min-w-0">
@@ -113,14 +113,14 @@ export const ViewBirthdayGreetingModal: React.FC<
 
         {/* Delivery Audit Status Card */}
         <div className="rounded-xl border border-success-border bg-success-soft p-3.5 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+          <div className="flex items-center gap-2 text-xs font-semibold text-success-text">
             <MailCheck className="w-4 h-4 text-success-text shrink-0" />
             <span>Greeting Successfully Delivered</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs text-fg-secondary">
             <div className="flex items-center gap-1.5 min-w-0">
-              <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <User className="w-3.5 h-3.5 text-fg-subtle shrink-0" />
               <span className="truncate">
                 Sent by:{" "}
                 <strong className="font-semibold text-fg">{senderName}</strong>
@@ -128,7 +128,7 @@ export const ViewBirthdayGreetingModal: React.FC<
             </div>
             {sentAtFormatted && (
               <div className="flex items-center gap-1.5 min-w-0">
-                <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <Calendar className="w-3.5 h-3.5 text-fg-subtle shrink-0" />
                 <span className="truncate">{sentAtFormatted}</span>
               </div>
             )}
@@ -138,8 +138,8 @@ export const ViewBirthdayGreetingModal: React.FC<
         {/* Member Contact Details Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           <div className="p-3 rounded-xl bg-subtle border border-border">
-            <p className="text-2xs text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1 mb-1">
-              <Mail className="w-3 h-3 text-slate-400" />
+            <p className="text-2xs text-fg-muted font-bold uppercase tracking-wider flex items-center gap-1 mb-1">
+              <Mail className="w-3 h-3 text-fg-subtle" />
               Email Address
             </p>
             {person.email ? (
@@ -154,8 +154,8 @@ export const ViewBirthdayGreetingModal: React.FC<
           </div>
 
           <div className="p-3 rounded-xl bg-subtle border border-border">
-            <p className="text-2xs text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1 mb-1">
-              <Phone className="w-3 h-3 text-slate-400" />
+            <p className="text-2xs text-fg-muted font-bold uppercase tracking-wider flex items-center gap-1 mb-1">
+              <Phone className="w-3 h-3 text-fg-subtle" />
               Phone Number
             </p>
             {person.phone ? (
@@ -166,8 +166,8 @@ export const ViewBirthdayGreetingModal: React.FC<
           </div>
 
           <div className="p-3 rounded-xl bg-subtle border border-border col-span-1 sm:col-span-2">
-            <p className="text-2xs text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1 mb-1">
-              <Calendar className="w-3 h-3 text-slate-400" />
+            <p className="text-2xs text-fg-muted font-bold uppercase tracking-wider flex items-center gap-1 mb-1">
+              <Calendar className="w-3 h-3 text-fg-subtle" />
               Birthday Date
             </p>
             <p className="font-semibold text-fg">
@@ -237,7 +237,7 @@ export const ViewBirthdayGreetingModal: React.FC<
                   href={greeting.ctaUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary-soft text-primary-text hover:bg-indigo-100 transition-colors break-all"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary-soft text-primary-text hover:bg-primary-border transition-colors break-all"
                 >
                   <span>{greeting.ctaLabel}</span>
                   <ExternalLink className="w-3 h-3 shrink-0" />

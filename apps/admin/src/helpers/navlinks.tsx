@@ -17,7 +17,7 @@ import {
   Cake,
   MailWarning,
 } from "lucide-react";
-import { ROLES } from "@/utils/rbac";
+import { ROLES, hasAuthority } from "@/utils/rbac";
 
 export interface NavItem {
   href?: string;
@@ -151,3 +151,32 @@ export const mainNavItems: NavItem[] = [
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
 ];
+
+/** Nav tree limited to what the given roles may see (empty groups dropped). */
+export function filterNavItems(
+  items: NavItem[],
+  userRoles: string[],
+): NavItem[] {
+  return items
+    .filter((item) => {
+      if (item.allowedRoles && item.allowedRoles.length > 0) {
+        return hasAuthority(userRoles, item.allowedRoles);
+      }
+      return true;
+    })
+    .map((item) => {
+      if (item.subs) {
+        return {
+          ...item,
+          subs: filterNavItems(item.subs, userRoles),
+        };
+      }
+      return item;
+    })
+    .filter((item) => {
+      if (item.subs && item.subs.length === 0 && !item.href) {
+        return false;
+      }
+      return true;
+    });
+}

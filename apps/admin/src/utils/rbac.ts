@@ -47,7 +47,12 @@ export const ROUTE_PERMISSIONS: Record<string, string[]> = {
   "/reports": [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
   "/reports/birthdays": [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
   "/reports/bounces": [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  "/contact": [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  "/messaging-center": [ROLES.SUPER_ADMIN, ROLES.ADMIN],
 };
+
+/** Every app route the shell knows about (others render the 404 page). */
+export const KNOWN_ROUTES = ["/", "/login", ...Object.keys(ROUTE_PERMISSIONS)];
 
 /**
  * Normalizes role display strings or backend keys to standard role keys

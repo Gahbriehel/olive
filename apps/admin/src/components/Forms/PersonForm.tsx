@@ -185,7 +185,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
         {isEditing && person && (
           <div className="p-3.5 rounded-2xl bg-primary-soft border border-primary-border flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-primary text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
                 {getInitials(
                   person.name || `${person.firstName} ${person.lastName}`,
                 )}
@@ -196,7 +196,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
                 </p>
                 <div className="flex items-center gap-2 mt-0.5">
                   <StatusBadge status={person.membershipStatus} size="sm" />
-                  <span className="text-2xs text-slate-400">
+                  <span className="text-2xs text-fg-muted">
                     ID: {person.id.slice(0, 8)}...
                   </span>
                 </div>

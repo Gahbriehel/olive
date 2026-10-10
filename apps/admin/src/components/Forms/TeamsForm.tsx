@@ -177,7 +177,7 @@ export const TeamsForm: React.FC<TeamsFormProps> = ({
                         className={cn(
                           "flex h-7 w-7 items-center justify-center rounded-full border-2 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
                           selected
-                            ? "scale-110 border-slate-900 shadow-md dark:border-white"
+                            ? "scale-110 border-fg shadow-md"
                             : "border-transparent hover:scale-105",
                         )}
                         style={{ backgroundColor: preset.hex }}

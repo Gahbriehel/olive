@@ -1,8 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import * as Tabs from "@radix-ui/react-tabs";
-import { TabLink } from "./_components/TabLink";
+import { Tabs } from "@/components/ui/Tabs";
 import { HeartHandshake, Mail, MessagesSquare } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { useContactCounts } from "@/hooks/useContactQuery";
@@ -23,28 +22,27 @@ export default function ContactsLayout({
         description="Review and manage inbound Prayer requests and Inquiries"
         icon={MessagesSquare}
       />
-      <Tabs.Root value={activeTab}>
-        <Tabs.List className="flex items-center gap-2 p-1.5 bg-surface rounded-2xl w-fit border border-border shadow-xs">
-          <TabLink
-            value="prayers"
-            href="/contact/prayers"
-            icon={<HeartHandshake className="w-4 h-4" />}
-            count={prayerCount}
-          >
-            Prayers
-          </TabLink>
-          <TabLink
-            value="inquiries"
-            href="/contact/inquiries"
-            icon={<Mail className="w-4 h-4" />}
-            count={inquiryCount}
-          >
-            Inquiries
-          </TabLink>
-        </Tabs.List>
-
-        <div className="mt-6">{children}</div>
-      </Tabs.Root>
+      <Tabs
+        label="Contact submissions"
+        activeTab={activeTab}
+        tabs={[
+          {
+            id: "prayers",
+            label: "Prayers",
+            href: "/contact/prayers",
+            icon: <HeartHandshake className="h-4 w-4" />,
+            count: prayerCount,
+          },
+          {
+            id: "inquiries",
+            label: "Inquiries",
+            href: "/contact/inquiries",
+            icon: <Mail className="h-4 w-4" />,
+            count: inquiryCount,
+          },
+        ]}
+      />
+      <div>{children}</div>
     </div>
   );
 }

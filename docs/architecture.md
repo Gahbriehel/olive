@@ -92,7 +92,6 @@ page.tsx ──uses──▶ hooks/useX.ts ──calls──▶ services/x.servi
 
 **Rules:**
 1. **Pages never call `apiClient` or `useQuery` directly.** They go through a domain hook in `hooks/`.
-   *Known exception:* `messaging-center` uses `useQueryClient` to invalidate after a broadcast. This goes away when the composer is extracted (Phase 5).
 2. **Every API call lives in a `services/*.service.ts` file.** Services unwrap the response envelope with `extractData` / `extractArray` from `models/base.ts`.
 3. **Query keys** start with the domain name followed by the params object: `["teams", params]`. A mutation invalidates its own domain plus any derived domains; for example, a team mutation also invalidates `["leaderboard"]`.
 4. **Hooks return** data, `meta`, `isLoading`, `isError`, `error`, `refetch`, and `mutateAsync` functions with their `isPending` flags.
@@ -125,7 +124,7 @@ page.tsx ──uses──▶ hooks/useX.ts ──calls──▶ services/x.servi
   - `ROUTE_PERMISSIONS` lists which roles can open each route.
   - `helpers/navlinks.tsx` filters the sidebar by the same roles.
   - `components/auth/AuthorityGuard` hides UI elements by role.
-- **When adding a route,** update `ROUTE_PERMISSIONS`, `navlinks.tsx` **and** the `isKnownRoute` list in `MainShell.tsx`. **Target:** derive `isKnownRoute` from `ROUTE_PERMISSIONS`.
+- **When adding a route,** add it to `ROUTE_PERMISSIONS` (which also makes it a known route: `KNOWN_ROUTES` is derived from it) and to `helpers/navlinks.tsx` if it belongs in the sidebar. The sidebar and the ⌘K command palette both read `navlinks.tsx` through `filterNavItems`, so they always show the same pages for a role.
 - Client-side guards are a UX layer only. **The API is the security boundary** and must enforce the same roles.
 
 ### 3.5 Client state
@@ -197,10 +196,10 @@ Tokens are defined once in `apps/admin/src/app/globals.css`. The values live in 
 - No raw Tailwind palette classes (`slate-*`, `indigo-*`, ...). No hex values or arbitrary text sizes in components.
   - `text-white` and `bg-white/NN` are allowed on solid accent fills.
   - Purely categorical colours (the Badge and StatsCard `purple` and `blue` variants) carry a scoped `eslint-disable` that states the reason.
-- **Enforced by lint:** `no-restricted-syntax` in `apps/admin/eslint.config.mjs` errors on raw palette classes and arbitrary text sizes in `components/ui`, `components/FormElements`, `components/layout` and every route under `src/app/`.
+- **Enforced by lint:** `no-restricted-syntax` in `apps/admin/eslint.config.mjs` errors on raw palette classes and arbitrary text sizes in every `.tsx` file under `src/`.
   - The login page and `not-found.tsx` are excluded, because those screens are always dark by design.
-  - Add a folder to the list once it has been migrated.
-- **Migration status:** shared components and all pages are on tokens. About 200 raw classes remain, down from about 3,100. They are in `components/modals/*` (mostly `QrScannerModal`), `components/Forms/*` and the always-dark login and 404 screens. Migrate these by hand: converting a class blindly can change how it looks in one theme.
+  - The only other exceptions are the categorical swatches in `Badge`, `StatsCard` and the leaderboard `Podium`. Each carries a scoped `eslint-disable` that states the reason.
+- **Migration status:** complete. The app had about 3,100 raw palette classes; the only ones left are in the exceptions above.
 
 ### 6.2 Primitives: one per job
 
@@ -221,7 +220,15 @@ Each row is the **only** approved way to do that job. Items marked *(target)* do
 | Create/edit/detail overlay | `ui/SidebarModal` (side panel) | Built on Headless UI `Dialog`. Gives focus trap, Escape, scroll lock and ARIA. Props: `isOpen`, `onClose`, `title`, `description`, `footer`. |
 | Short decision or confirmation | `ui/Modal` / `ConfirmActionModal` | Same Dialog base and props as SidebarModal, plus `maxWidth`. |
 | Overlay action bar | the `footer` prop on Modal or SidebarModal | Secondary buttons first, primary last. A submit button outside the `<form>` uses `form={formId}`. |
+| Form action bar | `ui/FormFooter` | For forms rendered in an overlay body; see §6.3. |
+| Email writing | `email/EmailComposer` | One composer for broadcasts, registrant emails and birthday greetings.
+  - It renders the shared content fields: subject, heading, message, image (optionally with upload), QR pass, and the CTA label and link.
+  - Callers supply a `recipients` slot, their own mutation hook, any confirmation, and the footer.
+  - Validation fragments live in `email/emailFields.ts`. |
+| Contact submissions | `app/contact/_components/ContactTable` | One table for prayers and inquiries. The `type` prop selects the per-type config. |
 | Row actions menu | `ui/ActionsList` (Radix Popover) | |
+| Tabs | `ui/Tabs` | Button tabs follow the ARIA tabs pattern, with arrow, Home and End keys. Tabs with an `href` render as a `nav` of links with `aria-current`, for route-based sections such as contact. |
+| Menus and pickers in the shell | Headless UI `Menu` / `Listbox` | Used for the topbar account menu and the active-event picker. Don't hand-roll dropdowns with click-outside handlers. |
 | Toast | `helpers/customToast` | Never import `react-hot-toast` directly. |
 | Spinner | `ui/Spinner` / `LoadingState` | The only loading indicator. Built on lucide `Loader2`. |
 
@@ -268,10 +275,10 @@ Source: the October 2026 admin UI/UX audit.
 | Phase | Scope | Status |
 |---|---|---|
 | 0 | Functional bugs: confirm-modal `tone`/errors, Table server-sort, stats labelling, PersonForm role badge, password-dialog dismissal, EventsForm category error, removal of the dead `autoAssignTeams` event toggle | **Done** |
-| 1 | Register tokens in `@theme`; migrate primitives to token utilities; lint against raw palette classes | **Done** for shared components and all pages, with lint enforcement. Modals and forms are still in progress (§6.1). |
+| 1 | Register tokens in `@theme`; migrate primitives to token utilities; lint against raw palette classes | **Done**. The whole app is on tokens and lint-enforced (§6.1). |
 | 2 | Consolidate primitives: Button API, overlays on Headless UI Dialog with shared footer, `FormField` across all inputs, MultiSelect on Combobox, one `SelectPagination`, `Spinner`, `StatusBadge` table, `TeamBadge`; remove dead code (`ui/Drawer`, `helpers/copyToClipboard`, `useDebounce`, `react-spinners`) | **Done** |
 | 3 | `PageHeader`, `Pagination`, `QueryState`/`Skeleton`, breadcrumbs; move all lists to `useListFilters`; error and loading states on every page; inline queries moved into `hooks/` | **Done**. The dark hero banners were removed and every page uses `PageHeader`. |
 | 4 | Toasts through `MutationCache`; unsaved-changes guard; yup schemas; shared `FormFooter`; confirmations for bulk sends and bounce resolve; mutations moved out of components into hooks | **Done** |
-| 5 | Shell clean-up (theme toggle, topbar menus on Radix, mobile drawer); split large pages; share one `EmailComposer` and one `ContactTable` | Planned |
+| 5 | Shell clean-up: route permissions for `/contact` and `/messaging-center`; known routes derived from `ROUTE_PERMISSIONS`; mobile drawer and ⌘K palette on Headless UI `Dialog`; the palette lists real pages and actions instead of fake search results; topbar menus on Headless UI; one theme toggle; the stub bell and fake version/status removed. One `Tabs` component (Radix tabs removed), `EmailComposer` and `ContactTable`. Large files split, the biggest now about 450 lines (from about 1,200). Token lint covers the whole app. | **Done** |
 
 Update the status column in the same PR that completes a phase.

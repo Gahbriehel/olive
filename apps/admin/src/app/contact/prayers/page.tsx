@@ -1,5 +1,5 @@
-import { PrayerTable } from "../_components/PrayerTable";
+import { ContactTable } from "../_components/ContactTable";
 
 export default function PrayersPage() {
-  return <PrayerTable />;
+  return <ContactTable type="prayer" />;
 }

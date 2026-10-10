@@ -1,33 +1,16 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { ColumnDef } from "@tanstack/react-table";
-import {
-  UserPlus,
-  History,
-  Users,
-  Shield,
-  UserCheck,
-  Calendar,
-  Edit,
-} from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { ListToolbar } from "@/components/ui/ListToolbar";
 import { FiltersButton } from "@/components/ui/FiltersButton";
-import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { Tabs } from "@/components/ui/Tabs";
-import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { Table } from "@/components/ui/Table";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { FiltersModal } from "@/components/modals/FiltersModal";
-import { ActionsList } from "@/components/ui/ActionsList";
 import { RegisterPersonForm } from "@/components/Forms/RegisterPersonForm";
 import { PersonForm } from "@/components/Forms/PersonForm";
-import { getInitials, capitalizeWords } from "@/utils/formatters";
-import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
-import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
 import { usePeople } from "@/hooks/usePeople";
 import { useListFilters } from "@/hooks/useListFilters";
 import { useEvents } from "@/hooks/useEvents";
@@ -41,32 +24,10 @@ import {
   IUpdatePersonPayload,
 } from "@/models/person";
 import { IRegistrationPayload } from "@/models/registration";
-import { type FilterField } from "@/models/filters";
-
-const peopleFilterFields: FilterField[] = [
-  {
-    type: "select",
-    key: "membershipStatus",
-    label: "Membership Status",
-    allLabel: "All Statuses",
-    options: [
-      { label: "Member", value: "Member" },
-      { label: "Worker", value: "Worker" },
-      { label: "Leader", value: "Leader" },
-      { label: "Visitor", value: "Visitor" },
-    ],
-  },
-  {
-    type: "select",
-    key: "gender",
-    label: "Gender",
-    allLabel: "All Genders",
-    options: [
-      { label: "Male", value: "Male" },
-      { label: "Female", value: "Female" },
-    ],
-  },
-];
+import { peopleFilterFields } from "./_components/peopleFilters";
+import { PeopleStats } from "./_components/PeopleStats";
+import { PersonDetailPanel } from "./_components/PersonDetailPanel";
+import { usePeopleColumns } from "./_components/usePeopleColumns";
 
 export default function PeoplePage() {
   const {
@@ -85,7 +46,6 @@ export default function PeoplePage() {
 
   const [selectedPerson, setSelectedPerson] = useState<IPerson | null>(null);
   const [editingPerson, setEditingPerson] = useState<IPerson | null>(null);
-  const [drawerTab, setDrawerTab] = useState("info");
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
 
@@ -152,122 +112,13 @@ export default function PeoplePage() {
     }
   };
 
-  const totalPeople = stats?.total ?? people.length;
-  const totalMembers = stats?.membership?.members ?? 0;
-  const totalVisitors = stats?.membership?.visitors ?? 0;
-  const totalWorkers = stats?.membership?.workers ?? 0;
-
-  const columns = useMemo<ColumnDef<IPerson>[]>(
-    () => [
-      {
-        id: "s/n",
-        header: "S/N",
-        accessorFn: (_, rowIndex) =>
-          padNumberWithZeros((page - 1) * limit + rowIndex + 1),
-      },
-      {
-        accessorKey: "name",
-        header: "Person",
-        cell: ({ row }) => {
-          const person = row.original;
-          return (
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
-                {getInitials(person.name)}
-              </div>
-              <div>
-                <p className="font-bold text-fg">
-                  {capitalizeWords(person.name)}
-                </p>
-              </div>
-            </div>
-          );
-        },
-      },
-      {
-        accessorKey: "email",
-        header: "Contact Info",
-        cell: ({ row }) => (
-          <div>
-            <TruncatedTextWithCopy
-              text={row.original.email}
-              maxLength={28}
-              textClassName="font-medium text-fg"
-            />
-            <p className="text-2xs text-fg-muted">{row.original.phone}</p>
-          </div>
-        ),
-      },
-      {
-        accessorKey: "gender",
-        header: "Gender / DOB",
-        cell: ({ row }) => (
-          <div>
-            <p className="font-medium">{row.original.gender}</p>
-            <p className="text-2xs text-fg-muted">DOB: {row.original.dob}</p>
-          </div>
-        ),
-      },
-      {
-        accessorKey: "membershipStatus",
-        header: "Membership",
-        cell: ({ row }) => (
-          <StatusBadge status={row.original.membershipStatus} size="sm" />
-        ),
-      },
-      {
-        accessorKey: "registrationHistoryCount",
-        header: "Events Registered",
-        cell: ({ row }) => (
-          <span className="font-semibold text-fg-secondary">
-            {row.original.registrationHistoryCount} Events
-          </span>
-        ),
-      },
-      {
-        id: "actions",
-        header: "Actions",
-        cell: ({ row }) => {
-          const person = row.original;
-          const actions = [
-            {
-              title: "View Details",
-              fn: () => {
-                setSelectedPerson(person);
-              },
-            },
-          ];
-
-          if (isSuperAdmin) {
-            actions.push({
-              title: "Edit Person",
-              fn: () => {
-                setEditingPerson(person);
-              },
-            });
-          }
-
-          return <ActionsList actions={actions} />;
-        },
-      },
-    ],
-    [page, limit, isSuperAdmin],
-  );
-
-  const drawerTabs = [
-    { id: "info", label: "Details" },
-    {
-      id: "departments",
-      label: "Departments",
-      count: selectedPerson?.departments?.length || 0,
-    },
-    {
-      id: "attendance",
-      label: "Attendance",
-      count: selectedPerson?.attendanceHistory?.length || 0,
-    },
-    { id: "notes", label: "Notes" },
-  ];
+  const columns = usePeopleColumns({
+    page,
+    limit,
+    isSuperAdmin,
+    onView: setSelectedPerson,
+    onEdit: setEditingPerson,
+  });
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
@@ -276,47 +127,14 @@ export default function PeoplePage() {
         description="Central repository of church members, conference attendees, and first-time guests."
       />
 
-      {/* Directory Stats Grid */}
-      <StatsCardGroup>
-        <StatsCard
-          title="Total People"
-          value={totalPeople.toLocaleString()}
-          change="Directory total"
-          trend="neutral"
-          icon={Users}
-          color="indigo"
-          loading={isLoading}
-        />
-        <StatsCard
-          title="Church Members"
-          value={totalMembers.toLocaleString()}
-          change={`${totalPeople > 0 ? ((totalMembers / totalPeople) * 100).toFixed(0) : 0}% of total`}
-          trend="up"
-          icon={Shield}
-          color="cyan"
-          loading={isLoading}
-        />
-        <StatsCard
-          title="Church Workers"
-          value={totalWorkers.toLocaleString()}
-          change=""
-          trend="up"
-          icon={Calendar}
-          color="emerald"
-          loading={isLoading}
-        />
-        <StatsCard
-          title="Visitors & Guests"
-          value={totalVisitors.toLocaleString()}
-          change={`${totalPeople > 0 ? ((totalVisitors / totalPeople) * 100).toFixed(0) : 0}% of total`}
-          trend="neutral"
-          icon={UserCheck}
-          color="amber"
-          loading={isLoading}
-        />
-      </StatsCardGroup>
+      <PeopleStats
+        totalPeople={stats?.total ?? people.length}
+        totalMembers={stats?.membership?.members ?? 0}
+        totalWorkers={stats?.membership?.workers ?? 0}
+        totalVisitors={stats?.membership?.visitors ?? 0}
+        loading={isLoading}
+      />
 
-      {/* People TanStack Data Table */}
       <Table
         columns={columns}
         data={people}
@@ -368,220 +186,11 @@ export default function PeoplePage() {
 
       <FiltersModal {...panelProps} />
 
-      {/* Person Details Sidebar Modal */}
-      <SidebarModal
-        isOpen={!!selectedPerson}
+      <PersonDetailPanel
+        person={selectedPerson}
         onClose={() => setSelectedPerson(null)}
-        title={selectedPerson?.name || ""}
-        description={
-          selectedPerson?.id
-            ? `Member Profile • ID: ${selectedPerson.id}`
-            : undefined
-        }
-      >
-        {selectedPerson && (
-          <div className="space-y-6">
-            {/* Header Badge Card */}
-            <div className="p-4 rounded-2xl bg-primary-soft border border-primary-border flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-primary text-white font-bold text-base flex items-center justify-center">
-                  {getInitials(selectedPerson.name)}
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm text-fg">
-                    {selectedPerson.name}
-                  </h3>
-                  <StatusBadge
-                    status={selectedPerson.membershipStatus}
-                    size="sm"
-                  />
-                </div>
-              </div>
-              {isSuperAdmin && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="gap-1.5 text-xs font-semibold"
-                  onClick={() => setEditingPerson(selectedPerson)}
-                >
-                  <Edit
-                    className="w-3.5 h-3.5 text-primary-text"
-                    aria-hidden="true"
-                  />
-                  <span>Edit Profile</span>
-                </Button>
-              )}
-            </div>
-
-            {/* Drawer Sub-Tabs */}
-            <Tabs
-              tabs={drawerTabs}
-              activeTab={drawerTab}
-              onChange={setDrawerTab}
-            />
-
-            {/* Details Tab */}
-            {drawerTab === "info" && (
-              <div className="space-y-4 text-xs">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-xl bg-subtle">
-                    <p className="text-2xs text-fg-muted font-bold uppercase">
-                      Phone Number
-                    </p>
-                    <p className="font-semibold text-fg mt-1">
-                      {selectedPerson.phone}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-subtle">
-                    <p className="text-2xs text-fg-muted font-bold uppercase">
-                      Email Address
-                    </p>
-                    <div className="mt-1">
-                      <TruncatedTextWithCopy
-                        text={selectedPerson.email}
-                        maxLength={24}
-                        textClassName="font-semibold text-fg"
-                      />
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-xl bg-subtle">
-                    <p className="text-2xs text-fg-muted font-bold uppercase">
-                      Gender
-                    </p>
-                    <p className="font-semibold text-fg mt-1">
-                      {selectedPerson.gender}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-subtle">
-                    <p className="text-2xs text-fg-muted font-bold uppercase">
-                      Date of Birth
-                    </p>
-                    <p className="font-semibold text-fg mt-1">
-                      {selectedPerson.dob}
-                    </p>
-                  </div>
-                  {selectedPerson.address && (
-                    <div className="col-span-2 p-3 rounded-xl bg-subtle">
-                      <p className="text-2xs text-fg-muted font-bold uppercase">
-                        Address
-                      </p>
-                      <p className="font-semibold text-fg mt-1">
-                        {selectedPerson.address}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-3.5 rounded-xl border border-border space-y-2">
-                  <p className="font-bold text-fg flex items-center gap-1.5">
-                    <History className="w-4 h-4 text-primary-text" />
-                    Registration History (
-                    {selectedPerson.registrationHistoryCount || 0} Events)
-                  </p>
-                  {selectedPerson.registrations &&
-                  selectedPerson.registrations.length > 0 ? (
-                    <div className="space-y-2 pt-1">
-                      {selectedPerson.registrations.map((reg) => (
-                        <div
-                          key={reg.id}
-                          className="flex items-center justify-between text-xs p-2 rounded-lg bg-subtle"
-                        >
-                          <div>
-                            <p className="font-semibold text-fg">
-                              {reg.eventTitle}
-                            </p>
-                            <p className="text-2xs text-fg-muted">
-                              {reg.eventDate} • Team: {reg.teamName}
-                            </p>
-                          </div>
-                          <StatusBadge status={reg.status} size="sm" />
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-2xs text-fg-muted italic">
-                      No event registrations recorded.
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Departments Tab */}
-            {drawerTab === "departments" && (
-              <div className="space-y-2 text-xs">
-                <p className="text-fg-muted text-2xs">
-                  Church ministry department memberships:
-                </p>
-                {selectedPerson.departments &&
-                selectedPerson.departments.length > 0 ? (
-                  selectedPerson.departments.map((dept, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 rounded-xl bg-subtle font-semibold text-fg flex items-center justify-between"
-                    >
-                      <span>{dept}</span>
-                      <StatusBadge status="Active" size="sm" />
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-4 text-center text-fg-muted italic bg-subtle rounded-xl">
-                    No department assigned.
-                  </div>
-                )}
-              </div>
-            )}
-
-            {drawerTab === "attendance" && (
-              <div className="space-y-2 text-xs">
-                <p className="text-fg-muted text-2xs">
-                  Historical event check-in log (
-                  {selectedPerson.eventsAttendedCount || 0} Attended):
-                </p>
-                {selectedPerson.attendanceHistory &&
-                selectedPerson.attendanceHistory.length > 0 ? (
-                  selectedPerson.attendanceHistory.map((hist) => (
-                    <div
-                      key={hist.id}
-                      className="p-3 rounded-xl bg-subtle flex items-center justify-between"
-                    >
-                      <div>
-                        <p className="font-bold text-fg">{hist.eventName}</p>
-                        <p className="text-2xs text-fg-muted">{hist.date}</p>
-                      </div>
-                      <StatusBadge
-                        status={hist.attended ? "Checked In" : "Not Checked In"}
-                        size="sm"
-                      />
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-4 text-center text-fg-muted italic bg-subtle rounded-xl">
-                    No attendance records found.
-                  </div>
-                )}
-              </div>
-            )}
-
-            {drawerTab === "notes" && (
-              <div className="space-y-3 text-xs">
-                <p className="text-fg-muted text-2xs">
-                  Administrator & Pastoral Notes:
-                </p>
-                {selectedPerson.notes ? (
-                  <div className="p-3.5 rounded-xl bg-subtle border border-border text-fg font-medium">
-                    {selectedPerson.notes}
-                  </div>
-                ) : (
-                  <div className="p-4 text-center text-fg-muted italic bg-subtle rounded-xl">
-                    No notes recorded.
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </SidebarModal>
+        onEdit={isSuperAdmin ? setEditingPerson : undefined}
+      />
 
       {/* Add Person Sidebar Modal */}
       <SidebarModal
