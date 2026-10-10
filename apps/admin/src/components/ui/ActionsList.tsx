@@ -42,7 +42,10 @@ export function ActionsList({
   ),
 }: Props): JSX.Element {
   const [modalDisplay, setModalDisplay] = useState(false);
-  const [actionToConfirm, setActionToConfirm] = useState<() => void>(() => {});
+  // Function state must be wrapped: a bare function argument is treated as a lazy initializer.
+  const [actionToConfirm, setActionToConfirm] = useState<() => void>(
+    () => () => {},
+  );
 
   return (
     <>
@@ -116,6 +119,7 @@ export function ActionsList({
       </Popover.Root>
       <ConfirmActionModal
         actionName="delete"
+        tone="danger"
         display={modalDisplay}
         close={() => {
           setModalDisplay(false);

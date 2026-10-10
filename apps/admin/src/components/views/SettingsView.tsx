@@ -655,7 +655,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {/* Password Changed Success Modal */}
       <Modal
         isOpen={passwordSavedSuccess}
-        onClose={performFullLogout}
+        // Escape/backdrop must not trigger logout: the countdown and the
+        // explicit button below are the only exits.
+        onClose={() => {}}
         maxWidth="sm"
       >
         <div className="space-y-6 py-8 text-center">

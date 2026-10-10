@@ -117,8 +117,11 @@ export function Table<TData, TValue>({
     },
     onSortingChange: setSorting,
     onGlobalFilterChange: isServerSearch ? undefined : setGlobalFilter,
+    // Sorting a server page would only reorder the visible rows while looking
+    // like a full-dataset sort, so it stays off until the API accepts sort params.
+    enableSorting: !isServerPaginated,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    getSortedRowModel: isServerPaginated ? undefined : getSortedRowModel(),
     getFilteredRowModel: isServerSearch ? undefined : getFilteredRowModel(),
     getPaginationRowModel:
       enablePagination && !isServerPaginated

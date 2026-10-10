@@ -244,6 +244,8 @@ export default function UsersPage() {
   };
 
   const totalUsers = meta?.total ?? users.length;
+  // No aggregate endpoint yet: these breakdowns only cover the loaded page.
+  const statsArePartial = totalUsers > users.length;
   const activeUsers = users.filter((u) => u.status === "Active").length;
   const superAdmins = users.filter(
     (u) =>
@@ -496,6 +498,7 @@ export default function UsersPage() {
               trend="up"
               icon={ShieldCheck}
               color="emerald"
+              description={statsArePartial ? "Current page only" : undefined}
               loading={isLoading}
             />
             <StatsCard
@@ -505,6 +508,7 @@ export default function UsersPage() {
               trend="neutral"
               icon={Shield}
               color="cyan"
+              description={statsArePartial ? "Current page only" : undefined}
               loading={isLoading}
             />
             <StatsCard
@@ -514,6 +518,7 @@ export default function UsersPage() {
               trend="neutral"
               icon={Lock}
               color="amber"
+              description={statsArePartial ? "Current page only" : undefined}
               loading={isLoading}
             />
           </StatsCardGroup>

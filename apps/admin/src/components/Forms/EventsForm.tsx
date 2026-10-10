@@ -268,7 +268,10 @@ export const EventsForm: React.FC<EventsFormProps> = ({
               name="category"
               control={control}
               rules={{ required: "Ministry category is required" }}
-              render={({ field: { value, onChange, onBlur } }) => {
+              render={({
+                field: { value, onChange, onBlur },
+                fieldState: { error },
+              }) => {
                 const selectedOpt =
                   CATEGORY_OPTIONS.find((opt) => opt.value._id === value) ||
                   CATEGORY_OPTIONS[0];
@@ -281,6 +284,7 @@ export const EventsForm: React.FC<EventsFormProps> = ({
                     onChange={(opt) => onChange(opt.value._id as EventCategory)}
                     onBlur={onBlur}
                     options={CATEGORY_OPTIONS}
+                    validationError={error}
                   />
                 );
               }}

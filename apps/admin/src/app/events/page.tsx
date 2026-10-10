@@ -138,6 +138,8 @@ export default function EventsPage() {
 
   // Metrics summary
   const totalEvents = meta?.total ?? events.length;
+  // No aggregate endpoint yet: these breakdowns only cover the loaded page.
+  const statsArePartial = totalEvents > events.length;
   const publishedEvents = events.filter((e) => e.status === "PUBLISHED").length;
   const ticketedEvents = events.filter((e) => e.requiresRegistration).length;
   const openServices = events.filter((e) => !e.requiresRegistration).length;
@@ -294,6 +296,7 @@ export default function EventsPage() {
           trend="up"
           icon={Radio}
           color="emerald"
+          description={statsArePartial ? "Current page only" : undefined}
           loading={isLoading}
         />
         <StatsCard
@@ -303,6 +306,7 @@ export default function EventsPage() {
           trend="neutral"
           icon={Ticket}
           color="cyan"
+          description={statsArePartial ? "Current page only" : undefined}
           loading={isLoading}
         />
         <StatsCard
@@ -312,6 +316,7 @@ export default function EventsPage() {
           trend="neutral"
           icon={DoorOpen}
           color="amber"
+          description={statsArePartial ? "Current page only" : undefined}
           loading={isLoading}
         />
         <StatsCard
@@ -321,6 +326,7 @@ export default function EventsPage() {
           trend="up"
           icon={Users}
           color="indigo"
+          description={statsArePartial ? "Current page only" : undefined}
           loading={isLoading}
         />
       </StatsCardGroup>

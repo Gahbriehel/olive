@@ -303,6 +303,8 @@ export const Topbar: React.FC = () => {
         close={() => setConfirmSignOut(false)}
         actionName="logout"
         title="Are you sure you want to sign out?"
+        description="You'll need to sign in again to continue."
+        confirmLabel="Sign out"
         fn={logout}
       />
     </>

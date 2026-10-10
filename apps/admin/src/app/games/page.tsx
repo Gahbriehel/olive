@@ -588,6 +588,7 @@ export default function GamesPage() {
           close={() => setIsConfirmClearScoresOpen(false)}
           fn={handleClearGameScores}
           actionName="Clear Scores"
+          tone="danger"
           title={`Are you sure you want to clear all recorded scores for "${selectedGameForScore.name}"?`}
           loading={isClearingScores}
         />

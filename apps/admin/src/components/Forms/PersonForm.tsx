@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
-import { Shield } from "lucide-react";
 import { Input } from "@/components/FormElements/Input";
 import { Select, type ISelect } from "@/components/ui/Select";
 import { BaseButton } from "@/components/ui/Button";
@@ -215,10 +214,6 @@ export const PersonForm: React.FC<PersonFormProps> = ({
                   </span>
                 </div>
               </div>
-            </div>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-semibold">
-              <Shield className="w-3.5 h-3.5" />
-              <span>Super Admin</span>
             </div>
           </div>
         )}
