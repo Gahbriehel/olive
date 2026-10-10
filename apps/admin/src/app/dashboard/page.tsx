@@ -6,25 +6,14 @@ import {
   Users,
   UserPlus,
   Gamepad2,
-  QrCode,
-  Plus,
   Shield,
   Download,
-  Clock,
-  ChevronRight,
   CalendarDays,
 } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/Card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Badge } from "@/components/ui/Badge";
-import { StatusBadge } from "@/components/ui/StatusBadge";
 import { NavTab } from "@/types/dashboard";
 import {
   StatsCard,
@@ -34,21 +23,18 @@ import {
 import { Skeleton } from "@/components/ui/Skeleton";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState, ErrorState } from "@/components/ui/QueryState";
-import { useDashboard } from "@/context/DashboardContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { exportToCsv } from "@/helpers/exportCsv";
 import { getCategoryColor, EventCategory } from "@/models/event";
 import { UpcomingBirthdaysCard } from "@/components/dashboard/UpcomingBirthdaysCard";
-import { TeamBadge } from "@/components/ui/TeamBadge";
+import { RecentPeopleCard } from "@/components/dashboard/RecentPeopleCard";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { setIsQrScannerOpen, setIsCreateEventOpen } = useDashboard();
   const { dashboardData, isLoading, isError, error, refetch } =
     useDashboardData();
 
   const overview = dashboardData?.overview;
-  const latestRegistrations = dashboardData?.latestRegistrations || [];
   const upcomingEvents = dashboardData?.upcomingEvents || [];
   const upcomingBirthdays = dashboardData?.upcomingBirthdays || [];
 
@@ -103,43 +89,6 @@ export default function DashboardPage() {
     router.push(`/${tab}`);
   };
 
-  const quickActions: Array<{
-    label: string;
-    description: string;
-    icon: React.ComponentType<{ className?: string }>;
-    iconClassName: string;
-    onClick: () => void;
-  }> = [
-    {
-      label: "Create Event",
-      description: "New conference or retreat",
-      icon: Plus,
-      iconClassName: "bg-primary-soft text-primary-text",
-      onClick: () => setIsCreateEventOpen(true),
-    },
-    {
-      label: "Assign Teams",
-      description: "Rebalance teams",
-      icon: Shield,
-      iconClassName: "bg-info-soft text-info-text",
-      onClick: () => handleNavigate("teams"),
-    },
-    {
-      label: "Scan QR Code",
-      description: "Live attendance check-in",
-      icon: QrCode,
-      iconClassName: "bg-success-soft text-success-text",
-      onClick: () => setIsQrScannerOpen(true),
-    },
-    {
-      label: "Export CSV",
-      description: "Download attendee roster",
-      icon: Download,
-      iconClassName: "bg-warning-soft text-warning-text",
-      onClick: () => exportToCsv(),
-    },
-  ];
-
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       <PageHeader
@@ -160,30 +109,6 @@ export default function DashboardPage() {
         }
       />
 
-      {/* Quick Action Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {quickActions.map(
-          ({ label, description, icon: Icon, iconClassName, onClick }) => (
-            <button
-              key={label}
-              type="button"
-              onClick={onClick}
-              className="p-4 rounded-2xl bg-surface border border-border hover:border-primary-border hover:shadow-md transition-all flex items-center gap-3 text-left group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary-border"
-            >
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform ${iconClassName}`}
-              >
-                <Icon className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-fg">{label}</p>
-                <p className="text-2xs text-fg-muted">{description}</p>
-              </div>
-            </button>
-          ),
-        )}
-      </div>
-
       {isError ? (
         <Card>
           <ErrorState
@@ -194,7 +119,7 @@ export default function DashboardPage() {
         </Card>
       ) : (
         <>
-          {/* 6 Key Operational Metric Cards */}
+          {/* Key Operational Metric Cards */}
           <StatsCardGroup>
             {stats.map((stat, idx) => (
               <StatsCard
@@ -210,119 +135,18 @@ export default function DashboardPage() {
             ))}
           </StatsCardGroup>
 
-          {/* Main Grid: Latest Registrations Feed & Upcoming Schedule */}
+          {/* Main Grid: Upcoming Birthdays (2 cols) & Sidebar (Recent People & Upcoming Events) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Latest Registrations (2 cols) */}
-            <Card className="lg:col-span-2">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Latest Registrations</CardTitle>
-                  <CardDescription>
-                    Real-time stream of incoming registrants
-                  </CardDescription>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleNavigate("registrations")}
-                  rightIcon={<ChevronRight className="w-4 h-4" />}
-                >
-                  View All
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {isLoading ? (
-                  <div className="space-y-3">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between p-3.5 rounded-xl bg-subtle"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Skeleton className="w-9 h-9 rounded-full" />
-                          <div className="space-y-1.5">
-                            <Skeleton className="h-4 w-24" />
-                            <Skeleton className="h-3 w-48" />
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <Skeleton className="h-4 w-12 rounded-md" />
-                          <Skeleton className="h-3 w-16" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : latestRegistrations.length === 0 ? (
-                  <EmptyState
-                    icon={UserPlus}
-                    title="No registrations yet"
-                    className="py-8"
-                  />
-                ) : (
-                  latestRegistrations.map((reg) => {
-                    const name =
-                      `${reg.person?.firstName || ""} ${reg.person?.lastName || ""}`.trim() ||
-                      "Attendee";
-                    const initials = name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase();
-                    return (
-                      <div
-                        key={reg.id}
-                        className="flex items-center justify-between p-3.5 rounded-xl bg-subtle hover:bg-muted transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-primary-soft text-primary-text font-bold text-xs flex items-center justify-center">
-                            {initials}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="text-xs font-bold text-fg">
-                                {name}
-                              </p>
-                              <StatusBadge
-                                status={reg.person?.membershipStatus || "GUEST"}
-                                size="sm"
-                              />
-                            </div>
-                            <p className="text-2xs text-fg-muted">
-                              Reg #:{" "}
-                              <span className="font-mono text-fg-secondary">
-                                {reg.registrationNumber}
-                              </span>{" "}
-                              • {reg.person?.email || "No Email"}
-                            </p>
-                          </div>
-                        </div>
+            {/* Upcoming Birthdays (2 cols) */}
+            <UpcomingBirthdaysCard
+              birthdays={upcomingBirthdays}
+              isLoading={isLoading}
+              className="lg:col-span-2"
+            />
 
-                        <div className="text-right">
-                          {reg.team?.name && (
-                            <TeamBadge color={reg.team.color} className="mb-1">
-                              {reg.team.name}
-                            </TeamBadge>
-                          )}
-                          <p className="text-2xs text-fg-muted flex items-center gap-1 justify-end">
-                            <Clock className="w-3 h-3" />
-                            {reg.status === "CHECKED_IN"
-                              ? "Checked In"
-                              : "Registered"}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Upcoming Events & Quick Stats */}
+            {/* Sidebar (1 col): Recent People & Upcoming Events */}
             <div className="space-y-4">
-              <UpcomingBirthdaysCard
-                birthdays={upcomingBirthdays}
-                isLoading={isLoading}
-              />
+              <RecentPeopleCard />
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">

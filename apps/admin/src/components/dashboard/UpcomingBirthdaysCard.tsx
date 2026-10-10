@@ -141,6 +141,14 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
               ? `Greeting already sent by ${greetedByText} on ${greetedDate}`
               : `Greeting already sent by ${greetedByText}`;
 
+            const initials =
+              fullName
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase() || "M";
+
             return (
               <div
                 key={birthday.id}
@@ -148,6 +156,9 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
                 onClick={() => router.push("/people")}
               >
                 <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-primary-soft text-primary-text font-bold text-xs flex items-center justify-center shrink-0">
+                    {initials}
+                  </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <p className="text-xs font-bold text-fg truncate">
