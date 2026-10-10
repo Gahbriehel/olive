@@ -312,19 +312,19 @@ export default function MessagingCenterPage() {
 
           return (
             <div className="flex items-center gap-2.5 min-w-0 max-w-[220px]">
-              <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40">
+              <div className="w-8 h-8 rounded-full bg-primary-soft text-primary-text font-bold text-xs flex items-center justify-center shrink-0 border border-primary-border">
                 {initial}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                <p className="text-xs font-bold text-fg truncate">
                   {name || "—"}
                 </p>
                 {email ? (
-                  <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                  <div className="text-2xs font-mono text-fg-muted truncate mt-0.5">
                     <TruncatedTextWithCopy
                       text={email}
                       maxLength={22}
-                      textClassName="text-[11px] font-mono text-slate-500 dark:text-slate-400"
+                      textClassName="text-2xs font-mono text-fg-muted"
                     />
                   </div>
                 ) : (
@@ -342,14 +342,14 @@ export default function MessagingCenterPage() {
           return (
             <div className="min-w-0 max-w-[260px] space-y-0.5">
               <p
-                className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate"
+                className="text-xs font-semibold text-fg truncate"
                 title={content?.subject || ""}
               >
                 {content?.subject || <NotAvailable />}
               </p>
               {content?.bodyTextSnippet && (
                 <p
-                  className="text-[11px] text-slate-500 dark:text-slate-400 truncate"
+                  className="text-2xs text-fg-muted truncate"
                   title={content.bodyTextSnippet}
                 >
                   {content.bodyTextSnippet}
@@ -368,7 +368,7 @@ export default function MessagingCenterPage() {
             <Badge
               variant={config?.variant || "indigo"}
               size="sm"
-              className="text-[10px] font-medium whitespace-nowrap"
+              className="text-2xs font-medium whitespace-nowrap"
             >
               {config?.label || type || "—"}
             </Badge>
@@ -385,17 +385,13 @@ export default function MessagingCenterPage() {
           const sender = getValue();
           if (!sender) {
             return (
-              <span className="text-xs text-slate-400 dark:text-slate-500 italic">
-                Automated
-              </span>
+              <span className="text-xs text-fg-subtle italic">Automated</span>
             );
           }
           return (
             <div className="text-xs min-w-0 max-w-[140px]">
-              <p className="font-semibold text-slate-800 dark:text-slate-200 truncate">
-                {sender.name}
-              </p>
-              <p className="text-[10px] font-mono text-slate-400 truncate">
+              <p className="font-semibold text-fg truncate">{sender.name}</p>
+              <p className="text-2xs font-mono text-slate-400 truncate">
                 {sender.email}
               </p>
             </div>
@@ -409,10 +405,10 @@ export default function MessagingCenterPage() {
           if (!val) return <NotAvailable />;
           return (
             <div className="space-y-0.5 whitespace-nowrap">
-              <p className="text-xs font-medium text-slate-800 dark:text-slate-200">
+              <p className="text-xs font-medium text-fg">
                 {dayjs(val).format("MMM D, YYYY")}
               </p>
-              <p className="text-[10px] text-slate-400">
+              <p className="text-2xs text-slate-400">
                 {dayjs(val).format("h:mm A")}
               </p>
             </div>
@@ -448,10 +444,10 @@ export default function MessagingCenterPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
             Messaging Center
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-xs sm:text-sm text-fg-muted">
             Monitor sent communications and send broadcast emails to members
           </p>
         </div>
@@ -516,15 +512,15 @@ export default function MessagingCenterPage() {
           </div>
 
           {selectedCount > 0 && (
-            <div className="flex flex-col gap-2 p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-800">
+            <div className="flex flex-col gap-2 p-3 rounded-xl bg-subtle border border-border">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <span className="text-xs font-semibold text-fg-secondary">
                   Selected Recipients ({selectedCount})
                 </span>
                 <button
                   type="button"
                   onClick={clearAllSelected}
-                  className="text-[11px] font-medium text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                  className="text-2xs font-medium text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                 >
                   Clear all
                 </button>
@@ -534,9 +530,9 @@ export default function MessagingCenterPage() {
                 {selectedPersonList.map((p) => (
                   <span
                     key={p.id}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-slate-200 shadow-xs"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-surface border border-border-control text-fg shadow-xs"
                   >
-                    <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[9px] flex items-center justify-center font-bold">
+                    <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-2xs flex items-center justify-center font-bold">
                       {(p.firstName?.[0] || p.name?.[0] || "?").toUpperCase()}
                     </span>
                     <span className="max-w-[130px] truncate">
@@ -602,7 +598,7 @@ export default function MessagingCenterPage() {
           />
 
           {/* Call to Action Controls */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-slate-100 dark:border-zinc-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-border-subtle">
             <Controller
               name="ctaLabel"
               control={control}

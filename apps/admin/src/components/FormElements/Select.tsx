@@ -56,7 +56,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       >
         <div className="relative flex items-center">
           {leftIcon && (
-            <span className="pointer-events-none absolute left-3 text-slate-400 dark:text-slate-500">
+            <span className="pointer-events-none absolute left-3 text-fg-subtle">
               {leftIcon}
             </span>
           )}
@@ -79,7 +79,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           </select>
           <ChevronDown
             aria-hidden="true"
-            className="pointer-events-none absolute right-3.5 h-4 w-4 text-slate-400 dark:text-slate-500"
+            className="pointer-events-none absolute right-3.5 h-4 w-4 text-fg-subtle"
           />
         </div>
       </FormField>

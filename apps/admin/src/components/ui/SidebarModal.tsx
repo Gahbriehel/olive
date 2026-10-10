@@ -33,7 +33,7 @@ export const SidebarModal = ({
     <div className="fixed inset-0 flex justify-end">
       <DialogPanel
         transition
-        className="flex h-full w-full max-w-lg flex-col overflow-hidden border-l border-slate-200 bg-white shadow-2xl transition duration-300 ease-out data-closed:translate-x-full dark:border-zinc-800 dark:bg-zinc-900"
+        className="flex h-full w-full max-w-lg flex-col overflow-hidden border-l border-border bg-surface shadow-2xl transition duration-300 ease-out data-closed:translate-x-full"
       >
         <OverlayHeader
           title={title}

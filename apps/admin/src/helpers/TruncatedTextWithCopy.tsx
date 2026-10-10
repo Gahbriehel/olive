@@ -51,7 +51,7 @@ export function TruncatedTextWithCopy({
     >
       <span
         className={cn(
-          "max-w-xs overflow-hidden text-ellipsis whitespace-nowrap group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors",
+          "max-w-xs overflow-hidden text-ellipsis whitespace-nowrap group-hover:text-primary-text transition-colors",
           textClassName,
         )}
       >
@@ -61,7 +61,7 @@ export function TruncatedTextWithCopy({
       {displayIcon ? (
         <button
           type="button"
-          className="cursor-pointer text-slate-400 hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400 transition-colors flex items-center justify-center shrink-0"
+          className="cursor-pointer text-fg-subtle hover:text-primary-text transition-colors flex items-center justify-center shrink-0"
           onClick={handleCopy}
           aria-label={`Copy ${text} to clipboard`}
         >

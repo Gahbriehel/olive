@@ -111,16 +111,16 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
 
   // 1. Standalone layout for Auth pages (Login) or unknown 404 routes
   if (isAuthPage || !isKnownRoute) {
-    return <div className="min-h-screen bg-slate-950">{children}</div>;
+    return <div className="min-h-screen bg-app">{children}</div>;
   }
 
   // 2. Render same fallback state during SSR / initial hydration to prevent mismatch
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-app text-fg flex items-center justify-center">
         <div className="text-center space-y-3">
           <Spinner size="lg" className="mx-auto" />
-          <p className="text-sm text-slate-400 font-medium">Loading...</p>
+          <p className="text-sm text-fg-subtle font-medium">Loading...</p>
         </div>
       </div>
     );
@@ -129,10 +129,10 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
   // 2. Loading state while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-app text-fg flex items-center justify-center">
         <div className="text-center space-y-3">
           <Spinner size="lg" className="mx-auto" />
-          <p className="text-sm text-slate-400 font-medium">
+          <p className="text-sm text-fg-subtle font-medium">
             Verifying Session...
           </p>
         </div>
@@ -146,10 +146,10 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
     // spinner. Avoid "Redirecting to login..." since authenticated users can
     // briefly land here during a reload before the token check resolves.
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-app text-fg flex items-center justify-center">
         <div className="text-center space-y-3">
           <Spinner size="lg" className="mx-auto" />
-          <p className="text-sm text-slate-400 font-medium">Loading...</p>
+          <p className="text-sm text-fg-subtle font-medium">Loading...</p>
         </div>
       </div>
     );
@@ -157,7 +157,7 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
 
   // 4. Main Protected App Shell with Sidebar & Topbar
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 font-sans antialiased text-slate-900 dark:text-slate-100 flex flex-col transition-colors">
+    <div className="min-h-screen bg-app font-sans antialiased text-fg flex flex-col transition-colors">
       <Sidebar />
       <div className="flex-1 lg:pl-72 flex flex-col min-w-0">
         <Topbar />

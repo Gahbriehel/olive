@@ -27,7 +27,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base =
-  "relative inline-flex shrink-0 cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-xl border font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-950 disabled:pointer-events-none disabled:opacity-50";
+  "relative inline-flex shrink-0 cursor-pointer select-none items-center justify-center whitespace-nowrap rounded-xl border font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-zinc-950 disabled:pointer-events-none disabled:opacity-50";
 
 const sizes: Record<ButtonSize, string> = {
   sm: "h-8 gap-1.5 px-3 text-xs",
@@ -38,23 +38,21 @@ const sizes: Record<ButtonSize, string> = {
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "border-indigo-600 bg-indigo-600 text-white shadow-xs hover:border-indigo-700 hover:bg-indigo-700",
-  secondary:
-    "border-slate-800 bg-slate-800 text-white shadow-xs hover:bg-slate-900 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700",
+    "border-primary bg-primary text-white shadow-xs hover:border-primary-hover hover:bg-primary-hover",
+  secondary: "border-transparent bg-fg text-surface shadow-xs hover:bg-fg/90",
   outline:
-    "border-slate-200 bg-white text-slate-700 shadow-xs hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-slate-200 dark:hover:border-zinc-600 dark:hover:bg-zinc-800",
-  ghost:
-    "border-transparent bg-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-zinc-800",
+    "border-border-control bg-surface text-fg-secondary shadow-xs hover:bg-subtle",
+  ghost: "border-transparent bg-transparent text-fg-secondary hover:bg-muted",
   danger:
-    "border-rose-600 bg-rose-600 text-white shadow-xs hover:border-rose-700 hover:bg-rose-700",
+    "border-danger bg-danger text-white shadow-xs hover:border-danger-hover hover:bg-danger-hover",
 };
 
 const spinnerColour: Record<ButtonVariant, string> = {
   primary: "text-current",
   secondary: "text-current",
   danger: "text-current",
-  outline: "text-indigo-600 dark:text-indigo-400",
-  ghost: "text-indigo-600 dark:text-indigo-400",
+  outline: "text-primary-text",
+  ghost: "text-primary-text",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

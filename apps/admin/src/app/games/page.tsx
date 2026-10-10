@@ -225,10 +225,10 @@ export default function GamesPage() {
     <div className="space-y-6 animate-fade-in pb-10">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
           Youth Conference Games
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-xs sm:text-sm text-fg-muted">
           Tournament competition list, point allocations, and score submissions.
         </p>
       </div>
@@ -270,7 +270,7 @@ export default function GamesPage() {
       </StatsCardGroup>
 
       {/* Toolbar + Search & Rows Per Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-4 rounded-2xl border border-border shadow-sm">
         <ListToolbar
           create={{
             label: "Create New Game",
@@ -295,24 +295,22 @@ export default function GamesPage() {
 
         <div className="flex items-center gap-3 sm:ml-auto">
           <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-subtle" />
             <Input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search games..."
-              className="pl-9 text-base h-9 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 focus:border-indigo-500"
+              className="pl-9 text-base h-9 bg-surface border-border focus:border-indigo-500"
             />
           </div>
 
           <div className="flex items-center gap-2 text-xs shrink-0">
-            <span className="text-slate-500 dark:text-slate-400 font-medium">
-              Rows:
-            </span>
+            <span className="text-fg-muted font-medium">Rows:</span>
             <select
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
-              className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-base py-1.5 px-2.5 font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all cursor-pointer"
+              className="bg-surface-raised border border-border-control rounded-lg text-base py-1.5 px-2.5 font-semibold text-fg-secondary focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all cursor-pointer"
             >
               {[5, 10, 20, 50].map((size) => (
                 <option key={size} value={size}>
@@ -326,7 +324,7 @@ export default function GamesPage() {
 
       {/* Games List */}
       {displayedGames.length === 0 ? (
-        <div className="p-12 text-center text-slate-500 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
+        <div className="p-12 text-center text-slate-500 bg-surface rounded-2xl border border-border">
           No data available
         </div>
       ) : (
@@ -336,7 +334,7 @@ export default function GamesPage() {
               <div>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base font-bold text-slate-900 dark:text-slate-100">
+                    <CardTitle className="text-base font-bold text-fg">
                       {game.name}
                     </CardTitle>
 
@@ -375,8 +373,8 @@ export default function GamesPage() {
                 </CardHeader>
 
                 <CardContent className="space-y-3 pt-1 text-xs">
-                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 space-y-1.5">
-                    <p className="font-bold text-slate-700 dark:text-slate-300">
+                  <div className="p-3 rounded-xl bg-subtle space-y-1.5">
+                    <p className="font-bold text-fg-secondary">
                       Tournament Results
                     </p>
                     {game.scores.length > 0 ? (
@@ -384,7 +382,7 @@ export default function GamesPage() {
                         {game.scores.map((s) => (
                           <div
                             key={s.teamId}
-                            className="flex items-center justify-between p-1.5 rounded-xl bg-white dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700/60 font-semibold"
+                            className="flex items-center justify-between p-1.5 rounded-xl bg-surface-raised border border-slate-100 dark:border-zinc-700/60 font-semibold"
                           >
                             <div className="flex items-center gap-1.5 min-w-0">
                               {s.teamColor && (
@@ -395,7 +393,7 @@ export default function GamesPage() {
                               )}
                               <span className="truncate">{s.teamName}</span>
                             </div>
-                            <span className="font-mono text-indigo-600 dark:text-indigo-400 shrink-0 ml-1">
+                            <span className="font-mono text-primary-text shrink-0 ml-1">
                               +{s.points}
                             </span>
                           </div>
@@ -428,20 +426,17 @@ export default function GamesPage() {
 
       {/* Pagination Controls Bar - Always rendered when items exist */}
       {totalItems > 0 && (
-        <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+        <div className="p-4 bg-surface rounded-2xl border border-border shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-fg-muted">
           <div>
             Showing{" "}
-            <span className="font-semibold text-slate-900 dark:text-slate-200">
+            <span className="font-semibold text-fg">
               {Math.min((page - 1) * limit + 1, totalItems)}
             </span>{" "}
             to{" "}
-            <span className="font-semibold text-slate-900 dark:text-slate-200">
+            <span className="font-semibold text-fg">
               {Math.min(page * limit, totalItems)}
             </span>{" "}
-            of{" "}
-            <span className="font-semibold text-slate-900 dark:text-slate-200">
-              {totalItems}
-            </span>{" "}
+            of <span className="font-semibold text-fg">{totalItems}</span>{" "}
             results
           </div>
 
@@ -450,7 +445,7 @@ export default function GamesPage() {
               type="button"
               onClick={() => setPage(1)}
               disabled={page <= 1}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               title="First Page"
             >
               <ChevronsLeft className="w-4 h-4" />
@@ -459,28 +454,22 @@ export default function GamesPage() {
               type="button"
               onClick={() => setPage(page - 1)}
               disabled={page <= 1}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               title="Previous Page"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
 
             <span className="px-3 text-xs">
-              Page{" "}
-              <span className="font-semibold text-slate-900 dark:text-slate-100">
-                {page}
-              </span>{" "}
-              of{" "}
-              <span className="font-semibold text-slate-900 dark:text-slate-100">
-                {totalPages}
-              </span>
+              Page <span className="font-semibold text-fg">{page}</span> of{" "}
+              <span className="font-semibold text-fg">{totalPages}</span>
             </span>
 
             <button
               type="button"
               onClick={() => setPage(page + 1)}
               disabled={page >= totalPages}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               title="Next Page"
             >
               <ChevronRight className="w-4 h-4" />
@@ -489,7 +478,7 @@ export default function GamesPage() {
               type="button"
               onClick={() => setPage(totalPages)}
               disabled={page >= totalPages}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               title="Last Page"
             >
               <ChevronsRight className="w-4 h-4" />
@@ -510,7 +499,7 @@ export default function GamesPage() {
             {teams.map((team) => (
               <div
                 key={team.id}
-                className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/50 space-y-2"
+                className="p-3 rounded-xl border border-border bg-subtle space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -518,9 +507,7 @@ export default function GamesPage() {
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: team.colorHex }}
                     />
-                    <span className="font-bold text-slate-900 dark:text-slate-100">
-                      {team.name}
-                    </span>
+                    <span className="font-bold text-fg">{team.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Input
@@ -552,7 +539,7 @@ export default function GamesPage() {
             ))}
           </div>
 
-          <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between gap-2">
+          <div className="pt-3 border-t border-border-subtle flex items-center justify-between gap-2">
             <Button
               variant="danger"
               size="sm"

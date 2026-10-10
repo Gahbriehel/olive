@@ -1,4 +1,4 @@
-import { type JSX, type FormEvent, useState } from "react";
+import { type JSX, type FormEvent, useId, useState } from "react";
 import dayjs from "dayjs";
 
 import { Input } from "@/components/FormElements/Input";
@@ -45,25 +45,24 @@ export function FiltersModal({
   title = "Filters",
   display,
   close,
-  ...rest
-}: Props): JSX.Element {
-  return (
-    <SidebarModal title={title} isOpen={display} onClose={close}>
-      {/* Mount content only while open so the draft re-seeds from the
-          applied values every time the panel opens. */}
-      {display ? <FiltersModalContent {...rest} /> : <div></div>}
-    </SidebarModal>
-  );
-}
-
-function FiltersModalContent({
   fields,
   values,
   onApply,
   onClear,
-}: Omit<Props, "display" | "close" | "title">): JSX.Element {
+}: Props): JSX.Element {
+  const formId = useId();
   const [draft, setDraft] = useState<FilterValues>(values);
   const [dateError, setDateError] = useState<string>();
+
+  // Re-seed the draft from the applied values every time the panel opens.
+  const [wasOpen, setWasOpen] = useState(display);
+  if (display !== wasOpen) {
+    setWasOpen(display);
+    if (display) {
+      setDraft(values);
+      setDateError(undefined);
+    }
+  }
 
   function setValue(key: keyof FilterValues, value: string): void {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -92,85 +91,100 @@ function FiltersModalContent({
     countActiveFilters(fields, draft) + countActiveFilters(fields, values) > 0;
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-5">
-      {fields.map((field) => {
-        if (field.type === "dateRange") {
-          return (
-            <div key="dateRange" className="flex flex-col gap-3">
-              {field.label && (
-                <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  {field.label}
-                </label>
-              )}
-              {field.presets !== false && (
-                <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:flex-wrap">
-                  {datePresets.map((preset) => (
-                    <button
-                      key={preset.label}
-                      type="button"
-                      onClick={() => {
-                        const [start, end] = preset.range();
-                        setDraft((prev) => ({
-                          ...prev,
-                          startDate: start.format(DATE_FORMAT),
-                          endDate: end.format(DATE_FORMAT),
-                        }));
-                        setDateError(undefined);
-                      }}
-                      className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold duration-300 hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-800 md:px-4 cursor-pointer"
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
+    <SidebarModal
+      title={title}
+      isOpen={display}
+      onClose={close}
+      footer={
+        <>
+          <Button
+            variant="outline"
+            onClick={clearAll}
+            disabled={!hasAnything}
+            className="sm:mr-auto"
+          >
+            Clear all
+          </Button>
+          <Button type="submit" form={formId}>
+            Apply filters
+          </Button>
+        </>
+      }
+    >
+      <form id={formId} onSubmit={onSubmit} className="flex flex-col gap-5">
+        {fields.map((field) => {
+          if (field.type === "dateRange") {
+            return (
+              <fieldset key="dateRange" className="flex flex-col gap-3">
+                {field.label && (
+                  <legend className="mb-3 text-xs font-semibold text-fg-secondary">
+                    {field.label}
+                  </legend>
+                )}
+                {field.presets !== false && (
+                  <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+                    {datePresets.map((preset) => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => {
+                          const [start, end] = preset.range();
+                          setDraft((prev) => ({
+                            ...prev,
+                            startDate: start.format(DATE_FORMAT),
+                            endDate: end.format(DATE_FORMAT),
+                          }));
+                          setDateError(undefined);
+                        }}
+                        className="cursor-pointer rounded-full border border-border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 md:px-4 dark:text-zinc-300"
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Input
+                    label="Start Date"
+                    type="date"
+                    value={draft.startDate ?? ""}
+                    onChange={(e) => {
+                      setValue("startDate", e.target.value);
+                      setDateError(undefined);
+                    }}
+                  />
+                  <Input
+                    label="End Date"
+                    type="date"
+                    value={draft.endDate ?? ""}
+                    error={dateError}
+                    onChange={(e) => {
+                      setValue("endDate", e.target.value);
+                      setDateError(undefined);
+                    }}
+                  />
                 </div>
-              )}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Input
-                  label="Start Date"
-                  type="date"
-                  value={draft.startDate ?? ""}
-                  onChange={(e) => {
-                    setValue("startDate", e.target.value);
-                    setDateError(undefined);
-                  }}
-                />
-                <Input
-                  label="End Date"
-                  type="date"
-                  value={draft.endDate ?? ""}
-                  error={dateError}
-                  onChange={(e) => {
-                    setValue("endDate", e.target.value);
-                    setDateError(undefined);
-                  }}
-                />
-              </div>
-            </div>
-          );
-        }
+              </fieldset>
+            );
+          }
 
-        if (field.type === "text") {
-          return (
-            <div key={field.key} className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                {field.label}
-              </label>
+          if (field.type === "text") {
+            return (
               <Input
+                key={field.key}
+                label={field.label}
                 type="text"
                 value={draft[field.key] ?? ""}
                 onChange={(e) => setValue(field.key, e.target.value)}
                 placeholder={field.placeholder}
               />
-            </div>
-          );
-        }
+            );
+          }
 
-        return (
-          <div key={field.key} className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-              {field.label}
-            </label>
+          return (
             <Select
+              key={field.key}
+              label={field.label}
               value={draft[field.key] ?? ""}
               onChange={(e) => setValue(field.key, e.target.value)}
             >
@@ -188,28 +202,9 @@ function FiltersModalContent({
                 ))
               )}
             </Select>
-          </div>
-        );
-      })}
-
-      <div className="flex gap-3 pt-4 mt-2 border-t border-slate-100 dark:border-zinc-800">
-        <Button
-          type="button"
-          variant="outline"
-          className="flex-1 justify-center"
-          onClick={clearAll}
-          disabled={!hasAnything}
-        >
-          Clear all
-        </Button>
-        <Button
-          type="submit"
-          variant="primary"
-          className="flex-1 justify-center"
-        >
-          Apply
-        </Button>
-      </div>
-    </form>
+          );
+        })}
+      </form>
+    </SidebarModal>
   );
 }

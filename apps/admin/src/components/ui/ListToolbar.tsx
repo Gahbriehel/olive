@@ -50,7 +50,7 @@ export function ListToolbar({
     <Button variant="outline">
       <MoreHorizontal className="w-4 h-4" />
       {actionsLabel}
-      <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500" />
+      <ChevronDown className="w-3.5 h-3.5 text-fg-subtle" />
     </Button>
   );
 

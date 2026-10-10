@@ -235,7 +235,7 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
                     e.preventDefault();
                     closeIconFn?.();
                   }}
-                  className="rounded p-0.5 text-slate-400 transition-colors hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:text-slate-500 dark:hover:text-slate-300"
+                  className="rounded p-0.5 text-fg-subtle transition-colors hover:text-fg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 >
                   <XCircle className="h-4 w-4" aria-hidden="true" />
                 </button>
@@ -243,7 +243,7 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
               {showChevron && (
                 <ComboboxButton
                   aria-label={label ? `Show ${label} options` : "Show options"}
-                  className="rounded p-0.5 text-slate-400 focus:outline-none dark:text-slate-500"
+                  className="rounded p-0.5 text-fg-subtle focus:outline-none"
                 >
                   <ChevronDown className="h-4 w-4" aria-hidden="true" />
                 </ComboboxButton>
@@ -253,7 +253,7 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
             <ComboboxOptions
               transition
               className={cn(
-                "absolute top-full z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:bg-zinc-800 dark:shadow-zinc-950/50 dark:ring-zinc-700",
+                "absolute top-full z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-surface-raised py-1 text-sm shadow-lg ring-1 ring-border-control focus:outline-none",
                 "transition duration-100 ease-in data-[closed]:opacity-0",
                 optionsClassName,
               )}
@@ -272,25 +272,25 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
               {addNewOption && (
                 <ComboboxOption
                   value={emptySelect()}
-                  className="flex cursor-pointer items-center gap-2 px-10 py-2.5 text-indigo-600 data-[focus]:bg-indigo-50 dark:text-indigo-400 dark:data-[focus]:bg-indigo-500/10"
+                  className="flex cursor-pointer items-center gap-2 px-10 py-2.5 text-primary-text data-[focus]:bg-primary-soft"
                 >
                   <span className="font-medium">Add new</span>
                   <PlusCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
                 </ComboboxOption>
               )}
               {!isLoading && filteredOptions?.length === 0 && query !== "" && (
-                <div className="relative cursor-default select-none px-4 py-2.5 text-sm text-slate-500 dark:text-slate-400">
+                <div className="relative cursor-default select-none px-4 py-2.5 text-sm text-fg-muted">
                   Nothing found.
                 </div>
               )}
               {!isLoading &&
                 (options?.length || availableOptions?.length) === 0 && (
-                  <div className="relative cursor-default select-none px-4 py-2.5 text-sm text-slate-500 dark:text-slate-400">
+                  <div className="relative cursor-default select-none px-4 py-2.5 text-sm text-fg-muted">
                     No options.
                   </div>
                 )}
               {isLoading && (
-                <div className="relative cursor-default select-none px-4 py-2.5 text-sm text-slate-500 dark:text-slate-400">
+                <div className="relative cursor-default select-none px-4 py-2.5 text-sm text-fg-muted">
                   Loading...
                 </div>
               )}
@@ -298,7 +298,7 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
                 filteredOptions.map((option, index) => (
                   <ComboboxOption
                     key={option.value?._id || index}
-                    className="group relative flex cursor-pointer select-none items-center py-2.5 pl-10 pr-4 text-slate-900 data-[focus]:bg-indigo-50 data-[focus]:text-indigo-900 dark:text-slate-100 dark:data-[focus]:bg-indigo-500/10 dark:data-[focus]:text-indigo-100"
+                    className="group relative flex cursor-pointer select-none items-center py-2.5 pl-10 pr-4 text-fg data-[focus]:bg-primary-soft data-[focus]:text-fg dark:data-[focus]:bg-primary/10"
                     value={option}
                   >
                     {({ selected }) => {
@@ -310,7 +310,7 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
                             className={cn(
                               "block truncate capitalize",
                               isSelected
-                                ? "font-semibold text-indigo-600 dark:text-indigo-400"
+                                ? "font-semibold text-primary-text"
                                 : "font-normal",
                             )}
                           >
@@ -318,7 +318,7 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
                           </span>
                           {isSelected && (
                             <Check
-                              className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-600 dark:text-indigo-400"
+                              className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-primary-text"
                               aria-hidden="true"
                             />
                           )}

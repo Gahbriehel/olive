@@ -16,7 +16,9 @@ export interface SwitchProps {
   hint?: React.ReactNode;
   disabled?: boolean;
   required?: boolean;
-  color?: "indigo" | "emerald";
+  color?: "indigo" | "emerald" | "amber";
+  /** Optional leading icon shown before the label. */
+  icon?: React.ReactNode;
   className?: string;
   id?: string;
   name?: string;
@@ -32,6 +34,7 @@ export function Switch({
   disabled = false,
   required,
   color = "indigo",
+  icon,
   className,
   id: idProp,
   name,
@@ -39,11 +42,16 @@ export function Switch({
 }: SwitchProps) {
   const { id, hintId, errorId } = useFieldIds(idProp);
   const descriptionId = `${id}-description`;
-  const activeBg = color === "emerald" ? "bg-emerald-600" : "bg-indigo-600";
-  const focusRing =
-    color === "emerald"
-      ? "focus-visible:ring-emerald-500"
-      : "focus-visible:ring-indigo-500";
+  const activeBg = {
+    indigo: "bg-primary",
+    emerald: "bg-success",
+    amber: "bg-warning",
+  }[color];
+  const focusRing = {
+    indigo: "focus-visible:ring-primary",
+    emerald: "focus-visible:ring-success",
+    amber: "focus-visible:ring-warning",
+  }[color];
 
   const describedBy =
     [description && descriptionId, hint && hintId, error && errorId]
@@ -55,37 +63,43 @@ export function Switch({
       <div
         className={clsx(
           "flex items-center justify-between rounded-2xl border p-3.5 transition-colors",
-          "bg-slate-50 dark:bg-zinc-800/60",
-          error ? "border-rose-500" : "border-slate-200 dark:border-zinc-700",
+          "bg-subtle",
+          error ? "border-danger" : "border-border-control",
           disabled && "cursor-not-allowed opacity-60",
         )}
       >
         {(label || description) && (
-          <div className="min-w-0 flex-1 pr-3">
-            {label && (
-              <label
-                htmlFor={id}
-                className={clsx(
-                  "block select-none text-xs font-bold text-slate-800 dark:text-slate-200",
-                  disabled ? "cursor-not-allowed" : "cursor-pointer",
-                )}
-              >
-                {label}
-                {required && (
-                  <span aria-hidden="true" className="ml-0.5 text-rose-500">
-                    *
-                  </span>
-                )}
-              </label>
-            )}
-            {description && (
-              <p
-                id={descriptionId}
-                className="mt-0.5 select-none text-[11px] text-slate-500 dark:text-slate-400"
-              >
-                {description}
-              </p>
-            )}
+          <div className="flex min-w-0 flex-1 items-start gap-2.5 pr-3">
+            {icon && <span className="mt-0.5 shrink-0">{icon}</span>}
+            <div className="min-w-0 flex-1">
+              {label && (
+                <label
+                  htmlFor={id}
+                  className={clsx(
+                    "block select-none text-xs font-bold text-fg",
+                    disabled ? "cursor-not-allowed" : "cursor-pointer",
+                  )}
+                >
+                  {label}
+                  {required && (
+                    <span
+                      aria-hidden="true"
+                      className="ml-0.5 text-danger-text"
+                    >
+                      *
+                    </span>
+                  )}
+                </label>
+              )}
+              {description && (
+                <p
+                  id={descriptionId}
+                  className="mt-0.5 select-none text-2xs text-fg-muted"
+                >
+                  {description}
+                </p>
+              )}
+            </div>
           </div>
         )}
         <HeadlessSwitch
@@ -98,7 +112,7 @@ export function Switch({
           aria-invalid={error ? true : undefined}
           aria-required={required || undefined}
           className={clsx(
-            checked ? activeBg : "bg-slate-300 dark:bg-zinc-600",
+            checked ? activeBg : "bg-fg-subtle",
             "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out",
             "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-900",
             focusRing,
@@ -116,10 +130,7 @@ export function Switch({
         </HeadlessSwitch>
       </div>
       {hint && (
-        <p
-          id={hintId}
-          className="text-[11px] text-slate-500 dark:text-slate-400"
-        >
+        <p id={hintId} className="text-2xs text-fg-muted">
           {hint}
         </p>
       )}
@@ -127,7 +138,7 @@ export function Switch({
         <p
           id={errorId}
           role="alert"
-          className="text-xs font-medium text-rose-500"
+          className="text-xs font-medium text-danger-text"
         >
           {error}
         </p>

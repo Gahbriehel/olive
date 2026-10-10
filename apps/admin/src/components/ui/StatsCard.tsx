@@ -28,39 +28,41 @@ const colorVariants: Record<
   }
 > = {
   indigo: {
-    iconBg: "bg-indigo-50 dark:bg-indigo-950/60",
-    iconText: "text-indigo-600 dark:text-indigo-400",
-    trendText: "text-indigo-600 dark:text-indigo-400",
+    iconBg: "bg-primary-soft",
+    iconText: "text-primary-text",
+    trendText: "text-primary-text",
   },
   emerald: {
-    iconBg: "bg-emerald-50 dark:bg-emerald-950/60",
-    iconText: "text-emerald-600 dark:text-emerald-400",
-    trendText: "text-emerald-600 dark:text-emerald-400",
+    iconBg: "bg-success-soft",
+    iconText: "text-success-text",
+    trendText: "text-success-text",
   },
   amber: {
-    iconBg: "bg-amber-50 dark:bg-amber-950/60",
-    iconText: "text-amber-600 dark:text-amber-400",
-    trendText: "text-amber-600 dark:text-amber-400",
+    iconBg: "bg-warning-soft",
+    iconText: "text-warning-text",
+    trendText: "text-warning-text",
   },
   rose: {
-    iconBg: "bg-rose-50 dark:bg-rose-950/60",
-    iconText: "text-rose-600 dark:text-rose-400",
-    trendText: "text-rose-600 dark:text-rose-400",
+    iconBg: "bg-danger-soft",
+    iconText: "text-danger-text",
+    trendText: "text-danger-text",
   },
   cyan: {
-    iconBg: "bg-cyan-50 dark:bg-cyan-950/60",
-    iconText: "text-cyan-600 dark:text-cyan-400",
-    trendText: "text-cyan-600 dark:text-cyan-400",
+    iconBg: "bg-info-soft",
+    iconText: "text-info-text",
+    trendText: "text-info-text",
   },
+  /* eslint-disable no-restricted-syntax -- categorical colours with no semantic token */
   purple: {
     iconBg: "bg-purple-50 dark:bg-purple-950/60",
     iconText: "text-purple-600 dark:text-purple-400",
     trendText: "text-purple-600 dark:text-purple-400",
   },
+  /* eslint-enable no-restricted-syntax */
   slate: {
-    iconBg: "bg-slate-100 dark:bg-zinc-800",
-    iconText: "text-slate-600 dark:text-slate-300",
-    trendText: "text-slate-600 dark:text-slate-400",
+    iconBg: "bg-muted",
+    iconText: "text-fg-secondary",
+    trendText: "text-fg-secondary",
   },
 };
 
@@ -113,7 +115,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
       <CardContent className="p-3.5 sm:p-4">
         <div className="flex items-center justify-between mb-2">
           <span
-            className="text-xs font-semibold text-slate-500 dark:text-slate-400 truncate pr-2"
+            className="text-xs font-semibold text-fg-muted truncate pr-2"
             title={title}
           >
             {title}
@@ -132,17 +134,17 @@ export const StatsCard: React.FC<StatsCardProps> = ({
         </div>
 
         <div className="flex items-baseline justify-between gap-1.5 flex-wrap">
-          <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+          <h3 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
             {value}
           </h3>
           {change && (
             <span
               className={cn(
-                "text-[11px] font-semibold flex items-center gap-1 shrink-0",
+                "text-2xs font-semibold flex items-center gap-1 shrink-0",
                 trend === "up"
-                  ? "text-emerald-600 dark:text-emerald-400"
+                  ? "text-success-text"
                   : trend === "down"
-                    ? "text-rose-600 dark:text-rose-400"
+                    ? "text-danger-text"
                     : styles.trendText,
               )}
             >
@@ -153,9 +155,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
         </div>
 
         {description && (
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
-            {description}
-          </p>
+          <p className="text-2xs text-fg-subtle mt-1">{description}</p>
         )}
       </CardContent>
     </Card>

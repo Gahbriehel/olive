@@ -40,7 +40,7 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
 
     if (daysUntil === 0) {
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-xs shadow-indigo-500/20 animate-pulse">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-2xs font-bold bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-xs shadow-indigo-500/20 animate-pulse">
           🎉 Today!
         </span>
       );
@@ -57,7 +57,7 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
     return (
       <div className="flex items-center gap-1.5">
         {formattedDate && (
-          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+          <span className="text-2xs font-medium text-fg-muted">
             {formattedDate}
           </span>
         )}
@@ -72,7 +72,7 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+          <div className="p-1.5 rounded-lg bg-primary-soft text-primary-text">
             <Cake className="w-4 h-4" />
           </div>
           <CardTitle>Upcoming Birthdays</CardTitle>
@@ -93,7 +93,7 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between p-3 rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40"
+                className="flex items-center justify-between p-3 rounded-xl border border-border bg-subtle"
               >
                 <div className="flex items-center gap-3">
                   <Skeleton className="w-9 h-9 rounded-full" />
@@ -110,8 +110,8 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
             ))}
           </div>
         ) : birthdays.length === 0 ? (
-          <div className="text-center py-6 px-4 text-sm text-slate-500 dark:text-slate-400 flex flex-col items-center justify-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-400 dark:text-zinc-500">
+          <div className="text-center py-6 px-4 text-sm text-fg-muted flex flex-col items-center justify-center gap-2">
+            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-fg-subtle">
               <Cake className="w-5 h-5" />
             </div>
             <p>No upcoming birthdays in the next 30 days</p>
@@ -144,13 +144,13 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
             return (
               <div
                 key={birthday.id}
-                className="flex items-center justify-between p-3 rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40 hover:bg-slate-100/80 dark:hover:bg-zinc-800/70 transition-all cursor-pointer group"
+                className="flex items-center justify-between p-3 rounded-xl border border-border bg-subtle hover:bg-muted transition-all cursor-pointer group"
                 onClick={() => router.push("/people")}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                      <p className="text-xs font-bold text-fg truncate">
                         {fullName}
                       </p>
                       <StatusBadge
@@ -159,7 +159,7 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
                       />
                     </div>
                     {birthday.email && (
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                      <p className="text-2xs text-fg-muted truncate">
                         {birthday.email}
                       </p>
                     )}
@@ -170,7 +170,7 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
                   {renderCountdownBadge(birthday)}
 
                   {isGreeted && (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-2xs font-semibold text-success-text bg-success-soft border border-success-border px-2 py-0.5 rounded-full">
                       <Check className="w-3 h-3" /> Greeted
                     </span>
                   )}
@@ -183,11 +183,11 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
                         aria-label={greetedReason}
                         title={greetedReason}
                         onClick={(e) => e.stopPropagation()}
-                        className="p-1.5 rounded-lg text-emerald-600/80 dark:text-emerald-400/80 bg-emerald-50 dark:bg-emerald-950/50 cursor-not-allowed border border-emerald-200/60 dark:border-emerald-800/40"
+                        className="p-1.5 rounded-lg text-success-text bg-success-soft cursor-not-allowed border border-success-border"
                       >
                         <MailCheck className="w-4 h-4" />
                       </button>
-                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-slate-900 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-medium text-white shadow-lg shadow-black/20 border border-slate-700/50 animate-in fade-in duration-150">
+                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-slate-900 dark:bg-slate-800 px-2.5 py-1 text-2xs font-medium text-white shadow-lg shadow-black/20 border border-slate-700/50 animate-in fade-in duration-150">
                         {greetedReason}
                       </div>
                     </div>
@@ -201,11 +201,11 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
                         }}
                         aria-label={`Send birthday greeting to ${birthday.firstName}`}
                         title={`Send birthday greeting to ${birthday.firstName}`}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-primary-soft transition-colors cursor-pointer"
                       >
                         <Mail className="w-4 h-4" />
                       </button>
-                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-slate-900 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-medium text-white shadow-lg shadow-black/20 border border-slate-700/50 animate-in fade-in duration-150">
+                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-slate-900 dark:bg-slate-800 px-2.5 py-1 text-2xs font-medium text-white shadow-lg shadow-black/20 border border-slate-700/50 animate-in fade-in duration-150">
                         Send greeting to {birthday.firstName}
                       </div>
                     </div>
@@ -217,11 +217,11 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
                         aria-label="No email address on record"
                         title="No email address on record"
                         onClick={(e) => e.stopPropagation()}
-                        className="p-1.5 rounded-lg text-slate-300 dark:text-zinc-600 bg-slate-100/60 dark:bg-zinc-800/40 cursor-not-allowed"
+                        className="p-1.5 rounded-lg text-fg-subtle bg-muted cursor-not-allowed"
                       >
                         <Mail className="w-4 h-4 opacity-50" />
                       </button>
-                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-slate-900 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-medium text-white shadow-lg shadow-black/20 border border-slate-700/50 animate-in fade-in duration-150">
+                      <div className="pointer-events-none absolute right-0 bottom-full mb-1.5 hidden group-hover/tooltip:flex z-50 whitespace-nowrap rounded-lg bg-slate-900 dark:bg-slate-800 px-2.5 py-1 text-2xs font-medium text-white shadow-lg shadow-black/20 border border-slate-700/50 animate-in fade-in duration-150">
                         No email address on record
                       </div>
                     </div>

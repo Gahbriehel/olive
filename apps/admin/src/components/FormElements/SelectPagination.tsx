@@ -12,7 +12,7 @@ interface SelectPaginationProps {
 }
 
 const buttonClass =
-  "inline-flex h-6 w-6 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent dark:text-slate-400 dark:hover:bg-zinc-700 dark:hover:text-slate-200";
+  "inline-flex h-6 w-6 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-muted-strong hover:text-fg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent";
 
 /**
  * Prev/next pager rendered at the top of a select's option list. Renders
@@ -38,7 +38,7 @@ export function SelectPagination({
   const keepFocus = (e: MouseEvent) => e.preventDefault();
 
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-slate-50 px-3 py-1.5 text-xs text-slate-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-slate-400">
+    <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border-subtle bg-subtle px-3 py-1.5 text-xs text-fg-muted">
       <span aria-live="polite">
         Page {currentPage}
         {totalPages ? ` of ${totalPages}` : ""}

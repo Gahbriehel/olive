@@ -283,13 +283,11 @@ export default function UsersPage() {
                 {getInitials(u.name)}
               </div>
               <div>
-                <p className="font-bold text-slate-900 dark:text-slate-100">
-                  {capitalizeWords(u.name)}
-                </p>
+                <p className="font-bold text-fg">{capitalizeWords(u.name)}</p>
                 <TruncatedTextWithCopy
                   text={u.email}
                   maxLength={28}
-                  textClassName="text-[11px] text-slate-400"
+                  textClassName="text-2xs text-slate-400"
                 />
               </div>
             </div>
@@ -300,7 +298,7 @@ export default function UsersPage() {
         accessorKey: "role",
         header: "Assigned Role",
         cell: ({ row }) => (
-          <Badge variant="indigo" className="uppercase text-[10px] font-bold">
+          <Badge variant="indigo" className="uppercase text-2xs font-bold">
             {row.original.role}
           </Badge>
         ),
@@ -359,10 +357,8 @@ export default function UsersPage() {
         header: "Sidebar Navigation & Route",
         cell: ({ row }) => (
           <div>
-            <p className="font-bold text-slate-900 dark:text-slate-100">
-              {row.original.item}
-            </p>
-            <p className="text-[11px] font-mono text-slate-400">
+            <p className="font-bold text-fg">{row.original.item}</p>
+            <p className="text-2xs font-mono text-slate-400">
               {row.original.route}
             </p>
           </div>
@@ -372,10 +368,8 @@ export default function UsersPage() {
         accessorKey: "superAdmin",
         header: () => (
           <div className="text-center">
-            <p className="font-bold text-slate-900 dark:text-slate-100">
-              Super Admin
-            </p>
-            <span className="text-[10px] font-mono text-indigo-500">
+            <p className="font-bold text-fg">Super Admin</p>
+            <span className="text-2xs font-mono text-indigo-500">
               SUPER_ADMIN
             </span>
           </div>
@@ -385,7 +379,7 @@ export default function UsersPage() {
             {row.original.superAdmin ? (
               <Check className="w-4 h-4 text-emerald-500 mx-auto" />
             ) : (
-              <X className="w-4 h-4 text-slate-300 dark:text-zinc-700 mx-auto" />
+              <X className="w-4 h-4 text-fg-subtle mx-auto" />
             )}
           </div>
         ),
@@ -394,10 +388,8 @@ export default function UsersPage() {
         accessorKey: "churchAdmin",
         header: () => (
           <div className="text-center">
-            <p className="font-bold text-slate-900 dark:text-slate-100">
-              Church Admin
-            </p>
-            <span className="text-[10px] font-mono text-indigo-500">ADMIN</span>
+            <p className="font-bold text-fg">Church Admin</p>
+            <span className="text-2xs font-mono text-indigo-500">ADMIN</span>
           </div>
         ),
         cell: ({ row }) => (
@@ -405,7 +397,7 @@ export default function UsersPage() {
             {row.original.churchAdmin ? (
               <Check className="w-4 h-4 text-emerald-500 mx-auto" />
             ) : (
-              <X className="w-4 h-4 text-slate-300 dark:text-zinc-700 mx-auto" />
+              <X className="w-4 h-4 text-fg-subtle mx-auto" />
             )}
           </div>
         ),
@@ -414,10 +406,8 @@ export default function UsersPage() {
         accessorKey: "coordinator",
         header: () => (
           <div className="text-center">
-            <p className="font-bold text-slate-900 dark:text-slate-100">
-              Event Coordinator
-            </p>
-            <span className="text-[10px] font-mono text-indigo-500">
+            <p className="font-bold text-fg">Event Coordinator</p>
+            <span className="text-2xs font-mono text-indigo-500">
               COORDINATOR
             </span>
           </div>
@@ -427,7 +417,7 @@ export default function UsersPage() {
             {row.original.coordinator ? (
               <Check className="w-4 h-4 text-emerald-500 mx-auto" />
             ) : (
-              <X className="w-4 h-4 text-slate-300 dark:text-zinc-700 mx-auto" />
+              <X className="w-4 h-4 text-fg-subtle mx-auto" />
             )}
           </div>
         ),
@@ -436,10 +426,8 @@ export default function UsersPage() {
         accessorKey: "regDesk",
         header: () => (
           <div className="text-center">
-            <p className="font-bold text-slate-900 dark:text-slate-100">
-              Registration Desk
-            </p>
-            <span className="text-[10px] font-mono text-indigo-500">
+            <p className="font-bold text-fg">Registration Desk</p>
+            <span className="text-2xs font-mono text-indigo-500">
               REGISTRATION_DESK
             </span>
           </div>
@@ -449,7 +437,7 @@ export default function UsersPage() {
             {row.original.regDesk ? (
               <Check className="w-4 h-4 text-emerald-500 mx-auto" />
             ) : (
-              <X className="w-4 h-4 text-slate-300 dark:text-zinc-700 mx-auto" />
+              <X className="w-4 h-4 text-fg-subtle mx-auto" />
             )}
           </div>
         ),
@@ -462,17 +450,17 @@ export default function UsersPage() {
     <div className="space-y-6 animate-fade-in pb-10">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
           Users & Permission Control
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-xs sm:text-sm text-fg-muted">
           Manage system access, assign roles, and synchronize user contact
           directory.
         </p>
       </div>
 
       {successMessage && (
-        <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-3 animate-fade-in">
+        <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-success-text font-bold text-xs flex items-center gap-3 animate-fade-in">
           <Check className="w-5 h-5 text-emerald-500" />
           {successMessage}
         </div>
@@ -524,7 +512,7 @@ export default function UsersPage() {
           </StatsCardGroup>
 
           {/* Tabs */}
-          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-zinc-800 text-xs">
+          <div className="flex items-center gap-2 border-b border-border text-xs">
             <button
               onClick={() => setActiveTab("users")}
               className={`pb-2.5 px-3 font-bold border-b-2 transition-colors ${
@@ -611,18 +599,18 @@ export default function UsersPage() {
         </>
       ) : (
         /* Team Access & Onboarding Notice Card for Non-Super Admins */
-        <div className="p-8 sm:p-12 text-center rounded-3xl bg-slate-50/80 dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 space-y-4 shadow-sm my-4 animate-fade-in">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto">
+        <div className="p-8 sm:p-12 text-center rounded-3xl bg-subtle border border-border space-y-4 shadow-sm my-4 animate-fade-in">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 text-primary-text flex items-center justify-center mx-auto">
             <UserPlus className="w-7 h-7" />
           </div>
           <div className="space-y-1.5 max-w-md mx-auto">
-            <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">
+            <h3 className="font-bold text-lg text-fg">
               Team Access & Onboarding
             </h3>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+            <p className="text-xs sm:text-sm text-fg-muted leading-relaxed">
               Ready to add someone new to the team? You can invite new team
               members anytime using the{" "}
-              <strong className="text-indigo-600 dark:text-indigo-400 font-semibold">
+              <strong className="text-primary-text font-semibold">
                 Invite User
               </strong>{" "}
               button above. To review the full directory or request role updates

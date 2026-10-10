@@ -173,13 +173,13 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
           className="flex flex-col gap-5 pt-2"
         >
           {/* Recipient Details Pill */}
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700/60">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold text-sm flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-900/40">
+          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-subtle border border-border-control">
+            <div className="w-10 h-10 rounded-xl bg-primary-soft text-primary-text font-bold text-sm flex items-center justify-center shrink-0 border border-primary-border">
               <Cake className="w-5 h-5" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                <h4 className="text-sm font-bold text-fg truncate">
                   {birthday.firstName} {birthday.lastName}
                 </h4>
                 <StatusBadge
@@ -187,7 +187,7 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
                   size="sm"
                 />
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+              <p className="text-xs text-fg-muted truncate">
                 {birthday.email || "No email on record"}
                 {formattedDate && ` • Birthday: ${formattedDate}`}
               </p>
@@ -258,7 +258,7 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
           />
 
           {/* Optional Call to Action */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-zinc-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border-subtle">
             <Controller
               name="ctaLabel"
               control={control}

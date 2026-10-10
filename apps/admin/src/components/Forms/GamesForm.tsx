@@ -126,9 +126,7 @@ export const GamesForm: React.FC<GamesFormProps> = ({
 
       {/* Footer Buttons */}
       <fieldset
-        className={cn(
-          "grid h-20 grid-cols-2 gap-4 border-t border-slate-200 dark:border-zinc-800 p-4",
-        )}
+        className={cn("grid h-20 grid-cols-2 gap-4 border-t border-border p-4")}
       >
         {isEditing ? (
           <>

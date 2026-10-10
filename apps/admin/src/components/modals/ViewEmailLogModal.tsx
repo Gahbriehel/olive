@@ -56,34 +56,34 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
     >
       <div className="space-y-5 pb-4">
         {/* Status & Timing Overview */}
-        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-800 space-y-3">
+        <div className="p-4 rounded-2xl bg-subtle border border-border space-y-3">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-semibold text-fg-muted">
                 Status:
               </span>
               <StatusBadge status={log.deliveryStatus} size="sm" />
             </div>
 
-            <Badge variant="indigo" size="sm" className="font-mono text-[10px]">
+            <Badge variant="indigo" size="sm" className="font-mono text-2xs">
               {log.emailType}
             </Badge>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200/60 dark:border-zinc-700/60 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border-control text-xs">
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
+              <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">
                 Sent At
               </span>
-              <span className="font-medium text-slate-800 dark:text-slate-200">
+              <span className="font-medium text-fg">
                 {createdAtFormatted || "—"}
               </span>
             </div>
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
+              <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">
                 Resend Message ID
               </span>
-              <div className="font-mono text-slate-700 dark:text-slate-300 truncate">
+              <div className="font-mono text-fg-secondary truncate">
                 {log.resendEmailId ? (
                   <TruncatedTextWithCopy
                     text={log.resendEmailId}
@@ -102,16 +102,16 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
             <User className="w-3.5 h-3.5 text-slate-500" /> Recipient Details
           </h4>
-          <div className="p-3.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-2 text-xs">
+          <div className="p-3.5 rounded-xl border border-border bg-surface space-y-2 text-xs">
             <div className="flex items-center justify-between">
-              <span className="text-slate-500 dark:text-slate-400">Name:</span>
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
+              <span className="text-fg-muted">Name:</span>
+              <span className="font-semibold text-fg">
                 {log.recipient?.name || "—"}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-slate-500 dark:text-slate-400">Email:</span>
-              <div className="font-mono text-slate-900 dark:text-slate-100">
+              <span className="text-fg-muted">Email:</span>
+              <div className="font-mono text-fg">
                 {log.recipient?.email ? (
                   <TruncatedTextWithCopy
                     text={log.recipient.email}
@@ -130,28 +130,24 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
             <Send className="w-3.5 h-3.5 text-slate-500" /> Sender Information
           </h4>
-          <div className="p-3.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-2 text-xs">
+          <div className="p-3.5 rounded-xl border border-border bg-surface space-y-2 text-xs">
             {log.sentBy ? (
               <>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">
-                    Sender:
-                  </span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  <span className="text-fg-muted">Sender:</span>
+                  <span className="font-semibold text-fg">
                     {log.sentBy.name}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">
-                    Email:
-                  </span>
-                  <span className="font-mono text-slate-700 dark:text-slate-300">
+                  <span className="text-fg-muted">Email:</span>
+                  <span className="font-mono text-fg-secondary">
                     {log.sentBy.email}
                   </span>
                 </div>
               </>
             ) : (
-              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 italic">
+              <div className="flex items-center gap-2 text-fg-secondary italic">
                 <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
                 Automated / System Triggered
               </div>
@@ -164,33 +160,31 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
             <FileText className="w-3.5 h-3.5 text-slate-500" /> Email Content
           </h4>
-          <div className="p-3.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-3 text-xs">
+          <div className="p-3.5 rounded-xl border border-border bg-surface space-y-3 text-xs">
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
+              <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">
                 Subject
               </span>
-              <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+              <p className="font-semibold text-fg text-sm">
                 {log.content?.subject || "—"}
               </p>
             </div>
 
             {log.content?.heading && (
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
+                <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">
                   Heading
                 </span>
-                <p className="text-slate-800 dark:text-slate-200 font-medium">
-                  {log.content.heading}
-                </p>
+                <p className="text-fg font-medium">{log.content.heading}</p>
               </div>
             )}
 
             {log.content?.bodyTextSnippet && (
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
+                <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">
                   Message Body Preview
                 </span>
-                <div className="p-3 rounded-lg bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/60 dark:border-zinc-700/60 text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
+                <div className="p-3 rounded-lg bg-subtle border border-border-control text-fg-secondary whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
                   {log.content.bodyTextSnippet}
                 </div>
               </div>
@@ -206,12 +200,10 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
               <Hash className="w-3.5 h-3.5 text-slate-500" /> Associated Context
             </h4>
-            <div className="p-3.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-2 text-xs">
+            <div className="p-3.5 rounded-xl border border-border bg-surface space-y-2 text-xs">
               {log.context.personId && (
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">
-                    Person ID:
-                  </span>
+                  <span className="text-fg-muted">Person ID:</span>
                   <TruncatedTextWithCopy
                     text={log.context.personId}
                     maxLength={20}
@@ -220,9 +212,7 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
               )}
               {log.context.registrationId && (
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">
-                    Registration ID:
-                  </span>
+                  <span className="text-fg-muted">Registration ID:</span>
                   <TruncatedTextWithCopy
                     text={log.context.registrationId}
                     maxLength={20}
@@ -231,9 +221,7 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
               )}
               {log.context.userId && (
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500 dark:text-slate-400">
-                    User ID:
-                  </span>
+                  <span className="text-fg-muted">User ID:</span>
                   <TruncatedTextWithCopy
                     text={log.context.userId}
                     maxLength={20}
@@ -250,9 +238,9 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
             <h4 className="text-xs font-bold uppercase tracking-wider text-rose-500 flex items-center gap-1.5">
               <ShieldAlert className="w-3.5 h-3.5" /> Bounce Classification
             </h4>
-            <div className="p-3.5 rounded-xl border border-rose-200 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/20 space-y-2 text-xs">
+            <div className="p-3.5 rounded-xl border border-danger-border bg-danger-soft space-y-2 text-xs">
               <div className="flex items-center justify-between">
-                <span className="text-rose-700 dark:text-rose-300">Type:</span>
+                <span className="text-danger-text">Type:</span>
                 <span className="font-semibold text-rose-900 dark:text-rose-100">
                   {log.bounce.bounceType}
                   {log.bounce.bounceSubType
@@ -261,18 +249,14 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-rose-700 dark:text-rose-300">
-                  Resolved:
-                </span>
+                <span className="text-danger-text">Resolved:</span>
                 <span className="font-semibold">
                   {log.bounce.resolved ? "Yes" : "No"}
                 </span>
               </div>
               {remediatedAtFormatted && (
                 <div className="flex items-center justify-between">
-                  <span className="text-rose-700 dark:text-rose-300">
-                    Remediated:
-                  </span>
+                  <span className="text-danger-text">Remediated:</span>
                   <span>{remediatedAtFormatted}</span>
                 </div>
               )}

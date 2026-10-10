@@ -136,67 +136,53 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <button
           onClick={() => setIsCreateEventOpen(true)}
-          className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 hover:shadow-md transition-all flex items-center gap-3 text-left group"
+          className="p-4 rounded-2xl bg-surface border border-border hover:border-indigo-500/50 dark:hover:border-indigo-500/50 hover:shadow-md transition-all flex items-center gap-3 text-left group"
         >
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-primary-soft text-primary-text flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
             <Plus className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
-              Create Event
-            </p>
-            <p className="text-[11px] text-slate-400">
-              New conference or retreat
-            </p>
+            <p className="text-xs font-bold text-fg">Create Event</p>
+            <p className="text-2xs text-slate-400">New conference or retreat</p>
           </div>
         </button>
 
         <button
           onClick={() => handleNavigate("teams")}
-          className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 hover:shadow-md transition-all flex items-center gap-3 text-left group"
+          className="p-4 rounded-2xl bg-surface border border-border hover:border-indigo-500/50 dark:hover:border-indigo-500/50 hover:shadow-md transition-all flex items-center gap-3 text-left group"
         >
-          <div className="w-10 h-10 rounded-xl bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-info-soft text-info-text flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
             <Shield className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
-              Assign Teams
-            </p>
-            <p className="text-[11px] text-slate-400">Rebalance teams</p>
+            <p className="text-xs font-bold text-fg">Assign Teams</p>
+            <p className="text-2xs text-slate-400">Rebalance teams</p>
           </div>
         </button>
 
         <button
           onClick={() => setIsQrScannerOpen(true)}
-          className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 hover:shadow-md transition-all flex items-center gap-3 text-left group"
+          className="p-4 rounded-2xl bg-surface border border-border hover:border-indigo-500/50 dark:hover:border-indigo-500/50 hover:shadow-md transition-all flex items-center gap-3 text-left group"
         >
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-success-soft text-success-text flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
             <QrCode className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
-              Scan QR Code
-            </p>
-            <p className="text-[11px] text-slate-400">
-              Live attendance check-in
-            </p>
+            <p className="text-xs font-bold text-fg">Scan QR Code</p>
+            <p className="text-2xs text-slate-400">Live attendance check-in</p>
           </div>
         </button>
 
         <button
           onClick={() => exportToCsv()}
-          className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-indigo-500/50 dark:hover:border-indigo-500/50 hover:shadow-md transition-all flex items-center gap-3 text-left group"
+          className="p-4 rounded-2xl bg-surface border border-border hover:border-indigo-500/50 dark:hover:border-indigo-500/50 hover:shadow-md transition-all flex items-center gap-3 text-left group"
         >
-          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-warning-soft text-warning-text flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
             <Download className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
-              Export CSV
-            </p>
-            <p className="text-[11px] text-slate-400">
-              Download attendee roster
-            </p>
+            <p className="text-xs font-bold text-fg">Export CSV</p>
+            <p className="text-2xs text-slate-400">Download attendee roster</p>
           </div>
         </button>
       </div>
@@ -243,7 +229,7 @@ export default function DashboardPage() {
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50"
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-subtle"
                   >
                     <div className="flex items-center gap-3">
                       <Skeleton className="w-9 h-9 rounded-full" />
@@ -276,25 +262,23 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={reg.id}
-                    className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-subtle hover:bg-muted transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center">
+                      <div className="w-9 h-9 rounded-full bg-primary-soft text-primary-text font-bold text-xs flex items-center justify-center">
                         {initials}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                            {name}
-                          </p>
+                          <p className="text-xs font-bold text-fg">{name}</p>
                           <StatusBadge
                             status={reg.person?.membershipStatus || "GUEST"}
                             size="sm"
                           />
                         </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        <p className="text-2xs text-fg-muted">
                           Reg #:{" "}
-                          <span className="font-mono text-slate-700 dark:text-slate-300">
+                          <span className="font-mono text-fg-secondary">
                             {reg.registrationNumber}
                           </span>{" "}
                           • {reg.person?.email || "No Email"}
@@ -308,7 +292,7 @@ export default function DashboardPage() {
                           {reg.team.name}
                         </TeamBadge>
                       )}
-                      <p className="text-[10px] text-slate-400 flex items-center gap-1 justify-end">
+                      <p className="text-2xs text-slate-400 flex items-center gap-1 justify-end">
                         <Clock className="w-3 h-3" />
                         {reg.status === "CHECKED_IN"
                           ? "Checked In"
@@ -346,7 +330,7 @@ export default function DashboardPage() {
                   {Array.from({ length: 2 }).map((_, i) => (
                     <div
                       key={i}
-                      className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40 space-y-2.5"
+                      className="p-3 rounded-xl border border-border bg-subtle space-y-2.5"
                     >
                       <div className="flex items-center justify-between">
                         <Skeleton className="h-4 w-28" />
@@ -368,7 +352,7 @@ export default function DashboardPage() {
                   return (
                     <div
                       key={event.id}
-                      className="event-card p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/40 hover:bg-slate-100 dark:hover:bg-zinc-800/70 transition-all cursor-pointer space-y-1.5"
+                      className="event-card p-3 rounded-xl border border-border bg-subtle hover:bg-muted transition-all cursor-pointer space-y-1.5"
                       onClick={() => router.push(`/events/${event.id}`)}
                     >
                       <div className="flex items-center justify-between flex-wrap gap-1">
@@ -379,7 +363,7 @@ export default function DashboardPage() {
                         </span>
                         <div className="flex items-center gap-1.5">
                           {event.isFeatured && (
-                            <span className="featured-star text-amber-500 font-semibold text-[11px] flex items-center gap-0.5">
+                            <span className="featured-star text-amber-500 font-semibold text-2xs flex items-center gap-0.5">
                               ★ Pinned on Website
                             </span>
                           )}
@@ -394,10 +378,10 @@ export default function DashboardPage() {
                           </Badge>
                         </div>
                       </div>
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                      <h4 className="text-xs font-bold text-fg">
                         {event.title}
                       </h4>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      <p className="text-2xs text-fg-muted">
                         {event.requiresRegistration !== false
                           ? `Registrations: ${event.totalRegistrations ?? 0}`
                           : "Open Admission"}

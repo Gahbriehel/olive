@@ -45,7 +45,7 @@ export const Modal: React.FC<ModalProps> = ({
       <DialogPanel
         transition
         className={clsx(
-          "flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition duration-200 ease-out data-closed:scale-95 data-closed:opacity-0 dark:border-zinc-800 dark:bg-zinc-900",
+          "flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-2xl transition duration-200 ease-out data-closed:scale-95 data-closed:opacity-0",
           maxWs[maxWidth],
         )}
       >

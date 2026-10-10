@@ -139,20 +139,20 @@ export const CommandMenu: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-overlay backdrop-blur-sm animate-fade-in">
       <div className="fixed inset-0" onClick={() => setIsSearchOpen(false)} />
-      <div className="relative w-full max-w-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden z-10 animate-fade-in">
+      <div className="relative w-full max-w-xl bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden z-10 animate-fade-in">
         {/* Search Header */}
-        <div className="flex items-center px-4 py-3 border-b border-slate-100 dark:border-zinc-800">
-          <Search className="w-5 h-5 text-slate-400 mr-3 shrink-0" />
+        <div className="flex items-center px-4 py-3 border-b border-border-subtle">
+          <Search className="w-5 h-5 text-fg-subtle mr-3 shrink-0" />
           <input
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command or search attendees, teams, events..."
-            className="w-full text-base bg-transparent text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
+            className="w-full text-base bg-transparent text-fg placeholder:text-fg-subtle focus:outline-none"
           />
-          <kbd className="px-2 py-0.5 text-[10px] font-mono bg-slate-100 dark:bg-zinc-800 text-slate-500 rounded border border-slate-200 dark:border-zinc-700 ml-2">
+          <kbd className="px-2 py-0.5 text-2xs font-mono bg-muted text-fg-muted rounded border border-border-control ml-2">
             ESC
           </kbd>
         </div>
@@ -161,7 +161,7 @@ export const CommandMenu: React.FC = () => {
         <div className="p-3 max-h-80 overflow-y-auto space-y-4 text-xs">
           {query.length > 0 ? (
             <div>
-              <p className="px-2 mb-1.5 text-[10px] font-bold text-slate-400 uppercase">
+              <p className="px-2 mb-1.5 text-2xs font-bold text-fg-subtle uppercase">
                 Search Results
               </p>
               {searchResults.length > 0 ? (
@@ -170,34 +170,34 @@ export const CommandMenu: React.FC = () => {
                     <button
                       key={i}
                       onClick={() => handleNavigate(res.href)}
-                      className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors text-left"
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-muted transition-colors text-left"
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-slate-900 dark:text-slate-100">
+                          <span className="font-semibold text-fg">
                             {res.title}
                           </span>
-                          <span className="px-1.5 py-0.5 text-[9px] rounded font-mono bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
+                          <span className="px-1.5 py-0.5 text-2xs rounded font-mono bg-primary-soft text-primary-text">
                             {res.type}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
+                        <p className="text-2xs text-fg-subtle mt-0.5">
                           {res.detail}
                         </p>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
+                      <ArrowRight className="w-4 h-4 text-fg-subtle shrink-0" />
                     </button>
                   ))}
                 </div>
               ) : (
-                <p className="p-4 text-center text-slate-400">
+                <p className="p-4 text-center text-fg-subtle">
                   No matching records found for &quot;{query}&quot;
                 </p>
               )}
             </div>
           ) : (
             <div>
-              <p className="px-2 mb-1.5 text-[10px] font-bold text-slate-400 uppercase">
+              <p className="px-2 mb-1.5 text-2xs font-bold text-fg-subtle uppercase">
                 Quick Actions
               </p>
               <div className="space-y-1">
@@ -205,15 +205,13 @@ export const CommandMenu: React.FC = () => {
                   <button
                     key={i}
                     onClick={() => handleNavigate(action.href)}
-                    className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors text-slate-700 dark:text-slate-200 text-left font-medium"
+                    className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-muted transition-colors text-fg-secondary text-left font-medium"
                   >
                     <span className="flex items-center gap-2.5">
-                      <action.icon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                      <action.icon className="w-4 h-4 text-primary-text" />
                       {action.label}
                     </span>
-                    <kbd className="text-[10px] font-mono text-slate-400">
-                      ↵
-                    </kbd>
+                    <kbd className="text-2xs font-mono text-fg-subtle">↵</kbd>
                   </button>
                 ))}
               </div>

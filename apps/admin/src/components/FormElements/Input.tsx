@@ -102,14 +102,14 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       >
         <div className="relative flex items-center">
           {countryCode && (
-            <div className="flex min-h-[42px] items-center justify-center rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3.5 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/60">
-              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+            <div className="flex min-h-[42px] items-center justify-center rounded-l-xl border border-r-0 border-border bg-subtle px-3.5 py-2.5">
+              <span className="text-sm font-medium text-fg-secondary">
                 {countryCode}
               </span>
             </div>
           )}
           {leftIcon && (
-            <span className="pointer-events-none absolute left-3 text-slate-400 dark:text-slate-500">
+            <span className="pointer-events-none absolute left-3 text-fg-subtle">
               {leftIcon}
             </span>
           )}
@@ -135,7 +135,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               type="button"
               aria-label={isHidden ? "Show password" : "Hide password"}
               aria-controls={id}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded text-slate-400 transition-colors hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:text-slate-500 dark:hover:text-slate-300"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded text-fg-subtle transition-colors hover:text-fg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
               onClick={isHidden ? showPassword : hidePassword}
             >
               {isHidden ? (
@@ -150,7 +150,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               type="button"
               aria-label={label ? `Clear ${label}` : "Clear"}
               className={cn(
-                "absolute top-1/2 -translate-y-1/2 rounded text-slate-400 transition-colors hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:text-slate-500 dark:hover:text-slate-300",
+                "absolute top-1/2 -translate-y-1/2 rounded text-fg-subtle transition-colors hover:text-fg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                 showTrailing ? "right-10" : "right-3",
               )}
               onClick={handleClear}
@@ -159,12 +159,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             </button>
           )}
           {shortcutHint && !password && (
-            <span className="pointer-events-none absolute right-3 rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-slate-400">
+            <span className="pointer-events-none absolute right-3 rounded border border-border-control bg-muted px-1.5 py-0.5 font-mono text-2xs text-fg-muted">
               {shortcutHint}
             </span>
           )}
           {finalRightIcon && !shortcutHint && !password && (
-            <span className="absolute right-3 text-slate-400 dark:text-slate-500">
+            <span className="absolute right-3 text-fg-subtle">
               {finalRightIcon}
             </span>
           )}

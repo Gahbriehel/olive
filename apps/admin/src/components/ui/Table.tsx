@@ -191,20 +191,20 @@ export function Table<TData, TValue>({
           {enableSearch && (
             <div className="flex items-center gap-3 sm:ml-auto">
               <div className="relative w-full sm:w-72">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-500" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-subtle" />
                 <Input
                   type="text"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="pl-9 text-base h-9 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 focus:border-indigo-500"
+                  className="pl-9 text-base h-9 bg-surface border-border focus:border-primary"
                 />
               </div>
               {searchInput && (
-                <span className="text-[11px] text-slate-400 animate-fade-in shrink-0">
+                <span className="text-2xs text-fg-subtle animate-fade-in shrink-0">
                   {searchInput !== debouncedSearch ? (
                     <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-warning animate-ping" />
                     </span>
                   ) : (
                     `Filtered: ${totalItems}`
@@ -217,10 +217,10 @@ export function Table<TData, TValue>({
       )}
 
       {/* Table Structure */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm">
+      <div className="rounded-2xl border border-border bg-surface overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-zinc-800/60 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200/80 dark:border-zinc-800 select-none">
+            <thead className="bg-subtle text-fg-muted font-semibold border-b border-border select-none">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
@@ -232,7 +232,7 @@ export function Table<TData, TValue>({
                         key={header.id}
                         className={`p-3.5 ${
                           canSort
-                            ? "cursor-pointer hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                            ? "cursor-pointer hover:bg-muted transition-colors"
                             : ""
                         }`}
                         onClick={header.column.getToggleSortingHandler()}
@@ -243,11 +243,11 @@ export function Table<TData, TValue>({
                             header.getContext(),
                           )}
                           {canSort && (
-                            <span className="text-slate-400 dark:text-zinc-500">
+                            <span className="text-fg-subtle">
                               {isSorted === "asc" ? (
-                                <ArrowUp className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                                <ArrowUp className="w-3.5 h-3.5 text-primary-text" />
                               ) : isSorted === "desc" ? (
-                                <ArrowDown className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                                <ArrowDown className="w-3.5 h-3.5 text-primary-text" />
                               ) : (
                                 <ArrowUpDown className="w-3.5 h-3.5 opacity-40 hover:opacity-100" />
                               )}
@@ -260,16 +260,16 @@ export function Table<TData, TValue>({
                 </tr>
               ))}
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/80">
+            <tbody className="divide-y divide-border-subtle">
               {loading ? (
                 <tr>
                   <td
                     colSpan={columns.length}
-                    className="p-12 text-center text-slate-400 dark:text-slate-500"
+                    className="p-12 text-center text-fg-subtle"
                   >
                     <div className="flex flex-col items-center justify-center gap-3">
                       <Spinner size="lg" />
-                      <p className="font-semibold text-xs text-indigo-600 dark:text-indigo-400">
+                      <p className="font-semibold text-xs text-primary-text">
                         Loading records...
                       </p>
                     </div>
@@ -279,12 +279,12 @@ export function Table<TData, TValue>({
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="hover:bg-slate-50/80 dark:hover:bg-zinc-800/40 transition-colors"
+                    className="hover:bg-subtle transition-colors"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
-                        className="p-3.5 align-middle text-slate-700 dark:text-slate-200"
+                        className="p-3.5 align-middle text-fg-secondary"
                       >
                         {!["select", "image", "actions", "s/n", "sn"].includes(
                           cell.column.id,
@@ -307,7 +307,7 @@ export function Table<TData, TValue>({
                 <tr>
                   <td
                     colSpan={columns.length}
-                    className="p-12 text-center text-slate-400 dark:text-slate-500"
+                    className="p-12 text-center text-fg-subtle"
                   >
                     <div className="flex flex-col items-center justify-center gap-2">
                       <FileSpreadsheet className="w-8 h-8 opacity-40" />
@@ -322,31 +322,23 @@ export function Table<TData, TValue>({
 
         {/* Pagination Bar */}
         {enablePagination && totalPages > 0 && (
-          <div className="p-3.5 border-t border-slate-200/80 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+          <div className="p-3.5 border-t border-border bg-subtle flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-fg-muted">
             <div className="flex items-center gap-4">
               <span>
                 Showing{" "}
-                <span className="font-semibold text-slate-900 dark:text-slate-200">
-                  {startItem}
-                </span>{" "}
-                to{" "}
-                <span className="font-semibold text-slate-900 dark:text-slate-200">
-                  {endItem}
-                </span>{" "}
-                of{" "}
-                <span className="font-semibold text-slate-900 dark:text-slate-200">
-                  {totalItems}
-                </span>{" "}
+                <span className="font-semibold text-fg">{startItem}</span> to{" "}
+                <span className="font-semibold text-fg">{endItem}</span> of{" "}
+                <span className="font-semibold text-fg">{totalItems}</span>{" "}
                 results
               </span>
 
               {/* Rows per page selector */}
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px]">Rows:</span>
+                <span className="text-2xs">Rows:</span>
                 <select
                   value={currentLimit}
                   onChange={(e) => handleLimitChange(Number(e.target.value))}
-                  className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-base py-1 px-2 focus:ring-1 focus:ring-indigo-500 outline-none cursor-pointer"
+                  className="bg-surface-raised border border-border-control rounded-lg text-base py-1 px-2 focus:ring-1 focus:ring-primary outline-none cursor-pointer"
                 >
                   {pageSizeOptions.map((size) => (
                     <option key={size} value={size}>
@@ -363,7 +355,7 @@ export function Table<TData, TValue>({
                 type="button"
                 onClick={() => handlePageChange(1)}
                 disabled={!canGoPrevious}
-                className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 title="First Page"
               >
                 <ChevronsLeft className="w-4 h-4" />
@@ -372,7 +364,7 @@ export function Table<TData, TValue>({
                 type="button"
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={!canGoPrevious}
-                className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 title="Previous Page"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -380,20 +372,15 @@ export function Table<TData, TValue>({
 
               <span className="px-3 text-xs">
                 Page{" "}
-                <span className="font-semibold text-slate-900 dark:text-slate-100">
-                  {currentPage}
-                </span>{" "}
-                of{" "}
-                <span className="font-semibold text-slate-900 dark:text-slate-100">
-                  {totalPages}
-                </span>
+                <span className="font-semibold text-fg">{currentPage}</span> of{" "}
+                <span className="font-semibold text-fg">{totalPages}</span>
               </span>
 
               <button
                 type="button"
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={!canGoNext}
-                className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 title="Next Page"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -402,7 +389,7 @@ export function Table<TData, TValue>({
                 type="button"
                 onClick={() => handlePageChange(totalPages)}
                 disabled={!canGoNext}
-                className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 title="Last Page"
               >
                 <ChevronsRight className="w-4 h-4" />

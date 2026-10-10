@@ -167,22 +167,35 @@ The theme is a `dark` class on `<html>`. It's saved in `localStorage` (`olive_th
 
 ### 6.1 Design tokens
 
-- **Current:** `app/globals.css` defines CSS variables (`--bg-surface`, `--text-primary`, `--accent-*`, ...) with light and `.dark` values, but **no component uses them**. Components hardcode Tailwind palette classes (`bg-white dark:bg-zinc-900`, ...).
-- **Target:** register the tokens with Tailwind `@theme inline` and use only token utilities:
+Tokens are defined once in `apps/admin/src/app/globals.css`. The values live in `:root` (light) and `.dark` (dark), and `@theme inline` turns them into Tailwind utilities. Because of that, **token utilities switch theme automatically, so never pair them with a `dark:` variant.**
 
-| Use | Utility | Do not use |
+| Group | Utilities | Use for |
 |---|---|---|
-| App background | `bg-app` | `bg-slate-50 dark:bg-zinc-950` |
-| Cards, panels, popovers | `bg-surface` | `bg-white dark:bg-zinc-900` |
-| Borders | `border-border` | `border-slate-200 dark:border-zinc-800` |
-| Text | `text-fg`, `text-fg-secondary`, `text-fg-muted` | `text-slate-900 dark:text-slate-100`, ... |
-| Brand, danger, success, warning | `bg-primary`, `text-danger`, `text-success`, `text-warning` | raw `indigo-*`, `rose-*`, `emerald-*`, `amber-*` |
+| Surfaces | `bg-app` | page background |
+| | `bg-surface` | cards, panels, menus |
+| | `bg-surface-raised` | dropdowns and controls that sit on a surface |
+| | `bg-subtle` | inset or tinted areas, table headers, footers |
+| | `bg-muted` | hover fills, chips |
+| | `bg-muted-strong` | pressed or hover-on-muted fills, skeletons |
+| | `bg-overlay` | dialog backdrop |
+| Borders | `border-border` | default dividers and card edges |
+| | `border-border-subtle` | inner dividers |
+| | `border-border-control` | inputs, toggles, outline buttons |
+| Text | `text-fg` | headings, body text |
+| | `text-fg-secondary` | labels, secondary copy |
+| | `text-fg-muted` | descriptions, meta text. This is **the lowest contrast allowed for text**. |
+| | `text-fg-subtle` | icons, placeholders, disabled states. Not for text the user must read. |
+| Accents | `primary`, `success`, `danger`, `warning`, `info` | Each comes in five forms: `bg-{a}` (solid fill), `hover:bg-{a}-hover`, `bg-{a}-soft` (tint), `border-{a}-border`, and `text-{a}-text` (readable on a surface or tint, passes WCAG AA). |
+| Type | `text-2xs` (11px) | smallest size allowed; `text-xs` is the default for dense UI |
 
-- **Rules:**
-  - No hex values in components.
-  - No arbitrary values (`text-[11px]`, `rounded-[14px]`).
-  - Dark mode greys are **zinc** only.
-  - Smallest text size is `text-2xs` (11px); `text-xs` is the default for dense UI.
+**Rules:**
+- No raw Tailwind palette classes (`slate-*`, `indigo-*`, ...). No hex values or arbitrary text sizes in components.
+  - `text-white` and `bg-white/NN` are allowed on solid accent fills.
+  - Purely categorical colours (the Badge and StatsCard `purple` and `blue` variants) carry a scoped `eslint-disable` that states the reason.
+- **Enforced by lint:** `no-restricted-syntax` in `apps/admin/eslint.config.mjs` errors on raw palette classes and arbitrary text sizes in `components/ui`, `components/FormElements` and `components/layout`. Add a folder to that list once it has been migrated.
+- **Migration status:** shared components are fully on tokens. In pages and feature components about 530 raw classes remain, down from about 3,100. These are mostly single classes with no `dark:` partner, plus deliberately dark screens (login, 404, the QR scanner).
+  - Leaving these as they were was intentional. Converting one blindly can change how it looks in one theme. Migrate them by hand, a page at a time.
+  - The biggest remaining files are `events/page.tsx`, `QrScannerModal`, the login page and `events/[id]`.
 
 ### 6.2 Primitives: one per job
 
@@ -243,8 +256,8 @@ Source: the October 2026 admin UI/UX audit.
 | Phase | Scope | Status |
 |---|---|---|
 | 0 | Functional bugs: confirm-modal `tone`/errors, Table server-sort, stats labelling, PersonForm role badge, password-dialog dismissal, EventsForm category error, removal of the dead `autoAssignTeams` event toggle | **Done** |
-| 1 | Register tokens in `@theme`; migrate primitives to token utilities; lint against raw palette classes | Planned |
-| 2 | Consolidate primitives: Button API, overlays on Headless UI Dialog with shared footer, `FormField` across all inputs, MultiSelect on Combobox, one `SelectPagination`, `Spinner`, `StatusBadge` table, `TeamBadge`; remove dead code (`ui/Drawer`, `helpers/copyToClipboard`, `useDebounce`, `react-spinners`) | **Done**. Phase 1 (tokens) has not been done yet, so the new primitives still use palette classes. |
+| 1 | Register tokens in `@theme`; migrate primitives to token utilities; lint against raw palette classes | **Done** for shared components, with lint enforcement. Pages are partly migrated (§6.1). |
+| 2 | Consolidate primitives: Button API, overlays on Headless UI Dialog with shared footer, `FormField` across all inputs, MultiSelect on Combobox, one `SelectPagination`, `Spinner`, `StatusBadge` table, `TeamBadge`; remove dead code (`ui/Drawer`, `helpers/copyToClipboard`, `useDebounce`, `react-spinners`) | **Done** |
 | 3 | `PageHeader`, `Pagination`, `QueryState`/`Skeleton`, breadcrumbs; move all lists to `useListFilters` | Planned |
 | 4 | Toasts through `MutationCache`; unsaved-changes guard; yup schemas; confirmations for bulk sends | Planned |
 | 5 | Shell clean-up (theme toggle, topbar menus on Radix, mobile drawer); split large pages; share one `EmailComposer` and one `ContactTable` | Planned |

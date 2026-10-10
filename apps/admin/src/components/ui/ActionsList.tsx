@@ -34,7 +34,7 @@ export function ActionsList({
   trigger = (
     <button
       type="button"
-      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-zinc-800 dark:hover:text-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-zinc-700"
+      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-fg-muted hover:bg-muted hover:text-fg transition-colors cursor-pointer border border-transparent hover:border-border-control"
       title="Options"
     >
       <MoreHorizontal className="h-4 w-4" />
@@ -55,7 +55,7 @@ export function ActionsList({
           <Popover.Content
             sideOffset={5}
             align={align}
-            className="z-50 min-w-44 space-y-1 rounded-xl border border-slate-200/90 bg-white p-1.5 shadow-xl will-change-[transform,opacity] focus:outline-none dark:border-zinc-800 dark:bg-zinc-900"
+            className="z-50 min-w-44 space-y-1 rounded-xl border border-border bg-surface p-1.5 shadow-xl will-change-[transform,opacity] focus:outline-none"
           >
             {actions?.map(
               ({
@@ -96,14 +96,13 @@ export function ActionsList({
                     className={cn(
                       "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-semibold transition-colors cursor-pointer text-left select-none",
                       {
-                        "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800":
+                        "text-fg-secondary hover:bg-muted":
                           !action.disabled && !isDestructive,
-                        "cursor-not-allowed text-slate-400 opacity-50 dark:text-slate-500":
+                        "cursor-not-allowed text-fg-subtle opacity-50":
                           action.disabled,
-                        "text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40":
+                        "text-danger-text hover:bg-danger-soft":
                           !action.disabled && isDestructive,
-                        "text-rose-300 dark:text-rose-900":
-                          action.disabled && isDestructive,
+                        "text-danger-text/40": action.disabled && isDestructive,
                       },
                     )}
                   >
@@ -113,7 +112,7 @@ export function ActionsList({
                 );
               },
             )}
-            <Popover.Arrow className="fill-white dark:fill-zinc-900" />
+            <Popover.Arrow className="fill-surface" />
           </Popover.Content>
         </Popover.Portal>
       </Popover.Root>

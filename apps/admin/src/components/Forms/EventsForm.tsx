@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Switch } from "@headlessui/react";
 import {
   Upload,
   Image as ImageIcon,
@@ -16,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { Input } from "@/components/FormElements/Input";
+import { Switch } from "@/components/FormElements/Switch";
 import { TextArea } from "@/components/FormElements/TextArea";
 import { Select, type ISelect } from "@/components/ui/Select";
 import { Button, DeleteButton } from "@/components/ui/Button";
@@ -223,9 +223,9 @@ export const EventsForm: React.FC<EventsFormProps> = ({
     >
       <div className="flex-1 space-y-6 overflow-y-auto pr-1">
         {/* SECTION 1: BASIC DETAILS & TIMING */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-4 shadow-xs">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-800">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <div className="p-4 sm:p-5 rounded-2xl bg-surface border border-border space-y-4 shadow-xs">
+          <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-fg flex items-center gap-2">
               <Calendar className="w-4 h-4 text-indigo-500" />
               General Details & Schedule
             </h3>
@@ -387,53 +387,27 @@ export const EventsForm: React.FC<EventsFormProps> = ({
         </div>
 
         {/* SECTION 2: ADMISSION & REGISTRATION SETTINGS */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-4 shadow-xs">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-800">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <div className="p-4 sm:p-5 rounded-2xl bg-surface border border-border space-y-4 shadow-xs">
+          <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-fg flex items-center gap-2">
               <Ticket className="w-4 h-4 text-indigo-500" />
               Admission & Registration Mode
             </h3>
           </div>
 
-          {/* Main Admission Toggle Switch */}
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700/80">
-            <div className="pr-3">
-              <label
-                onClick={() => setRequiresRegistration(!requiresRegistration)}
-                className="text-xs font-bold text-slate-900 dark:text-slate-100 block cursor-pointer select-none"
-              >
-                Require Online Registration
-              </label>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Turn on for ticketed seating, capacity limits, and team
-                assignment.
-              </p>
-            </div>
-            <Switch
-              checked={requiresRegistration}
-              onChange={setRequiresRegistration}
-              className={`${
-                requiresRegistration
-                  ? "bg-indigo-600"
-                  : "bg-slate-300 dark:bg-zinc-700"
-              } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-            >
-              <span className="sr-only">Require Registration</span>
-              <span
-                aria-hidden="true"
-                className={`${
-                  requiresRegistration ? "translate-x-5" : "translate-x-0"
-                } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
-              />
-            </Switch>
-          </div>
+          <Switch
+            label="Require Online Registration"
+            description="Turn on for ticketed seating, capacity limits, and team assignment."
+            checked={requiresRegistration}
+            onChange={setRequiresRegistration}
+          />
 
           {!requiresRegistration ? (
             <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs flex items-start gap-2.5 animate-fade-in">
-              <DoorOpen className="w-4 h-4 mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <DoorOpen className="w-4 h-4 mt-0.5 shrink-0 text-success-text" />
               <div>
                 <p className="font-bold">Open Admission Program</p>
-                <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
+                <p className="text-2xs text-fg-secondary mt-0.5">
                   Admission is open to all attendees. Pre-registration and team
                   rosters are not required.
                 </p>
@@ -460,9 +434,9 @@ export const EventsForm: React.FC<EventsFormProps> = ({
         </div>
 
         {/* SECTION 3: FLYER & MEDIA */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-4 shadow-xs">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-800">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <div className="p-4 sm:p-5 rounded-2xl bg-surface border border-border space-y-4 shadow-xs">
+          <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-fg flex items-center gap-2">
               <ImageIcon className="w-4 h-4 text-indigo-500" />
               Flyer & Promotional Media
             </h3>
@@ -483,7 +457,7 @@ export const EventsForm: React.FC<EventsFormProps> = ({
             />
 
             <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors border border-slate-200 dark:border-zinc-700">
+              <label className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-muted hover:bg-muted-strong cursor-pointer text-xs font-semibold text-fg-secondary transition-colors border border-border-control">
                 {isUploading ? (
                   <Spinner size="sm" />
                 ) : (
@@ -500,13 +474,13 @@ export const EventsForm: React.FC<EventsFormProps> = ({
                   className="hidden cursor-pointer"
                 />
               </label>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-2xs text-slate-400">
                 Max 3MB (JPEG, PNG, WEBP)
               </span>
             </div>
 
             {imageUrlValue && (
-              <div className="relative w-full h-36 rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800/50 group mt-2">
+              <div className="relative w-full h-36 rounded-xl overflow-hidden border border-border-control bg-subtle group mt-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={imageUrlValue}
@@ -529,89 +503,44 @@ export const EventsForm: React.FC<EventsFormProps> = ({
         </div>
 
         {/* SECTION 4: WEB VISIBILITY & HIGHLIGHTS */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-4 shadow-xs">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-800">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <div className="p-4 sm:p-5 rounded-2xl bg-surface border border-border space-y-4 shadow-xs">
+          <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-fg flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-500" />
               Web Display & Program Highlights
             </h3>
           </div>
 
-          {/* Feature on Homepage Banner Switch */}
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20">
-            <div className="pr-3 flex items-start gap-2.5">
+          <Switch
+            label="Feature on Website Banner"
+            description="Pins this event to the top hero carousel on the church web portal."
+            color="amber"
+            icon={
               <Star
                 className={cn(
-                  "w-4 h-4 mt-0.5 shrink-0 transition-colors",
+                  "h-4 w-4 transition-colors",
                   isFeatured
-                    ? "text-amber-500 fill-amber-500"
+                    ? "fill-amber-500 text-amber-500"
                     : "text-slate-400",
                 )}
               />
-              <div>
-                <label
-                  onClick={() => setIsFeatured(!isFeatured)}
-                  className="text-xs font-bold text-slate-900 dark:text-slate-100 block cursor-pointer select-none"
-                >
-                  Feature on Website Banner
-                </label>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Pins this event to the top hero carousel on the church web
-                  portal.
-                </p>
-              </div>
-            </div>
-            <Switch
-              checked={isFeatured}
-              onChange={setIsFeatured}
-              className={`${
-                isFeatured ? "bg-amber-500" : "bg-slate-300 dark:bg-zinc-600"
-              } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500`}
-            >
-              <span className="sr-only">Feature on Homepage Banner</span>
-              <span
-                aria-hidden="true"
-                className={`${
-                  isFeatured ? "translate-x-5" : "translate-x-0"
-                } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
-              />
-            </Switch>
-          </div>
+            }
+            checked={isFeatured}
+            onChange={setIsFeatured}
+          />
 
-          {/* Google Calendar Sync Switch */}
           <Controller
             name="googleCalendarSync"
             control={control}
-            render={({ field: { value, onChange } }) => (
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700/80">
-                <div className="pr-3">
-                  <label
-                    onClick={() => onChange(!value)}
-                    className="text-xs font-bold text-slate-800 dark:text-slate-200 block cursor-pointer select-none"
-                  >
-                    Google Calendar Sync
-                  </label>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Allow attendees to sync event dates & receive .ics calendar
-                    invites.
-                  </p>
-                </div>
-                <Switch
-                  checked={Boolean(value)}
-                  onChange={onChange}
-                  className={`${
-                    value ? "bg-emerald-600" : "bg-slate-300 dark:bg-zinc-600"
-                  } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500`}
-                >
-                  <span className="sr-only">Enable Google Calendar Sync</span>
-                  <span
-                    aria-hidden="true"
-                    className={`${
-                      value ? "translate-x-5" : "translate-x-0"
-                    } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
-                  />
-                </Switch>
-              </div>
+            render={({ field: { value, onChange, name } }) => (
+              <Switch
+                name={name}
+                label="Google Calendar Sync"
+                description="Allow attendees to sync event dates & receive .ics calendar invites."
+                color="emerald"
+                checked={Boolean(value)}
+                onChange={onChange}
+              />
             )}
           />
 
@@ -619,17 +548,17 @@ export const EventsForm: React.FC<EventsFormProps> = ({
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold text-slate-900 dark:text-slate-100 block">
+                <span className="text-xs font-bold text-fg block">
                   Program Highlights
                 </span>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-2xs text-fg-muted">
                   Keynotes, sessions, and attendee takeaways
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleAddHighlight}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-primary-soft text-primary-text hover:bg-primary-soft transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Highlight</span>
@@ -637,7 +566,7 @@ export const EventsForm: React.FC<EventsFormProps> = ({
             </div>
 
             {highlights.length === 0 ? (
-              <div className="p-4 text-center text-xs text-slate-400 dark:text-slate-500 bg-slate-50/50 dark:bg-zinc-800/40 rounded-xl border border-dashed border-slate-200 dark:border-zinc-700">
+              <div className="p-4 text-center text-xs text-fg-subtle bg-subtle rounded-xl border border-dashed border-border-control">
                 No program highlights added yet. Click &quot;Add Highlight&quot;
                 to define attendee takeaways.
               </div>
@@ -648,7 +577,7 @@ export const EventsForm: React.FC<EventsFormProps> = ({
                     key={idx}
                     className="flex items-center gap-2 animate-fade-in"
                   >
-                    <span className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center justify-center shrink-0">
+                    <span className="w-6 h-6 rounded-full bg-primary-soft text-primary-text text-xs font-bold flex items-center justify-center shrink-0">
                       {idx + 1}
                     </span>
                     <input
@@ -658,12 +587,12 @@ export const EventsForm: React.FC<EventsFormProps> = ({
                         handleUpdateHighlight(idx, e.target.value)
                       }
                       placeholder="e.g. Midnight Intercession & Anointing"
-                      className="flex-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500"
+                      className="flex-1 px-3 py-2 rounded-xl border border-border-control bg-surface-raised text-base text-fg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500"
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveHighlight(idx)}
-                      className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                      className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-danger-soft transition-colors cursor-pointer"
                       title="Remove Highlight"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -679,7 +608,7 @@ export const EventsForm: React.FC<EventsFormProps> = ({
       {/* FOOTER BUTTONS */}
       <fieldset
         className={cn(
-          "grid h-20 grid-cols-2 gap-4 border-t border-slate-200 dark:border-zinc-800 pt-4",
+          "grid h-20 grid-cols-2 gap-4 border-t border-border pt-4",
         )}
       >
         {isEditing ? (

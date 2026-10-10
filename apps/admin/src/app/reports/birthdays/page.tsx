@@ -158,19 +158,19 @@ export default function BirthdayReportsPage() {
 
             return (
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-indigo-50 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center shrink-0 border border-indigo-100 dark:border-zinc-700">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary-soft text-primary-text font-bold text-xs flex items-center justify-center shrink-0 border border-indigo-100 dark:border-zinc-700">
                   {initials || <Cake className="w-4 h-4" />}
                 </div>
                 <div className="min-w-0 max-w-[180px] sm:max-w-[240px]">
-                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                  <p className="text-xs font-bold text-fg truncate">
                     {fullName}
                   </p>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                  <div className="text-2xs text-fg-muted truncate">
                     {person.email ? (
                       <TruncatedTextWithCopy
                         text={person.email}
                         maxLength={22}
-                        textClassName="text-[11px] text-slate-500 dark:text-slate-400"
+                        textClassName="text-2xs text-fg-muted"
                       />
                     ) : person.phone ? (
                       <span>{person.phone}</span>
@@ -199,13 +199,13 @@ export default function BirthdayReportsPage() {
           const target = person.birthdayDate || person.dateOfBirth;
           return (
             <div className="space-y-0.5 whitespace-nowrap">
-              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+              <p className="text-xs font-semibold text-fg">
                 {target ? dayjs(target).format("MMM D") : "—"}
               </p>
               {isSuperAdmin &&
                 person.turningAge !== undefined &&
                 person.turningAge !== null && (
-                  <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                  <span className="text-2xs font-medium text-fg-muted">
                     Turning {person.turningAge}
                   </span>
                 )}
@@ -220,7 +220,7 @@ export default function BirthdayReportsPage() {
           const days = Number(getValue());
           if (days === 0) {
             return (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-xs shadow-indigo-500/20 animate-pulse whitespace-nowrap">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-bold bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-xs shadow-indigo-500/20 animate-pulse whitespace-nowrap">
                 🎉 Today!
               </span>
             );
@@ -266,10 +266,10 @@ export default function BirthdayReportsPage() {
 
             return (
               <div className="flex flex-col gap-0.5 whitespace-nowrap">
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 px-2.5 py-0.5 rounded-full w-fit">
+                <span className="inline-flex items-center gap-1 text-2xs font-semibold text-success-text bg-success-soft border border-success-border px-2.5 py-0.5 rounded-full w-fit">
                   <CheckCircle2 className="w-3 h-3" /> Greeted
                 </span>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[140px]">
+                <span className="text-2xs text-fg-muted truncate max-w-[140px]">
                   By {senderName}
                 </span>
               </div>
@@ -278,14 +278,14 @@ export default function BirthdayReportsPage() {
 
           if (person.status === "MISSED") {
             return (
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-800/60 px-2.5 py-0.5 rounded-full w-fit whitespace-nowrap">
+              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-danger-text bg-danger-soft border border-danger-border px-2.5 py-0.5 rounded-full w-fit whitespace-nowrap">
                 <AlertCircle className="w-3 h-3" /> Missed
               </span>
             );
           }
 
           return (
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 px-2.5 py-0.5 rounded-full w-fit whitespace-nowrap">
+            <span className="inline-flex items-center gap-1 text-2xs font-semibold text-warning-text bg-warning-soft border border-warning-border px-2.5 py-0.5 rounded-full w-fit whitespace-nowrap">
               <Clock className="w-3 h-3" /> Pending
             </span>
           );
@@ -425,14 +425,14 @@ export default function BirthdayReportsPage() {
       <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 shadow-xs shrink-0">
+            <div className="p-2 rounded-xl bg-primary-soft text-primary-text border border-primary-border shadow-xs shrink-0">
               <Cake className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 truncate">
+              <h1 className="text-lg sm:text-xl font-bold text-fg truncate">
                 Birthday Outreach & Analytics
               </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+              <p className="text-xs text-fg-muted truncate">
                 Monitor member birthdays, track outreach coverage, and send
                 blessings.
               </p>
@@ -442,7 +442,7 @@ export default function BirthdayReportsPage() {
 
         {/* Global Controls: Year Selector & Refresh */}
         <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-          <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-2.5 py-1 shadow-xs">
+          <div className="flex items-center gap-1.5 bg-surface border border-border rounded-xl px-2.5 py-1 shadow-xs">
             <Calendar className="w-3.5 h-3.5 text-slate-400" />
             <select
               value={selectedYear}
@@ -450,7 +450,7 @@ export default function BirthdayReportsPage() {
                 setSelectedYear(Number(e.target.value));
                 setPage(1);
               }}
-              className="text-xs font-semibold text-slate-800 dark:text-slate-200 bg-transparent border-none focus:outline-hidden cursor-pointer"
+              className="text-xs font-semibold text-fg bg-transparent border-none focus:outline-hidden cursor-pointer"
             >
               {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
                 <option key={year} value={year}>
@@ -478,11 +478,11 @@ export default function BirthdayReportsPage() {
       </div>
 
       {/* 12-Month Coverage Breakdown Strip */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 p-3.5 sm:p-4 shadow-xs space-y-3 min-w-0 max-w-full">
+      <div className="rounded-2xl border border-border bg-surface/90 p-3.5 sm:p-4 shadow-xs space-y-3 min-w-0 max-w-full">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-indigo-500" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-fg-secondary">
               12-Month Outreach Distribution ({selectedYear})
             </h3>
           </div>
@@ -490,7 +490,7 @@ export default function BirthdayReportsPage() {
             <button
               type="button"
               onClick={() => setMonthFilter(null)}
-              className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+              className="text-xs font-semibold text-primary-text hover:underline cursor-pointer"
             >
               Show Full Year
             </button>
@@ -511,48 +511,44 @@ export default function BirthdayReportsPage() {
                   className={clsx(
                     "flex flex-col items-start p-2 sm:p-2.5 rounded-xl border transition-all text-left cursor-pointer",
                     isSelected
-                      ? "border-indigo-600 bg-indigo-50/80 dark:bg-indigo-950/50 shadow-xs ring-2 ring-indigo-500/20"
-                      : "border-slate-200/80 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700 bg-slate-50/50 dark:bg-zinc-800/40",
+                      ? "border-indigo-600 bg-primary-soft shadow-xs ring-2 ring-indigo-500/20"
+                      : "border-border hover:border-border-control bg-subtle",
                   )}
                 >
                   <div className="w-full flex items-center justify-between mb-1">
                     <span
                       className={clsx(
                         "text-xs font-bold",
-                        isSelected
-                          ? "text-indigo-700 dark:text-indigo-300"
-                          : "text-slate-800 dark:text-slate-200",
+                        isSelected ? "text-primary-text" : "text-fg",
                       )}
                     >
                       {abbr}
                     </span>
                     {total > 0 && (
-                      <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                      <span className="text-2xs font-mono text-fg-muted">
                         {completed}/{total}
                       </span>
                     )}
                   </div>
 
                   <div className="w-full">
-                    <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 truncate">
+                    <div className="text-2xs font-semibold text-fg-secondary truncate">
                       {total} {total === 1 ? "b'day" : "b'days"}
                     </div>
                     {total > 0 ? (
                       <div className="mt-1 flex items-center gap-1">
-                        <div className="flex-1 h-1.5 bg-slate-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                        <div className="flex-1 h-1.5 bg-muted-strong rounded-full overflow-hidden">
                           <div
                             className="h-full bg-emerald-500 rounded-full transition-all"
                             style={{ width: `${Math.min(100, rate)}%` }}
                           />
                         </div>
-                        <span className="text-[9px] font-mono text-emerald-600 dark:text-emerald-400">
+                        <span className="text-2xs font-mono text-success-text">
                           {rate.toFixed(0)}%
                         </span>
                       </div>
                     ) : (
-                      <span className="text-[9px] text-slate-400 dark:text-slate-500">
-                        None
-                      </span>
+                      <span className="text-2xs text-fg-subtle">None</span>
                     )}
                   </div>
                 </button>
@@ -563,7 +559,7 @@ export default function BirthdayReportsPage() {
       </div>
 
       {/* Member Birthday Directory Table Section */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 p-3.5 sm:p-6 shadow-xs space-y-4 min-w-0 max-w-full overflow-hidden">
+      <div className="rounded-2xl border border-border bg-surface/90 p-3.5 sm:p-6 shadow-xs space-y-4 min-w-0 max-w-full overflow-hidden">
         {/* Status Filter Tabs */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
           <div className="overflow-x-auto no-scrollbar max-w-full">
@@ -585,7 +581,7 @@ export default function BirthdayReportsPage() {
               <button
                 type="button"
                 onClick={() => setMonthFilter(null)}
-                className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 underline cursor-pointer"
+                className="text-xs text-fg-muted hover:text-fg-secondary underline cursor-pointer"
               >
                 Clear
               </button>

@@ -348,18 +348,18 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
     >
       <div className="space-y-4 text-xs">
         {/* Hardware Scanner Active Notification Badge */}
-        <div className="flex items-center justify-between p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300">
+        <div className="flex items-center justify-between p-2.5 rounded-xl bg-primary-soft border border-primary-border text-primary-text">
           <div className="flex items-center gap-2 font-medium">
             <Sparkles className="w-4 h-4 text-indigo-500 animate-pulse shrink-0" />
             <span>Hardware Barcode Scanner Ready (USB / Bluetooth HID)</span>
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-200 dark:bg-indigo-900 text-indigo-900 dark:text-indigo-200">
+          <span className="text-2xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-200 dark:bg-indigo-900 text-indigo-900 dark:text-indigo-200">
             Auto-Detect
           </span>
         </div>
 
         {/* Scan Mode Tab Navigation */}
-        <div className="flex bg-slate-100 dark:bg-zinc-800/80 p-1 rounded-xl gap-1">
+        <div className="flex bg-muted p-1 rounded-xl gap-1">
           <button
             onClick={() => setActiveTab("camera")}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-semibold transition-all ${
@@ -413,7 +413,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
 
         {/* Success Alert */}
         {scanResult && (
-          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 font-bold flex items-center justify-between animate-fade-in">
+          <div className="p-3 rounded-xl bg-success-soft border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 font-bold flex items-center justify-between animate-fade-in">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
               <span>{scanResult}</span>
@@ -429,7 +429,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
 
         {/* Error Alert */}
         {cameraError && (
-          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-200 font-medium flex items-center gap-2 animate-fade-in">
+          <div className="p-3 rounded-xl bg-warning-soft border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-200 font-medium flex items-center gap-2 animate-fade-in">
             <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
             <span>{cameraError}</span>
           </div>
@@ -456,7 +456,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                   <p className="font-semibold text-slate-200">
                     Initializing Optical Camera...
                   </p>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-2xs text-slate-400">
                     Please allow camera permissions if prompted by browser
                   </p>
                 </div>
@@ -485,7 +485,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
               {/* Camera Control Bar */}
               {isCameraActive && (
                 <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between z-20">
-                  <span className="text-[11px] font-mono text-emerald-400 bg-black/60 px-2.5 py-1 rounded-lg backdrop-blur-md border border-white/10 flex items-center gap-1.5">
+                  <span className="text-2xs font-mono text-emerald-400 bg-black/60 px-2.5 py-1 rounded-lg backdrop-blur-md border border-white/10 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                     Live • {cameraFacing === "environment" ? "Rear" : "Front"}{" "}
                     Camera
@@ -522,7 +522,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
               )}
             </div>
 
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center">
+            <p className="text-2xs text-fg-muted text-center">
               Align attendee digital badge or ticket QR inside the green
               viewfinder square.
             </p>
@@ -535,7 +535,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
             <div
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleFileUpload}
-              className="relative border-2 border-dashed border-slate-300 dark:border-zinc-700 hover:border-indigo-500 dark:hover:border-indigo-400 rounded-2xl p-8 text-center bg-slate-50/50 dark:bg-zinc-900/50 transition-all flex flex-col items-center justify-center space-y-3 cursor-pointer"
+              className="relative border-2 border-dashed border-border-control hover:border-indigo-500 dark:hover:border-indigo-400 rounded-2xl p-8 text-center bg-subtle transition-all flex flex-col items-center justify-center space-y-3 cursor-pointer"
             >
               <input
                 type="file"
@@ -543,16 +543,16 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                 onChange={handleFileUpload}
                 className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
               />
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-primary-text flex items-center justify-center">
                 <Upload className="w-6 h-6" />
               </div>
               <div>
-                <p className="font-bold text-slate-900 dark:text-slate-100">
+                <p className="font-bold text-fg">
                   {isProcessingFile
                     ? "Decoding QR image..."
                     : "Drop badge photo or click to browse"}
                 </p>
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-2xs text-slate-400 mt-1">
                   Supports PNG, JPG, WEBP badge screenshots or pass files
                 </p>
               </div>
@@ -564,7 +564,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
         {activeTab === "manual" && (
           <form onSubmit={handleManualSubmit} className="space-y-3">
             <div>
-              <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-2xs font-bold text-fg-secondary mb-1">
                 Enter Registration Number or QR Payload Token:
               </label>
               <Input
@@ -587,7 +587,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
         {/* TAB 4: SIMULATE (DEV / TEST) */}
         {activeTab === "simulate" && pendingRegistrations.length > 0 && (
           <div className="space-y-2">
-            <p className="font-bold text-slate-700 dark:text-slate-300">
+            <p className="font-bold text-fg-secondary">
               Quick Test Simulation (Pending Registrants):
             </p>
             <div className="space-y-1.5 max-h-56 overflow-y-auto">
@@ -597,18 +597,16 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                   onClick={() =>
                     processScannedCode(r.registrationNumber, "QR Scan")
                   }
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-left flex items-center justify-between transition-all"
+                  className="w-full p-2.5 rounded-xl border border-border hover:border-emerald-500 hover:bg-success-soft text-left flex items-center justify-between transition-all"
                 >
                   <div>
-                    <span className="font-bold text-slate-900 dark:text-slate-100">
-                      {r.name}
-                    </span>
-                    <span className="text-[10px] text-slate-400 ml-2">
+                    <span className="font-bold text-fg">{r.name}</span>
+                    <span className="text-2xs text-slate-400 ml-2">
                       ({r.registrationNumber})
                     </span>
                   </div>
                   <span
-                    className="px-2 py-0.5 rounded text-[10px] font-bold text-white"
+                    className="px-2 py-0.5 rounded text-2xs font-bold text-white"
                     style={{ backgroundColor: r.team?.colorHex }}
                   >
                     {r.team?.name}
@@ -620,7 +618,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
         )}
 
         {/* Bottom Actions */}
-        <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 flex justify-end">
+        <div className="pt-3 border-t border-border-subtle flex justify-end">
           <Button
             variant="outline"
             onClick={() => {

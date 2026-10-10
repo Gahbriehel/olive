@@ -86,7 +86,7 @@ export function PrayerTable(): JSX.Element {
         return (
           <a
             href={`mailto:${email}`}
-            className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium transition-colors"
+            className="text-primary-text hover:underline font-medium transition-colors"
           >
             {email}
           </a>
@@ -113,10 +113,10 @@ export function PrayerTable(): JSX.Element {
         if (!dateVal) return null;
         return (
           <div className="flex flex-col">
-            <span className="font-medium text-slate-900 dark:text-slate-100">
+            <span className="font-medium text-fg">
               {formatDate({ date: dateVal, showTime: false })}
             </span>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-fg-muted">
               {new Date(dateVal).toLocaleTimeString("en-US", {
                 hour: "numeric",
                 minute: "numeric",
@@ -199,18 +199,18 @@ export function PrayerTable(): JSX.Element {
         {selectedContact && (
           <div className="flex flex-col gap-6 pt-2">
             {/* Header Avatar & Sender Info */}
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/80 dark:border-zinc-800">
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-subtle border border-border">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white font-bold text-lg shadow-sm">
                 {selectedContact.name
                   ? selectedContact.name.charAt(0).toUpperCase()
                   : "?"}
               </div>
               <div className="flex flex-col min-w-0 flex-1">
-                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 truncate">
+                <h3 className="text-base font-bold text-fg truncate">
                   {selectedContact.name || <NotAvailable />}
                 </h3>
                 {selectedContact.category ? (
-                  <span className="inline-flex items-center gap-1 mt-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/50 w-fit">
+                  <span className="inline-flex items-center gap-1 mt-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary-soft text-primary-text border border-primary-border w-fit">
                     <Tag className="w-3 h-3" />
                     {selectedContact.category}
                   </span>
@@ -224,18 +224,18 @@ export function PrayerTable(): JSX.Element {
 
             {/* Contact Meta Details Grid */}
             <div className="grid grid-cols-1 gap-3">
-              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900">
-                <div className="p-2 rounded-lg bg-indigo-50 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400">
+              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-border bg-surface">
+                <div className="p-2 rounded-lg bg-primary-soft text-primary-text">
                   <Mail className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                  <span className="text-xs text-fg-subtle font-medium">
                     Email Address
                   </span>
                   {selectedContact.email ? (
                     <a
                       href={`mailto:${selectedContact.email}`}
-                      className="text-sm font-medium text-slate-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 truncate"
+                      className="text-sm font-medium text-fg hover:text-primary-text truncate"
                     >
                       {selectedContact.email}
                     </a>
@@ -245,16 +245,16 @@ export function PrayerTable(): JSX.Element {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900">
-                <div className="p-2 rounded-lg bg-emerald-50 dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400">
+              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-border bg-surface">
+                <div className="p-2 rounded-lg bg-success-soft text-success-text">
                   <Phone className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                  <span className="text-xs text-fg-subtle font-medium">
                     Phone Number
                   </span>
                   {selectedContact.phone ? (
-                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                    <span className="text-sm font-medium text-fg">
                       {selectedContact.phone}
                     </span>
                   ) : (
@@ -263,16 +263,16 @@ export function PrayerTable(): JSX.Element {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900">
-                <div className="p-2 rounded-lg bg-amber-50 dark:bg-zinc-800 text-amber-600 dark:text-amber-400">
+              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-border bg-surface">
+                <div className="p-2 rounded-lg bg-warning-soft text-warning-text">
                   <Calendar className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col min-w-0 flex-1">
-                  <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                  <span className="text-xs text-fg-subtle font-medium">
                     Date & Time Submitted
                   </span>
                   {selectedContact.createdAt ? (
-                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                    <span className="text-sm font-medium text-fg">
                       {formatDate({
                         date: selectedContact.createdAt,
                         showTime: true,
@@ -286,14 +286,14 @@ export function PrayerTable(): JSX.Element {
             </div>
 
             {/* Prayer Request Message Card */}
-            <div className="flex flex-col gap-2 p-4 rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-800/30">
-              <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                <HeartHandshake className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <div className="flex flex-col gap-2 p-4 rounded-xl border border-border bg-subtle">
+              <div className="flex items-center gap-2 text-xs font-semibold text-fg-muted uppercase tracking-wider">
+                <HeartHandshake className="w-4 h-4 text-primary-text" />
                 Prayer Request Message
               </div>
               <div className="mt-1">
                 {selectedContact.message ? (
-                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-words [word-break:break-word]">
+                  <p className="text-sm leading-relaxed text-fg-secondary whitespace-pre-wrap break-words [word-break:break-word]">
                     {selectedContact.message}
                   </p>
                 ) : (
@@ -303,7 +303,7 @@ export function PrayerTable(): JSX.Element {
             </div>
 
             {/* Footer Action Buttons */}
-            <div className="mt-2 flex items-center justify-end gap-3 border-t border-slate-200/80 dark:border-zinc-800 pt-5">
+            <div className="mt-2 flex items-center justify-end gap-3 border-t border-border pt-5">
               {selectedContact.email && (
                 <a
                   href={`mailto:${selectedContact.email}`}

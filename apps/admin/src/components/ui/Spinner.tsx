@@ -21,7 +21,7 @@ export function Spinner({ size = "sm", className, label }: SpinnerProps) {
   return (
     <Loader2
       className={cn(
-        "shrink-0 animate-spin text-indigo-600 dark:text-indigo-400",
+        "shrink-0 animate-spin text-primary-text",
         sizes[size],
         className,
       )}
@@ -49,9 +49,7 @@ export function LoadingState({
       )}
     >
       <Spinner size="lg" />
-      <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-        {label}
-      </p>
+      <p className="text-xs font-medium text-fg-muted">{label}</p>
     </div>
   );
 }

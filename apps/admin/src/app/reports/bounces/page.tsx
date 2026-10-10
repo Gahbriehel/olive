@@ -241,13 +241,13 @@ export default function EmailBouncesPage() {
 
             return (
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 font-bold text-xs flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/40">
+                <div className="w-8 h-8 rounded-full bg-danger-soft text-danger-text font-bold text-xs flex items-center justify-center shrink-0 border border-danger-border">
                   {initials}
                 </div>
                 <div className="min-w-0 max-w-[180px] sm:max-w-[240px]">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {item.recipientName && (
-                      <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                      <p className="text-xs font-bold text-fg truncate">
                         {item.recipientName}
                       </p>
                     )}
@@ -257,17 +257,17 @@ export default function EmailBouncesPage() {
                           item.recipientType === "PERSON" ? "indigo" : "cyan"
                         }
                         size="sm"
-                        className="text-[9px] px-1 py-0"
+                        className="text-2xs px-1 py-0"
                       >
                         {item.recipientType}
                       </Badge>
                     )}
                   </div>
-                  <div className="text-[11px] font-mono text-slate-600 dark:text-slate-300 truncate mt-0.5">
+                  <div className="text-2xs font-mono text-fg-secondary truncate mt-0.5">
                     <TruncatedTextWithCopy
                       text={item.email}
                       maxLength={24}
-                      textClassName="text-[11px] font-mono text-slate-600 dark:text-slate-300"
+                      textClassName="text-2xs font-mono text-fg-secondary"
                     />
                   </div>
                 </div>
@@ -291,7 +291,7 @@ export default function EmailBouncesPage() {
                   size="sm"
                 />
                 {item.eventType && (
-                  <p className="text-[10px] text-slate-400 font-mono truncate max-w-[120px]">
+                  <p className="text-2xs text-slate-400 font-mono truncate max-w-[120px]">
                     {item.eventType}
                   </p>
                 )}
@@ -306,7 +306,7 @@ export default function EmailBouncesPage() {
             const emailType = getValue();
             if (!emailType) return <NotAvailable />;
             return (
-              <div className="max-w-[160px] truncate text-xs font-medium text-slate-700 dark:text-slate-300">
+              <div className="max-w-[160px] truncate text-xs font-medium text-fg-secondary">
                 <span title={emailType}>{emailType}</span>
               </div>
             );
@@ -321,7 +321,7 @@ export default function EmailBouncesPage() {
             return (
               <div className="max-w-[220px] sm:max-w-[280px]">
                 <p
-                  className="text-xs font-mono text-slate-700 dark:text-slate-300 truncate"
+                  className="text-xs font-mono text-fg-secondary truncate"
                   title={reason}
                 >
                   {reason}
@@ -337,13 +337,13 @@ export default function EmailBouncesPage() {
             const isResolved = getValue();
             if (isResolved) {
               return (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 px-2.5 py-0.5 rounded-full whitespace-nowrap">
+                <span className="inline-flex items-center gap-1 text-2xs font-semibold text-success-text bg-success-soft border border-success-border px-2.5 py-0.5 rounded-full whitespace-nowrap">
                   <CheckCircle2 className="w-3 h-3" /> Resolved
                 </span>
               );
             }
             return (
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 px-2.5 py-0.5 rounded-full whitespace-nowrap">
+              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-warning-text bg-warning-soft border border-warning-border px-2.5 py-0.5 rounded-full whitespace-nowrap">
                 <AlertTriangle className="w-3 h-3" /> Action Needed
               </span>
             );
@@ -357,10 +357,10 @@ export default function EmailBouncesPage() {
             if (!val) return <NotAvailable />;
             return (
               <div className="space-y-0.5 whitespace-nowrap">
-                <p className="text-xs font-medium text-slate-800 dark:text-slate-200">
+                <p className="text-xs font-medium text-fg">
                   {dayjs(val).format("MMM D, YYYY")}
                 </p>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-2xs text-slate-400">
                   {dayjs(val).format("h:mm A")}
                 </p>
               </div>
@@ -508,14 +508,14 @@ export default function EmailBouncesPage() {
       <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/40 shadow-xs shrink-0">
+            <div className="p-2 rounded-xl bg-danger-soft text-danger-text border border-danger-border shadow-xs shrink-0">
               <MailWarning className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 truncate">
+              <h1 className="text-lg sm:text-xl font-bold text-fg truncate">
                 Email Bounces & Delivery Issues
               </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+              <p className="text-xs text-fg-muted truncate">
                 Monitor Resend webhooks, remediate invalid emails, and resend
                 critical communications.
               </p>
@@ -526,7 +526,7 @@ export default function EmailBouncesPage() {
         {/* Header Controls: Year/Month Selector, Refresh, & CSV Export */}
         <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 flex-wrap">
           {/* Year Selector */}
-          <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-2.5 py-1 shadow-xs">
+          <div className="flex items-center gap-1.5 bg-surface border border-border rounded-xl px-2.5 py-1 shadow-xs">
             <Calendar className="w-3.5 h-3.5 text-slate-400" />
             <select
               value={selectedYear}
@@ -534,7 +534,7 @@ export default function EmailBouncesPage() {
                 setSelectedYear(Number(e.target.value));
                 setPage(1);
               }}
-              className="text-xs font-semibold bg-transparent text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+              className="text-xs font-semibold bg-transparent text-fg focus:outline-none cursor-pointer"
             >
               {[
                 currentYear - 2,
@@ -586,13 +586,13 @@ export default function EmailBouncesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             {/* Top Failing Domains */}
             {analyticsData.topFailingDomains?.length > 0 && (
-              <div className="p-3.5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-2">
+              <div className="p-3.5 rounded-2xl bg-surface/90 border border-border shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-fg-secondary flex items-center gap-1.5">
                     <Globe className="w-3.5 h-3.5 text-indigo-500" />
                     Top Failing Domains
                   </span>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-2xs text-slate-400">
                     High bounce rate clusters
                   </span>
                 </div>
@@ -600,7 +600,7 @@ export default function EmailBouncesPage() {
                   {analyticsData.topFailingDomains.map((dom) => (
                     <span
                       key={dom.domain}
-                      className="inline-flex items-center gap-1 text-[11px] font-mono font-medium px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-zinc-700/60"
+                      className="inline-flex items-center gap-1 text-2xs font-mono font-medium px-2 py-0.5 rounded-lg bg-muted text-fg-secondary border border-border-control"
                     >
                       @{dom.domain}
                       <span className="text-rose-500 font-bold">
@@ -614,13 +614,13 @@ export default function EmailBouncesPage() {
 
             {/* Email Types Breakdown */}
             {analyticsData.byEmailType?.length > 0 && (
-              <div className="p-3.5 rounded-2xl bg-white dark:bg-zinc-900/90 border border-slate-200/80 dark:border-zinc-800 shadow-xs space-y-2">
+              <div className="p-3.5 rounded-2xl bg-surface/90 border border-border shadow-xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-fg-secondary flex items-center gap-1.5">
                     <Tag className="w-3.5 h-3.5 text-purple-500" />
                     Failures by Email Type
                   </span>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-2xs text-slate-400">
                     Distribution by campaign
                   </span>
                 </div>
@@ -628,10 +628,10 @@ export default function EmailBouncesPage() {
                   {analyticsData.byEmailType.map((em) => (
                     <span
                       key={em.category}
-                      className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-zinc-700/60"
+                      className="inline-flex items-center gap-1 text-2xs font-medium px-2 py-0.5 rounded-lg bg-muted text-fg-secondary border border-border-control"
                     >
                       {em.category}
-                      <span className="text-indigo-600 dark:text-indigo-400 font-bold">
+                      <span className="text-primary-text font-bold">
                         {em.percentage}%
                       </span>
                     </span>
@@ -643,7 +643,7 @@ export default function EmailBouncesPage() {
         )}
 
       {/* Table Section */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 p-3.5 sm:p-6 shadow-xs space-y-4 min-w-0 max-w-full overflow-hidden">
+      <div className="rounded-2xl border border-border bg-surface/90 p-3.5 sm:p-6 shadow-xs space-y-4 min-w-0 max-w-full overflow-hidden">
         {/* Status Filter Tabs */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2">
           <div className="overflow-x-auto no-scrollbar max-w-full">
@@ -666,7 +666,7 @@ export default function EmailBouncesPage() {
               <button
                 type="button"
                 onClick={() => setSelectedMonth(null)}
-                className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 underline cursor-pointer"
+                className="text-xs text-fg-muted hover:text-fg-secondary underline cursor-pointer"
               >
                 Clear
               </button>

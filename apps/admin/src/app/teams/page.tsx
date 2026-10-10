@@ -133,10 +133,10 @@ export default function TeamsPage() {
     <div className="space-y-6 animate-fade-in pb-10">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
           Event Teams
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-xs sm:text-sm text-fg-muted">
           Create and manage event teams.
         </p>
       </div>
@@ -162,7 +162,7 @@ export default function TeamsPage() {
       </StatsCardGroup>
 
       {/* Toolbar + Search & Rows Per Page Control */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-4 rounded-2xl border border-border shadow-sm">
         <ListToolbar
           create={{
             label: "Create New Team",
@@ -187,24 +187,22 @@ export default function TeamsPage() {
 
         <div className="flex items-center gap-3 sm:ml-auto">
           <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-subtle" />
             <Input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search teams by name..."
-              className="pl-9 text-base h-9 bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 focus:border-indigo-500"
+              className="pl-9 text-base h-9 bg-surface border-border focus:border-indigo-500"
             />
           </div>
 
           <div className="flex items-center gap-2 text-xs shrink-0">
-            <span className="text-slate-500 dark:text-slate-400 font-medium">
-              Rows:
-            </span>
+            <span className="text-fg-muted font-medium">Rows:</span>
             <select
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
-              className="bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-base py-1.5 px-2.5 font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all cursor-pointer"
+              className="bg-surface-raised border border-border-control rounded-lg text-base py-1.5 px-2.5 font-semibold text-fg-secondary focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all cursor-pointer"
             >
               {[5, 10, 20, 50].map((size) => (
                 <option key={size} value={size}>
@@ -218,7 +216,7 @@ export default function TeamsPage() {
 
       {/* Teams Grid */}
       {displayedTeams.length === 0 ? (
-        <div className="p-12 text-center text-slate-500 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
+        <div className="p-12 text-center text-slate-500 bg-surface rounded-2xl border border-border">
           No teams available
         </div>
       ) : (
@@ -241,13 +239,13 @@ export default function TeamsPage() {
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: team.colorHex }}
                         />
-                        <span className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+                        <span className="font-bold text-fg text-sm">
                           {team.name}
                         </span>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                        <span className="text-xs font-mono font-bold text-primary-text">
                           {team.totalPoints} pts
                         </span>
 
@@ -270,7 +268,7 @@ export default function TeamsPage() {
 
                   <CardContent className="space-y-4 pt-1">
                     <div>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                      <h3 className="text-xl font-black text-fg tracking-tight">
                         {teamRegs.length > 0
                           ? teamRegs.length
                           : (team.memberCount ?? 0)}{" "}
@@ -281,13 +279,13 @@ export default function TeamsPage() {
                     </div>
 
                     {teamRegs.length > 0 && (
-                      <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-zinc-800">
+                      <div className="space-y-1.5 pt-2 border-t border-border-subtle">
                         {teamRegs.slice(0, 3).map((r) => (
                           <div
                             key={r.id}
-                            className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-zinc-800/50 text-xs"
+                            className="flex items-center justify-between p-2 rounded-lg bg-subtle text-xs"
                           >
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            <span className="font-semibold text-fg">
                               {r.name}
                             </span>
                           </div>
@@ -304,20 +302,17 @@ export default function TeamsPage() {
 
       {/* Pagination Controls Bar */}
       {totalItems > 0 && (
-        <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+        <div className="p-4 bg-surface rounded-2xl border border-border shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-fg-muted">
           <div>
             Showing{" "}
-            <span className="font-semibold text-slate-900 dark:text-slate-200">
+            <span className="font-semibold text-fg">
               {Math.min((page - 1) * limit + 1, totalItems)}
             </span>{" "}
             to{" "}
-            <span className="font-semibold text-slate-900 dark:text-slate-200">
+            <span className="font-semibold text-fg">
               {Math.min(page * limit, totalItems)}
             </span>{" "}
-            of{" "}
-            <span className="font-semibold text-slate-900 dark:text-slate-200">
-              {totalItems}
-            </span>{" "}
+            of <span className="font-semibold text-fg">{totalItems}</span>{" "}
             results
           </div>
 
@@ -326,7 +321,7 @@ export default function TeamsPage() {
               type="button"
               onClick={() => setPage(1)}
               disabled={page <= 1}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               title="First Page"
             >
               <ChevronsLeft className="w-4 h-4" />
@@ -335,28 +330,22 @@ export default function TeamsPage() {
               type="button"
               onClick={() => setPage(page - 1)}
               disabled={page <= 1}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               title="Previous Page"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
 
             <span className="px-3 text-xs">
-              Page{" "}
-              <span className="font-semibold text-slate-900 dark:text-slate-100">
-                {page}
-              </span>{" "}
-              of{" "}
-              <span className="font-semibold text-slate-900 dark:text-slate-100">
-                {totalPages}
-              </span>
+              Page <span className="font-semibold text-fg">{page}</span> of{" "}
+              <span className="font-semibold text-fg">{totalPages}</span>
             </span>
 
             <button
               type="button"
               onClick={() => setPage(page + 1)}
               disabled={page >= totalPages}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               title="Next Page"
             >
               <ChevronRight className="w-4 h-4" />
@@ -365,7 +354,7 @@ export default function TeamsPage() {
               type="button"
               onClick={() => setPage(totalPages)}
               disabled={page >= totalPages}
-              className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               title="Last Page"
             >
               <ChevronsRight className="w-4 h-4" />

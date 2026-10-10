@@ -236,10 +236,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
             Platform Settings
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-xs sm:text-sm text-fg-muted">
             Configure church metadata, user profile credentials, branding, and
             system defaults.
           </p>
@@ -262,7 +262,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       {savedSuccess && (
-        <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-3">
+        <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-success-text font-bold text-xs flex items-center gap-3">
           <Check className="w-5 h-5 text-emerald-500" />
           Settings successfully saved and synchronized across platform
           instances.
@@ -417,15 +417,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
             <form
               onSubmit={handleChangePassword}
-              className="pt-6 border-t border-slate-200 dark:border-zinc-800 space-y-4 text-xs"
+              className="pt-6 border-t border-border space-y-4 text-xs"
             >
-              <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <h3 className="font-bold text-sm text-fg flex items-center gap-2">
                 <Key className="w-4 h-4 text-indigo-500" />
                 Change Security Password
               </h3>
 
               {passwordSavedSuccess && (
-                <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-success-text font-bold text-xs flex items-center gap-3">
                   <Check className="w-4 h-4 text-emerald-500" />
                   Password successfully updated.
                 </div>
@@ -494,7 +494,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </CardHeader>
           <CardContent className="space-y-4 text-xs">
             <div>
-              <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+              <label className="font-bold text-fg-secondary block mb-1.5">
                 Primary Brand Color Accent
               </label>
               <div className="flex items-center gap-3">
@@ -513,7 +513,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   }
                   className="w-10 h-10 rounded-xl cursor-pointer border border-slate-200"
                 />
-                <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                <span className="font-mono font-bold text-fg">
                   {formData.branding?.primaryColor || "#6366f1"}
                 </span>
               </div>
@@ -595,12 +595,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-xs">
-            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-subtle">
               <div>
-                <p className="font-bold text-slate-900 dark:text-slate-100">
+                <p className="font-bold text-fg">
                   Auto-Assign Teams on Registration
                 </p>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-2xs text-slate-400">
                   Balance attendee allocation across the event teams upon signup
                 </p>
               </div>
@@ -622,12 +622,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               />
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-subtle">
               <div>
-                <p className="font-bold text-slate-900 dark:text-slate-100">
+                <p className="font-bold text-fg">
                   Enforce QR Code Ticket Requirement
                 </p>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-2xs text-slate-400">
                   Require digital QR code verification at desk terminals
                 </p>
               </div>

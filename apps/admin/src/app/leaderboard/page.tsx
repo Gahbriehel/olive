@@ -118,7 +118,7 @@ export default function LeaderboardPage() {
       </div>
 
       {teams.length === 0 ? (
-        <div className="p-12 text-center text-slate-500 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800">
+        <div className="p-12 text-center text-slate-500 bg-surface rounded-2xl border border-border">
           No data available
         </div>
       ) : (
@@ -134,10 +134,10 @@ export default function LeaderboardPage() {
                 >
                   2
                 </div>
-                <span className="text-xs font-bold text-slate-900 dark:text-slate-100 text-center truncate max-w-full">
+                <span className="text-xs font-bold text-fg text-center truncate max-w-full">
                   {secondPlace.teamName}
                 </span>
-                <span className="text-[11px] font-mono font-bold text-slate-500">
+                <span className="text-2xs font-mono font-bold text-slate-500">
                   {secondPlace.totalPoints} pts
                 </span>
                 <div className="w-full h-28 sm:h-36 bg-slate-200 dark:bg-zinc-800 rounded-t-2xl mt-2 flex items-center justify-center font-black text-slate-400 text-xl">
@@ -156,13 +156,13 @@ export default function LeaderboardPage() {
                 >
                   1
                 </div>
-                <span className="text-sm font-black text-slate-900 dark:text-slate-100 text-center truncate max-w-full">
+                <span className="text-sm font-black text-fg text-center truncate max-w-full">
                   {firstPlace.teamName}
                 </span>
-                <span className="text-xs font-mono font-black text-amber-600 dark:text-amber-400">
+                <span className="text-xs font-mono font-black text-warning-text">
                   {firstPlace.totalPoints} pts
                 </span>
-                <div className="w-full h-36 sm:h-48 bg-amber-500/20 border border-amber-500/30 rounded-t-2xl mt-2 flex items-center justify-center font-black text-amber-600 dark:text-amber-300 text-2xl shadow-lg">
+                <div className="w-full h-36 sm:h-48 bg-amber-500/20 border border-amber-500/30 rounded-t-2xl mt-2 flex items-center justify-center font-black text-warning-text text-2xl shadow-lg">
                   1st
                 </div>
               </div>
@@ -177,10 +177,10 @@ export default function LeaderboardPage() {
                 >
                   3
                 </div>
-                <span className="text-xs font-bold text-slate-900 dark:text-slate-100 text-center truncate max-w-full">
+                <span className="text-xs font-bold text-fg text-center truncate max-w-full">
                   {thirdPlace.teamName}
                 </span>
-                <span className="text-[11px] font-mono font-bold text-slate-500">
+                <span className="text-2xs font-mono font-bold text-slate-500">
                   {thirdPlace.totalPoints} pts
                 </span>
                 <div className="w-full h-24 sm:h-28 bg-slate-200 dark:bg-zinc-800 rounded-t-2xl mt-2 flex items-center justify-center font-black text-slate-400 text-xl">
@@ -192,9 +192,7 @@ export default function LeaderboardPage() {
 
           {/* Animated Ranking Cards List */}
           <div className="space-y-3">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-              Full Team Standings
-            </h3>
+            <h3 className="text-sm font-bold text-fg">Full Team Standings</h3>
             {entries.map((entry) => (
               <Card
                 key={entry.teamId}
@@ -202,7 +200,7 @@ export default function LeaderboardPage() {
               >
                 <CardContent className="p-4 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-4 mt-2">
-                    <span className="w-8 h-8 rounded-xl font-black text-sm flex items-center justify-center bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300">
+                    <span className="w-8 h-8 rounded-xl font-black text-sm flex items-center justify-center bg-muted text-fg-secondary">
                       #{entry.rank}
                     </span>
 
@@ -214,7 +212,7 @@ export default function LeaderboardPage() {
                         <Shield className="w-5 h-5" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                        <h4 className="font-bold text-sm text-fg">
                           {entry.teamName}
                         </h4>
                       </div>
@@ -223,10 +221,10 @@ export default function LeaderboardPage() {
 
                   <div className="flex items-center gap-4 text-right">
                     <div>
-                      <p className="text-lg font-black font-mono text-slate-900 dark:text-slate-100 leading-none">
+                      <p className="text-lg font-black font-mono text-fg leading-none">
                         {entry.totalPoints.toLocaleString()}
                       </p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">
+                      <p className="text-2xs text-slate-400 mt-0.5">
                         Total Points
                       </p>
                     </div>

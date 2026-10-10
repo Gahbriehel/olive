@@ -100,7 +100,7 @@ export const TeamsForm: React.FC<TeamsFormProps> = ({
 
         {/* Color Picker & Presets */}
         <div className="space-y-2">
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <label className="block text-xs font-semibold text-fg-secondary">
             Team Color <span className="text-rose-500">*</span>
           </label>
           <div className="flex items-center gap-3">
@@ -115,7 +115,7 @@ export const TeamsForm: React.FC<TeamsFormProps> = ({
                       type="color"
                       value={field.value || "#6366F1"}
                       onChange={(e) => field.onChange(e.target.value)}
-                      className="w-10 h-10 rounded-xl border border-slate-200 dark:border-zinc-700 cursor-pointer p-1 bg-white dark:bg-zinc-800"
+                      className="w-10 h-10 rounded-xl border border-border-control cursor-pointer p-1 bg-surface-raised"
                     />
                     <Input
                       type="text"
@@ -153,9 +153,7 @@ export const TeamsForm: React.FC<TeamsFormProps> = ({
 
       {/* Footer Buttons */}
       <fieldset
-        className={cn(
-          "grid h-20 grid-cols-2 gap-4 border-t border-slate-200 dark:border-zinc-800 p-4",
-        )}
+        className={cn("grid h-20 grid-cols-2 gap-4 border-t border-border p-4")}
       >
         {isEditing ? (
           <>

@@ -26,7 +26,7 @@ export function TabLink({ value, href, children, icon, count }: TabLinkProps) {
         "flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50",
         isActive
           ? "bg-indigo-600 text-white shadow-xs shadow-indigo-500/20"
-          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-zinc-800/80",
+          : "text-fg-secondary hover:text-fg hover:bg-muted",
       )}
     >
       <Link href={href} className="flex items-center gap-2">
@@ -34,7 +34,7 @@ export function TabLink({ value, href, children, icon, count }: TabLinkProps) {
           <span
             className={clsx(
               "w-4 h-4 flex items-center justify-center transition-colors",
-              isActive ? "text-white" : "text-slate-400 dark:text-slate-500",
+              isActive ? "text-white" : "text-fg-subtle",
             )}
           >
             {icon}
@@ -44,10 +44,8 @@ export function TabLink({ value, href, children, icon, count }: TabLinkProps) {
         {count !== undefined && (
           <span
             className={clsx(
-              "px-1.5 py-0.5 text-[10px] rounded-md font-mono font-semibold",
-              isActive
-                ? "bg-white/20 text-white"
-                : "bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-slate-400",
+              "px-1.5 py-0.5 text-2xs rounded-md font-mono font-semibold",
+              isActive ? "bg-white/20 text-white" : "bg-muted text-fg-muted",
             )}
           >
             {count}

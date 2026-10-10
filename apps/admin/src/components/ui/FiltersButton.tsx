@@ -22,7 +22,7 @@ export function FiltersButton({
     >
       {label}
       {activeCount > 0 && (
-        <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-indigo-50 text-indigo-600 text-[11px] font-bold dark:bg-indigo-950/50 dark:text-indigo-300">
+        <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary-soft text-primary-text text-2xs font-bold">
           {activeCount}
         </span>
       )}

@@ -28,18 +28,15 @@ export function ReadOnlyField({
       className="grid gap-1 py-2.5 sm:grid-cols-[minmax(0,11rem)_1fr] sm:gap-4"
     >
       {label && (
-        <span
-          id={labelId}
-          className="text-xs font-semibold text-slate-500 dark:text-slate-400"
-        >
+        <span id={labelId} className="text-xs font-semibold text-fg-muted">
           {label}
         </span>
       )}
       <div
         id={id}
         className={cn(
-          "m-0 text-sm font-medium text-slate-900 dark:text-slate-100",
-          isEmpty && "font-normal italic text-slate-500 dark:text-slate-400",
+          "m-0 text-sm font-medium text-fg",
+          isEmpty && "font-normal italic text-fg-muted",
           !label && "sm:col-span-2",
         )}
       >

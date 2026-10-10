@@ -24,7 +24,7 @@ export const Tabs: React.FC<TabsProps> = ({
   return (
     <div
       className={clsx(
-        "flex items-center gap-1 overflow-x-auto p-1 bg-slate-100 dark:bg-zinc-800/80 rounded-xl max-w-full no-scrollbar",
+        "flex items-center gap-1 overflow-x-auto p-1 bg-muted rounded-xl max-w-full no-scrollbar",
         className,
       )}
     >
@@ -37,8 +37,8 @@ export const Tabs: React.FC<TabsProps> = ({
             className={clsx(
               "flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap min-h-[38px] cursor-pointer",
               isActive
-                ? "bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200",
+                ? "bg-surface text-primary-text shadow-sm"
+                : "text-fg-secondary hover:text-fg",
             )}
           >
             {tab.icon && <span className="w-4 h-4">{tab.icon}</span>}
@@ -46,10 +46,10 @@ export const Tabs: React.FC<TabsProps> = ({
             {tab.count !== undefined && (
               <span
                 className={clsx(
-                  "px-1.5 py-0.5 text-[10px] rounded-md font-mono",
+                  "px-1.5 py-0.5 text-2xs rounded-md font-mono",
                   isActive
-                    ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"
-                    : "bg-slate-200 dark:bg-zinc-700 text-slate-600 dark:text-slate-400",
+                    ? "bg-primary-soft text-primary-text"
+                    : "bg-muted-strong text-fg-secondary",
                 )}
               >
                 {tab.count}

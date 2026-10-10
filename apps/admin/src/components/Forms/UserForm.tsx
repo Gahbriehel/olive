@@ -197,10 +197,10 @@ export const UserForm: React.FC<UserFormProps> = ({
         {/* Account Status */}
         {isEditing && (
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-fg-secondary mb-1.5">
               Account Status
             </label>
-            <div className="flex items-center justify-between px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-800 rounded-xl">
+            <div className="flex items-center justify-between px-3.5 py-2.5 bg-subtle border border-border rounded-xl">
               <div className="flex items-center gap-2">
                 <StatusBadge status={initialValues?.status || "Active"} />
               </div>
@@ -244,9 +244,7 @@ export const UserForm: React.FC<UserFormProps> = ({
 
       {/* Action Buttons Footer */}
       <fieldset
-        className={cn(
-          "grid h-20 grid-cols-2 gap-4 border-t border-slate-200 dark:border-zinc-800 p-4",
-        )}
+        className={cn("grid h-20 grid-cols-2 gap-4 border-t border-border p-4")}
       >
         {isEditing ? (
           <>

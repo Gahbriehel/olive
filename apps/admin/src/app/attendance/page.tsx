@@ -271,18 +271,18 @@ export default function AttendancePage() {
               <p className="text-xs font-semibold text-slate-500">
                 Live Attendance Goal Progress
               </p>
-              <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">
+              <h3 className="text-2xl font-black text-fg mt-0.5">
                 {checkedInCount.toLocaleString()}{" "}
                 <span className="text-sm font-normal text-slate-400">
                   / {totalReg.toLocaleString()} Registrants
                 </span>
               </h3>
             </div>
-            <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
+            <span className="text-3xl font-black text-success-text">
               {checkinPct}%
             </span>
           </div>
-          <div className="w-full h-3 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+          <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
             <div
               className="h-full bg-emerald-500 rounded-full transition-all duration-500"
               style={{ width: `${checkinPct}%` }}
@@ -319,18 +319,16 @@ export default function AttendancePage() {
                   registrations.map((r) => (
                     <div
                       key={r.id}
-                      className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 text-xs"
+                      className="flex items-center justify-between p-3 rounded-xl bg-subtle text-xs"
                     >
                       <div>
-                        <p className="font-bold text-slate-900 dark:text-slate-100">
-                          {r.name}
-                        </p>
-                        <p className="text-[10px] text-slate-400 flex items-center gap-1">
+                        <p className="font-bold text-fg">{r.name}</p>
+                        <p className="text-2xs text-slate-400 flex items-center gap-1">
                           <span>{r.registrationNumber} •</span>
                           <TruncatedTextWithCopy
                             text={r.email}
                             maxLength={24}
-                            textClassName="text-[10px] text-slate-400"
+                            textClassName="text-2xs text-slate-400"
                           />
                         </p>
                       </div>
@@ -362,26 +360,23 @@ export default function AttendancePage() {
 
           {/* Pagination Controls inside Manual Check-in Card Footer */}
           {totalItems > 0 && (
-            <div className="p-4 border-t border-slate-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+            <div className="p-4 border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-fg-muted">
               <div className="flex items-center gap-2">
                 <span>
                   Showing{" "}
-                  <span className="font-semibold text-slate-900 dark:text-slate-200">
+                  <span className="font-semibold text-fg">
                     {Math.min((page - 1) * limit + 1, totalItems)}
                   </span>{" "}
                   to{" "}
-                  <span className="font-semibold text-slate-900 dark:text-slate-200">
+                  <span className="font-semibold text-fg">
                     {Math.min(page * limit, totalItems)}
                   </span>{" "}
-                  of{" "}
-                  <span className="font-semibold text-slate-900 dark:text-slate-200">
-                    {totalItems}
-                  </span>
+                  of <span className="font-semibold text-fg">{totalItems}</span>
                 </span>
                 <select
                   value={limit}
                   onChange={(e) => setLimit(Number(e.target.value))}
-                  className="ml-2 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-base py-1 px-2 font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer"
+                  className="ml-2 bg-surface-raised border border-border-control rounded-lg text-base py-1 px-2 font-semibold text-fg-secondary outline-none cursor-pointer"
                 >
                   {[5, 10, 20, 50].map((size) => (
                     <option key={size} value={size}>
@@ -396,7 +391,7 @@ export default function AttendancePage() {
                   type="button"
                   onClick={() => setPage(1)}
                   disabled={page <= 1}
-                  className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   title="First Page"
                 >
                   <ChevronsLeft className="w-3.5 h-3.5" />
@@ -405,26 +400,20 @@ export default function AttendancePage() {
                   type="button"
                   onClick={() => setPage(page - 1)}
                   disabled={page <= 1}
-                  className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   title="Previous Page"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
                 <span className="px-2 text-xs">
-                  Page{" "}
-                  <span className="font-semibold text-slate-900 dark:text-slate-100">
-                    {page}
-                  </span>{" "}
-                  of{" "}
-                  <span className="font-semibold text-slate-900 dark:text-slate-100">
-                    {totalPages}
-                  </span>
+                  Page <span className="font-semibold text-fg">{page}</span> of{" "}
+                  <span className="font-semibold text-fg">{totalPages}</span>
                 </span>
                 <button
                   type="button"
                   onClick={() => setPage(page + 1)}
                   disabled={page >= totalPages}
-                  className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   title="Next Page"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -433,7 +422,7 @@ export default function AttendancePage() {
                   type="button"
                   onClick={() => setPage(totalPages)}
                   disabled={page >= totalPages}
-                  className="p-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="p-1.5 rounded-lg border border-border bg-surface hover:bg-muted text-fg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   title="Last Page"
                 >
                   <ChevronsRight className="w-3.5 h-3.5" />
@@ -458,17 +447,15 @@ export default function AttendancePage() {
               attendanceLog.map((log) => (
                 <div
                   key={log.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100 dark:border-zinc-800 text-xs animate-fade-in"
+                  className="flex items-center justify-between p-3 rounded-xl bg-subtle border border-border-subtle text-xs animate-fade-in"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-emerald-500/10 text-success-text font-bold flex items-center justify-center">
                       <UserCheck className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="font-bold text-slate-900 dark:text-slate-100">
-                        {log.attendeeName}
-                      </p>
-                      <p className="text-[10px] text-slate-400">
+                      <p className="font-bold text-fg">{log.attendeeName}</p>
+                      <p className="text-2xs text-slate-400">
                         {log.method} • {log.checkedInBy}
                       </p>
                     </div>
@@ -478,7 +465,7 @@ export default function AttendancePage() {
                     <TeamBadge color={log.teamColor} className="mb-1">
                       {log.teamName}
                     </TeamBadge>
-                    <p className="text-[10px] text-slate-400 flex items-center gap-1 justify-end">
+                    <p className="text-2xs text-slate-400 flex items-center gap-1 justify-end">
                       <Clock className="w-3 h-3" />
                       {log.time}
                     </p>

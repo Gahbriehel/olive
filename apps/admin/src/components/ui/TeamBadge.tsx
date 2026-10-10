@@ -26,7 +26,7 @@ export function TeamBadge({ color, children, className }: TeamBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-block rounded-md px-2 py-0.5 text-[11px] font-bold shadow-xs",
+        "inline-block rounded-md px-2 py-0.5 text-2xs font-bold shadow-xs",
         className,
       )}
       style={{

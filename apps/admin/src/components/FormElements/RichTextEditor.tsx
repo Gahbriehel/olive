@@ -34,7 +34,7 @@ const ReactQuill = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[200px] w-full animate-pulse rounded-xl bg-slate-100 dark:bg-zinc-800" />
+      <div className="h-[200px] w-full animate-pulse rounded-xl bg-muted" />
     ),
   },
 );
@@ -136,13 +136,12 @@ export const RichTextEditor = forwardRef<ReactQuillType, RichTextEditorProps>(
       >
         <div
           className={cn(
-            "rich-text-editor-container min-h-[250px] w-full overflow-hidden rounded-xl border bg-white transition-colors dark:bg-zinc-900",
+            "rich-text-editor-container min-h-[250px] w-full overflow-hidden rounded-xl border bg-surface transition-colors",
             "focus-within:ring-2",
             error
-              ? "border-rose-500 focus-within:border-rose-500 focus-within:ring-rose-500/30"
-              : "border-slate-200 focus-within:border-indigo-500 focus-within:ring-indigo-500/30 dark:border-zinc-800",
-            disabled &&
-              "cursor-not-allowed bg-slate-50 opacity-60 dark:bg-zinc-800/60",
+              ? "border-danger focus-within:border-danger focus-within:ring-danger/30"
+              : "border-border focus-within:border-primary focus-within:ring-primary/30",
+            disabled && "cursor-not-allowed bg-subtle opacity-60",
             className,
           )}
         >
@@ -160,23 +159,15 @@ export const RichTextEditor = forwardRef<ReactQuillType, RichTextEditorProps>(
         </div>
 
         <style jsx global>{`
+          /* Quill styles read the app's design tokens (globals.css), so they follow the theme. */
           .rich-text-editor-container {
-            --rte-accent: #6366f1; /* indigo-500 */
-            --rte-toolbar-bg: #f8fafc; /* slate-50 */
-            --rte-border: #e2e8f0; /* slate-200 */
-            --rte-text: #0f172a; /* slate-900 */
-            --rte-muted: #64748b; /* slate-500 */
-            --rte-placeholder: #94a3b8; /* slate-400 */
-            --rte-popover-bg: #ffffff;
-          }
-          .dark .rich-text-editor-container {
-            --rte-accent: #818cf8; /* indigo-400 */
-            --rte-toolbar-bg: rgba(39, 39, 42, 0.6); /* zinc-800/60 */
-            --rte-border: #3f3f46; /* zinc-700 */
-            --rte-text: #f1f5f9; /* slate-100 */
-            --rte-muted: #94a3b8; /* slate-400 */
-            --rte-placeholder: #64748b; /* slate-500 */
-            --rte-popover-bg: #27272a; /* zinc-800 */
+            --rte-accent: var(--primary-text);
+            --rte-toolbar-bg: var(--subtle);
+            --rte-border: var(--border-control);
+            --rte-text: var(--fg);
+            --rte-muted: var(--fg-muted);
+            --rte-placeholder: var(--fg-subtle);
+            --rte-popover-bg: var(--surface-raised);
           }
           .rich-text-editor-container .ql-toolbar {
             border-top: none;

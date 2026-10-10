@@ -15,7 +15,7 @@ export function ErrorMessage({ message, id, className }: Props): JSX.Element {
     <p
       id={id}
       role="alert"
-      className={cn("text-xs font-medium text-rose-500", className)}
+      className={cn("text-xs font-medium text-danger-text", className)}
     >
       {message}
     </p>

@@ -196,7 +196,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
       <div className="flex-1 space-y-4 overflow-y-auto pr-1">
         {/* Person Identity Card (Edit Mode) */}
         {isEditing && person && (
-          <div className="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-between">
+          <div className="p-3.5 rounded-2xl bg-primary-soft border border-primary-border flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
                 {getInitials(
@@ -204,12 +204,12 @@ export const PersonForm: React.FC<PersonFormProps> = ({
                 )}
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                <p className="text-xs font-bold text-fg">
                   {person.name || `${person.firstName} ${person.lastName}`}
                 </p>
                 <div className="flex items-center gap-2 mt-0.5">
                   <StatusBadge status={person.membershipStatus} size="sm" />
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-2xs text-slate-400">
                     ID: {person.id.slice(0, 8)}...
                   </span>
                 </div>
@@ -383,9 +383,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
 
       {/* Footer Buttons */}
       <fieldset
-        className={cn(
-          "grid h-20 grid-cols-2 gap-4 border-t border-slate-200 dark:border-zinc-800 p-4",
-        )}
+        className={cn("grid h-20 grid-cols-2 gap-4 border-t border-border p-4")}
       >
         <Button
           type="button"

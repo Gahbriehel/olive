@@ -356,7 +356,7 @@ export default function RegistrationsPage() {
         accessorKey: "registrationNumber",
         header: "Reg Number",
         cell: ({ row }) => (
-          <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+          <span className="font-mono font-bold text-fg">
             {row.original.registrationNumber}
           </span>
         ),
@@ -366,13 +366,11 @@ export default function RegistrationsPage() {
         header: "Attendee Name",
         cell: ({ row }) => (
           <div>
-            <p className="font-bold text-slate-900 dark:text-slate-100">
-              {row.original.name}
-            </p>
+            <p className="font-bold text-fg">{row.original.name}</p>
             <TruncatedTextWithCopy
               text={row.original.email}
               maxLength={28}
-              textClassName="text-[11px] text-slate-400"
+              textClassName="text-2xs text-slate-400"
             />
           </div>
         ),
@@ -406,7 +404,7 @@ export default function RegistrationsPage() {
         accessorFn: (row) => row.googleCalendarSync ?? false,
         cell: ({ row }) =>
           row.original.googleCalendarSync ? (
-            <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+            <span className="flex items-center gap-1.5 text-success-text font-semibold">
               <Calendar className="w-3.5 h-3.5" />
               Opted In
             </span>
@@ -446,10 +444,10 @@ export default function RegistrationsPage() {
     <div className="space-y-6 animate-fade-in pb-10">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
           Registrations Manager
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-xs sm:text-sm text-fg-muted">
           Real-time roster of confirmed registrants, QR ticket dispatches, and
           assigned tournament teams.
         </p>
@@ -546,12 +544,12 @@ export default function RegistrationsPage() {
 
           {/* All Registrants Notice */}
           {sendToAllRegistrants ? (
-            <div className="p-3.5 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 text-xs text-indigo-900 dark:text-indigo-200 flex flex-col gap-1.5">
+            <div className="p-3.5 rounded-2xl bg-primary-soft border border-primary-border text-xs text-indigo-900 dark:text-indigo-200 flex flex-col gap-1.5">
               <div className="flex items-center gap-2 font-semibold">
-                <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                <Users className="w-4 h-4 text-primary-text shrink-0" />
                 <span>Target: All Event Registrants</span>
               </div>
-              <p className="text-[11px] text-slate-600 dark:text-slate-400">
+              <p className="text-2xs text-fg-secondary">
                 Email will be sent to all matching registrants (
                 {totalReg.toLocaleString()} attendees)
                 {queryParams.status && ` with status: ${queryParams.status}`}
@@ -582,12 +580,12 @@ export default function RegistrationsPage() {
               {/* Selected Recipients Chips */}
               {selectedRegistrantList.length > 0 && (
                 <div className="flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center justify-between text-xs text-fg-muted">
                     <span>Selected ({selectedRegistrantList.length})</span>
                     <button
                       type="button"
                       onClick={() => setSelectedRegistrants({})}
-                      className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 text-[11px] font-medium"
+                      className="text-primary-text hover:text-indigo-700 text-2xs font-medium"
                     >
                       Clear all
                     </button>
@@ -596,15 +594,15 @@ export default function RegistrationsPage() {
                     {selectedRegistrantList.map((r) => (
                       <span
                         key={r.id}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-slate-200 shadow-xs"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-surface border border-border-control text-fg shadow-xs"
                       >
-                        <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[9px] flex items-center justify-center font-bold">
+                        <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-2xs flex items-center justify-center font-bold">
                           {getInitials(r.name)}
                         </span>
                         <span className="max-w-[130px] truncate font-medium">
                           {r.name}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-mono">
+                        <span className="text-2xs text-slate-400 font-mono">
                           ({r.registrationNumber})
                         </span>
                         <button
@@ -641,7 +639,7 @@ export default function RegistrationsPage() {
             />
             {/* Placeholder Tags */}
             <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
+              <span className="text-2xs text-fg-muted flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-indigo-500" />
                 Placeholders:
               </span>
@@ -654,7 +652,7 @@ export default function RegistrationsPage() {
                   key={tag}
                   type="button"
                   onClick={() => insertPlaceholder(tag)}
-                  className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors cursor-pointer"
+                  className="text-2xs font-mono px-2 py-0.5 rounded-md bg-muted text-primary-text hover:bg-primary-soft transition-colors cursor-pointer"
                   title={`Click to append ${tag} to subject`}
                 >
                   + {tag}
@@ -694,12 +692,12 @@ export default function RegistrationsPage() {
           />
 
           {/* Announcement Flyer Image */}
-          <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-zinc-800">
+          <div className="space-y-2 pt-1 border-t border-border-subtle">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+              <label className="text-xs font-bold text-fg block">
                 Announcement Flyer Image (Optional)
               </label>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-2xs text-slate-400">
                 Max 3MB (JPEG, PNG, WEBP)
               </span>
             </div>
@@ -715,7 +713,7 @@ export default function RegistrationsPage() {
               )}
             />
             <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors">
+              <label className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted hover:bg-muted-strong cursor-pointer text-xs font-semibold text-fg-secondary transition-colors">
                 {isUploadingFlyer ? (
                   <Spinner size="sm" />
                 ) : (
@@ -734,7 +732,7 @@ export default function RegistrationsPage() {
               </label>
             </div>
             {flyerImageUrl && (
-              <div className="relative w-full h-36 rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800/50 mt-2">
+              <div className="relative w-full h-36 rounded-xl overflow-hidden border border-border-control bg-subtle mt-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={flyerImageUrl}
@@ -769,7 +767,7 @@ export default function RegistrationsPage() {
           />
 
           {/* Optional Call to Action */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-slate-100 dark:border-zinc-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-border-subtle">
             <Controller
               name="ctaLabel"
               control={control}
@@ -842,16 +840,16 @@ export default function RegistrationsPage() {
         {selectedRegistration && (
           <div className="space-y-6">
             {/* Header Badge Card */}
-            <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-primary-soft border border-primary-border flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-base flex items-center justify-center">
                   {getInitials(selectedRegistration.name)}
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                  <h3 className="font-bold text-sm text-fg">
                     {selectedRegistration.name}
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-fg-muted">
                     {selectedRegistration.email}
                   </p>
                 </div>
@@ -861,41 +859,33 @@ export default function RegistrationsPage() {
 
             {/* Info Sections */}
             <div className="space-y-4">
-              <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-zinc-800 pb-2 flex items-center gap-2">
+              <h4 className="font-bold text-sm text-fg border-b border-border pb-2 flex items-center gap-2">
                 <Users className="w-4 h-4 text-indigo-500" />
                 Attendee & Team Profile
               </h4>
 
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
-                  <p className="text-slate-400 dark:text-slate-500 mb-1">
-                    Gender
-                  </p>
-                  <p className="font-semibold text-slate-800 dark:text-slate-200">
+                  <p className="text-fg-subtle mb-1">Gender</p>
+                  <p className="font-semibold text-fg">
                     {selectedRegistration.gender}
                   </p>
                 </div>
                 <div>
-                  <p className="text-slate-400 dark:text-slate-500 mb-1">
-                    Membership Status
-                  </p>
+                  <p className="text-fg-subtle mb-1">Membership Status</p>
                   <StatusBadge
                     status={selectedRegistration.membershipStatus}
                     size="sm"
                   />
                 </div>
                 <div>
-                  <p className="text-slate-400 dark:text-slate-500 mb-1">
-                    Phone Number
-                  </p>
-                  <p className="font-semibold text-slate-800 dark:text-slate-200">
+                  <p className="text-fg-subtle mb-1">Phone Number</p>
+                  <p className="font-semibold text-fg">
                     {selectedRegistration.phone || "N/A"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-slate-400 dark:text-slate-500 mb-1">
-                    Assigned Team
-                  </p>
+                  <p className="text-fg-subtle mb-1">Assigned Team</p>
                   {selectedRegistration.team ? (
                     <TeamBadge color={selectedRegistration.team.color}>
                       {selectedRegistration.team.name}
@@ -908,24 +898,20 @@ export default function RegistrationsPage() {
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-zinc-800 pb-2 flex items-center gap-2">
+              <h4 className="font-bold text-sm text-fg border-b border-border pb-2 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-indigo-500" />
                 Registration Details
               </h4>
 
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
-                  <p className="text-slate-400 dark:text-slate-500 mb-1">
-                    Registered At
-                  </p>
-                  <p className="font-semibold text-slate-800 dark:text-slate-200">
+                  <p className="text-fg-subtle mb-1">Registered At</p>
+                  <p className="font-semibold text-fg">
                     {selectedRegistration.registeredAt}
                   </p>
                 </div>
                 <div>
-                  <p className="text-slate-400 dark:text-slate-500 mb-1">
-                    Confirmation Email
-                  </p>
+                  <p className="text-fg-subtle mb-1">Confirmation Email</p>
                   <StatusBadge
                     status={
                       selectedRegistration.person?.emailStatus || "PENDING"
@@ -934,10 +920,8 @@ export default function RegistrationsPage() {
                   />
                 </div>
                 <div>
-                  <p className="text-slate-400 dark:text-slate-500 mb-1">
-                    Calendar Sync
-                  </p>
-                  <p className="font-semibold text-slate-800 dark:text-slate-200">
+                  <p className="text-fg-subtle mb-1">Calendar Sync</p>
+                  <p className="font-semibold text-fg">
                     {selectedRegistration.googleCalendarSync
                       ? "Opted In"
                       : "Off"}

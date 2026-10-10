@@ -77,9 +77,7 @@ export function ConfirmActionModal({
     (isDestructive ? (
       <>
         This action is permanent and{" "}
-        <span className="font-semibold text-rose-600 dark:text-rose-400">
-          cannot be undone
-        </span>
+        <span className="font-semibold text-danger-text">cannot be undone</span>
         .
       </>
     ) : null);
@@ -96,29 +94,27 @@ export function ConfirmActionModal({
           }`}
         >
           {isDestructive ? (
-            <AlertTriangle className="h-7 w-7 text-rose-600 dark:text-rose-400" />
+            <AlertTriangle className="h-7 w-7 text-danger-text" />
           ) : (
-            <HelpCircle className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
+            <HelpCircle className="h-7 w-7 text-primary-text" />
           )}
         </div>
 
         {/* Text content */}
         <div className="space-y-1.5">
-          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 leading-snug">
+          <h2 className="text-base font-bold text-fg leading-snug">
             {title ??
               `Are you sure you want to ${capitalizeFirstLetter(actionName)}?`}
           </h2>
           {supportingCopy && (
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {supportingCopy}
-            </p>
+            <p className="text-xs text-fg-muted">{supportingCopy}</p>
           )}
         </div>
 
         {error && (
           <p
             role="alert"
-            className="w-full rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300"
+            className="w-full rounded-xl border border-danger-border bg-danger-soft px-3 py-2 text-xs font-medium text-danger-text"
           >
             {error}
           </p>

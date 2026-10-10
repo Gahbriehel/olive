@@ -152,7 +152,7 @@ export function MultiSelect({
               {value.map((option) => (
                 <span
                   key={option.value._id || option.label}
-                  className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-zinc-800 dark:text-slate-200"
+                  className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-fg-secondary"
                 >
                   {option.label}
                 </span>
@@ -201,7 +201,7 @@ export function MultiSelect({
       error={errorText}
       labelSuffix={
         selectedCount > 0 && (
-          <span className="ml-1 font-normal text-slate-400 dark:text-slate-500">
+          <span className="ml-1 font-normal text-fg-subtle">
             ({selectedCount} selected)
           </span>
         )
@@ -228,8 +228,7 @@ export function MultiSelect({
                 "pr-16",
                 // When something is selected and the user is not typing, the
                 // placeholder doubles as the selection summary.
-                summary &&
-                  "placeholder:text-slate-900 dark:placeholder:text-slate-100",
+                summary && "placeholder:text-fg",
                 errorText && controlErrorClass,
               )}
               placeholder={summary ?? placeholder ?? "Select options..."}
@@ -248,14 +247,14 @@ export function MultiSelect({
                     e.stopPropagation();
                     closeIconFn?.();
                   }}
-                  className="rounded p-0.5 text-slate-400 transition-colors hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:text-slate-500 dark:hover:text-slate-300"
+                  className="rounded p-0.5 text-fg-subtle transition-colors hover:text-fg-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 >
                   <XCircle className="h-4 w-4" aria-hidden="true" />
                 </button>
               )}
               <ComboboxButton
                 aria-label={`Show ${label} options`}
-                className="rounded p-0.5 text-slate-400 focus:outline-none dark:text-slate-500"
+                className="rounded p-0.5 text-fg-subtle focus:outline-none"
               >
                 <ChevronDown className="h-4 w-4" aria-hidden="true" />
               </ComboboxButton>
@@ -263,7 +262,7 @@ export function MultiSelect({
 
             <ComboboxOptions
               transition
-              className="absolute top-full z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 transition duration-100 ease-in focus:outline-none data-[closed]:opacity-0 dark:bg-zinc-800 dark:shadow-zinc-950/50 dark:ring-zinc-700"
+              className="absolute top-full z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-surface-raised py-1 text-sm shadow-lg ring-1 ring-border-control transition duration-100 ease-in focus:outline-none data-[closed]:opacity-0"
             >
               {queryHook && queryResult?.data && (
                 <SelectPagination
@@ -277,24 +276,24 @@ export function MultiSelect({
               {addNewOption && (
                 <ComboboxOption
                   value={emptySelect()}
-                  className="flex cursor-pointer items-center gap-2 px-10 py-2.5 text-indigo-600 data-[focus]:bg-indigo-50 dark:text-indigo-400 dark:data-[focus]:bg-indigo-500/10"
+                  className="flex cursor-pointer items-center gap-2 px-10 py-2.5 text-primary-text data-[focus]:bg-primary-soft"
                 >
                   <span className="font-medium">Add new</span>
                   <PlusCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
                 </ComboboxOption>
               )}
               {!isLoading && visibleOptions.length === 0 && query !== "" && (
-                <div className="cursor-default select-none px-4 py-2.5 text-slate-500 dark:text-slate-400">
+                <div className="cursor-default select-none px-4 py-2.5 text-fg-muted">
                   Nothing found.
                 </div>
               )}
               {!isLoading && availableOptions.length === 0 && query === "" && (
-                <div className="cursor-default select-none px-4 py-2.5 text-slate-500 dark:text-slate-400">
+                <div className="cursor-default select-none px-4 py-2.5 text-fg-muted">
                   No options.
                 </div>
               )}
               {isLoading && (
-                <div className="cursor-default select-none px-4 py-2.5 text-slate-500 dark:text-slate-400">
+                <div className="cursor-default select-none px-4 py-2.5 text-fg-muted">
                   Loading...
                 </div>
               )}
@@ -302,7 +301,7 @@ export function MultiSelect({
                 <ComboboxOption
                   key={option.value?._id || index}
                   value={option}
-                  className="group relative flex cursor-pointer select-none items-center py-2.5 pl-10 pr-4 text-slate-900 data-[focus]:bg-indigo-50 data-[focus]:text-indigo-900 dark:text-slate-100 dark:data-[focus]:bg-indigo-500/10 dark:data-[focus]:text-indigo-100"
+                  className="group relative flex cursor-pointer select-none items-center py-2.5 pl-10 pr-4 text-fg data-[focus]:bg-primary-soft data-[focus]:text-fg dark:data-[focus]:bg-primary/10"
                 >
                   {({ selected }) => (
                     <>
@@ -310,7 +309,7 @@ export function MultiSelect({
                         className={cn(
                           "block truncate capitalize",
                           selected
-                            ? "font-semibold text-indigo-600 dark:text-indigo-400"
+                            ? "font-semibold text-primary-text"
                             : "font-normal",
                         )}
                       >
@@ -318,7 +317,7 @@ export function MultiSelect({
                       </span>
                       {selected && (
                         <Check
-                          className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-600 dark:text-indigo-400"
+                          className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-primary-text"
                           aria-hidden="true"
                         />
                       )}
