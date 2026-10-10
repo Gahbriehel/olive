@@ -107,7 +107,6 @@ export default function LeaderboardPage() {
           actionsTrigger={
             <Button
               variant="outline"
-              position="icon-last"
               className="bg-white/10 hover:bg-white/20 border-white/20 text-white"
             >
               <MoreHorizontal className="w-4 h-4" />

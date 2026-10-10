@@ -2,6 +2,10 @@
 
 @variant dark (&:where(.dark, .dark *));
 
+@theme {
+  --animate-spin-slow: spin 6s linear infinite;
+}
+
 @layer base {
   :root {
     --bg-app: #f8fafc;

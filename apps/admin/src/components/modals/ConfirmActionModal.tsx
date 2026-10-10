@@ -4,7 +4,7 @@ import { useState, type JSX, type ReactNode } from "react";
 import { AlertTriangle, HelpCircle } from "lucide-react";
 
 import { capitalizeFirstLetter } from "@/helpers/capitalizeFirstLetter";
-import { BaseButton } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { extractErrorMessage } from "@/utils/api-client";
 
@@ -126,23 +126,23 @@ export function ConfirmActionModal({
 
         {/* Buttons */}
         <div className="mt-2 grid w-full grid-cols-2 gap-3">
-          <BaseButton
-            text="Cancel"
-            color="white"
+          <Button
+            variant="outline"
             onClick={handleClose}
             disabled={isLoadingState}
-          />
-          <BaseButton
-            text={
-              confirmLabel ??
-              (isDestructive
-                ? capitalizeFirstLetter(actionName)
-                : "Yes, proceed")
-            }
-            color={isDestructive ? "danger" : "primary"}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant={isDestructive ? "danger" : "primary"}
             onClick={handleAction}
             loading={isLoadingState}
-          />
+          >
+            {confirmLabel ??
+              (isDestructive
+                ? capitalizeFirstLetter(actionName)
+                : "Yes, proceed")}
+          </Button>
         </div>
       </div>
     </Modal>

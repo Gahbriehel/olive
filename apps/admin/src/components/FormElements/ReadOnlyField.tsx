@@ -3,31 +3,48 @@
 import { type JSX, type ReactNode } from "react";
 
 import { cn } from "@/helpers/cn";
+import { useFieldIds } from "@/components/ui/FormField";
 
 interface Props {
   label?: string;
   value: ReactNode;
+  id?: string;
 }
 
-export function ReadOnlyField({ label, value }: Props): JSX.Element {
+/** Label + value pair for view mode. The value is labelled by the label. */
+export function ReadOnlyField({
+  label,
+  value,
+  id: idProp,
+}: Props): JSX.Element {
+  const { id } = useFieldIds(idProp);
+  const labelId = `${id}-label`;
   const isEmpty = value === null || value === undefined || value === "";
 
   return (
-    <div className="grid gap-1 py-2.5 sm:grid-cols-[minmax(0,11rem)_1fr] sm:gap-4">
+    <div
+      role="group"
+      aria-labelledby={label ? labelId : undefined}
+      className="grid gap-1 py-2.5 sm:grid-cols-[minmax(0,11rem)_1fr] sm:gap-4"
+    >
       {label && (
-        <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
+        <span
+          id={labelId}
+          className="text-xs font-semibold text-slate-500 dark:text-slate-400"
+        >
           {label}
-        </dt>
+        </span>
       )}
-      <dd
+      <div
+        id={id}
         className={cn(
-          "m-0 text-sm font-medium text-gray-900 dark:text-slate-100",
-          isEmpty && "font-normal italic text-gray-500 dark:text-slate-400",
+          "m-0 text-sm font-medium text-slate-900 dark:text-slate-100",
+          isEmpty && "font-normal italic text-slate-500 dark:text-slate-400",
           !label && "sm:col-span-2",
         )}
       >
         {isEmpty ? "Not Provided" : value}
-      </dd>
+      </div>
     </div>
   );
 }

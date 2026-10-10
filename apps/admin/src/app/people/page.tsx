@@ -373,10 +373,10 @@ export default function PeoplePage() {
 
       {/* Person Details Sidebar Modal */}
       <SidebarModal
-        display={!!selectedPerson}
-        close={() => setSelectedPerson(null)}
+        isOpen={!!selectedPerson}
+        onClose={() => setSelectedPerson(null)}
         title={selectedPerson?.name || ""}
-        subtitle={
+        description={
           selectedPerson?.id
             ? `Member Profile • ID: ${selectedPerson.id}`
             : undefined
@@ -590,8 +590,8 @@ export default function PeoplePage() {
       {/* Add Person Sidebar Modal */}
       <SidebarModal
         title="Add New Person"
-        display={isAddPersonOpen}
-        close={() => setIsAddPersonOpen(false)}
+        isOpen={isAddPersonOpen}
+        onClose={() => setIsAddPersonOpen(false)}
       >
         <PersonForm
           onSubmit={handleAddPerson}
@@ -603,8 +603,8 @@ export default function PeoplePage() {
       {/* Register Person Sidebar Modal */}
       <SidebarModal
         title="Register Person for Event"
-        display={isRegisterOpen}
-        close={() => setIsRegisterOpen(false)}
+        isOpen={isRegisterOpen}
+        onClose={() => setIsRegisterOpen(false)}
       >
         <RegisterPersonForm
           events={events}
@@ -618,8 +618,8 @@ export default function PeoplePage() {
       {isSuperAdmin && (
         <SidebarModal
           title="Edit Person"
-          display={!!editingPerson}
-          close={() => setEditingPerson(null)}
+          isOpen={!!editingPerson}
+          onClose={() => setEditingPerson(null)}
         >
           {editingPerson && (
             <PersonForm

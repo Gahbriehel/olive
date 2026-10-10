@@ -1,11 +1,20 @@
 import React from "react";
-import { clsx } from "clsx";
-import { cn } from "@/helpers/cn";
 import { Eye, EyeOff, X } from "lucide-react";
+
+import { cn } from "@/helpers/cn";
+import {
+  FormField,
+  controlClass,
+  controlErrorClass,
+  fieldAria,
+  useFieldIds,
+} from "@/components/ui/FormField";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
+  /** Helper text under the control, linked via aria-describedby. */
+  hint?: React.ReactNode;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   shortcutHint?: string;
@@ -17,14 +26,18 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ReactNode;
   isClearable?: boolean;
   onClear?: () => void;
+  /** Class for the outer field wrapper (label + control + messages). */
+  containerClassName?: string;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
     {
       className,
+      containerClassName,
       label,
       error,
+      hint,
       leftIcon,
       rightIcon,
       icon,
@@ -36,10 +49,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       showPassword,
       isClearable,
       onClear,
+      id: idProp,
       ...props
     },
     ref,
   ) => {
+    const { id, hintId, errorId } = useFieldIds(idProp);
     const finalRightIcon = icon || rightIcon;
     const hasValue =
       props.value !== undefined && String(props.value).length > 0;
@@ -49,6 +64,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       !password &&
       !props.disabled &&
       !props.readOnly;
+    const showTrailing = !password && (shortcutHint || finalRightIcon);
+    const trailingCount =
+      (password ? 1 : 0) + (showClear ? 1 : 0) + (showTrailing ? 1 : 0);
 
     const handleClear = () => {
       if (onClear) {
@@ -64,71 +82,84 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       }
     };
 
+    const isHidden = props.type === "password";
+    const aria = fieldAria({
+      errorId,
+      hintId,
+      error,
+      hint,
+      describedBy: props["aria-describedby"],
+    });
+
     return (
-      <div className="flex flex-col gap-1.5 w-full">
-        {label && (
-          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            {label}
-            {required && <span className="text-rose-500 ml-1">*</span>}
-          </label>
-        )}
+      <FormField
+        id={id}
+        label={label}
+        required={required}
+        hint={hint}
+        error={error}
+        className={containerClassName}
+      >
         <div className="relative flex items-center">
           {countryCode && (
-            <div className="flex items-center justify-center min-h-[42px] rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3.5 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/50">
-              <span className="text-base font-medium text-slate-600 dark:text-slate-300">
+            <div className="flex min-h-[42px] items-center justify-center rounded-l-xl border border-r-0 border-slate-200 bg-slate-50 px-3.5 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/60">
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
                 {countryCode}
               </span>
             </div>
           )}
           {leftIcon && (
-            <span className="absolute left-3 text-slate-400 dark:text-slate-500 pointer-events-none">
+            <span className="pointer-events-none absolute left-3 text-slate-400 dark:text-slate-500">
               {leftIcon}
             </span>
           )}
           <input
             ref={ref}
+            id={id}
+            aria-required={required || undefined}
+            {...props}
+            aria-invalid={aria["aria-invalid"] ?? props["aria-invalid"]}
+            aria-describedby={aria["aria-describedby"]}
             className={cn(
-              "w-full text-base bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 min-h-[42px]",
-              countryCode ? "rounded-r-xl" : "rounded-xl",
-              leftIcon ? "pl-10" : "px-3.5",
-              (finalRightIcon || shortcutHint) && showClear
-                ? "pr-20"
-                : finalRightIcon || shortcutHint || password || showClear
-                  ? "pr-12"
-                  : "px-3.5",
-              error &&
-                "border-rose-500 focus:ring-rose-500/30 focus:border-rose-500",
+              controlClass,
+              countryCode && "rounded-l-none",
+              leftIcon && "pl-10",
+              trailingCount === 1 && "pr-10",
+              trailingCount >= 2 && "pr-20",
+              error && controlErrorClass,
               className,
             )}
-            {...props}
           />
           {password && (
             <button
               type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-              onClick={props.type === "password" ? showPassword : hidePassword}
+              aria-label={isHidden ? "Show password" : "Hide password"}
+              aria-controls={id}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded text-slate-400 transition-colors hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:text-slate-500 dark:hover:text-slate-300"
+              onClick={isHidden ? showPassword : hidePassword}
             >
-              {props.type === "password" ? (
-                <Eye className="h-4 w-4" />
+              {isHidden ? (
+                <Eye className="h-4 w-4" aria-hidden="true" />
               ) : (
-                <EyeOff className="h-4 w-4" />
+                <EyeOff className="h-4 w-4" aria-hidden="true" />
               )}
             </button>
           )}
           {showClear && (
             <button
               type="button"
-              className={clsx(
-                "absolute top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors",
-                finalRightIcon || shortcutHint ? "right-10" : "right-3",
+              aria-label={label ? `Clear ${label}` : "Clear"}
+              className={cn(
+                "absolute top-1/2 -translate-y-1/2 rounded text-slate-400 transition-colors hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:text-slate-500 dark:hover:text-slate-300",
+                showTrailing ? "right-10" : "right-3",
               )}
               onClick={handleClear}
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4" aria-hidden="true" />
             </button>
           )}
           {shortcutHint && !password && (
-            <span className="absolute right-3 px-1.5 py-0.5 text-[10px] font-mono bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-zinc-700 rounded pointer-events-none">
+            <span className="pointer-events-none absolute right-3 rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-slate-400">
               {shortcutHint}
             </span>
           )}
@@ -138,8 +169,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             </span>
           )}
         </div>
-        {error && <p className="text-xs text-rose-500 mt-0.5">{error}</p>}
-      </div>
+      </FormField>
     );
   },
 );

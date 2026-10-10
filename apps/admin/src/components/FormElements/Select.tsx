@@ -1,44 +1,88 @@
 import React from "react";
+import { ChevronDown } from "lucide-react";
+
 import { cn } from "@/helpers/cn";
+import {
+  FormField,
+  controlClass,
+  controlErrorClass,
+  fieldAria,
+  useFieldIds,
+} from "@/components/ui/FormField";
 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
   leftIcon?: React.ReactNode;
+  /** Helper text under the control, linked via aria-describedby. */
+  hint?: React.ReactNode;
+  /** Class for the outer field wrapper (label + control + messages). */
+  containerClassName?: string;
 }
 
 export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, label, error, leftIcon, children, ...props }, ref) => {
+  (
+    {
+      id: idProp,
+      className,
+      containerClassName,
+      label,
+      error,
+      hint,
+      leftIcon,
+      required,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
+    const { id, hintId, errorId } = useFieldIds(idProp);
+    const aria = fieldAria({
+      errorId,
+      hintId,
+      error,
+      hint,
+      describedBy: props["aria-describedby"],
+    });
+
     return (
-      <div className="flex flex-col gap-1.5 w-full">
-        {label && (
-          <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            {label}
-          </label>
-        )}
+      <FormField
+        id={id}
+        label={label}
+        required={required}
+        hint={hint}
+        error={error}
+        className={containerClassName}
+      >
         <div className="relative flex items-center">
           {leftIcon && (
-            <span className="absolute left-3 text-slate-400 dark:text-slate-500 pointer-events-none">
+            <span className="pointer-events-none absolute left-3 text-slate-400 dark:text-slate-500">
               {leftIcon}
             </span>
           )}
           <select
             ref={ref}
+            id={id}
+            required={required}
+            {...props}
+            aria-invalid={aria["aria-invalid"] ?? props["aria-invalid"]}
+            aria-describedby={aria["aria-describedby"]}
             className={cn(
-              "w-full text-base bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 min-h-[42px] appearance-none cursor-pointer pr-10",
+              controlClass,
+              "cursor-pointer appearance-none pr-10",
               leftIcon && "pl-10",
+              error && controlErrorClass,
               className,
             )}
-            {...props}
           >
             {children}
           </select>
-          <span className="absolute right-3.5 pointer-events-none text-slate-400 dark:text-slate-500">
-            ▼
-          </span>
+          <ChevronDown
+            aria-hidden="true"
+            className="pointer-events-none absolute right-3.5 h-4 w-4 text-slate-400 dark:text-slate-500"
+          />
         </div>
-        {error && <p className="text-xs text-rose-500 mt-0.5">{error}</p>}
-      </div>
+      </FormField>
     );
   },
 );

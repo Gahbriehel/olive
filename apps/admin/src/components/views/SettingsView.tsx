@@ -7,7 +7,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/Card";
-import { Button, BaseButton } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { RefreshButton } from "@/components/ui/RefreshButton";
 import { Input } from "@/components/FormElements/Input";
 import { Tabs } from "@/components/ui/Tabs";
@@ -250,7 +250,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <Button
               variant="primary"
               onClick={handleSaveChurchSettings}
-              isLoading={isUpdatingSettings}
+              loading={isUpdatingSettings}
               disabled={isUpdatingSettings}
               leftIcon={<Save className="w-4 h-4" />}
               className="bg-indigo-600 hover:bg-indigo-500"
@@ -405,7 +405,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <Button
                   type="submit"
                   variant="primary"
-                  isLoading={isUpdatingProfile}
+                  loading={isUpdatingProfile}
                   disabled={isUpdatingProfile}
                   leftIcon={<Save className="w-4 h-4" />}
                   className="bg-indigo-600 hover:bg-indigo-500"
@@ -470,7 +470,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <Button
                   type="submit"
                   variant="primary"
-                  isLoading={isChangingPassword}
+                  loading={isChangingPassword}
                   disabled={isChangingPassword}
                   leftIcon={<Key className="w-4 h-4" />}
                   className="bg-indigo-600 hover:bg-indigo-500"
@@ -679,11 +679,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </p>
           </div>
 
-          <BaseButton
+          <Button
             onClick={performFullLogout}
-            text={`Log out now (${countdown}s)`}
             className="w-full animate-pulse hover:animate-none"
-          />
+          >
+            {`Log out now (${countdown}s)`}
+          </Button>
         </div>
       </Modal>
     </div>

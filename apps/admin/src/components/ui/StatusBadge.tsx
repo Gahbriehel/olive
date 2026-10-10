@@ -11,6 +11,59 @@ interface StatusBadgeProps extends Omit<
   dot?: boolean;
 }
 
+interface StatusStyle {
+  label: string;
+  variant: BadgeVariant;
+  dot?: boolean;
+  /** Animated "live" dot (published content). */
+  pulse?: boolean;
+}
+
+/** Single source of truth for how a backend status string is displayed. */
+const STATUS_STYLES: Record<string, StatusStyle> = {
+  // Positive / live
+  ACTIVE: { label: "Active", variant: "emerald", dot: true },
+  DELIVERABLE: { label: "Deliverable", variant: "emerald", dot: true },
+  ATTENDED: { label: "Attended", variant: "emerald", dot: true },
+  CHECKED_IN: { label: "Checked-In", variant: "emerald", dot: true },
+  PUBLISHED: { label: "Published", variant: "emerald", pulse: true },
+  LEADER: { label: "Leader", variant: "emerald" },
+
+  // Pending / warning
+  DRAFT: { label: "Draft", variant: "amber", dot: true },
+  VISITOR: { label: "Visitor", variant: "amber" },
+  GUEST: { label: "Guest", variant: "amber" },
+  PENDING: { label: "Pending", variant: "amber" },
+
+  // Negative / stopped
+  BOUNCED: { label: "Bounced", variant: "rose", dot: true },
+  DROPPED: { label: "Dropped", variant: "rose", dot: true },
+  COMPLAINED: { label: "Complained", variant: "rose", dot: true },
+  CANCELLED: { label: "Cancelled", variant: "rose", dot: true },
+  INACTIVE: { label: "Inactive", variant: "rose", dot: true },
+  NOT_CHECKED_IN: { label: "Not Checked In", variant: "rose" },
+
+  // Informational
+  CONFIRMED: { label: "Confirmed", variant: "indigo", dot: true },
+  REGISTERED: { label: "Registered", variant: "indigo", dot: true },
+  COMPLETED: { label: "Completed", variant: "indigo" },
+  MEMBER: { label: "Member", variant: "indigo" },
+  WORKER: { label: "Worker", variant: "cyan" },
+};
+
+/** "checked-in", "Checked In" and "CHECKED_IN" all resolve to CHECKED_IN. */
+const normalize = (status: string) =>
+  status
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, "_");
+
+const titleCase = (status: string) =>
+  status
+    .split(/[-_ ]+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+
 export const StatusBadge: React.FC<StatusBadgeProps> = ({
   status,
   size = "md",
@@ -21,153 +74,37 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 }) => {
   if (!status) return null;
 
-  const normalized = status.trim().toUpperCase();
+  const style: StatusStyle = STATUS_STYLES[normalize(status)] ?? {
+    label: titleCase(status),
+    variant: "slate",
+  };
 
-  let variant: "indigo" | "emerald" | "amber" | "rose" | "slate" | "cyan" =
-    "slate";
-  let dot = false;
-  let label = status;
-
-  switch (normalized) {
-    // Checked In / Active / Deliverable / Attended
-    case "CHECKED-IN":
-    case "CHECKED IN":
-    case "CHECKED_IN":
-    case "ACTIVE":
-    case "DELIVERABLE":
-    case "ATTENDED":
-      variant = "emerald";
-      dot = true;
-      label =
-        normalized === "DELIVERABLE"
-          ? "Deliverable"
-          : normalized === "ACTIVE"
-            ? "Active"
-            : normalized === "CHECKED_IN" ||
-                normalized === "CHECKED IN" ||
-                normalized === "CHECKED-IN"
-              ? "Checked-In"
-              : "Attended";
-      break;
-
-    // Draft / Visitor / Warning States
-    case "DRAFT":
-      variant = "amber";
-      dot = true;
-      label = "Draft";
-      break;
-    case "VISITOR":
-    case "GUEST":
-    case "PENDING":
-      variant = "amber";
-      dot = false;
-      label =
-        normalized === "VISITOR"
-          ? "Visitor"
-          : normalized === "GUEST"
-            ? "Guest"
-            : "Pending";
-      break;
-
-    // Bounced / Dropped / Complained / Cancelled / Inactive / Not Checked In
-    case "BOUNCED":
-    case "DROPPED":
-    case "COMPLAINED":
-    case "CANCELLED":
-    case "INACTIVE":
-    case "NOT CHECKED IN":
-    case "NOT CHECKED-IN":
-    case "NOT_CHECKED_IN":
-      variant = "rose";
-      dot =
-        normalized === "CANCELLED" ||
-        normalized === "INACTIVE" ||
-        normalized === "BOUNCED" ||
-        normalized === "DROPPED" ||
-        normalized === "COMPLAINED";
-      label =
-        normalized === "BOUNCED"
-          ? "Bounced"
-          : normalized === "DROPPED"
-            ? "Dropped"
-            : normalized === "COMPLAINED"
-              ? "Complained"
-              : normalized === "CANCELLED"
-                ? "Cancelled"
-                : normalized === "INACTIVE"
-                  ? "Inactive"
-                  : "Not Checked In";
-      break;
-
-    // Confirmed / Registered / Completed / Member / Published
-    case "CONFIRMED":
-    case "REGISTERED":
-      variant = "indigo";
-      dot = true;
-      label = normalized === "CONFIRMED" ? "Confirmed" : "Registered";
-      break;
-    case "PUBLISHED":
-      variant = "emerald";
-      dot = true;
-      label = "Published";
-      break;
-    case "COMPLETED":
-      variant = "indigo";
-      dot = false;
-      label = "Completed";
-      break;
-    case "MEMBER":
-      variant = "indigo";
-      dot = false;
-      label = "Member";
-      break;
-    case "WORKER":
-      variant = "cyan";
-      dot = false;
-      label = "Worker";
-      break;
-    case "LEADER":
-      variant = "emerald";
-      dot = false;
-      label = "Leader";
-      break;
-
-    default:
-      variant = "slate";
-      dot = false;
-      // Capitalize first letter of each word as fallback
-      label = status
-        .split(/[-_ ]+/)
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-        .join(" ");
-      break;
-  }
-
-  const finalVariant = customVariant || variant;
-  const finalDot = customDot !== undefined ? customDot : dot;
-
-  // Special case for PUBLISHED which has a pulsing dot
-  if (normalized === "PUBLISHED" && !customVariant && customDot === undefined) {
+  if (style.pulse && !customVariant && customDot === undefined) {
     return (
-      <Badge variant="emerald" size={size} className={className} {...props}>
-        <span className="relative flex h-2 w-2 mr-1.5 shrink-0">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+      <Badge
+        variant={style.variant}
+        size={size}
+        className={className}
+        {...props}
+      >
+        <span className="relative mr-1.5 flex h-2 w-2 shrink-0">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
         </span>
-        Published
+        {style.label}
       </Badge>
     );
   }
 
   return (
     <Badge
-      variant={finalVariant}
+      variant={customVariant ?? style.variant}
       size={size}
-      dot={finalDot}
+      dot={customDot ?? Boolean(style.dot || style.pulse)}
       className={className}
       {...props}
     >
-      {label}
+      {style.label}
     </Badge>
   );
 };

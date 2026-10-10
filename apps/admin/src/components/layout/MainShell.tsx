@@ -17,6 +17,7 @@ import {
   getDefaultRouteForUser,
   ROUTE_PERMISSIONS,
 } from "@/utils/rbac";
+import { Spinner } from "@/components/ui/Spinner";
 
 export const MainShell: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -118,7 +119,7 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
         <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <Spinner size="lg" className="mx-auto" />
           <p className="text-sm text-slate-400 font-medium">Loading...</p>
         </div>
       </div>
@@ -130,7 +131,7 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
         <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <Spinner size="lg" className="mx-auto" />
           <p className="text-sm text-slate-400 font-medium">
             Verifying Session...
           </p>
@@ -147,7 +148,7 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
         <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <Spinner size="lg" className="mx-auto" />
           <p className="text-sm text-slate-400 font-medium">Loading...</p>
         </div>
       </div>
@@ -168,8 +169,8 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
       {/* Global Modals */}
       <SidebarModal
         title="Create New Event"
-        display={isCreateEventOpen}
-        close={() => setIsCreateEventOpen(false)}
+        isOpen={isCreateEventOpen}
+        onClose={() => setIsCreateEventOpen(false)}
       >
         <EventsForm
           onCancel={() => setIsCreateEventOpen(false)}

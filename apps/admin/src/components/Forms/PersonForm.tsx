@@ -5,7 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/FormElements/Input";
 import { Select, type ISelect } from "@/components/ui/Select";
-import { BaseButton } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { getInitials } from "@/utils/formatters";
 import { peopleService } from "@/services/people.service";
@@ -387,28 +387,28 @@ export const PersonForm: React.FC<PersonFormProps> = ({
           "grid h-20 grid-cols-2 gap-4 border-t border-slate-200 dark:border-zinc-800 p-4",
         )}
       >
-        <BaseButton
+        <Button
           type="button"
-          color="outline"
-          text="Cancel"
+          variant="outline"
           onClick={onCancel}
           disabled={isPending}
-        />
-        <BaseButton
+        >
+          Cancel
+        </Button>
+        <Button
           type="submit"
-          text={
-            isPending
-              ? isEditing
-                ? "Saving..."
-                : "Adding..."
-              : isEditing
-                ? "Save Changes"
-                : "Add Person"
-          }
           loading={isPending}
           disabled={isPending}
-          color="primary"
-        />
+          variant="primary"
+        >
+          {isPending
+            ? isEditing
+              ? "Saving..."
+              : "Adding..."
+            : isEditing
+              ? "Save Changes"
+              : "Add Person"}
+        </Button>
       </fieldset>
     </form>
   );

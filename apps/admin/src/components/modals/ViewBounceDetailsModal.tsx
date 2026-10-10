@@ -35,7 +35,7 @@ export const ViewBounceDetailsModal: React.FC<ViewBounceDetailsModalProps> = ({
   onResolve,
   isResolving = false,
 }) => {
-  if (!bounce || !isOpen) return null;
+  if (!bounce) return null;
 
   const createdAtFormatted = bounce.createdAt
     ? dayjs(bounce.createdAt).format("MMMM D, YYYY [at] h:mm A")
@@ -52,10 +52,40 @@ export const ViewBounceDetailsModal: React.FC<ViewBounceDetailsModalProps> = ({
 
   return (
     <SidebarModal
-      display={isOpen}
-      close={onClose}
+      footer={
+        <>
+          <Button variant="outline" onClick={onClose} className="sm:mr-auto">
+            Close
+          </Button>
+
+          <div className="flex items-center gap-2">
+            {!bounce.isResolved && onResolve && (
+              <Button
+                variant="outline"
+                loading={isResolving}
+                onClick={() => onResolve(bounce)}
+                leftIcon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+              >
+                Mark Resolved
+              </Button>
+            )}
+
+            {!bounce.isResolved && onRemediate && (
+              <Button
+                variant="primary"
+                onClick={() => onRemediate(bounce)}
+                leftIcon={<Wrench className="w-4 h-4" />}
+              >
+                Fix & Remediate
+              </Button>
+            )}
+          </div>
+        </>
+      }
+      isOpen={isOpen}
+      onClose={onClose}
       title="Bounce & Delivery Diagnostics"
-      subtitle={
+      description={
         <span className="flex items-center gap-1.5 font-mono">
           <Mail className="w-3.5 h-3.5" />
           {bounce.email}
@@ -217,36 +247,6 @@ export const ViewBounceDetailsModal: React.FC<ViewBounceDetailsModalProps> = ({
                   {resolvedAtFormatted || "—"}
                 </span>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Action Controls */}
-        <div className="pt-4 border-t border-slate-200 dark:border-zinc-800 flex items-center justify-between gap-3">
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
-
-          <div className="flex items-center gap-2">
-            {!bounce.isResolved && onResolve && (
-              <Button
-                variant="outline"
-                loading={isResolving}
-                onClick={() => onResolve(bounce)}
-                leftIcon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
-              >
-                Mark Resolved
-              </Button>
-            )}
-
-            {!bounce.isResolved && onRemediate && (
-              <Button
-                variant="primary"
-                onClick={() => onRemediate(bounce)}
-                leftIcon={<Wrench className="w-4 h-4" />}
-              >
-                Fix & Remediate
-              </Button>
             )}
           </div>
         </div>

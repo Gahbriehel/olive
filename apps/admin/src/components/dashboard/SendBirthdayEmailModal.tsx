@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useId } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { Cake, Send, Image as ImageIcon } from "lucide-react";
@@ -38,6 +38,7 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const formId = useId();
   const queryClient = useQueryClient();
   const [isSending, setIsSending] = useState(false);
 
@@ -136,12 +137,38 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
 
   return (
     <SidebarModal
+      footer={
+        birthday && (
+          <>
+            <Button
+              variant="outline"
+              type="button"
+              disabled={isSending}
+              onClick={onClose}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form={formId}
+              disabled={isSending || !birthday.email || birthday.isGreeted}
+              loading={isSending}
+              rightIcon={<Send className="w-4 h-4" />}
+              className="w-full sm:w-auto"
+            >
+              Send Birthday Greeting
+            </Button>
+          </>
+        )
+      }
       title="Send Birthday Greeting"
-      display={isOpen}
-      close={onClose}
+      isOpen={isOpen}
+      onClose={onClose}
     >
       {birthday && (
         <form
+          id={formId}
           onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col gap-5 pt-2"
         >
@@ -256,28 +283,6 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
                 />
               )}
             />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="mt-4 flex flex-col gap-3 pt-4 sm:flex-row-reverse sm:border-t sm:border-slate-100 dark:sm:border-zinc-800">
-            <Button
-              type="submit"
-              disabled={isSending || !birthday.email || birthday.isGreeted}
-              isLoading={isSending}
-              rightIcon={<Send className="w-4 h-4" />}
-              className="w-full sm:w-auto"
-            >
-              Send Birthday Greeting
-            </Button>
-            <Button
-              variant="outline"
-              type="button"
-              disabled={isSending}
-              onClick={onClose}
-              className="w-full sm:w-auto"
-            >
-              Cancel
-            </Button>
           </div>
         </form>
       )}

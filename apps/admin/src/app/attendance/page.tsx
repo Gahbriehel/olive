@@ -40,6 +40,7 @@ import { IS_STRICT_RBAC_RESTRICTED } from "@/config/features";
 import { useDashboard } from "@/context/DashboardContext";
 import { useRegistrations } from "@/hooks/useRegistrations";
 import { adaptApiRegistrationToRegistration } from "@/models/registration";
+import { TeamBadge } from "@/components/ui/TeamBadge";
 
 export default function AttendancePage() {
   const {
@@ -340,7 +341,7 @@ export default function AttendancePage() {
                           variant="primary"
                           size="sm"
                           onClick={() => handleManualCheckInSubmit(r)}
-                          isLoading={checkingInId === r.id}
+                          loading={checkingInId === r.id}
                           disabled={!canExecuteCheckIn}
                           title={
                             !canExecuteCheckIn
@@ -474,12 +475,9 @@ export default function AttendancePage() {
                   </div>
 
                   <div className="text-right">
-                    <span
-                      className="inline-block px-2 py-0.5 rounded text-[10px] font-bold text-white mb-1"
-                      style={{ backgroundColor: log.teamColor }}
-                    >
+                    <TeamBadge color={log.teamColor} className="mb-1">
                       {log.teamName}
-                    </span>
+                    </TeamBadge>
                     <p className="text-[10px] text-slate-400 flex items-center gap-1 justify-end">
                       <Clock className="w-3 h-3" />
                       {log.time}

@@ -6,13 +6,11 @@ import { Switch } from "@headlessui/react";
 import {
   Upload,
   Image as ImageIcon,
-  Loader2,
   Plus,
   Trash2,
   Star,
   Ticket,
   DoorOpen,
-  Users,
   Sparkles,
   Calendar,
   X,
@@ -20,7 +18,7 @@ import {
 import { Input } from "@/components/FormElements/Input";
 import { TextArea } from "@/components/FormElements/TextArea";
 import { Select, type ISelect } from "@/components/ui/Select";
-import { BaseButton, DeleteButton } from "@/components/ui/Button";
+import { Button, DeleteButton } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/helpers/cn";
 import { uploadsService } from "@/services/uploads.service";
@@ -31,6 +29,7 @@ import {
   CreateOrUpdateEventPayload,
   getCategoryColor,
 } from "@/models/event";
+import { Spinner } from "@/components/ui/Spinner";
 
 export type EventStatusEnum = EventStatus;
 
@@ -52,7 +51,6 @@ export interface EventFormValues {
 interface EventsFormProps {
   initialValues?: Partial<CreateOrUpdateEventPayload> & {
     id?: string;
-    autoAssignTeams?: boolean;
   };
   onSubmit: (data: CreateOrUpdateEventPayload) => void | Promise<void>;
   onDelete?: () => void | Promise<void>;
@@ -102,12 +100,6 @@ export const EventsForm: React.FC<EventsFormProps> = ({
     initialValues?.isFeatured !== undefined
       ? Boolean(initialValues.isFeatured)
       : false,
-  );
-
-  const [autoAssignTeams, setAutoAssignTeams] = useState<boolean>(
-    initialValues?.autoAssignTeams !== undefined
-      ? Boolean(initialValues.autoAssignTeams)
-      : true,
   );
 
   const [highlights, setHighlights] = useState<string[]>(() => {
@@ -463,42 +455,6 @@ export const EventsForm: React.FC<EventsFormProps> = ({
                   />
                 )}
               />
-
-              {/* Automatically assign attendees to teams switch */}
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700/80">
-                <div className="pr-3 flex items-start gap-2.5">
-                  <Users className="w-4 h-4 text-cyan-500 mt-0.5 shrink-0" />
-                  <div>
-                    <label
-                      onClick={() => setAutoAssignTeams(!autoAssignTeams)}
-                      className="text-xs font-bold text-slate-800 dark:text-slate-200 block cursor-pointer select-none"
-                    >
-                      Automatically assign attendees to teams
-                    </label>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Evenly balance incoming registrants across house teams
-                      upon checkout.
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={autoAssignTeams}
-                  onChange={setAutoAssignTeams}
-                  className={`${
-                    autoAssignTeams
-                      ? "bg-cyan-600"
-                      : "bg-slate-300 dark:bg-zinc-600"
-                  } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-cyan-500`}
-                >
-                  <span className="sr-only">Auto-assign teams</span>
-                  <span
-                    aria-hidden="true"
-                    className={`${
-                      autoAssignTeams ? "translate-x-5" : "translate-x-0"
-                    } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
-                  />
-                </Switch>
-              </div>
             </div>
           )}
         </div>
@@ -529,7 +485,7 @@ export const EventsForm: React.FC<EventsFormProps> = ({
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors border border-slate-200 dark:border-zinc-700">
                 {isUploading ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
+                  <Spinner size="sm" />
                 ) : (
                   <Upload className="w-4 h-4 text-indigo-500" />
                 )}
@@ -734,30 +690,33 @@ export const EventsForm: React.FC<EventsFormProps> = ({
               onClick={handlePerformDelete}
               loading={isDeletingPending}
             />
-            <BaseButton
+            <Button
               type="submit"
-              text="Save Changes"
               loading={isPending}
               disabled={isPending || isDeletingPending}
-              color="primary"
-            />
+              variant="primary"
+            >
+              Save Changes
+            </Button>
           </>
         ) : (
           <>
-            <BaseButton
+            <Button
               type="button"
-              color="outline"
-              text="Cancel"
+              variant="outline"
               onClick={onCancel}
               disabled={isPending}
-            />
-            <BaseButton
+            >
+              Cancel
+            </Button>
+            <Button
               type="submit"
-              text="Create Event"
               loading={isPending}
               disabled={isPending}
-              color="primary"
-            />
+              variant="primary"
+            >
+              Create Event
+            </Button>
           </>
         )}
       </fieldset>

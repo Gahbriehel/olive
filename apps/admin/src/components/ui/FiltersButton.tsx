@@ -2,7 +2,6 @@
 
 import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { secondaryToolbarButtonClass } from "@/components/ui/ListToolbar";
 
 export interface FiltersButtonProps {
   onClick: () => void;
@@ -19,7 +18,6 @@ export function FiltersButton({
     <Button
       variant="outline"
       onClick={onClick}
-      className={secondaryToolbarButtonClass}
       leftIcon={<SlidersHorizontal className="w-4 h-4" />}
     >
       {label}

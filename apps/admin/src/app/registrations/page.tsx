@@ -11,11 +11,10 @@ import {
   X,
   Sparkles,
   Upload,
-  Loader2,
   Trash2,
 } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
-import { Button, BaseButton } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
@@ -51,6 +50,8 @@ import {
 } from "@/services/email.service";
 import { registrationsService } from "@/services/registrations.service";
 import { uploadsService } from "@/services/uploads.service";
+import { Spinner } from "@/components/ui/Spinner";
+import { TeamBadge } from "@/components/ui/TeamBadge";
 
 interface EmailFormValues {
   subject: string;
@@ -386,12 +387,9 @@ export default function RegistrationsPage() {
         header: "Assigned Team",
         accessorFn: (row) => row.team?.name,
         cell: ({ row }) => (
-          <span
-            className="px-2.5 py-1 rounded-lg text-[11px] font-bold text-white shadow-sm inline-block"
-            style={{ backgroundColor: row.original.team?.color }}
-          >
+          <TeamBadge color={row.original.team?.color}>
             {row.original.team?.name}
-          </span>
+          </TeamBadge>
         ),
       },
       {
@@ -523,8 +521,8 @@ export default function RegistrationsPage() {
 
       {/* Compose Batch Email Sidebar Modal */}
       <SidebarModal
-        display={isEmailModalOpen}
-        close={() => setIsEmailModalOpen(false)}
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
         title="Send Email to Registrants"
       >
         <form
@@ -719,7 +717,7 @@ export default function RegistrationsPage() {
             <div className="flex items-center gap-3">
               <label className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-200 transition-colors">
                 {isUploadingFlyer ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
+                  <Spinner size="sm" />
                 ) : (
                   <Upload className="w-4 h-4 text-indigo-500" />
                 )}
@@ -800,16 +798,7 @@ export default function RegistrationsPage() {
 
           {/* Form Action Buttons */}
           <div className="mt-6 flex flex-col gap-3 pt-4 sm:flex-row-reverse sm:border-t sm:border-gray-100 dark:sm:border-zinc-800">
-            <BaseButton
-              text={
-                isSendingEmail
-                  ? "Sending..."
-                  : sendToAllRegistrants
-                    ? "Send to all registrants"
-                    : selectedRegistrantIds.length > 0
-                      ? `Send email (${selectedRegistrantIds.length})`
-                      : "Send email"
-              }
+            <Button
               className="w-full !h-11"
               type="submit"
               disabled={
@@ -817,26 +806,34 @@ export default function RegistrationsPage() {
                 (!sendToAllRegistrants && selectedRegistrantIds.length === 0)
               }
               loading={isSendingEmail}
-              icon={<Send className="w-4 h-4" />}
-              position="icon-last"
-            />
-            <BaseButton
-              text="Cancel"
-              color="outline"
+              rightIcon={<Send className="w-4 h-4" />}
+            >
+              {isSendingEmail
+                ? "Sending..."
+                : sendToAllRegistrants
+                  ? "Send to all registrants"
+                  : selectedRegistrantIds.length > 0
+                    ? `Send email (${selectedRegistrantIds.length})`
+                    : "Send email"}
+            </Button>
+            <Button
+              variant="outline"
               className="w-full !h-11"
               type="button"
               onClick={() => setIsEmailModalOpen(false)}
-            />
+            >
+              Cancel
+            </Button>
           </div>
         </form>
       </SidebarModal>
 
       {/* Registration Details Sidebar Modal */}
       <SidebarModal
-        display={!!selectedRegistration}
-        close={() => setSelectedRegistration(null)}
+        isOpen={!!selectedRegistration}
+        onClose={() => setSelectedRegistration(null)}
         title="Registration Details"
-        subtitle={
+        description={
           selectedRegistration?.registrationNumber
             ? `Registration Code: ${selectedRegistration.registrationNumber}`
             : undefined
@@ -900,14 +897,9 @@ export default function RegistrationsPage() {
                     Assigned Team
                   </p>
                   {selectedRegistration.team ? (
-                    <span
-                      className="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm inline-block"
-                      style={{
-                        backgroundColor: selectedRegistration.team.color,
-                      }}
-                    >
+                    <TeamBadge color={selectedRegistration.team.color}>
                       {selectedRegistration.team.name}
-                    </span>
+                    </TeamBadge>
                   ) : (
                     <span className="text-slate-400">None</span>
                   )}

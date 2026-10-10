@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useId } from "react";
 import { Send, AlertCircle, ShieldCheck } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
@@ -22,13 +22,14 @@ export const RemediateBounceModal: React.FC<RemediateBounceModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const formId = useId();
   const [newEmail, setNewEmail] = useState("");
   const [resendOriginal, setResendOriginal] = useState(true);
   const [customSubject, setCustomSubject] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!bounce || !isOpen) return null;
+  if (!bounce) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,12 +76,33 @@ export const RemediateBounceModal: React.FC<RemediateBounceModalProps> = ({
 
   return (
     <Modal
+      footer={
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form={formId}
+            variant="primary"
+            loading={isSubmitting}
+            leftIcon={<Send className="w-4 h-4" />}
+          >
+            Update & Remediate
+          </Button>
+        </>
+      }
       isOpen={isOpen}
       onClose={onClose}
       title="Remediate & Fix Bounced Email"
       maxWidth="md"
     >
-      <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+      <form id={formId} onSubmit={handleSubmit} className="space-y-4 pt-1">
         {/* Info Banner */}
         <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-200 dark:border-zinc-700/60 space-y-2 text-xs">
           <div className="flex items-center justify-between">
@@ -168,26 +190,6 @@ export const RemediateBounceModal: React.FC<RemediateBounceModalProps> = ({
             Directory records will be updated, deliverability reset to{" "}
             <strong>DELIVERABLE</strong>, and this alert resolved.
           </span>
-        </div>
-
-        {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-zinc-800">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            loading={isSubmitting}
-            leftIcon={<Send className="w-4 h-4" />}
-          >
-            Update & Remediate
-          </Button>
         </div>
       </form>
     </Modal>

@@ -1,84 +1,65 @@
-import React, { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+"use client";
+
+import React from "react";
+import { Dialog, DialogPanel } from "@headlessui/react";
 import { clsx } from "clsx";
+import {
+  OverlayBackdrop,
+  OverlayFooter,
+  OverlayHeader,
+} from "@/components/ui/OverlayParts";
 
 interface ModalProps {
   isOpen: boolean;
+  /** Called on Escape, backdrop click and the close button. */
   onClose: () => void;
   title?: string;
-  description?: string;
+  description?: React.ReactNode;
+  /** Rendered in the shared footer bar (buttons: secondary first, primary last). */
+  footer?: React.ReactNode;
   children: React.ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl";
 }
 
+const maxWs = {
+  sm: "max-w-sm",
+  md: "max-w-md",
+  lg: "max-w-lg",
+  xl: "max-w-xl",
+  "2xl": "max-w-2xl",
+};
+
+/** Centred dialog for confirmations and short, focused tasks. */
 export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   title,
   description,
+  footer,
   children,
   maxWidth = "md",
-}) => {
-  const [mounted] = useState(() => typeof document !== "undefined");
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      window.addEventListener("keydown", handleKeyDown);
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen || !mounted) return null;
-
-  const maxWs = {
-    sm: "max-w-sm",
-    md: "max-w-md",
-    lg: "max-w-lg",
-    xl: "max-w-xl",
-    "2xl": "max-w-2xl",
-  };
-
-  const modalContent = (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
-      <div
+}) => (
+  <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+    <OverlayBackdrop />
+    <div className="fixed inset-0 flex items-center justify-center p-4">
+      <DialogPanel
+        transition
         className={clsx(
-          "relative w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col z-10 animate-fade-in",
+          "flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition duration-200 ease-out data-closed:scale-95 data-closed:opacity-0 dark:border-zinc-800 dark:bg-zinc-900",
           maxWs[maxWidth],
         )}
       >
-        {title && (
-          <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-zinc-800">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                {title}
-              </h2>
-              {description && (
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  {description}
-                </p>
-              )}
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+        <OverlayHeader
+          title={title}
+          description={description}
+          onClose={onClose}
+          className="p-5"
+        />
+        <div className="flex-1 overflow-y-auto p-5">{children}</div>
+        {footer && (
+          <OverlayFooter className="px-5 py-4">{footer}</OverlayFooter>
         )}
-        <div className="p-5 overflow-y-auto flex-1">{children}</div>
-      </div>
+      </DialogPanel>
     </div>
-  );
-
-  return createPortal(modalContent, document.body);
-};
+  </Dialog>
+);

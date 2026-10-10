@@ -879,8 +879,8 @@ export default function EventsPage() {
       {editingEvent && (
         <SidebarModal
           title="Edit Event"
-          display={Boolean(editingEvent)}
-          close={() => setEditingEvent(null)}
+          isOpen={Boolean(editingEvent)}
+          onClose={() => setEditingEvent(null)}
         >
           <EventsForm
             initialValues={{

@@ -644,8 +644,8 @@ export default function UsersPage() {
       {/* Create User Sidebar Modal */}
       <SidebarModal
         title="Invite & Create System User"
-        display={isCreateOpen}
-        close={() => setIsCreateOpen(false)}
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
       >
         <UserForm
           onSubmit={handleCreateSubmit}
@@ -657,8 +657,8 @@ export default function UsersPage() {
       {/* Edit User Sidebar Modal */}
       <SidebarModal
         title="Edit User & System Role"
-        display={!!editingUser}
-        close={() => setEditingUser(null)}
+        isOpen={!!editingUser}
+        onClose={() => setEditingUser(null)}
       >
         {editingUser && (
           <UserForm

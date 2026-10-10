@@ -14,7 +14,7 @@ import { FiltersButton } from "@/components/ui/FiltersButton";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { FiltersModal } from "@/components/modals/FiltersModal";
-import { BaseButton } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { NotAvailable } from "@/components/ui/NotAvailable";
 import { useAuth } from "@/hooks/useAuth";
 import { useListFilters } from "@/hooks/useListFilters";
@@ -193,8 +193,8 @@ export function InquiryTable(): JSX.Element {
 
       <SidebarModal
         title="Inquiry Details"
-        display={isModalOpen}
-        close={() => setIsModalOpen(false)}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
       >
         {selectedContact && (
           <div className="flex flex-col gap-6 pt-2">
@@ -313,12 +313,13 @@ export function InquiryTable(): JSX.Element {
                   Reply via Email
                 </a>
               )}
-              <BaseButton
-                text="Close"
-                color="outline"
+              <Button
+                variant="outline"
                 className="!h-10 !text-xs font-semibold"
                 onClick={() => setIsModalOpen(false)}
-              />
+              >
+                Close
+              </Button>
             </div>
           </div>
         )}

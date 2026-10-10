@@ -36,6 +36,7 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { exportToCsv } from "@/helpers/exportCsv";
 import { getCategoryColor, EventCategory } from "@/models/event";
 import { UpcomingBirthdaysCard } from "@/components/dashboard/UpcomingBirthdaysCard";
+import { TeamBadge } from "@/components/ui/TeamBadge";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -303,14 +304,9 @@ export default function DashboardPage() {
 
                     <div className="text-right">
                       {reg.team?.name && (
-                        <span
-                          className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold text-white mb-1"
-                          style={{
-                            backgroundColor: reg.team.color || "#6366f1",
-                          }}
-                        >
+                        <TeamBadge color={reg.team.color} className="mb-1">
                           {reg.team.name}
-                        </span>
+                        </TeamBadge>
                       )}
                       <p className="text-[10px] text-slate-400 flex items-center gap-1 justify-end">
                         <Clock className="w-3 h-3" />

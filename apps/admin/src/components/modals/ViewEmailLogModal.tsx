@@ -3,7 +3,7 @@
 import React from "react";
 import { Mail, User, Send, FileText, Hash, ShieldAlert } from "lucide-react";
 import { SidebarModal } from "@/components/ui/SidebarModal";
-import { BaseButton } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Badge } from "@/components/ui/Badge";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
@@ -21,7 +21,7 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  if (!log || !isOpen) return null;
+  if (!log) return null;
 
   const createdAtFormatted = log.createdAt
     ? dayjs(log.createdAt).format("MMMM D, YYYY [at] h:mm A")
@@ -33,10 +33,21 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
 
   return (
     <SidebarModal
-      display={isOpen}
-      close={onClose}
+      footer={
+        <>
+          <Button
+            variant="outline"
+            className="!h-10 !text-xs font-semibold"
+            onClick={onClose}
+          >
+            Close
+          </Button>
+        </>
+      }
+      isOpen={isOpen}
+      onClose={onClose}
       title="Email Log Details"
-      subtitle={
+      description={
         <span className="flex items-center gap-1.5 font-mono text-xs">
           <Mail className="w-3.5 h-3.5 text-indigo-500" />
           {log.recipient?.email || "No recipient email"}
@@ -268,15 +279,6 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
             </div>
           </div>
         )}
-
-        <div className="pt-3 border-t border-slate-200 dark:border-zinc-800 flex justify-end">
-          <BaseButton
-            text="Close"
-            color="outline"
-            className="!h-10 !text-xs font-semibold"
-            onClick={onClose}
-          />
-        </div>
       </div>
     </SidebarModal>
   );

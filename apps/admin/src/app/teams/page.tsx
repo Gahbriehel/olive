@@ -377,8 +377,8 @@ export default function TeamsPage() {
       {/* Create Team Sidebar Modal */}
       <SidebarModal
         title="Create New Team"
-        display={isCreateOpen}
-        close={() => setIsCreateOpen(false)}
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
       >
         <TeamsForm
           onSubmit={handleCreateTeam}
@@ -390,8 +390,8 @@ export default function TeamsPage() {
       {/* Edit Team Sidebar Modal */}
       <SidebarModal
         title="Edit Team"
-        display={!!selectedTeamForEdit}
-        close={() => setSelectedTeamForEdit(null)}
+        isOpen={!!selectedTeamForEdit}
+        onClose={() => setSelectedTeamForEdit(null)}
       >
         {selectedTeamForEdit && (
           <TeamsForm

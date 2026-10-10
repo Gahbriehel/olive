@@ -21,22 +21,3 @@ export function useDebouncedSearch<T>(value: T, delay: number = 1000): T {
 
   return debouncedValue;
 }
-
-/**
- * Utility helper function for debouncing callback functions with 1000ms delay.
- */
-export function createDebouncedSearch<Args extends unknown[]>(
-  func: (...args: Args) => void,
-  delay: number = 1000,
-): (...args: Args) => void {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-  return (...args: Args) => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-    timeoutId = setTimeout(() => {
-      func(...args);
-    }, delay);
-  };
-}

@@ -158,7 +158,7 @@ The theme is a `dark` class on `<html>`. It's saved in `localStorage` (`olive_th
   - **Current:** `apps/web` uses it, but `apps/admin` does not import it at all. Admin redeclares overlapping types in `src/models/`. For example, `IBaseResponse` and `IQueryParams` exist in both places.
   - **Target:** admin imports contract types from `@olive/types`. `models/` keeps only admin-specific view models and adapters such as `adaptApiEventToChurchEvent`.
 - `@olive/ui` should hold primitives that are genuinely shared and brand-neutral.
-  - **Current:** only `cn()`, and neither app imports it. Duplicated today: `customToast`, `copyToClipboard`, `useCopyToClipboard` and `TruncatedTextWithCopy` exist in both apps.
+  - **Current:** only `cn()`, and neither app imports it. Duplicated today: `customToast`, `useCopyToClipboard` and `TruncatedTextWithCopy` exist in both apps.
   - **Target:** move these helpers into `@olive/ui`. Primitives with brand-specific styling stay in each app.
 
 ---
@@ -190,21 +190,22 @@ Each row is the **only** approved way to do that job. Items marked *(target)* do
 
 | Need | Use | Notes |
 |---|---|---|
-| Button / link-button | `ui/Button` | Target: a single API (`variant`, `size`, `loading`, `leftIcon`, `rightIcon`); `BaseButton` is folded into it. |
-| Status pill | `ui/StatusBadge`, which wraps `ui/Badge` | No hand-rolled badge `<span>`s. |
-| Team colour chip | `TeamBadge` *(target)* | Currently copy-pasted in 5 places. |
+| Button | `ui/Button` | One API: `variant` (`primary` `secondary` `outline` `ghost` `danger`), `size` (`sm` `md` `lg` `icon`), `loading`, `leftIcon`, `rightIcon`. Defaults to `type="button"`. `DeleteButton` wraps it with a danger confirmation. |
+| Status pill | `ui/StatusBadge`, which wraps `ui/Badge` | Labels and colours live in its `STATUS_STYLES` table; add new statuses there. No hand-rolled badge `<span>`s. |
+| Team colour chip | `ui/TeamBadge` | Picks dark or white text from the team colour's lightness. |
 | Card / KPI | `ui/Card`, `ui/StatsCard` | |
 | Data list | `ui/Table` + `ui/ListToolbar` + `useListFilters` | Server-paginated tables don't sort (§7). |
 | Pagination outside a table | `Pagination` *(target)* | Replaces 6 hand-written pagers. |
 | Page title and actions | `PageHeader` *(target)* | Renders the page's only `<h1>`. |
 | Loading / error / empty | `QueryState` + `Skeleton` *(target)* | Never show an empty message while loading or after an error. |
-| Form field | `FormField` *(target)* wrapping `FormElements/*` | Owns label, `htmlFor`, required marker, hint, error, `aria-*`. |
-| Select | `ui/Select` (searchable) | Target: merge with `FormElements/Select`. |
-| Create/edit/detail overlay | `ui/SidebarModal` (side panel) | Target: built on Radix Dialog. |
-| Short decision or confirmation | `ui/Modal` / `ConfirmActionModal` | |
+| Form field | `FormElements/*`, all built on `ui/FormField` | `FormField` owns the label (`htmlFor`), required marker, `hint`, in-flow error and `aria-invalid`/`aria-describedby`. New controls use `useFieldIds`, `fieldAria` and `controlClass`. |
+| Select | `ui/Select` (searchable, async, paginated) or `FormElements/Select` (native, for short fixed lists) | Both share the FormField contract. Multi-value: `FormElements/MultiSelect`. Pagination inside a dropdown: `FormElements/SelectPagination`. |
+| Create/edit/detail overlay | `ui/SidebarModal` (side panel) | Built on Headless UI `Dialog`. Gives focus trap, Escape, scroll lock and ARIA. Props: `isOpen`, `onClose`, `title`, `description`, `footer`. |
+| Short decision or confirmation | `ui/Modal` / `ConfirmActionModal` | Same Dialog base and props as SidebarModal, plus `maxWidth`. |
+| Overlay action bar | the `footer` prop on Modal or SidebarModal | Secondary buttons first, primary last. A submit button outside the `<form>` uses `form={formId}`. |
 | Row actions menu | `ui/ActionsList` (Radix Popover) | |
 | Toast | `helpers/customToast` | Never import `react-hot-toast` directly. |
-| Spinner | `Spinner` *(target)* built on lucide `Loader2` | Replaces `react-spinners` and hand-made border spinners. |
+| Spinner | `ui/Spinner` / `LoadingState` | The only loading indicator. Built on lucide `Loader2`. |
 
 ### 6.3 Interaction conventions
 
@@ -229,7 +230,7 @@ Each row is the **only** approved way to do that job. Items marked *(target)* do
 |---|---|---|
 | Table sorting | The API has no sort params. | Column sorting is turned off on server-paginated tables and only works on client-side tables. |
 | Page stats | There are no aggregate endpoints for users or events. | Breakdown cards on `/users` and `/events` count only the loaded page and are labelled "Current page only" when that's the case. |
-| Event `autoAssignTeams` | The event form shows the toggle, but the field isn't in the API's event contract. | The per-event toggle has no effect. Team auto-assignment is a church-level setting (`IChurchSettings.preferences.autoAssignTeams`). |
+| Team auto-assignment | There's no per-event field in the API. | It's configured church-wide only, in Settings (`IChurchSettings.preferences.autoAssignTeams`). The event form doesn't offer it. |
 | Route guard | Runs only in the browser. | Security depends on the API enforcing roles. |
 | Tokens | Stored in `localStorage`. | Readable by any script on the page (XSS exposure). Consider httpOnly cookies when the API supports them. |
 
@@ -241,9 +242,9 @@ Source: the October 2026 admin UI/UX audit.
 
 | Phase | Scope | Status |
 |---|---|---|
-| 0 | Functional bugs: confirm-modal `tone`/errors, Table server-sort, stats labelling, PersonForm role badge, password-dialog dismissal, EventsForm category error | **Done**. `autoAssignTeams` is still open (§7). |
+| 0 | Functional bugs: confirm-modal `tone`/errors, Table server-sort, stats labelling, PersonForm role badge, password-dialog dismissal, EventsForm category error, removal of the dead `autoAssignTeams` event toggle | **Done** |
 | 1 | Register tokens in `@theme`; migrate primitives to token utilities; lint against raw palette classes | Planned |
-| 2 | Consolidate primitives: Button API, Radix-based overlays, `FormField`, Select merge, `Spinner`, remove dead code (`ui/Drawer`, `helpers/copyToClipboard`, `useDebounce`) | Planned |
+| 2 | Consolidate primitives: Button API, overlays on Headless UI Dialog with shared footer, `FormField` across all inputs, MultiSelect on Combobox, one `SelectPagination`, `Spinner`, `StatusBadge` table, `TeamBadge`; remove dead code (`ui/Drawer`, `helpers/copyToClipboard`, `useDebounce`, `react-spinners`) | **Done**. Phase 1 (tokens) has not been done yet, so the new primitives still use palette classes. |
 | 3 | `PageHeader`, `Pagination`, `QueryState`/`Skeleton`, breadcrumbs; move all lists to `useListFilters` | Planned |
 | 4 | Toasts through `MutationCache`; unsaved-changes guard; yup schemas; confirmations for bulk sends | Planned |
 | 5 | Shell clean-up (theme toggle, topbar menus on Radix, mobile drawer); split large pages; share one `EmailComposer` and one `ContactTable` | Planned |

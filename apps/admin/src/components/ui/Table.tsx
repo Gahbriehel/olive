@@ -25,6 +25,7 @@ import {
 import { Input } from "@/components/FormElements/Input";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { NotAvailable } from "@/components/ui/NotAvailable";
+import { Spinner } from "@/components/ui/Spinner";
 
 export interface TableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -267,7 +268,7 @@ export function Table<TData, TValue>({
                     className="p-12 text-center text-slate-400 dark:text-slate-500"
                   >
                     <div className="flex flex-col items-center justify-center gap-3">
-                      <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                      <Spinner size="lg" />
                       <p className="font-semibold text-xs text-indigo-600 dark:text-indigo-400">
                         Loading records...
                       </p>

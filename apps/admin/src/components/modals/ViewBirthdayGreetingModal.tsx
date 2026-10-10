@@ -35,7 +35,7 @@ export const ViewBirthdayGreetingModal: React.FC<
   const userRoles = getUserRoles(user);
   const isSuperAdmin = userRoles.includes(ROLES.SUPER_ADMIN);
 
-  if (!person || !isOpen) return null;
+  if (!person) return null;
 
   const greeting = person.greeting;
   const fullName = `${person.firstName} ${person.lastName}`.trim();
@@ -60,10 +60,30 @@ export const ViewBirthdayGreetingModal: React.FC<
 
   return (
     <SidebarModal
+      footer={
+        <>
+          <Button variant="outline" type="button" onClick={onClose}>
+            Close
+          </Button>
+          {person.email && onSendGreeting && (
+            <Button
+              variant="primary"
+              type="button"
+              onClick={() => {
+                onClose();
+                onSendGreeting(person);
+              }}
+              rightIcon={<Send className="w-3.5 h-3.5" />}
+            >
+              Send Another Greeting
+            </Button>
+          )}
+        </>
+      }
       title={fullName}
-      subtitle={`Birthday Outreach Record • ID: ${person.id}`}
-      display={isOpen}
-      close={onClose}
+      description={`Birthday Outreach Record • ID: ${person.id}`}
+      isOpen={isOpen}
+      onClose={onClose}
     >
       <div className="space-y-5">
         {/* Header Profile Card */}
@@ -238,26 +258,6 @@ export const ViewBirthdayGreetingModal: React.FC<
             No greeting content payload attached to this record.
           </div>
         )}
-
-        {/* Footer Actions */}
-        <div className="mt-4 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-zinc-800 pt-4">
-          <Button variant="outline" type="button" onClick={onClose}>
-            Close
-          </Button>
-          {person.email && onSendGreeting && (
-            <Button
-              variant="primary"
-              type="button"
-              onClick={() => {
-                onClose();
-                onSendGreeting(person);
-              }}
-              rightIcon={<Send className="w-3.5 h-3.5" />}
-            >
-              Send Another Greeting
-            </Button>
-          )}
-        </div>
       </div>
     </SidebarModal>
   );

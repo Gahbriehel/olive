@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Input } from "@/components/FormElements/Input";
 import { Select, type ISelect } from "@/components/ui/Select";
-import { BaseButton, DeleteButton } from "@/components/ui/Button";
+import { Button, DeleteButton } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { IAdminUser } from "@/models/dashboard";
 import { cn } from "@/helpers/cn";
@@ -256,30 +256,33 @@ export const UserForm: React.FC<UserFormProps> = ({
               onClick={handlePerformDelete}
               loading={isDeletingPending}
             />
-            <BaseButton
+            <Button
               type="submit"
-              text="Save Changes"
               loading={isPending}
               disabled={isPending || isDeletingPending}
-              color="primary"
-            />
+              variant="primary"
+            >
+              Save Changes
+            </Button>
           </>
         ) : (
           <>
-            <BaseButton
+            <Button
               type="button"
-              color="outline"
-              text="Cancel"
+              variant="outline"
               onClick={onCancel}
               disabled={isPending}
-            />
-            <BaseButton
+            >
+              Cancel
+            </Button>
+            <Button
               type="submit"
-              text="Create User"
               loading={isPending}
               disabled={isPending}
-              color="primary"
-            />
+              variant="primary"
+            >
+              Create User
+            </Button>
           </>
         )}
       </fieldset>

@@ -9,7 +9,7 @@ import { Input } from "@/components/FormElements/Input";
 import { MultiSelect } from "@/components/FormElements/MultiSelect";
 import { RichTextEditor } from "@/components/FormElements/RichTextEditor";
 import { ActionsList } from "@/components/ui/ActionsList";
-import { BaseButton } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ListToolbar } from "@/components/ui/ListToolbar";
 import { FiltersButton } from "@/components/ui/FiltersButton";
@@ -457,12 +457,13 @@ export default function MessagingCenterPage() {
         </div>
         <div className="flex items-center gap-2">
           <RefreshButton onRefetch={() => refetch()} />
-          <BaseButton
+          <Button
             className="!h-10"
-            text="Compose Broadcast"
-            icon={<Send className="w-4 h-4" />}
             onClick={() => setIsBroadcastModalOpen(true)}
-          />
+            leftIcon={<Send className="w-4 h-4" />}
+          >
+            Compose Broadcast
+          </Button>
         </div>
       </div>
 
@@ -495,8 +496,8 @@ export default function MessagingCenterPage() {
       {/* Compose Broadcast Modal */}
       <SidebarModal
         title="Compose Broadcast"
-        display={isBroadcastModalOpen}
-        close={() => setIsBroadcastModalOpen(false)}
+        isOpen={isBroadcastModalOpen}
+        onClose={() => setIsBroadcastModalOpen(false)}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
           {/* MultiSelect Element for Recipients */}
@@ -630,26 +631,25 @@ export default function MessagingCenterPage() {
           </div>
 
           <div className="mt-8 flex flex-col gap-3 pt-6 sm:flex-row-reverse sm:border-t sm:border-gray-50 dark:sm:border-slate-900">
-            <BaseButton
-              text={
-                selectedCount > 0
-                  ? `Send broadcast (${selectedCount})`
-                  : "Send broadcast"
-              }
+            <Button
               className="w-full !h-11"
               type="submit"
               disabled={isSending || selectedCount === 0}
               loading={isSending}
-              icon={<Send className="w-4 h-4" />}
-              position="icon-last"
-            />
-            <BaseButton
-              text="Cancel"
-              color="outline"
+              rightIcon={<Send className="w-4 h-4" />}
+            >
+              {selectedCount > 0
+                ? `Send broadcast (${selectedCount})`
+                : "Send broadcast"}
+            </Button>
+            <Button
+              variant="outline"
               className="w-full !h-11"
               type="button"
               onClick={() => setIsBroadcastModalOpen(false)}
-            />
+            >
+              Cancel
+            </Button>
           </div>
         </form>
       </SidebarModal>

@@ -50,8 +50,9 @@ export default function GamesPage() {
   const [scoreInputs, setScoreInputs] = useState<Record<string, number>>({});
   const [scoreNotes, setScoreNotes] = useState<Record<string, string>>({});
   const [scoreIds, setScoreIds] = useState<Record<string, string>>({});
-  const [isConfirmClearScoresOpen, setIsConfirmClearScoresOpen] =
-    useState(false);
+  const [clearScoresTarget, setClearScoresTarget] = useState<IGame | null>(
+    null,
+  );
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedGameForEdit, setSelectedGameForEdit] = useState<IGame | null>(
     null,
@@ -139,15 +140,12 @@ export default function GamesPage() {
     setSelectedGameForScore(null);
   };
 
+  // Errors propagate so ConfirmActionModal can show them inline.
   const handleClearGameScores = async () => {
-    if (!selectedGameForScore) return;
-    try {
-      await apiClearGameScores(selectedGameForScore.id);
-      setSelectedGameForScore(null);
-      setIsConfirmClearScoresOpen(false);
-    } catch (err) {
-      console.error("Failed to clear game scores:", err);
-    }
+    if (!clearScoresTarget) return;
+    await apiClearGameScores(clearScoresTarget.id);
+    setClearScoresTarget(null);
+    setSelectedGameForScore(null);
   };
 
   const handleCreateGame = async (data: {
@@ -357,10 +355,7 @@ export default function GamesPage() {
                             ? [
                                 {
                                   title: "Clear Scores",
-                                  fn: () => {
-                                    setSelectedGameForScore(game);
-                                    setIsConfirmClearScoresOpen(true);
-                                  },
+                                  fn: () => setClearScoresTarget(game),
                                   destructive: true,
                                 },
                               ]
@@ -559,10 +554,9 @@ export default function GamesPage() {
 
           <div className="pt-3 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between gap-2">
             <Button
-              variant="outline"
-              color="danger"
+              variant="danger"
               size="sm"
-              onClick={() => setIsConfirmClearScoresOpen(true)}
+              onClick={() => setClearScoresTarget(selectedGameForScore)}
             >
               Clear Scores
             </Button>
@@ -582,14 +576,14 @@ export default function GamesPage() {
       </Modal>
 
       {/* Clear Game Scores Confirmation Modal */}
-      {selectedGameForScore && (
+      {clearScoresTarget && (
         <ConfirmActionModal
-          display={isConfirmClearScoresOpen}
-          close={() => setIsConfirmClearScoresOpen(false)}
+          display
+          close={() => setClearScoresTarget(null)}
           fn={handleClearGameScores}
           actionName="Clear Scores"
           tone="danger"
-          title={`Are you sure you want to clear all recorded scores for "${selectedGameForScore.name}"?`}
+          title={`Are you sure you want to clear all recorded scores for "${clearScoresTarget.name}"?`}
           loading={isClearingScores}
         />
       )}
@@ -597,8 +591,8 @@ export default function GamesPage() {
       {/* Create Game Sidebar Modal */}
       <SidebarModal
         title="Create New Game"
-        display={isCreateOpen}
-        close={() => setIsCreateOpen(false)}
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
       >
         <GamesForm
           onSubmit={handleCreateGame}
@@ -610,8 +604,8 @@ export default function GamesPage() {
       {/* Edit Game Sidebar Modal */}
       <SidebarModal
         title="Edit Game"
-        display={!!selectedGameForEdit}
-        close={() => setSelectedGameForEdit(null)}
+        isOpen={!!selectedGameForEdit}
+        onClose={() => setSelectedGameForEdit(null)}
       >
         {selectedGameForEdit && (
           <GamesForm

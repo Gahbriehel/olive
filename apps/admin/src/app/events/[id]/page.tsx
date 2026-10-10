@@ -56,6 +56,7 @@ import { adaptApiTeamToTeam } from "@/models/team";
 import { adaptApiGameToGame } from "@/models/game";
 import { EventCategory, getCategoryColor } from "@/models/event";
 import { cn } from "@/helpers/cn";
+import { TeamBadge } from "@/components/ui/TeamBadge";
 
 const regStatusField = {
   type: "select",
@@ -581,14 +582,9 @@ export default function EventDetailPage() {
                     </div>
                     <div className="flex items-center gap-2 self-start sm:self-auto">
                       {r.team?.name && (
-                        <span
-                          className="px-2 py-0.5 rounded-md text-[10px] font-bold text-white"
-                          style={{
-                            backgroundColor: r.team.colorHex || "#6366f1",
-                          }}
-                        >
+                        <TeamBadge color={r.team.colorHex}>
                           {r.team.name}
-                        </span>
+                        </TeamBadge>
                       )}
                       <StatusBadge status={r.status} size="sm" />
                     </div>
@@ -853,12 +849,9 @@ export default function EventDetailPage() {
                             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                               {t.name}
                             </h3>
-                            <span
-                              className="px-2 py-0.5 rounded-md text-[11px] font-bold text-white"
-                              style={{ backgroundColor: t.colorHex }}
-                            >
+                            <TeamBadge color={t.colorHex}>
                               Team Roster
-                            </span>
+                            </TeamBadge>
                           </div>
                           <p className="text-xs text-slate-500 dark:text-slate-400">
                             {fullTeamMembers.length} Assigned Member
@@ -1160,8 +1153,8 @@ export default function EventDetailPage() {
       {isEditing && (
         <SidebarModal
           title="Edit Event"
-          display={isEditing}
-          close={() => setIsEditing(false)}
+          isOpen={isEditing}
+          onClose={() => setIsEditing(false)}
         >
           <EventsForm
             initialValues={{

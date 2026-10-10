@@ -1,19 +1,31 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Fragment, type JSX, type ReactNode, useMemo, useState } from "react";
+import { type JSX, type ReactNode, useMemo, useState } from "react";
 
-import { Listbox, Transition } from "@headlessui/react";
-import { Check, ChevronDown, PlusCircle, Search, XCircle } from "lucide-react";
+import {
+  Combobox,
+  ComboboxButton,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from "@headlessui/react";
+import { Check, ChevronDown, PlusCircle, XCircle } from "lucide-react";
 import { type FieldError } from "react-hook-form";
-import { ClipLoader } from "react-spinners";
 
 import { cn } from "@/helpers/cn";
 import { emptySelect } from "@/helpers/emptySelect";
 import { truncateString } from "@/helpers/truncateString";
-import { useDebounce } from "@/hooks/useDebounce";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { type IQueryParams } from "@/models/base";
 import { type ISelect } from "@/components/ui/Select";
+import {
+  FormField,
+  controlClass,
+  controlErrorClass,
+  fieldAria,
+  useFieldIds,
+} from "@/components/ui/FormField";
+import { Spinner } from "@/components/ui/Spinner";
 
-import { ErrorMessage } from "./ErrorMessage";
 import { ReadOnlyField } from "./ReadOnlyField";
 import { SelectPagination } from "./SelectPagination";
 
@@ -24,7 +36,7 @@ interface Props {
   label: string;
   placeholder?: string;
   options?: ISelect[];
-  validationError?: FieldError;
+  validationError?: FieldError | string;
   loading?: boolean;
   required?: boolean;
   closeIconFn?: () => void;
@@ -41,7 +53,15 @@ interface Props {
   transformData?: (item: any) => ISelect;
   defaultLimit?: number;
   viewMode?: boolean;
+  /** id for the search input; generated when omitted. */
+  id?: string;
+  /** Helper text under the control, linked via aria-describedby. */
+  hint?: ReactNode;
+  disabled?: boolean;
 }
+
+const sameOption = (a: ISelect, b: ISelect): boolean =>
+  a?.value?._id === b?.value?._id;
 
 export function MultiSelect({
   value,
@@ -62,10 +82,15 @@ export function MultiSelect({
   defaultLimit = 20,
   transformData,
   viewMode,
+  id: idProp,
+  hint,
+  disabled = false,
 }: Props): JSX.Element {
+  const { id, hintId, errorId } = useFieldIds(idProp);
   const [query, setQuery] = useState("");
-  const debouncedQuery = useDebounce(query, 300);
+  const debouncedQuery = useDebouncedSearch(query, 300);
 
+  // Reset to the first page whenever the (debounced) search changes.
   const [prevQuery, setPrevQuery] = useState(debouncedQuery);
   const [page, setPage] = useState(1);
   if (debouncedQuery !== prevQuery) {
@@ -73,7 +98,7 @@ export function MultiSelect({
     setPage(1);
   }
 
-  const queryParams = useMemo<IQueryParams>(
+  const queryParams = useMemo<IQueryParams & { name?: string }>(
     () => ({
       page,
       limit: defaultLimit,
@@ -84,7 +109,7 @@ export function MultiSelect({
 
   const queryResult = queryHook ? queryHook(queryParams) : null;
 
-  const transformedOptions = useMemo(() => {
+  const transformedOptions = useMemo<ISelect[]>(() => {
     if (!queryHook || !queryResult?.data) return [];
 
     const dataArray =
@@ -105,16 +130,13 @@ export function MultiSelect({
   }, [queryHook, queryResult, dataKey, transformData]);
 
   const availableOptions = queryHook ? transformedOptions : options;
-  const filteredOptions = useMemo(() => {
-    if (queryHook) {
-      return availableOptions;
-    }
+  const visibleOptions = useMemo(() => {
+    if (queryHook) return availableOptions;
 
-    return query === ""
-      ? availableOptions
-      : availableOptions.filter((option) => {
-          return option.label?.toLowerCase().includes(query?.toLowerCase());
-        });
+    const q = query.toLowerCase();
+    return availableOptions
+      .filter((option) => q === "" || option.label?.toLowerCase().includes(q))
+      .sort((a, b) => (a.label ?? "").localeCompare(b.label ?? ""));
   }, [queryHook, availableOptions, query]);
 
   const isLoading = queryHook ? queryResult?.isLoading : loading;
@@ -122,6 +144,7 @@ export function MultiSelect({
   if (viewMode) {
     return (
       <ReadOnlyField
+        id={idProp}
         label={label}
         value={
           value?.length ? (
@@ -129,7 +152,7 @@ export function MultiSelect({
               {value.map((option) => (
                 <span
                   key={option.value._id || option.label}
-                  className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-slate-800 dark:text-slate-200"
+                  className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-zinc-800 dark:text-slate-200"
                 >
                   {option.label}
                 </span>
@@ -143,193 +166,174 @@ export function MultiSelect({
     );
   }
 
-  const sortedFilteredOptions = queryHook
-    ? filteredOptions
-    : filteredOptions.sort((a, b) =>
-        (a.label ?? "").localeCompare(b.label ?? ""),
-      );
-
   const handleChange = (selectedValues: ISelect[]): void => {
     const hasAddNewOption = selectedValues.some(
       (v) => v?.value?._id === "" && v?.label === "",
     );
 
-    if (hasAddNewOption && addNewOption) {
-      addNewOption();
+    if (hasAddNewOption) {
+      addNewOption?.();
       return;
     }
 
     onChange(selectedValues);
   };
 
+  const errorText =
+    typeof validationError === "string"
+      ? validationError
+      : validationError?.message;
+  const aria = fieldAria({ errorId, hintId, error: errorText, hint });
+  const selectedCount = value?.length ?? 0;
+  const summary = selectedCount
+    ? truncateString(value.map((v) => v.label).join(", "), 40)
+    : undefined;
+  const showClear =
+    !disabled && !isLoading && !!closeIconFn && selectedCount > 0;
+  const totalCount: number | undefined = queryResult?.data?.totalCount;
+
   return (
-    <fieldset className="relative space-y-2">
-      <Listbox
-        value={value}
+    <FormField
+      id={id}
+      label={label}
+      required={required}
+      hint={hint}
+      error={errorText}
+      labelSuffix={
+        selectedCount > 0 && (
+          <span className="ml-1 font-normal text-slate-400 dark:text-slate-500">
+            ({selectedCount} selected)
+          </span>
+        )
+      }
+    >
+      <Combobox
+        value={value ?? []}
         onChange={handleChange}
         multiple
-        by={(a: ISelect, b: ISelect) => a?.value?._id === b?.value?._id}
+        by={sameOption}
+        disabled={disabled}
+        immediate
+        onClose={() => setQuery("")}
       >
-        <Listbox.Label className="block text-sm font-semibold text-gray-600 dark:text-slate-300">
-          {label} {required && <span className="text-red-600">*</span>}{" "}
-          {value?.length > 0 && (
-            <span className="text-gray-400">{`(${value?.length}) selected`}</span>
-          )}
-        </Listbox.Label>
-        <div className="relative mt-3">
-          <Listbox.Button className="w-full text-left">
-            <div className="flex h-10 w-full items-center justify-between rounded-xl border bg-gray-100 px-4 py-2 text-sm font-medium text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
-              <span
-                className={cn({
-                  "text-gray-400 dark:text-slate-500": !value?.length,
-                })}
+        <div className="flex items-center gap-2">
+          <div className="relative w-full">
+            <ComboboxInput
+              id={id}
+              aria-required={required || undefined}
+              {...aria}
+              autoComplete="off"
+              className={cn(
+                controlClass,
+                "pr-16",
+                // When something is selected and the user is not typing, the
+                // placeholder doubles as the selection summary.
+                summary &&
+                  "placeholder:text-slate-900 dark:placeholder:text-slate-100",
+                errorText && controlErrorClass,
+              )}
+              placeholder={summary ?? placeholder ?? "Select options..."}
+              onChange={(event) => setQuery(event.target.value)}
+              onBlur={onBlur}
+            />
+
+            <div className="absolute inset-y-0 right-0 flex items-center gap-1 pr-2.5">
+              {isLoading && <Spinner size="xs" label="Loading options" />}
+              {showClear && (
+                <button
+                  type="button"
+                  aria-label={`Clear all ${label}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeIconFn?.();
+                  }}
+                  className="rounded p-0.5 text-slate-400 transition-colors hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:text-slate-500 dark:hover:text-slate-300"
+                >
+                  <XCircle className="h-4 w-4" aria-hidden="true" />
+                </button>
+              )}
+              <ComboboxButton
+                aria-label={`Show ${label} options`}
+                className="rounded p-0.5 text-slate-400 focus:outline-none dark:text-slate-500"
               >
-                {value && value.length > 0
-                  ? truncateString(value.map((v) => v.label).join(", "), 40)
-                  : (placeholder ?? "Select options...")}
-              </span>
-              <div className="flex items-center gap-2">
-                {isLoading && <ClipLoader size={12} />}
-                {!isLoading && closeIconFn && !!value?.length && (
-                  <XCircle
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      closeIconFn();
-                    }}
-                    className="h-5 w-5 text-gray-400 hover:text-gray-600"
-                  />
-                )}
-                <ChevronDown
-                  className="h-5 w-5 text-gray-400 transition-transform"
-                  aria-hidden="true"
-                />
-              </div>
+                <ChevronDown className="h-4 w-4" aria-hidden="true" />
+              </ComboboxButton>
             </div>
-          </Listbox.Button>
 
-          <input
-            type="text"
-            className="sr-only text-base"
-            onBlur={onBlur}
-            tabIndex={-1}
-          />
-          <Transition
-            as={Fragment}
-            leave="transition ease-in duration-100"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-            afterLeave={() => {
-              setQuery("");
-            }}
-          >
-            <Listbox.Options className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-slate-800 dark:shadow-slate-900/50 dark:ring-slate-700 sm:text-sm">
-              <div className="sticky -top-1 z-20 border-b border-gray-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-800">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    name={label + "search"}
-                    className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-9 pr-4 text-base placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:placeholder-slate-500"
-                    placeholder="Search options..."
-                    value={query}
-                    onChange={(e) => {
-                      setQuery(e.target.value);
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  />
-                </div>
-              </div>
-
+            <ComboboxOptions
+              transition
+              className="absolute top-full z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 transition duration-100 ease-in focus:outline-none data-[closed]:opacity-0 dark:bg-zinc-800 dark:shadow-zinc-950/50 dark:ring-zinc-700"
+            >
               {queryHook && queryResult?.data && (
                 <SelectPagination
-                  currentPage={queryParams.page ?? 1}
-                  totalCount={queryResult.data.totalCount ?? 0}
-                  limit={queryParams.limit ?? defaultLimit}
-                  onPageChange={(page) => {
-                    setPage(page);
-                  }}
+                  currentPage={page}
+                  totalCount={totalCount}
+                  limit={defaultLimit}
+                  hasNextPage={transformedOptions.length >= defaultLimit}
+                  onPageChange={setPage}
                 />
               )}
               {addNewOption && (
-                <Listbox.Option
+                <ComboboxOption
                   value={emptySelect()}
-                  className="flex cursor-pointer items-center gap-2 px-10 py-2.5 text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+                  className="flex cursor-pointer items-center gap-2 px-10 py-2.5 text-indigo-600 data-[focus]:bg-indigo-50 dark:text-indigo-400 dark:data-[focus]:bg-indigo-500/10"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">Add new</span>
-                    <PlusCircle className="h-4 w-4 shrink-0" />
-                  </div>
-                </Listbox.Option>
+                  <span className="font-medium">Add new</span>
+                  <PlusCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                </ComboboxOption>
               )}
-              {!isLoading &&
-                sortedFilteredOptions?.length === 0 &&
-                query !== "" && (
-                  <div className="relative cursor-default select-none px-10 py-2 text-gray-700 dark:text-slate-400">
-                    Nothing found.
-                  </div>
-                )}
-              {!isLoading &&
-                (options?.length || availableOptions?.length) === 0 && (
-                  <div className="relative cursor-default select-none px-10 py-2 text-gray-700 dark:text-slate-400">
-                    No options.
-                  </div>
-                )}
+              {!isLoading && visibleOptions.length === 0 && query !== "" && (
+                <div className="cursor-default select-none px-4 py-2.5 text-slate-500 dark:text-slate-400">
+                  Nothing found.
+                </div>
+              )}
+              {!isLoading && availableOptions.length === 0 && query === "" && (
+                <div className="cursor-default select-none px-4 py-2.5 text-slate-500 dark:text-slate-400">
+                  No options.
+                </div>
+              )}
               {isLoading && (
-                <div className="relative cursor-default select-none px-10 py-2 text-gray-700 dark:text-slate-400">
+                <div className="cursor-default select-none px-4 py-2.5 text-slate-500 dark:text-slate-400">
                   Loading...
                 </div>
               )}
-              {sortedFilteredOptions.length > 0 &&
-                sortedFilteredOptions.map((option, index) => (
-                  <Listbox.Option
-                    key={index}
-                    className={({ active }) =>
-                      `group relative flex cursor-pointer select-none items-center py-2.5 pl-10 pr-4 ${
-                        active
-                          ? "bg-indigo-50 text-indigo-900 dark:bg-indigo-500/10 dark:text-indigo-100"
-                          : "text-gray-900 dark:text-slate-100"
-                      }`
-                    }
-                    value={option}
-                  >
-                    {({ selected }) => (
-                      <>
-                        <span
-                          className={cn("block truncate capitalize", {
-                            "font-semibold text-indigo-600 dark:text-indigo-400":
-                              selected,
-                            "font-normal": !selected,
-                          })}
-                        >
-                          {option.label}
-                        </span>
-                        {(selected ||
-                          value
-                            ?.map((v) => v.value?._id)
-                            .includes(option.value?._id as string)) && (
-                          <Check
-                            className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-600 dark:text-indigo-400"
-                            aria-hidden="true"
-                          />
+              {visibleOptions.map((option, index) => (
+                <ComboboxOption
+                  key={option.value?._id || index}
+                  value={option}
+                  className="group relative flex cursor-pointer select-none items-center py-2.5 pl-10 pr-4 text-slate-900 data-[focus]:bg-indigo-50 data-[focus]:text-indigo-900 dark:text-slate-100 dark:data-[focus]:bg-indigo-500/10 dark:data-[focus]:text-indigo-100"
+                >
+                  {({ selected }) => (
+                    <>
+                      <span
+                        className={cn(
+                          "block truncate capitalize",
+                          selected
+                            ? "font-semibold text-indigo-600 dark:text-indigo-400"
+                            : "font-normal",
                         )}
-                        <div className="ml-auto opacity-0 group-hover:opacity-100">
-                          {itemRight?.(option)}
-                        </div>
-                      </>
-                    )}
-                  </Listbox.Option>
-                ))}
-            </Listbox.Options>
-          </Transition>
+                      >
+                        {option.label}
+                      </span>
+                      {selected && (
+                        <Check
+                          className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-600 dark:text-indigo-400"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <div className="ml-auto opacity-0 group-hover:opacity-100 group-data-[focus]:opacity-100">
+                        {itemRight?.(option)}
+                      </div>
+                    </>
+                  )}
+                </ComboboxOption>
+              ))}
+            </ComboboxOptions>
+          </div>
+          {icon}
         </div>
-        {icon}
-      </Listbox>
-      {validationError && (
-        <ErrorMessage message={validationError.message ?? ""} />
-      )}
-    </fieldset>
+      </Combobox>
+    </FormField>
   );
 }

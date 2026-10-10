@@ -48,7 +48,7 @@ export function FiltersModal({
   ...rest
 }: Props): JSX.Element {
   return (
-    <SidebarModal title={title} display={display} close={close}>
+    <SidebarModal title={title} isOpen={display} onClose={close}>
       {/* Mount content only while open so the draft re-seeds from the
           applied values every time the panel opens. */}
       {display ? <FiltersModalContent {...rest} /> : <div></div>}

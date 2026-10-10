@@ -1,5 +1,4 @@
 import {
-  Fragment,
   type JSX,
   type ReactNode,
   forwardRef,
@@ -8,14 +7,27 @@ import {
   useState,
 } from "react";
 
-import { Combobox, Transition } from "@headlessui/react";
+import {
+  Combobox,
+  ComboboxButton,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from "@headlessui/react";
 import { Check, ChevronDown, PlusCircle, XCircle } from "lucide-react";
 import { type FieldError } from "react-hook-form";
-import { ClipLoader } from "react-spinners";
-import { clsx } from "clsx";
-import { cn } from "@/helpers/cn";
 
+import { cn } from "@/helpers/cn";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
+import { SelectPagination } from "@/components/FormElements/SelectPagination";
+import {
+  FormField,
+  controlClass,
+  controlErrorClass,
+  fieldAria,
+  useFieldIds,
+} from "@/components/ui/FormField";
+import { Spinner } from "@/components/ui/Spinner";
 
 export interface ISelect {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,6 +74,10 @@ interface Props {
   defaultLimit?: number;
   optionsClassName?: string;
   className?: string;
+  /** id for the input; generated when omitted. */
+  id?: string;
+  /** Helper text under the control, linked via aria-describedby. */
+  hint?: ReactNode;
 }
 
 export const Select = forwardRef<HTMLInputElement, Props>(function Select(
@@ -86,9 +102,12 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
     transformData,
     optionsClassName,
     className,
+    id: idProp,
+    hint,
   }: Props,
   ref,
 ): JSX.Element {
+  const { id, hintId, errorId } = useFieldIds(idProp);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedSearch(query, 300);
 
@@ -158,23 +177,44 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
     onChange(selectedValue);
   };
 
+  const errorText =
+    typeof validationError === "string"
+      ? validationError
+      : validationError?.message;
+  const aria = fieldAria({ errorId, hintId, error: errorText, hint });
+  const hasValue = !!value?.value?._id;
+  const showClear = !disabled && !isLoading && !!closeIconFn && hasValue;
+  const showChevron = !disabled && !isLoading && !showClear;
+  const totalCount: number | undefined = queryResult?.data?.totalCount;
+  const limit = queryParams.limit ?? defaultLimit;
+
   return (
-    <fieldset className={cn("relative space-y-1.5 w-full", className)}>
-      <Combobox value={value} onChange={handleChange} disabled={disabled}>
-        {label && (
-          <Combobox.Label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-            {label} {required && <span className="text-rose-500 ml-1">*</span>}
-          </Combobox.Label>
-        )}
-        <div className="relative flex items-center gap-2">
-          <Combobox.Button as="div" className="w-full relative">
-            <Combobox.Input
+    <FormField
+      id={id}
+      label={label}
+      required={required}
+      hint={hint}
+      error={errorText}
+      className={cn("relative", className)}
+    >
+      <Combobox
+        value={value}
+        onChange={handleChange}
+        disabled={disabled}
+        immediate
+        onClose={() => setQuery("")}
+      >
+        <div className="flex items-center gap-2">
+          <div className="relative w-full">
+            <ComboboxInput
               ref={ref}
-              disabled={disabled}
+              id={id}
+              aria-required={required || undefined}
+              {...aria}
               className={cn(
-                "w-full text-base bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 min-h-[42px] capitalize cursor-pointer",
-                disabled &&
-                  "pointer-events-none cursor-not-allowed bg-slate-50 opacity-60 dark:bg-zinc-800/50",
+                controlClass,
+                "cursor-pointer pr-10 capitalize",
+                errorText && controlErrorClass,
               )}
               onChange={(event) => {
                 if (disabled) return;
@@ -185,181 +225,116 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
               onBlur={onBlur}
             />
 
-            {!disabled &&
-              ((!isLoading && !closeIconFn) ||
-                (closeIconFn && !value?.value?._id)) && (
-                <ChevronDown
-                  className={clsx(
-                    "absolute top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500",
-                    {
-                      "right-3.5": !icon,
-                      "right-12": icon,
-                    },
-                  )}
-                  aria-hidden="true"
-                />
+            <div className="absolute inset-y-0 right-0 flex items-center gap-1 pr-2.5">
+              {isLoading && <Spinner size="xs" label="Loading options" />}
+              {showClear && (
+                <button
+                  type="button"
+                  aria-label={label ? `Clear ${label}` : "Clear selection"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    closeIconFn?.();
+                  }}
+                  className="rounded p-0.5 text-slate-400 transition-colors hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 dark:text-slate-500 dark:hover:text-slate-300"
+                >
+                  <XCircle className="h-4 w-4" aria-hidden="true" />
+                </button>
               )}
+              {showChevron && (
+                <ComboboxButton
+                  aria-label={label ? `Show ${label} options` : "Show options"}
+                  className="rounded p-0.5 text-slate-400 focus:outline-none dark:text-slate-500"
+                >
+                  <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                </ComboboxButton>
+              )}
+            </div>
 
-            {!disabled && !isLoading && closeIconFn && value?.value?._id && (
-              <XCircle
-                onClick={(e) => {
-                  e.preventDefault();
-                  closeIconFn();
-                }}
-                className={clsx(
-                  "absolute top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500 cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors",
-                  {
-                    "right-3.5": !icon,
-                    "right-12": icon,
-                  },
-                )}
-                aria-hidden="true"
-              />
-            )}
-            {isLoading && (
-              <div
-                className={clsx(
-                  "absolute top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500",
-                  {
-                    "right-3.5": !icon,
-                    "right-8": icon,
-                  },
-                )}
-              >
-                <ClipLoader size={12} color="currentColor" />
-              </div>
-            )}
-          </Combobox.Button>
-          <Transition
-            as={Fragment}
-            leave="transition ease-in duration-100"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-            afterLeave={() => {
-              setQuery("");
-            }}
-          >
-            <Combobox.Options
-              className={clsx(
-                "absolute top-full z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-slate-900/5 focus:outline-none dark:bg-zinc-800 dark:shadow-zinc-950/50 dark:ring-zinc-700",
+            <ComboboxOptions
+              transition
+              className={cn(
+                "absolute top-full z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black/5 focus:outline-none dark:bg-zinc-800 dark:shadow-zinc-950/50 dark:ring-zinc-700",
+                "transition duration-100 ease-in data-[closed]:opacity-0",
                 optionsClassName,
               )}
             >
-              {queryHook &&
-                queryResult?.data &&
-                queryResult.data.totalCount >
-                  (queryParams.limit ?? defaultLimit) && (
-                  <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100 dark:border-zinc-700 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-zinc-800/50">
-                    <span>Page {queryParams.page ?? 1}</span>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        disabled={(queryParams.page ?? 1) <= 1}
-                        onClick={() =>
-                          setQueryParams((prev) => ({
-                            ...prev,
-                            page: Math.max(1, (prev.page ?? 1) - 1),
-                          }))
-                        }
-                        className="hover:text-indigo-600 dark:hover:text-indigo-400 disabled:opacity-50"
-                      >
-                        Prev
-                      </button>
-                      <button
-                        type="button"
-                        disabled={
-                          (queryParams.page ?? 1) *
-                            (queryParams.limit ?? defaultLimit) >=
-                          (queryResult.data.totalCount ?? 0)
-                        }
-                        onClick={() =>
-                          setQueryParams((prev) => ({
-                            ...prev,
-                            page: (prev.page ?? 1) + 1,
-                          }))
-                        }
-                        className="hover:text-indigo-600 dark:hover:text-indigo-400 disabled:opacity-50"
-                      >
-                        Next
-                      </button>
-                    </div>
-                  </div>
-                )}
+              {queryHook && queryResult?.data && (
+                <SelectPagination
+                  currentPage={queryParams.page ?? 1}
+                  totalCount={totalCount}
+                  limit={limit}
+                  hasNextPage={transformedOptions.length >= limit}
+                  onPageChange={(page) =>
+                    setQueryParams((prev) => ({ ...prev, page }))
+                  }
+                />
+              )}
               {addNewOption && (
-                <Combobox.Option
+                <ComboboxOption
                   value={emptySelect()}
-                  className="flex cursor-pointer items-center gap-2 px-10 py-2.5 text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+                  className="flex cursor-pointer items-center gap-2 px-10 py-2.5 text-indigo-600 data-[focus]:bg-indigo-50 dark:text-indigo-400 dark:data-[focus]:bg-indigo-500/10"
                 >
                   <span className="font-medium">Add new</span>
-                  <PlusCircle className="h-4 w-4 shrink-0" />
-                </Combobox.Option>
+                  <PlusCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                </ComboboxOption>
               )}
               {!isLoading && filteredOptions?.length === 0 && query !== "" && (
-                <div className="relative cursor-default select-none px-4 py-2.5 text-slate-500 dark:text-slate-400 text-sm">
+                <div className="relative cursor-default select-none px-4 py-2.5 text-sm text-slate-500 dark:text-slate-400">
                   Nothing found.
                 </div>
               )}
               {!isLoading &&
                 (options?.length || availableOptions?.length) === 0 && (
-                  <div className="relative cursor-default select-none px-4 py-2.5 text-slate-500 dark:text-slate-400 text-sm">
+                  <div className="relative cursor-default select-none px-4 py-2.5 text-sm text-slate-500 dark:text-slate-400">
                     No options.
                   </div>
                 )}
               {isLoading && (
-                <div className="relative cursor-default select-none px-4 py-2.5 text-slate-500 dark:text-slate-400 text-sm">
+                <div className="relative cursor-default select-none px-4 py-2.5 text-sm text-slate-500 dark:text-slate-400">
                   Loading...
                 </div>
               )}
               {filteredOptions.length > 0 &&
                 filteredOptions.map((option, index) => (
-                  <Combobox.Option
-                    key={index}
-                    className={({ active }) =>
-                      `group relative flex cursor-pointer select-none items-center py-2.5 pl-10 pr-4 ${
-                        active
-                          ? "bg-indigo-50 text-indigo-900 dark:bg-indigo-500/10 dark:text-indigo-100"
-                          : "text-slate-900 dark:text-slate-100"
-                      }`
-                    }
+                  <ComboboxOption
+                    key={option.value?._id || index}
+                    className="group relative flex cursor-pointer select-none items-center py-2.5 pl-10 pr-4 text-slate-900 data-[focus]:bg-indigo-50 data-[focus]:text-indigo-900 dark:text-slate-100 dark:data-[focus]:bg-indigo-500/10 dark:data-[focus]:text-indigo-100"
                     value={option}
                   >
-                    {({ selected }) => (
-                      <>
-                        <span
-                          className={clsx("block truncate capitalize", {
-                            "font-semibold text-indigo-600 dark:text-indigo-400":
-                              selected,
-                            "font-normal": !selected,
-                          })}
-                        >
-                          {option.label}
-                        </span>
-                        {(selected ||
-                          value?.value?._id === option.value._id) && (
-                          <Check
-                            className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-600 dark:text-indigo-400"
-                            aria-hidden="true"
-                          />
-                        )}
-                        <div className="ml-auto opacity-0 group-hover:opacity-100">
-                          {itemRight?.(option)}
-                        </div>
-                      </>
-                    )}
-                  </Combobox.Option>
+                    {({ selected }) => {
+                      const isSelected =
+                        selected || value?.value?._id === option.value._id;
+                      return (
+                        <>
+                          <span
+                            className={cn(
+                              "block truncate capitalize",
+                              isSelected
+                                ? "font-semibold text-indigo-600 dark:text-indigo-400"
+                                : "font-normal",
+                            )}
+                          >
+                            {option.label}
+                          </span>
+                          {isSelected && (
+                            <Check
+                              className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-600 dark:text-indigo-400"
+                              aria-hidden="true"
+                            />
+                          )}
+                          <div className="ml-auto opacity-0 group-hover:opacity-100 group-data-[focus]:opacity-100">
+                            {itemRight?.(option)}
+                          </div>
+                        </>
+                      );
+                    }}
+                  </ComboboxOption>
                 ))}
-            </Combobox.Options>
-          </Transition>
+            </ComboboxOptions>
+          </div>
           {icon}
         </div>
       </Combobox>
-      {validationError && (
-        <p className="text-xs text-rose-500 mt-0.5">
-          {typeof validationError === "string"
-            ? validationError
-            : (validationError.message ?? "")}
-        </p>
-      )}
-    </fieldset>
+    </FormField>
   );
 });

@@ -7,6 +7,7 @@ import { SettingsView } from "@/components/views/SettingsView";
 
 import { useAuth } from "@/hooks/useAuth";
 import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
+import { Spinner } from "@/components/ui/Spinner";
 
 function SettingsContent() {
   const searchParams = useSearchParams();
@@ -21,7 +22,7 @@ function SettingsContent() {
   if (isLoadingSettings && !settings && isAdmin) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <Spinner size="lg" />
       </div>
     );
   }
@@ -41,7 +42,7 @@ export default function SettingsPage() {
     <Suspense
       fallback={
         <div className="flex h-64 items-center justify-center">
-          <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <Spinner size="lg" />
         </div>
       }
     >

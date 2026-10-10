@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Input } from "@/components/FormElements/Input";
-import { BaseButton, DeleteButton } from "@/components/ui/Button";
+import { Button, DeleteButton } from "@/components/ui/Button";
 import { cn } from "@/helpers/cn";
 
 export interface TeamFormValues {
@@ -165,30 +165,33 @@ export const TeamsForm: React.FC<TeamsFormProps> = ({
               onClick={handlePerformDelete}
               loading={isDeletingPending}
             />
-            <BaseButton
+            <Button
               type="submit"
-              text="Submit"
               loading={isPending}
               disabled={isPending || isDeletingPending}
-              color="primary"
-            />
+              variant="primary"
+            >
+              Submit
+            </Button>
           </>
         ) : (
           <>
-            <BaseButton
+            <Button
               type="button"
-              color="outline"
-              text="Cancel"
+              variant="outline"
               onClick={onCancel}
               disabled={isPending}
-            />
-            <BaseButton
+            >
+              Cancel
+            </Button>
+            <Button
               type="submit"
-              text="Submit"
               loading={isPending}
               disabled={isPending}
-              color="primary"
-            />
+              variant="primary"
+            >
+              Submit
+            </Button>
           </>
         )}
       </fieldset>

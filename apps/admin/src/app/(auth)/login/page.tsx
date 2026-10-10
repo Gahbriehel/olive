@@ -2,19 +2,12 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Lock,
-  Mail,
-  ArrowRight,
-  AlertCircle,
-  Eye,
-  EyeOff,
-  Loader2,
-} from "lucide-react";
+import { Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { loginUser } from "@/store/slices/authSlice";
 import { getDefaultRouteForUser } from "@/utils/rbac";
 import Image from "next/image";
+import { Spinner } from "@/components/ui/Spinner";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -130,7 +123,7 @@ export default function LoginPage() {
             className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-xl transition-all shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 group disabled:opacity-50 cursor-pointer min-h-[48px]"
           >
             {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin text-white" />
+              <Spinner size="sm" className="text-white" />
             ) : (
               <>
                 <span>Sign In to Dashboard</span>
