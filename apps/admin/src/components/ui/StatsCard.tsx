@@ -77,29 +77,6 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   className,
   loading = false,
 }) => {
-  if (loading) {
-    return (
-      <Card
-        className={cn(
-          "hover:shadow-md transition-all duration-200 w-full max-w-[280px]",
-          className,
-        )}
-      >
-        <CardContent className="p-3.5 sm:p-4">
-          <div className="flex items-center justify-between mb-2">
-            <Skeleton className="h-3.5 w-20" />
-            <Skeleton className="h-7 w-7 rounded-lg" />
-          </div>
-          <div className="flex items-baseline justify-between gap-2 mt-1">
-            <Skeleton className="h-7 w-14" />
-            <Skeleton className="h-3.5 w-10" />
-          </div>
-          {description && <Skeleton className="h-3 w-28 mt-1.5" />}
-        </CardContent>
-      </Card>
-    );
-  }
-
   const styles = colorVariants[color] || colorVariants.indigo;
 
   const TrendIcon =
@@ -108,55 +85,78 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   return (
     <Card
       className={cn(
-        "hover:shadow-md transition-all duration-200 w-full max-w-[280px]",
+        "min-w-0 hover:shadow-md transition-all duration-200",
         className,
       )}
     >
       <CardContent className="p-3.5 sm:p-4">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2 min-w-0">
+          {Icon &&
+            (loading ? (
+              <Skeleton className="h-6 w-6 rounded-md shrink-0" />
+            ) : (
+              <div
+                className={cn(
+                  "p-1 rounded-md shrink-0",
+                  styles.iconBg,
+                  styles.iconText,
+                )}
+              >
+                <Icon className="w-3.5 h-3.5" />
+              </div>
+            ))}
           <span
-            className="text-xs font-semibold text-fg-muted truncate pr-2"
+            className="text-xs font-semibold text-fg-muted truncate"
             title={title}
           >
             {title}
           </span>
-          {Icon && (
-            <div
-              className={cn(
-                "p-1.5 rounded-lg shrink-0 transition-transform group-hover:scale-105",
-                styles.iconBg,
-                styles.iconText,
-              )}
-            >
-              <Icon className="w-3.5 h-3.5" />
-            </div>
-          )}
         </div>
 
-        <div className="flex items-baseline justify-between gap-1.5 flex-wrap">
-          <h3 className="text-xl sm:text-2xl font-bold text-fg tracking-tight">
+        {loading ? (
+          <Skeleton className="h-7 w-24 mt-2" />
+        ) : (
+          <h3
+            className="mt-1.5 truncate text-lg lg:text-xl font-bold text-fg tabular-nums tracking-tight"
+            title={String(value)}
+          >
             {value}
           </h3>
-          {change && (
-            <span
+        )}
+
+        {change &&
+          (loading ? (
+            <Skeleton className="h-3 w-20 mt-1.5" />
+          ) : (
+            <p
               className={cn(
-                "text-2xs font-semibold flex items-center gap-1 shrink-0",
+                "mt-0.5 flex items-center gap-1 min-w-0 text-2xs font-semibold",
                 trend === "up"
                   ? "text-success-text"
                   : trend === "down"
                     ? "text-danger-text"
                     : styles.trendText,
               )}
+              title={change}
             >
-              {trend !== "neutral" && <TrendIcon className="w-3 h-3 inline" />}
-              {change}
-            </span>
-          )}
-        </div>
+              {trend !== "neutral" && (
+                <TrendIcon className="w-3 h-3 shrink-0" />
+              )}
+              <span className="truncate">{change}</span>
+            </p>
+          ))}
 
-        {description && (
-          <p className="text-2xs text-fg-subtle mt-1">{description}</p>
-        )}
+        {description &&
+          (loading ? (
+            <Skeleton className="h-3 w-28 mt-1.5" />
+          ) : (
+            <p
+              className="mt-0.5 truncate text-2xs text-fg-subtle"
+              title={description}
+            >
+              {description}
+            </p>
+          ))}
       </CardContent>
     </Card>
   );
@@ -164,12 +164,23 @@ export const StatsCard: React.FC<StatsCardProps> = ({
 
 export type StatsCardGroupProps = React.HTMLAttributes<HTMLDivElement>;
 
+/**
+ * Horizontal, snap-scrolling strip of fixed-width cards. On narrow screens
+ * the partially visible last card signals that the row can be swiped.
+ */
 export const StatsCardGroup: React.FC<StatsCardGroupProps> = ({
   className,
   children,
   ...props
 }) => (
-  <div className={cn("flex flex-wrap gap-2", className)} {...props}>
+  <div
+    className={cn(
+      "-mx-1 flex snap-x gap-3 overflow-x-auto overscroll-x-contain px-1 pb-2",
+      "[&>*]:w-56 [&>*]:shrink-0 [&>*]:snap-start",
+      className,
+    )}
+    {...props}
+  >
     {children}
   </div>
 );

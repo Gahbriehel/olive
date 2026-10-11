@@ -66,7 +66,7 @@ export function BirthdayKpis({
 
   return (
     <div className="w-full">
-      <StatsCardGroup className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 w-full">
+      <StatsCardGroup>
         {kpiStats.map((stat) => (
           <StatsCard key={stat.title} {...stat} loading={isLoading} />
         ))}
