@@ -2,8 +2,10 @@
 
 import React, { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Calendar, CalendarPlus } from "lucide-react";
+import { Plus, Calendar, CalendarPlus, Search } from "lucide-react";
+import { Input } from "@/components/FormElements/Input";
 import { RefreshButton } from "@/components/ui/RefreshButton";
+import { FiltersButton } from "@/components/ui/FiltersButton";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Pagination } from "@/components/ui/Pagination";
@@ -15,6 +17,7 @@ import {
 } from "@/components/ui/QueryState";
 import { type ActionItem } from "@/components/ui/ActionsList";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
+import { FiltersModal } from "@/components/modals/FiltersModal";
 import { useDashboard } from "@/context/DashboardContext";
 import { useEvents } from "@/hooks/useEvents";
 import { useListFilters } from "@/hooks/useListFilters";
@@ -24,7 +27,6 @@ import { AuthorityGuard } from "@/components/auth/AuthorityGuard";
 import { ROLES } from "@/utils/rbac";
 import { EventCard } from "./_components/EventCard";
 import { EditEventPanel } from "./_components/EditEventPanel";
-import { EventsFilterBar } from "./_components/EventsFilterBar";
 import { EventsStats } from "./_components/EventsStats";
 import {
   EVENT_PAGE_SIZE_OPTIONS,
@@ -49,11 +51,11 @@ export default function EventsPage() {
     setLimit,
     search,
     setSearch,
-    filters,
-    setFilter,
     clearFilters,
     activeCount,
     queryParams,
+    openPanel,
+    panelProps,
   } = useListFilters({ fields: eventFilterFields, searchDebounceMs: 400 });
   const [viewMode, setViewMode] = useState<EventsViewMode>("table");
 
@@ -178,14 +180,29 @@ export default function EventsPage() {
 
       <EventsStats events={events} total={meta?.total} loading={isLoading} />
 
-      <EventsFilterBar
-        search={search}
-        onSearchChange={setSearch}
-        filters={filters}
-        setFilter={setFilter}
-        hasActiveFilters={hasActiveFilters}
-        onReset={resetFilters}
-      />
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <FiltersButton onClick={openPanel} activeCount={activeCount} />
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-primary-text"
+              onClick={resetFilters}
+            >
+              Clear all
+            </Button>
+          )}
+        </div>
+        <div className="w-full sm:w-72">
+          <Input
+            placeholder="Search by title or location..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            leftIcon={<Search className="w-4 h-4" />}
+          />
+        </div>
+      </div>
 
       {/* Content: Table View vs Grid View */}
       {viewMode === "table" ? (
@@ -268,6 +285,8 @@ export default function EventsPage() {
           }}
         />
       )}
+
+      <FiltersModal title="Filter Events" {...panelProps} />
 
       {/* Delete Confirmation Modal */}
       {deletingEvent && (

@@ -1,7 +1,6 @@
 import { type FilterField } from "@/models/filters";
 
-// Rendered inline in the toolbar rather than in the filters panel.
-export const eventSelectFields = [
+export const eventFilterFields: FilterField[] = [
   {
     type: "select",
     key: "status",
@@ -37,10 +36,6 @@ export const eventSelectFields = [
     trueLabel: "Registration Required",
     falseLabel: "Open Admission",
   },
-] satisfies FilterField[];
-
-export const eventFilterFields: FilterField[] = [
-  ...eventSelectFields,
   {
     type: "boolean",
     key: "isFeatured",
