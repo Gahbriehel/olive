@@ -222,18 +222,34 @@ export interface ILeaderboardResponse {
 // Contact Submission types
 export type ContactSubmissionType = "prayer" | "inquiry";
 
-export type PrayerCategory =
-  | "Healing & Health"
-  | "Family & Marriage"
-  | "Financial Breakthrough"
-  | "Spiritual Growth"
-  | "General Prayer";
+export const DEFAULT_PRAYER_CATEGORY = "General Prayer" as const;
+export const DEFAULT_INQUIRY_CATEGORY = "General Question" as const;
 
-export type InquiryCategory =
-  | "Visiting This Sunday"
-  | "Small Groups / Ministries"
-  | "Volunteering"
-  | "General Question";
+export const PRAYER_CATEGORIES = [
+  "Healing & Health",
+  "Family & Marriage",
+  "Financial Breakthrough",
+  "Spiritual Growth",
+  "General Prayer",
+] as const;
+
+export const INQUIRY_CATEGORIES = [
+  "Directions",
+  "Partnership & Giving",
+  "Pastoral Counseling",
+  "Baptism",
+  "Child Dedication",
+  "Media & Technical Support",
+  "General Question",
+] as const;
+
+export const CONTACT_CATEGORIES = {
+  prayer: PRAYER_CATEGORIES,
+  inquiry: INQUIRY_CATEGORIES,
+} as const;
+
+export type PrayerCategory = (typeof PRAYER_CATEGORIES)[number];
+export type InquiryCategory = (typeof INQUIRY_CATEGORIES)[number];
 
 export interface ICreateContactSubmissionPayload {
   type: ContactSubmissionType;

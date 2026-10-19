@@ -1,5 +1,6 @@
 export * from "./auth";
 export * from "./base";
+export * from "./contact";
 export * from "./dashboard";
 export * from "./event";
 export * from "./game";

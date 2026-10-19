@@ -4,7 +4,14 @@ import React, { useState } from "react";
 import { TruncatedTextWithCopy } from "@/components/ui/TruncatedTextWithCopy";
 import PhoneInput from "@/components/ui/PhoneInput";
 import { webService } from "@/services/api";
-import { PrayerCategory, InquiryCategory } from "@olive/types";
+import {
+  PRAYER_CATEGORIES,
+  INQUIRY_CATEGORIES,
+  DEFAULT_PRAYER_CATEGORY,
+  DEFAULT_INQUIRY_CATEGORY,
+  type PrayerCategory,
+  type InquiryCategory,
+} from "@olive/types";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import {
   MapPin,
@@ -25,11 +32,18 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPhoneConfirm, setShowPhoneConfirm] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    email: string;
+    phone: string;
+    category: PrayerCategory | InquiryCategory | string;
+    message: string;
+    isPrivate: boolean;
+  }>({
     name: "",
     email: "",
     phone: "",
-    category: "General Prayer",
+    category: DEFAULT_PRAYER_CATEGORY,
     message: "",
     isPrivate: false,
   });
@@ -76,7 +90,10 @@ export default function ContactPage() {
       name: "",
       email: "",
       phone: "",
-      category: activeTab === "prayer" ? "General Prayer" : "General Question",
+      category:
+        activeTab === "prayer"
+          ? DEFAULT_PRAYER_CATEGORY
+          : DEFAULT_INQUIRY_CATEGORY,
       message: "",
       isPrivate: false,
     });
@@ -219,7 +236,7 @@ export default function ContactPage() {
                     setSubmitted(false);
                     setFormData((prev) => ({
                       ...prev,
-                      category: "General Prayer",
+                      category: DEFAULT_PRAYER_CATEGORY,
                     }));
                   }}
                   className={`pb-2 text-xs font-sans uppercase tracking-wider transition-colors relative ${
@@ -244,7 +261,7 @@ export default function ContactPage() {
                     setSubmitted(false);
                     setFormData((prev) => ({
                       ...prev,
-                      category: "General Question",
+                      category: DEFAULT_INQUIRY_CATEGORY,
                     }));
                   }}
                   className={`pb-2 text-xs font-sans uppercase tracking-wider transition-colors relative ${
@@ -360,38 +377,14 @@ export default function ContactPage() {
                         }
                         className="w-full px-4 py-3 rounded-sm bg-[#171717] border border-white/10 text-[#F7F5F0] text-xs focus:outline-none focus:border-[#B18A4A] transition-colors"
                       >
-                        {activeTab === "prayer" ? (
-                          <>
-                            <option value="Healing & Health">
-                              Healing &amp; Health
-                            </option>
-                            <option value="Family & Marriage">
-                              Family &amp; Marriage
-                            </option>
-                            <option value="Financial Breakthrough">
-                              Financial Breakthrough
-                            </option>
-                            <option value="Spiritual Growth">
-                              Spiritual Growth
-                            </option>
-                            <option value="General Prayer">
-                              General Prayer
-                            </option>
-                          </>
-                        ) : (
-                          <>
-                            <option value="Visiting This Sunday">
-                              Visiting This Sunday
-                            </option>
-                            <option value="Small Groups / Ministries">
-                              Small Groups / Ministries
-                            </option>
-                            <option value="Volunteering">Volunteering</option>
-                            <option value="General Question">
-                              General Question
-                            </option>
-                          </>
-                        )}
+                        {(activeTab === "prayer"
+                          ? PRAYER_CATEGORIES
+                          : INQUIRY_CATEGORIES
+                        ).map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>

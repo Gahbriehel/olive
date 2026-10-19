@@ -2,7 +2,8 @@
 
 import { JSX, useMemo, useState } from "react";
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
-import { IContact } from "@/models/contact";
+import { IContact, getContactCategoryColor } from "@/models/contact";
+import { PRAYER_CATEGORIES, INQUIRY_CATEGORIES } from "@olive/types";
 import { extractMeta } from "@/models/base";
 import { formatDate } from "@/helpers/formatDate";
 import { useContactQuery } from "@/hooks/useContactQuery";
@@ -20,7 +21,7 @@ import { Badge } from "@/components/ui/Badge";
 import { NotAvailable } from "@/components/ui/NotAvailable";
 import { useAuth } from "@/hooks/useAuth";
 import { useListFilters } from "@/hooks/useListFilters";
-import { type FilterField } from "@/models/filters";
+import { type FilterField, type Option } from "@/models/filters";
 import { ROLES, getUserRoles, hasAuthority } from "@/utils/rbac";
 import {
   Mail,
@@ -78,13 +79,19 @@ export function ContactTable({ type }: ContactTableProps): JSX.Element {
   const canExport = hasAuthority(userRoles, [ROLES.SUPER_ADMIN, ROLES.ADMIN]);
   const isSuperAdmin = hasAuthority(userRoles, [ROLES.SUPER_ADMIN]);
 
+  const categoryOptions = useMemo<Option[]>(() => {
+    const list = type === "prayer" ? PRAYER_CATEGORIES : INQUIRY_CATEGORIES;
+    return list.map((cat) => ({ label: cat, value: cat }));
+  }, [type]);
+
   const filterFields = useMemo<FilterField[]>(
     () => [
       {
-        type: "text",
+        type: "select",
         key: "category",
         label: "Category",
-        placeholder: "e.g. General, Partnership...",
+        options: categoryOptions,
+        allLabel: "All Categories",
       },
       ...(isSuperAdmin
         ? [
@@ -98,7 +105,7 @@ export function ContactTable({ type }: ContactTableProps): JSX.Element {
           ]
         : []),
     ],
-    [isSuperAdmin],
+    [isSuperAdmin, categoryOptions],
   );
 
   const {
@@ -147,6 +154,11 @@ export function ContactTable({ type }: ContactTableProps): JSX.Element {
     }),
     columnHelper.accessor("category", {
       header: "Category",
+      cell: (info) => {
+        const cat = info.getValue();
+        if (!cat) return <NotAvailable />;
+        return <Badge variant={getContactCategoryColor(cat)}>{cat}</Badge>;
+      },
     }),
     columnHelper.accessor("message", {
       header: "Message",
@@ -266,7 +278,10 @@ export function ContactTable({ type }: ContactTableProps): JSX.Element {
                   {selectedContact.name || <NotAvailable />}
                 </h3>
                 {selectedContact.category ? (
-                  <Badge variant="indigo" className="mt-1 w-fit font-semibold">
+                  <Badge
+                    variant={getContactCategoryColor(selectedContact.category)}
+                    className="mt-1 w-fit font-semibold"
+                  >
                     <Tag className="w-3 h-3" />
                     {selectedContact.category}
                   </Badge>
