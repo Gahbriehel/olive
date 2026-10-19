@@ -111,3 +111,5 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     </Badge>
   );
 };
+
+export { FollowUpStatusBadge } from "./FollowUpStatusBadge";

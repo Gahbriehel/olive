@@ -29,6 +29,7 @@ import { PeopleStats } from "./_components/PeopleStats";
 import { PersonDetailPanel } from "./_components/PersonDetailPanel";
 import { usePeopleColumns } from "./_components/usePeopleColumns";
 import { PromotePersonModal } from "./_components/PromotePersonModal";
+import { PeopleDirectoryTabs } from "./_components/PeopleDirectoryTabs";
 import {
   FollowUpForm,
   FollowUpFormValues,
@@ -43,6 +44,8 @@ export default function PeoplePage() {
     setLimit,
     search,
     setSearch,
+    filters,
+    applyFilters,
     activeCount,
     queryParams,
     exportParams,
@@ -190,6 +193,13 @@ export default function PeoplePage() {
         loading={isLoading}
       />
 
+      <PeopleDirectoryTabs
+        filters={filters}
+        onFilterChange={applyFilters}
+        stats={stats}
+        totalItems={meta?.total}
+      />
+
       <Table
         columns={columns}
         data={people}
@@ -259,12 +269,12 @@ export default function PeoplePage() {
         isLoading={isPromoting}
       />
 
-      {/* Pastoral Follow-up Sidebar Modal */}
+      {/* Visitor Follow-up Sidebar Modal */}
       <SidebarModal
-        title="Pastoral Follow-up"
+        title="Visitor Follow-up"
         description={
           followUpPerson
-            ? `Log pastoral care and visitor touchpoint for ${followUpPerson.name}`
+            ? `Log visitor outreach touchpoint for ${followUpPerson.name}`
             : undefined
         }
         isOpen={Boolean(followUpPerson)}

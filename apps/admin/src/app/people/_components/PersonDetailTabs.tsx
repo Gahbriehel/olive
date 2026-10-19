@@ -1,6 +1,7 @@
 import type React from "react";
-import { History } from "lucide-react";
+import { History, Calendar } from "lucide-react";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { FollowUpStatusBadge } from "@/components/ui/FollowUpStatusBadge";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { IPerson } from "@/models/person";
 
@@ -22,6 +23,10 @@ function InfoTile({
 }
 
 export function PersonInfoTab({ person }: { person: IPerson }) {
+  const isVisitor =
+    person.rawMembershipStatus === "VISITOR" ||
+    person.membershipStatus === "Visitor";
+
   return (
     <div className="space-y-4 text-xs">
       <div className="grid grid-cols-2 gap-3">
@@ -43,24 +48,28 @@ export function PersonInfoTab({ person }: { person: IPerson }) {
         <InfoTile label="Date of Birth">
           <p className="font-semibold text-fg mt-1">{person.dob}</p>
         </InfoTile>
-        <InfoTile label="Follow-up Status">
-          <div className="mt-1.5">
-            {person.followUpStatus ? (
-              <StatusBadge status={person.followUpStatus} size="sm" />
-            ) : (
-              <span className="text-2xs text-fg-muted italic">
-                No status recorded
-              </span>
-            )}
-          </div>
-        </InfoTile>
-        <InfoTile label="Last Contact">
-          <p className="font-semibold text-fg mt-1">
-            {person.lastFollowUpAt
-              ? new Date(person.lastFollowUpAt).toLocaleDateString()
-              : "Never"}
-          </p>
-        </InfoTile>
+
+        {/* Follow-up status & touchpoint are STRICTLY for visitors */}
+        {isVisitor && (
+          <>
+            <InfoTile label="Follow-up Status">
+              <div className="mt-1.5">
+                <FollowUpStatusBadge
+                  status={person.followUpStatus || "PENDING"}
+                  size="sm"
+                />
+              </div>
+            </InfoTile>
+            <InfoTile label="Last Contact">
+              <p className="font-semibold text-fg mt-1">
+                {person.lastFollowUpAt
+                  ? new Date(person.lastFollowUpAt).toLocaleDateString()
+                  : "Never"}
+              </p>
+            </InfoTile>
+          </>
+        )}
+
         {person.address && (
           <InfoTile
             label="Address"
@@ -169,45 +178,87 @@ export function PersonAttendanceTab({ person }: { person: IPerson }) {
 }
 
 export function PersonNotesTab({ person }: { person: IPerson }) {
+  const isVisitor =
+    person.rawMembershipStatus === "VISITOR" ||
+    person.membershipStatus === "Visitor";
+
+  const noteLines = (person.followUpNotes || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
   return (
     <div className="space-y-4 text-xs">
-      {/* Pastoral Follow-up Section */}
-      <div className="p-3.5 rounded-xl bg-subtle border border-border space-y-2">
-        <div className="flex items-center justify-between">
-          <p className="text-2xs text-fg-muted uppercase font-bold tracking-wider">
-            Visitor & Pastoral Follow-up
-          </p>
-          {person.followUpStatus && (
-            <StatusBadge status={person.followUpStatus} size="sm" />
+      {/* Visitor Follow-up Section - STRICTLY FOR VISITORS */}
+      {isVisitor && (
+        <div className="p-3.5 rounded-xl bg-subtle border border-border space-y-2.5">
+          <div className="flex items-center justify-between">
+            <p className="text-2xs text-fg-muted uppercase font-bold tracking-wider">
+              Visitor Outreach & Follow-up
+            </p>
+            <FollowUpStatusBadge
+              status={person.followUpStatus || "PENDING"}
+              size="sm"
+            />
+          </div>
+          {person.lastFollowUpAt && (
+            <p className="text-2xs text-fg-muted">
+              Last Contact: {new Date(person.lastFollowUpAt).toLocaleString()}
+            </p>
+          )}
+          {noteLines.length > 0 ? (
+            <div className="space-y-2 pt-1">
+              {noteLines.map((line, idx) => {
+                const dateMatch = line.match(/^(\d{4}-\d{2}-\d{2}):?\s*(.*)$/);
+                if (dateMatch) {
+                  return (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-lg bg-card border border-border space-y-1"
+                    >
+                      <div className="flex items-center gap-1.5 text-2xs font-mono font-semibold text-primary-text">
+                        <Calendar className="w-3 h-3" />
+                        <span>{dateMatch[1]}</span>
+                      </div>
+                      <p className="text-xs text-fg font-medium whitespace-pre-wrap">
+                        {dateMatch[2] || "Follow-up contact recorded"}
+                      </p>
+                    </div>
+                  );
+                }
+                return (
+                  <div
+                    key={idx}
+                    className="p-3 rounded-lg bg-card border border-border text-fg font-medium whitespace-pre-wrap"
+                  >
+                    {line}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-2xs text-fg-muted italic">
+              No visitor follow-up notes recorded.
+            </p>
           )}
         </div>
-        {person.lastFollowUpAt && (
-          <p className="text-2xs text-fg-muted">
-            Last Contact: {new Date(person.lastFollowUpAt).toLocaleString()}
-          </p>
-        )}
-        {person.followUpNotes ? (
-          <div className="p-3 rounded-lg bg-card border border-border text-fg font-medium">
-            {person.followUpNotes}
-          </div>
-        ) : (
-          <p className="text-2xs text-fg-muted italic">
-            No pastoral follow-up notes recorded.
-          </p>
-        )}
-      </div>
+      )}
 
-      {/* General Admin Notes */}
+      {/* Member Notes / General Notes */}
       <div className="space-y-2">
         <p className="text-fg-muted text-2xs uppercase font-bold tracking-wider">
-          General Notes
+          {isVisitor ? "General Notes" : "Member Notes"}
         </p>
         {person.notes ? (
-          <div className="p-3.5 rounded-xl bg-subtle border border-border text-fg font-medium">
+          <div className="p-3.5 rounded-xl bg-card border border-border text-fg font-medium whitespace-pre-wrap">
             {person.notes}
           </div>
         ) : (
-          <div className={emptyBox}>No general notes recorded.</div>
+          <div className={emptyBox}>
+            {isVisitor
+              ? "No general notes recorded."
+              : "No notes recorded for this member."}
+          </div>
         )}
       </div>
     </div>

@@ -3,7 +3,8 @@
 import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { ActionsList } from "@/components/ui/ActionsList";
+import { FollowUpStatusBadge } from "@/components/ui/FollowUpStatusBadge";
+import { ActionsList, type ActionItem } from "@/components/ui/ActionsList";
 import { getInitials, capitalizeWords } from "@/utils/formatters";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
@@ -98,11 +99,33 @@ export function usePeopleColumns({
         accessorKey: "followUpStatus",
         header: "Follow-up",
         cell: ({ row }) => {
-          const status = row.original.followUpStatus;
-          if (!status) {
-            return <span className="text-2xs text-fg-muted italic">None</span>;
+          const person = row.original;
+          const isVisitor =
+            person.rawMembershipStatus === "VISITOR" ||
+            person.membershipStatus === "Visitor";
+
+          // Follow-up is strictly for visitors (or converted guests)
+          if (!isVisitor && person.followUpStatus !== "CONVERTED") {
+            return <span className="text-fg-subtle select-none">—</span>;
           }
-          return <StatusBadge status={status} size="sm" />;
+
+          const rawStatus =
+            person.followUpStatus || (isVisitor ? "PENDING" : null);
+
+          if (!rawStatus) {
+            return <span className="text-fg-subtle select-none">—</span>;
+          }
+
+          const isPending = rawStatus.toUpperCase() === "PENDING";
+
+          return (
+            <FollowUpStatusBadge
+              status={rawStatus}
+              label={isPending ? "Needs Contact" : undefined}
+              dot={false}
+              size="sm"
+            />
+          );
         },
       },
       {
@@ -119,7 +142,11 @@ export function usePeopleColumns({
         header: "Actions",
         cell: ({ row }) => {
           const person = row.original;
-          const actions = [
+          const isVisitor =
+            person.rawMembershipStatus === "VISITOR" ||
+            person.membershipStatus === "Visitor";
+
+          const actions: ActionItem[] = [
             {
               title: "View Details",
               fn: () => {
@@ -128,9 +155,12 @@ export function usePeopleColumns({
             },
           ];
 
-          if (onFollowUp) {
+          // Follow-up is STRICTLY for visitors
+          if (onFollowUp && isVisitor) {
             actions.push({
-              title: "Update Follow-up",
+              title: person.followUpStatus
+                ? "Update Follow-up"
+                : "Log Follow-up",
               fn: () => {
                 onFollowUp(person);
               },
@@ -143,7 +173,7 @@ export function usePeopleColumns({
             person.rawMembershipStatus !== "PASTOR"
           ) {
             actions.push({
-              title: "Promote Person",
+              title: isVisitor ? "Promote to Member" : "Promote Person",
               fn: () => {
                 onPromote(person);
               },
@@ -152,7 +182,7 @@ export function usePeopleColumns({
 
           if (isSuperAdmin) {
             actions.push({
-              title: "Edit Person",
+              title: "Edit Profile",
               fn: () => {
                 onEdit(person);
               },

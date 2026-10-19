@@ -34,7 +34,7 @@ export const Badge: React.FC<BadgeProps> = ({
   const activeVariant: BadgeVariant = color || variant || "slate";
 
   const base =
-    "inline-flex items-center font-medium rounded-full transition-colors";
+    "inline-flex items-center font-medium rounded-full transition-colors whitespace-nowrap shrink-0";
 
   const sizes = {
     sm: "px-2.5 py-0.5 text-2xs gap-1",
