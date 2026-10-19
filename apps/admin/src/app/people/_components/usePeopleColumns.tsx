@@ -13,8 +13,11 @@ interface Options {
   page: number;
   limit: number;
   isSuperAdmin: boolean;
+  canPromote?: boolean;
   onView: (person: IPerson) => void;
   onEdit: (person: IPerson) => void;
+  onPromote?: (person: IPerson) => void;
+  onFollowUp?: (person: IPerson) => void;
 }
 
 /** Column definitions for the people directory table. */
@@ -22,8 +25,11 @@ export function usePeopleColumns({
   page,
   limit,
   isSuperAdmin,
+  canPromote = false,
   onView,
   onEdit,
+  onPromote,
+  onFollowUp,
 }: Options) {
   return useMemo<ColumnDef<IPerson>[]>(
     () => [
@@ -47,6 +53,11 @@ export function usePeopleColumns({
                 <p className="font-bold text-fg">
                   {capitalizeWords(person.name)}
                 </p>
+                {person.departments && person.departments.length > 0 && (
+                  <p className="text-2xs text-fg-muted font-medium">
+                    {person.departments.map((d) => d.name).join(", ")}
+                  </p>
+                )}
               </div>
             </div>
           );
@@ -84,6 +95,17 @@ export function usePeopleColumns({
         ),
       },
       {
+        accessorKey: "followUpStatus",
+        header: "Follow-up",
+        cell: ({ row }) => {
+          const status = row.original.followUpStatus;
+          if (!status) {
+            return <span className="text-2xs text-fg-muted italic">None</span>;
+          }
+          return <StatusBadge status={status} size="sm" />;
+        },
+      },
+      {
         accessorKey: "registrationHistoryCount",
         header: "Events Registered",
         cell: ({ row }) => (
@@ -106,6 +128,28 @@ export function usePeopleColumns({
             },
           ];
 
+          if (onFollowUp) {
+            actions.push({
+              title: "Update Follow-up",
+              fn: () => {
+                onFollowUp(person);
+              },
+            });
+          }
+
+          if (
+            canPromote &&
+            onPromote &&
+            person.rawMembershipStatus !== "PASTOR"
+          ) {
+            actions.push({
+              title: "Promote Person",
+              fn: () => {
+                onPromote(person);
+              },
+            });
+          }
+
           if (isSuperAdmin) {
             actions.push({
               title: "Edit Person",
@@ -119,6 +163,15 @@ export function usePeopleColumns({
         },
       },
     ],
-    [page, limit, isSuperAdmin, onView, onEdit],
+    [
+      page,
+      limit,
+      isSuperAdmin,
+      canPromote,
+      onView,
+      onEdit,
+      onPromote,
+      onFollowUp,
+    ],
   );
 }

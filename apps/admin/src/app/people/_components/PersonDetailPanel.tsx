@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Edit } from "lucide-react";
+import { Edit, ArrowUpRight, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -18,6 +18,9 @@ interface PersonDetailPanelProps {
   onClose: () => void;
   /** Only passed for users allowed to edit people. */
   onEdit?: (person: IPerson) => void;
+  canPromote?: boolean;
+  onPromote?: (person: IPerson) => void;
+  onFollowUp?: (person: IPerson) => void;
 }
 
 /** Read-only person profile in the side panel, with sub-tabs. */
@@ -25,6 +28,9 @@ export function PersonDetailPanel({
   person,
   onClose,
   onEdit,
+  canPromote = false,
+  onPromote,
+  onFollowUp,
 }: PersonDetailPanelProps) {
   const [drawerTab, setDrawerTab] = useState("info");
 
@@ -53,30 +59,62 @@ export function PersonDetailPanel({
       {person && (
         <div className="space-y-6">
           {/* Header Badge Card */}
-          <div className="p-4 rounded-2xl bg-primary-soft border border-primary-border flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-primary-soft border border-primary-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-primary text-white font-bold text-base flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-primary text-white font-bold text-base flex items-center justify-center shrink-0">
                 {getInitials(person.name)}
               </div>
               <div>
                 <h3 className="font-bold text-sm text-fg">{person.name}</h3>
-                <StatusBadge status={person.membershipStatus} size="sm" />
+                <div className="flex items-center gap-2 mt-1">
+                  <StatusBadge status={person.membershipStatus} size="sm" />
+                  {person.followUpStatus && (
+                    <StatusBadge status={person.followUpStatus} size="sm" />
+                  )}
+                </div>
               </div>
             </div>
-            {onEdit && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1.5 text-xs font-semibold"
-                onClick={() => onEdit(person)}
-              >
-                <Edit
-                  className="w-3.5 h-3.5 text-primary-text"
-                  aria-hidden="true"
-                />
-                <span>Edit Profile</span>
-              </Button>
-            )}
+
+            <div className="flex flex-wrap items-center gap-2">
+              {onFollowUp && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1 text-xs font-semibold"
+                  onClick={() => onFollowUp(person)}
+                >
+                  <MessageSquare className="w-3.5 h-3.5 text-primary-text" />
+                  <span>Follow-up</span>
+                </Button>
+              )}
+              {canPromote &&
+                onPromote &&
+                person.rawMembershipStatus !== "PASTOR" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1 text-xs font-semibold"
+                    onClick={() => onPromote(person)}
+                  >
+                    <ArrowUpRight className="w-3.5 h-3.5 text-primary-text" />
+                    <span>Promote</span>
+                  </Button>
+                )}
+              {onEdit && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1 text-xs font-semibold"
+                  onClick={() => onEdit(person)}
+                >
+                  <Edit
+                    className="w-3.5 h-3.5 text-primary-text"
+                    aria-hidden="true"
+                  />
+                  <span>Edit</span>
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Drawer Sub-Tabs */}

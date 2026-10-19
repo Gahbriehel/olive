@@ -2,6 +2,7 @@ export * from "./auth";
 export * from "./base";
 export * from "./contact";
 export * from "./dashboard";
+export * from "./department";
 export * from "./event";
 export * from "./game";
 export * from "./person";

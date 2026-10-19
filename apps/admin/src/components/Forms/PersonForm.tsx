@@ -43,6 +43,7 @@ const MEMBERSHIP_OPTIONS: ISelect[] = [
   { value: { _id: "MEMBER" }, label: "Member" },
   { value: { _id: "WORKER" }, label: "Worker" },
   { value: { _id: "LEADER" }, label: "Leader" },
+  { value: { _id: "PASTOR" }, label: "Pastor" },
 ];
 
 function resolveMembershipStatus(
@@ -62,7 +63,9 @@ function resolveMembershipStatus(
   }
   if (
     initial.membershipStatus &&
-    ["VISITOR", "MEMBER", "WORKER", "LEADER"].includes(initial.membershipStatus)
+    ["VISITOR", "MEMBER", "WORKER", "LEADER", "PASTOR"].includes(
+      initial.membershipStatus,
+    )
   ) {
     return initial.membershipStatus as ApiMembershipStatus;
   }
@@ -364,7 +367,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
           Cancel
         </Button>
         <Button type="submit" loading={isPending} variant="primary">
-          {isEditing ? "Save changes" : "Add person"}
+          {isEditing ? "Save changes" : "Add Person"}
         </Button>
       </FormFooter>
     </form>

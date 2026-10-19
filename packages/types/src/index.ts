@@ -24,6 +24,8 @@ export interface IQueryParams {
   teamId?: string;
   membershipStatus?: string;
   gender?: string;
+  departmentId?: string;
+  followUpStatus?: string;
   type?: string;
   category?: string;
   isPrivate?: boolean;
@@ -116,9 +118,18 @@ export type IEventPayload = CreateOrUpdateEventPayload;
 export type IUpdateEventPayload = Partial<CreateOrUpdateEventPayload>;
 
 // Person types
-export type MembershipStatus = "Member" | "Visitor" | "Worker" | "Leader";
+export type MembershipStatus = "Member" | "Visitor" | "Worker" | "Leader" | "Pastor";
 export type ApiGender = "MALE" | "FEMALE" | "OTHER";
-export type ApiMembershipStatus = "VISITOR" | "MEMBER" | "WORKER" | "LEADER";
+export type ApiMembershipStatus = "VISITOR" | "MEMBER" | "WORKER" | "LEADER" | "PASTOR";
+export type FollowUpStatus = "PENDING" | "IN_PROGRESS" | "CONVERTED" | "INACTIVE";
+
+export interface IPersonDepartment {
+  id: string;
+  name: string;
+  description?: string;
+  role?: string;
+  joinedAt?: string;
+}
 
 export interface IPersonResponse {
   id: string;
@@ -136,9 +147,56 @@ export interface IPersonResponse {
   eventsRegisteredCount?: number;
   eventsAttendedCount?: number;
   department?: string;
-  departments?: string[];
+  departments?: (IPersonDepartment | string)[];
+  followUpStatus?: FollowUpStatus;
+  followUpNotes?: string;
+  lastFollowUpAt?: string;
   notes?: string;
   avatarUrl?: string;
+}
+
+// Department types
+export interface IDepartmentMemberPerson {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  membershipStatus: ApiMembershipStatus;
+}
+
+export interface IDepartmentMember {
+  id: string;
+  role: string;
+  joinedAt: string;
+  person: IDepartmentMemberPerson;
+}
+
+export interface IDepartment {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  members?: IDepartmentMember[];
+  _count?: {
+    members: number;
+  };
+}
+
+export interface ICreateDepartmentPayload {
+  name: string;
+  description?: string;
+}
+
+export interface IUpdateDepartmentPayload {
+  name?: string;
+  description?: string;
+}
+
+export interface IAssignDepartmentMemberPayload {
+  personId: string;
+  role?: string;
 }
 
 // Registration types

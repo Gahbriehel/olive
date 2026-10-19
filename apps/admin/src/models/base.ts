@@ -23,6 +23,8 @@ export interface IQueryParams {
   teamId?: string;
   membershipStatus?: string;
   gender?: string;
+  departmentId?: string;
+  followUpStatus?: string;
   type?: string;
   category?: string;
   isPrivate?: boolean;

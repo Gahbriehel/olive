@@ -3,6 +3,7 @@ import {
   IPersonResponse,
   IPersonPayload,
   IUpdatePersonPayload,
+  IPromotePersonPayload,
   IPeopleStats,
 } from "@/models/person";
 import {
@@ -51,6 +52,16 @@ export const peopleService = {
     const res = await apiClient.patch<
       IBaseResponse<IPersonResponse> | IPersonResponse
     >(`/people/${id}`, payload);
+    return extractData<IPersonResponse>(res.data);
+  },
+
+  async promotePerson(
+    id: string,
+    payload: IPromotePersonPayload,
+  ): Promise<IPersonResponse> {
+    const res = await apiClient.post<
+      IBaseResponse<IPersonResponse> | IPersonResponse
+    >(`/people/${id}/promote`, payload);
     return extractData<IPersonResponse>(res.data);
   },
 };

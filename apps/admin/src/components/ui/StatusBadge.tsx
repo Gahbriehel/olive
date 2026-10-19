@@ -28,12 +28,15 @@ const STATUS_STYLES: Record<string, StatusStyle> = {
   CHECKED_IN: { label: "Checked-In", variant: "emerald", dot: true },
   PUBLISHED: { label: "Published", variant: "emerald", pulse: true },
   LEADER: { label: "Leader", variant: "emerald" },
+  PASTOR: { label: "Pastor", variant: "purple" },
+  CONVERTED: { label: "Converted", variant: "emerald", dot: true },
 
   // Pending / warning
   DRAFT: { label: "Draft", variant: "amber", dot: true },
   VISITOR: { label: "Visitor", variant: "amber" },
   GUEST: { label: "Guest", variant: "amber" },
-  PENDING: { label: "Pending", variant: "amber" },
+  PENDING: { label: "Pending", variant: "amber", dot: true },
+  IN_PROGRESS: { label: "In Progress", variant: "cyan", dot: true },
 
   // Negative / stopped
   BOUNCED: { label: "Bounced", variant: "rose", dot: true },

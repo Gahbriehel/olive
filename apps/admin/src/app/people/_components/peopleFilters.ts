@@ -7,10 +7,23 @@ export const peopleFilterFields: FilterField[] = [
     label: "Membership Status",
     allLabel: "All Statuses",
     options: [
-      { label: "Member", value: "Member" },
-      { label: "Worker", value: "Worker" },
-      { label: "Leader", value: "Leader" },
-      { label: "Visitor", value: "Visitor" },
+      { label: "Visitor", value: "VISITOR" },
+      { label: "Member", value: "MEMBER" },
+      { label: "Worker", value: "WORKER" },
+      { label: "Leader", value: "LEADER" },
+      { label: "Pastor", value: "PASTOR" },
+    ],
+  },
+  {
+    type: "select",
+    key: "followUpStatus",
+    label: "Follow-up Status",
+    allLabel: "All Follow-up Statuses",
+    options: [
+      { label: "Pending", value: "PENDING" },
+      { label: "In Progress", value: "IN_PROGRESS" },
+      { label: "Converted", value: "CONVERTED" },
+      { label: "Inactive", value: "INACTIVE" },
     ],
   },
   {
@@ -19,8 +32,9 @@ export const peopleFilterFields: FilterField[] = [
     label: "Gender",
     allLabel: "All Genders",
     options: [
-      { label: "Male", value: "Male" },
-      { label: "Female", value: "Female" },
+      { label: "Male", value: "MALE" },
+      { label: "Female", value: "FEMALE" },
+      { label: "Other", value: "OTHER" },
     ],
   },
 ];

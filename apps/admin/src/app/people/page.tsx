@@ -28,6 +28,12 @@ import { peopleFilterFields } from "./_components/peopleFilters";
 import { PeopleStats } from "./_components/PeopleStats";
 import { PersonDetailPanel } from "./_components/PersonDetailPanel";
 import { usePeopleColumns } from "./_components/usePeopleColumns";
+import { PromotePersonModal } from "./_components/PromotePersonModal";
+import {
+  FollowUpForm,
+  FollowUpFormValues,
+} from "@/components/Forms/FollowUpForm";
+import { ApiMembershipStatus } from "@/models/person";
 
 export default function PeoplePage() {
   const {
@@ -46,12 +52,15 @@ export default function PeoplePage() {
 
   const [selectedPerson, setSelectedPerson] = useState<IPerson | null>(null);
   const [editingPerson, setEditingPerson] = useState<IPerson | null>(null);
+  const [promotingPerson, setPromotingPerson] = useState<IPerson | null>(null);
+  const [followUpPerson, setFollowUpPerson] = useState<IPerson | null>(null);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
 
   const { user } = useAuth();
   const userRoles = getUserRoles(user);
   const isSuperAdmin = userRoles.includes(ROLES.SUPER_ADMIN);
+  const canPromote = isSuperAdmin || userRoles.includes(ROLES.ADMIN);
 
   const {
     people: apiPeople,
@@ -61,6 +70,8 @@ export default function PeoplePage() {
     isCreating,
     updatePerson,
     isUpdating,
+    promotePerson,
+    isPromoting,
     refetch,
     isLoading,
     isError,
@@ -112,19 +123,63 @@ export default function PeoplePage() {
     }
   };
 
+  const handlePromotePerson = async (
+    id: string,
+    membershipStatus: ApiMembershipStatus,
+  ) => {
+    try {
+      const updated = await promotePerson({ id, membershipStatus });
+      setPromotingPerson(null);
+      if (selectedPerson?.id === id && updated) {
+        setSelectedPerson(adaptApiPersonToPerson(updated));
+      }
+    } catch (err) {
+      console.error("Failed to promote person:", err);
+    }
+  };
+
+  const handleFollowUpSubmit = async (
+    id: string,
+    payload: FollowUpFormValues,
+  ) => {
+    try {
+      const dateIso = payload.lastFollowUpAt
+        ? new Date(payload.lastFollowUpAt).toISOString()
+        : new Date().toISOString();
+
+      const updated = await updatePerson({
+        id,
+        dto: {
+          followUpStatus: payload.followUpStatus,
+          followUpNotes: payload.followUpNotes,
+          lastFollowUpAt: dateIso,
+        },
+      });
+      setFollowUpPerson(null);
+      if (selectedPerson?.id === id && updated) {
+        setSelectedPerson(adaptApiPersonToPerson(updated));
+      }
+    } catch (err) {
+      console.error("Failed to update follow-up:", err);
+    }
+  };
+
   const columns = usePeopleColumns({
     page,
     limit,
     isSuperAdmin,
+    canPromote,
     onView: setSelectedPerson,
     onEdit: setEditingPerson,
+    onPromote: setPromotingPerson,
+    onFollowUp: setFollowUpPerson,
   });
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       <PageHeader
         title="People Directory"
-        description="Central repository of church members, conference attendees, and first-time guests."
+        description="Central repository of church members, visitors, and ministry leaders with pastoral tracking."
       />
 
       <PeopleStats
@@ -190,7 +245,40 @@ export default function PeoplePage() {
         person={selectedPerson}
         onClose={() => setSelectedPerson(null)}
         onEdit={isSuperAdmin ? setEditingPerson : undefined}
+        canPromote={canPromote}
+        onPromote={setPromotingPerson}
+        onFollowUp={setFollowUpPerson}
       />
+
+      {/* Promote Person Modal */}
+      <PromotePersonModal
+        person={promotingPerson}
+        isOpen={Boolean(promotingPerson)}
+        onClose={() => setPromotingPerson(null)}
+        onPromote={handlePromotePerson}
+        isLoading={isPromoting}
+      />
+
+      {/* Pastoral Follow-up Sidebar Modal */}
+      <SidebarModal
+        title="Pastoral Follow-up"
+        description={
+          followUpPerson
+            ? `Log pastoral care and visitor touchpoint for ${followUpPerson.name}`
+            : undefined
+        }
+        isOpen={Boolean(followUpPerson)}
+        onClose={() => setFollowUpPerson(null)}
+      >
+        {followUpPerson && (
+          <FollowUpForm
+            person={followUpPerson}
+            onSubmit={(data) => handleFollowUpSubmit(followUpPerson.id, data)}
+            onCancel={() => setFollowUpPerson(null)}
+            isLoading={isUpdating}
+          />
+        )}
+      </SidebarModal>
 
       {/* Add Person Sidebar Modal */}
       <SidebarModal

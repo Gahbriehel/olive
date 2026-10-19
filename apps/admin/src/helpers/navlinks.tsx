@@ -16,6 +16,7 @@ import {
   BarChart3,
   Cake,
   MailWarning,
+  Building2,
 } from "lucide-react";
 import { ROLES, hasAuthority } from "@/utils/rbac";
 
@@ -46,6 +47,12 @@ export const mainNavItems: NavItem[] = [
     href: "/people",
     label: "People",
     icon: Users,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
+  },
+  {
+    href: "/departments",
+    label: "Departments",
+    icon: Building2,
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.COORDINATOR],
   },
   {

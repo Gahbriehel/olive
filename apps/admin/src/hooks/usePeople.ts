@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   IPersonPayload,
   IUpdatePersonPayload,
+  IPromotePersonPayload,
   IPersonResponse,
 } from "@/models/person";
 import { IQueryParams } from "@/models/base";
@@ -30,8 +31,24 @@ export function usePeople(params?: IQueryParams) {
     meta: { successMessage: "Person updated" },
     mutationFn: ({ id, dto }: { id: string; dto: IUpdatePersonPayload }) =>
       peopleService.updatePerson(id, dto),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["people"] });
+      queryClient.invalidateQueries({ queryKey: ["person", variables.id] });
+    },
+  });
+
+  const promotePersonMutation = useMutation({
+    meta: { successMessage: "Person promoted successfully" },
+    mutationFn: ({
+      id,
+      membershipStatus,
+    }: {
+      id: string;
+      membershipStatus: IPromotePersonPayload["membershipStatus"];
+    }) => peopleService.promotePerson(id, { membershipStatus }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["people"] });
+      queryClient.invalidateQueries({ queryKey: ["person", variables.id] });
     },
   });
 
@@ -47,6 +64,8 @@ export function usePeople(params?: IQueryParams) {
     isCreating: createPersonMutation.isPending,
     updatePerson: updatePersonMutation.mutateAsync,
     isUpdating: updatePersonMutation.isPending,
+    promotePerson: promotePersonMutation.mutateAsync,
+    isPromoting: promotePersonMutation.isPending,
   };
 }
 

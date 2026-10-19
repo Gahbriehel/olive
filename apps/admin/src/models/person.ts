@@ -1,6 +1,18 @@
-export type MembershipStatus = "Member" | "Visitor" | "Worker" | "Leader";
-export type ApiGender = "MALE" | "FEMALE" | "OTHER";
-export type ApiMembershipStatus = "VISITOR" | "MEMBER" | "WORKER" | "LEADER";
+import type {
+  MembershipStatus,
+  ApiGender,
+  ApiMembershipStatus,
+  FollowUpStatus,
+  IPersonDepartment,
+} from "@olive/types";
+
+export type {
+  MembershipStatus,
+  ApiGender,
+  ApiMembershipStatus,
+  FollowUpStatus,
+  IPersonDepartment,
+};
 export type ApiEmailStatus =
   "DELIVERABLE" | "BOUNCED" | "DROPPED" | "COMPLAINED";
 
@@ -51,7 +63,7 @@ export interface IPerson {
     attended: boolean;
     checkedInAt?: string;
   }[];
-  departments?: string[];
+  departments?: IPersonDepartment[];
   attendanceHistory: {
     id: string;
     eventName: string;
@@ -59,6 +71,9 @@ export interface IPerson {
     attended: boolean;
     checkedInAt?: string;
   }[];
+  followUpStatus?: FollowUpStatus;
+  followUpNotes?: string;
+  lastFollowUpAt?: string;
   notes?: string;
   address?: string;
   rawGender?: ApiGender;
@@ -87,7 +102,10 @@ export interface IPersonResponse {
   eventsAttendedCount?: number;
   registrations?: IPersonRegistrationHistory[];
   department?: string;
-  departments?: string[];
+  departments?: (IPersonDepartment | string)[];
+  followUpStatus?: FollowUpStatus;
+  followUpNotes?: string;
+  lastFollowUpAt?: string;
   notes?: string;
   avatarUrl?: string;
 }
@@ -99,6 +117,7 @@ export interface IPeopleStats {
     members: number;
     workers: number;
     leaders: number;
+    pastors?: number;
   };
   gender: {
     male: number;
@@ -116,17 +135,44 @@ export interface IPersonPayload {
   phone?: string;
   gender?: ApiGender;
   membershipStatus?: ApiMembershipStatus;
+  followUpStatus?: FollowUpStatus;
+  followUpNotes?: string;
+  lastFollowUpAt?: string;
   dateOfBirth?: string;
   address?: string;
 }
 
+export interface IPromotePersonPayload {
+  membershipStatus: ApiMembershipStatus;
+}
+
 export type IUpdatePersonPayload = Partial<IPersonPayload>;
+
+export const MEMBERSHIP_HIERARCHY: ApiMembershipStatus[] = [
+  "VISITOR",
+  "MEMBER",
+  "WORKER",
+  "LEADER",
+  "PASTOR",
+];
+
+export function getNextMembershipTiers(
+  current: ApiMembershipStatus | undefined,
+): ApiMembershipStatus[] {
+  if (!current) return ["MEMBER"];
+  const currentIndex = MEMBERSHIP_HIERARCHY.indexOf(current);
+  if (currentIndex === -1 || currentIndex >= MEMBERSHIP_HIERARCHY.length - 1) {
+    return [];
+  }
+  return MEMBERSHIP_HIERARCHY.slice(currentIndex + 1);
+}
 
 export const membershipMap: Record<ApiMembershipStatus, MembershipStatus> = {
   MEMBER: "Member",
   WORKER: "Worker",
   LEADER: "Leader",
   VISITOR: "Visitor",
+  PASTOR: "Pastor",
 };
 
 export const reverseMembershipMap: Record<
@@ -137,6 +183,7 @@ export const reverseMembershipMap: Record<
   Worker: "WORKER",
   Leader: "LEADER",
   Visitor: "VISITOR",
+  Pastor: "PASTOR",
 };
 
 export function adaptApiPersonToPerson(apiPerson: IPersonResponse): IPerson {
@@ -187,9 +234,27 @@ export function adaptApiPersonToPerson(apiPerson: IPersonResponse): IPerson {
     apiPerson.eventsAttendedCount ??
     registrations.filter((r) => r.attended).length;
 
-  const departments =
-    apiPerson.departments ||
-    (apiPerson.department ? [apiPerson.department] : []);
+  let departments: IPersonDepartment[] = [];
+  if (Array.isArray(apiPerson.departments)) {
+    departments = apiPerson.departments.map((dept, index) => {
+      if (typeof dept === "string") {
+        return {
+          id: `dept-${index}`,
+          name: dept,
+          role: "Member",
+        };
+      }
+      return dept;
+    });
+  } else if (apiPerson.department) {
+    departments = [
+      {
+        id: "dept-default",
+        name: apiPerson.department,
+        role: "Member",
+      },
+    ];
+  }
 
   return {
     id: apiPerson.id,
@@ -211,6 +276,9 @@ export function adaptApiPersonToPerson(apiPerson: IPersonResponse): IPerson {
     registrations,
     departments,
     attendanceHistory,
+    followUpStatus: apiPerson.followUpStatus,
+    followUpNotes: apiPerson.followUpNotes,
+    lastFollowUpAt: apiPerson.lastFollowUpAt,
     notes: apiPerson.notes || "",
     address: apiPerson.address || "",
     rawGender: apiPerson.gender,

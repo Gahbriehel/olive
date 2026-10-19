@@ -13,6 +13,7 @@ export const MEMBERSHIP_STATUSES: ApiMembershipStatus[] = [
   "MEMBER",
   "WORKER",
   "LEADER",
+  "PASTOR",
 ];
 
 /** Optional yyyy-mm-dd date that can't be in the future. */
