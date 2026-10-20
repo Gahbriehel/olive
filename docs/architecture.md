@@ -110,6 +110,7 @@ page.tsx ──uses──▶ hooks/useX.ts ──calls──▶ services/x.servi
 4. **Hooks return** data, `meta`, `isLoading`, `isError`, `error`, `refetch`, and `mutateAsync` functions with their `isPending` flags.
 5. **List pages** keep page, limit, search and filters in `useListFilters`.
    - Tabular data renders in `Table`, with `ListToolbar` for list actions.
+   - When table rows represent viewable or manageable entities, pass `onRowClick` to `<Table>` so clicking any row triggers the view mode or detail view (§6.3).
    - Card grids render inside `QueryState` with `Pagination`.
    - Every page that renders a query shows its error state (with retry) and its loading state, never an empty message instead.
 
@@ -224,7 +225,7 @@ Each row is the **only** approved way to do that job. Items marked *(target)* do
 | Status pill | `ui/StatusBadge`, which wraps `ui/Badge` | Labels and colours live in its `STATUS_STYLES` table; add new statuses there. No hand-rolled badge `<span>`s. |
 | Team colour chip | `ui/TeamBadge` | Picks dark or white text from the team colour's lightness. |
 | Card / KPI | `ui/Card`, `ui/StatsCard` | Always wrap `StatsCard`s in `StatsCardGroup`. It lays them out as a row of fixed-width cards (`w-56`) that snap as you swipe, so on phones the row scrolls sideways instead of stacking. Don't override it with a page-level grid. The title gets the card's top row; `change` and `description` are single caption lines under the value. Long text is cut off and shown in full on hover. |
-| Data list | `ui/Table` + `ui/ListToolbar` + `useListFilters` | Server-paginated tables don't sort (§7). Filters live in `modals/FiltersModal`, opened by `ui/FiltersButton`. Declare the fields as a `FilterField[]` schema, pass it to `useListFilters`, and spread its `panelProps` into the modal. Only search stays on the page. Don't put dropdowns or filter chips on the page. Card-grid pages, which have no `Table` toolbar, put `FiltersButton` and search in a single row above the content, as `/events` does. |
+| Data list | `ui/Table` + `ui/ListToolbar` + `useListFilters` | Server-paginated tables don't sort (§7). Always pass `onRowClick` when table rows represent viewable/manageable records (§6.3). Filters live in `modals/FiltersModal`, opened by `ui/FiltersButton`. Declare the fields as a `FilterField[]` schema, pass it to `useListFilters`, and spread its `panelProps` into the modal. Only search stays on the page. Don't put dropdowns or filter chips on the page. Card-grid pages, which have no `Table` toolbar, put `FiltersButton` and search in a single row above the content, as `/events` does. |
 | Pagination | `ui/Pagination` | `Table` uses it internally. Card grids use it directly. |
 | Page title and actions | `ui/PageHeader` | Renders the page's only `<h1>`. Takes `title`, `description`, `icon`, `actions`, and `breadcrumbs` for nested pages (event detail, reports). |
 | Loading / error / empty | `ui/QueryState` | Renders loading, then error, then empty, then content. Also provides `EmptyState`, `ErrorState`, `SkeletonCardGrid` and `SkeletonList`. `Table` has the same states built in, through `loading`, `isError`, `error`, `onRetry`, `resource` and `emptyState`. Never show an empty message while loading or after an error. |
@@ -247,6 +248,10 @@ Each row is the **only** approved way to do that job. Items marked *(target)* do
 
 ### 6.3 Interaction conventions
 
+- **Table row clicks (`onRowClick`):** All tables where rows correspond to viewable, inspectable, or manageable records must supply `onRowClick` to trigger the primary view mode (e.g. `PersonDetailPanel`, `DepartmentRosterDrawer`, detail modal, or detail route navigation).
+  - `ui/Table` automatically styles clickable rows with `cursor-pointer`, subtle hover state, and keyboard focus outlines (`focus-visible:ring-1 focus-visible:ring-primary/40`).
+  - Rows are keyboard-accessible (pressing `Enter` or `Space` activates `onRowClick`).
+  - Interactive child controls (`button`, `a`, `input`, `select`, `textarea`, Radix popovers, copy triggers via `TruncatedTextWithCopy`) and cells in `actions` or `select` columns are isolated and will not trigger `onRowClick`.
 - **Destructive actions always confirm** through `ConfirmActionModal` with `tone="danger"`. Anything that deletes or irreversibly changes data (delete, clear scores) passes `tone="danger"` explicitly.
 - **Actions with wide or outward effects also confirm,** using the default tone. Bulk email sends state the recipient count; marking a bounce resolved also confirms.
   - Non-destructive confirmations (e.g. sign out) use the default tone with a specific `confirmLabel`.
