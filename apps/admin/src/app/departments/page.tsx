@@ -175,6 +175,7 @@ export default function DepartmentsPage() {
         error={error}
         onRetry={() => refetch()}
         resource="departments"
+        onRowClick={setSelectedRosterDept}
       >
         <ListToolbar
           create={{

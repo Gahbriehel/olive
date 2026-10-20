@@ -124,6 +124,13 @@ export default function BirthdayReportsPage() {
           onRetry={() => list.refetch()}
           resource="birthdays"
           emptyMessage="No birthday records found for the selected cycle and filters."
+          onRowClick={(person) => {
+            if (person.isGreeted || person.status === "COMPLETED") {
+              report.setViewTarget(person);
+            } else if (person.email) {
+              report.setEmailTarget(person);
+            }
+          }}
         >
           <ListToolbar actions={[{ title: "Refresh", fn: refetchAll }]} />
         </Table>

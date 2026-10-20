@@ -265,6 +265,7 @@ export default function RegistrationsPage() {
         error={error}
         onRetry={() => refetch()}
         resource="registrations"
+        onRowClick={setSelectedRegistration}
       >
         <ListToolbar
           create={{

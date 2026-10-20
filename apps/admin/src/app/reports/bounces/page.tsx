@@ -148,6 +148,7 @@ export default function EmailBouncesPage() {
           onRetry={() => list.refetch()}
           resource="email bounces"
           emptyMessage="No bounce alerts found matching current criteria"
+          onRowClick={report.setSelectedBounce}
         >
           <ListToolbar
             actions={[

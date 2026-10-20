@@ -19,6 +19,7 @@ type DirectoryTableProps = Pick<
   | "loading"
   | "isError"
   | "error"
+  | "onRowClick"
 >;
 
 interface UsersDirectoryPanelProps extends DirectoryTableProps {

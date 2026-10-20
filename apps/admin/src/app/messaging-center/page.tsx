@@ -315,6 +315,10 @@ export default function MessagingCenterPage() {
           onRetry={() => refetch()}
           resource="email logs"
           emptyMessage="No email communication logs found matching criteria"
+          onRowClick={(item) => {
+            setSelectedLog(item);
+            setIsLogModalOpen(true);
+          }}
         >
           <ListToolbar
             trailing={

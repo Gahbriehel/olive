@@ -233,6 +233,10 @@ export function ContactTable({ type }: ContactTableProps): JSX.Element {
         onPageChange={setPage}
         limit={limit}
         onLimitChange={setLimit}
+        onRowClick={(contact) => {
+          setSelectedContact(contact);
+          setIsModalOpen(true);
+        }}
       >
         <ListToolbar
           actions={[

@@ -218,6 +218,7 @@ export default function UsersPage() {
                 onInvite={() => setIsCreateOpen(true)}
                 canManageUsers={canManageUsers}
                 exportParams={exportParams}
+                onRowClick={setEditingUser}
               />
             ) : (
               <PermissionsMatrixPanel />

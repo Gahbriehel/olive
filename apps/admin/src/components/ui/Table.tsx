@@ -24,6 +24,7 @@ import { NotAvailable } from "@/components/ui/NotAvailable";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Pagination } from "@/components/ui/Pagination";
 import { EmptyState, ErrorState } from "@/components/ui/QueryState";
+import { cn } from "@/helpers/cn";
 
 export interface TableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -57,6 +58,8 @@ export interface TableProps<TData, TValue> {
   /** Replaces the default empty message (e.g. with a create action). */
   emptyState?: ReactNode;
   children?: ReactNode;
+  /** Callback fired when a table row is clicked. */
+  onRowClick?: (row: TData) => void;
 }
 
 export function Table<TData, TValue>({
@@ -83,6 +86,7 @@ export function Table<TData, TValue>({
   resource = "records",
   emptyState,
   children,
+  onRowClick,
 }: TableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [searchInput, setSearchInput] = useState(search ?? "");
@@ -286,12 +290,55 @@ export function Table<TData, TValue>({
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="hover:bg-subtle transition-colors"
+                    tabIndex={onRowClick ? 0 : undefined}
+                    onClick={(e) => {
+                      if (!onRowClick) return;
+                      const target = e.target as HTMLElement | null;
+                      if (
+                        target?.closest(
+                          'button, a, input, select, textarea, [data-no-row-click="true"], [role="button"], [role="menuitem"], [data-radix-collection-item]',
+                        )
+                      ) {
+                        return;
+                      }
+                      onRowClick(row.original);
+                    }}
+                    onKeyDown={
+                      onRowClick
+                        ? (e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              const target = e.target as HTMLElement | null;
+                              if (
+                                target?.closest(
+                                  'button, a, input, select, textarea, [data-no-row-click="true"], [role="button"], [role="menuitem"], [data-radix-collection-item]',
+                                )
+                              ) {
+                                return;
+                              }
+                              if (target === e.currentTarget) {
+                                e.preventDefault();
+                                onRowClick(row.original);
+                              }
+                            }
+                          }
+                        : undefined
+                    }
+                    className={cn(
+                      "hover:bg-subtle transition-colors",
+                      onRowClick &&
+                        "cursor-pointer focus:outline-none focus-visible:bg-subtle focus-visible:ring-1 focus-visible:ring-primary/40",
+                    )}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
                         className="p-3.5 align-middle text-fg-secondary"
+                        onClick={
+                          cell.column.id === "actions" ||
+                          cell.column.id === "select"
+                            ? (e) => e.stopPropagation()
+                            : undefined
+                        }
                       >
                         {!["select", "image", "actions", "s/n", "sn"].includes(
                           cell.column.id,

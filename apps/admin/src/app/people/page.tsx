@@ -220,6 +220,7 @@ export default function PeoplePage() {
         error={error}
         onRetry={() => refetch()}
         resource="people"
+        onRowClick={setSelectedPerson}
       >
         <ListToolbar
           create={{

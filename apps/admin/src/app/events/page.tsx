@@ -222,6 +222,7 @@ export default function EventsPage() {
           onRetry={() => refetch()}
           resource="events"
           emptyState={emptyState}
+          onRowClick={(evt) => router.push(`/events/${evt.id}`)}
         />
       ) : (
         <QueryState

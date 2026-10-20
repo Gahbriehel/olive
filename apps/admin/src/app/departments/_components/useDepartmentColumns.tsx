@@ -5,8 +5,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Shield, Users } from "lucide-react";
 import { ActionsList } from "@/components/ui/ActionsList";
 import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
-import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { IDepartment } from "@/models/department";
+import { truncateString } from "@/helpers/truncateString";
 
 interface Options {
   page: number;
@@ -54,21 +54,7 @@ export function useDepartmentColumns({
         accessorKey: "description",
         header: "Description",
         cell: ({ row }) => {
-          const desc = row.original.description;
-          if (!desc) {
-            return (
-              <span className="text-2xs text-fg-muted italic">
-                No description
-              </span>
-            );
-          }
-          return (
-            <TruncatedTextWithCopy
-              text={desc}
-              maxLength={40}
-              textClassName="text-fg-secondary text-xs"
-            />
-          );
+          return <span>{truncateString(row.original.description, 40)}</span>;
         },
       },
       {
