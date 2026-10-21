@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/Badge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { FollowUpStatusBadge } from "@/components/ui/FollowUpStatusBadge";
 import { ActionsList, type ActionItem } from "@/components/ui/ActionsList";
@@ -19,6 +20,8 @@ interface Options {
   onEdit: (person: IPerson) => void;
   onPromote?: (person: IPerson) => void;
   onFollowUp?: (person: IPerson) => void;
+  onLogCheckIn?: (person: IPerson) => void;
+  onScheduleCare?: (person: IPerson) => void;
 }
 
 /** Column definitions for the people directory table. */
@@ -31,6 +34,8 @@ export function usePeopleColumns({
   onEdit,
   onPromote,
   onFollowUp,
+  onLogCheckIn,
+  onScheduleCare,
 }: Options) {
   return useMemo<ColumnDef<IPerson>[]>(
     () => [
@@ -138,6 +143,38 @@ export function usePeopleColumns({
         ),
       },
       {
+        accessorKey: "lastCheckInAt",
+        header: "Pastoral Care",
+        cell: ({ row }) => {
+          const person = row.original;
+          if (person.hasPendingCheckIn) {
+            return (
+              <Badge variant="amber" size="sm" dot>
+                Care Scheduled
+              </Badge>
+            );
+          }
+          if (person.lastCheckInAt) {
+            return (
+              <div>
+                <span className="text-2xs font-medium text-fg">
+                  {new Date(person.lastCheckInAt).toLocaleDateString(
+                    undefined,
+                    {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    },
+                  )}
+                </span>
+                <p className="text-2xs text-fg-muted">Last check-in</p>
+              </div>
+            );
+          }
+          return <span className="text-fg-subtle select-none">—</span>;
+        },
+      },
+      {
         id: "actions",
         header: "Actions",
         cell: ({ row }) => {
@@ -154,6 +191,24 @@ export function usePeopleColumns({
               },
             },
           ];
+
+          if (onLogCheckIn) {
+            actions.push({
+              title: "+ Log Check-in",
+              fn: () => {
+                onLogCheckIn(person);
+              },
+            });
+          }
+
+          if (onScheduleCare) {
+            actions.push({
+              title: "Flag for Care",
+              fn: () => {
+                onScheduleCare(person);
+              },
+            });
+          }
 
           // Follow-up is STRICTLY for visitors
           if (onFollowUp && isVisitor) {
@@ -202,6 +257,8 @@ export function usePeopleColumns({
       onEdit,
       onPromote,
       onFollowUp,
+      onLogCheckIn,
+      onScheduleCare,
     ],
   );
 }

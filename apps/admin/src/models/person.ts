@@ -4,6 +4,13 @@ import type {
   ApiMembershipStatus,
   FollowUpStatus,
   IPersonDepartment,
+  CheckInReason,
+  CheckInStatus,
+  IPastoralCheckIn,
+  IPastoralCheckInUserSummary,
+  ICreateCheckInPayload,
+  IUpdateCheckInPayload,
+  ICheckInQueryParams,
 } from "@olive/types";
 
 export type {
@@ -12,6 +19,13 @@ export type {
   ApiMembershipStatus,
   FollowUpStatus,
   IPersonDepartment,
+  CheckInReason,
+  CheckInStatus,
+  IPastoralCheckIn,
+  IPastoralCheckInUserSummary,
+  ICreateCheckInPayload,
+  IUpdateCheckInPayload,
+  ICheckInQueryParams,
 };
 export type ApiEmailStatus =
   "DELIVERABLE" | "BOUNCED" | "DROPPED" | "COMPLAINED";
@@ -76,6 +90,9 @@ export interface IPerson {
   lastFollowUpAt?: string;
   notes?: string;
   address?: string;
+  lastCheckInAt?: string | null;
+  hasPendingCheckIn?: boolean;
+  pastoralCheckIns?: IPastoralCheckIn[];
   rawGender?: ApiGender;
   rawMembershipStatus?: ApiMembershipStatus;
   dateOfBirth?: string;
@@ -108,6 +125,9 @@ export interface IPersonResponse {
   lastFollowUpAt?: string;
   notes?: string;
   avatarUrl?: string;
+  lastCheckInAt?: string | null;
+  hasPendingCheckIn?: boolean;
+  pastoralCheckIns?: IPastoralCheckIn[];
 }
 
 export interface IPeopleStats {
@@ -281,6 +301,9 @@ export function adaptApiPersonToPerson(apiPerson: IPersonResponse): IPerson {
     lastFollowUpAt: apiPerson.lastFollowUpAt,
     notes: apiPerson.notes || "",
     address: apiPerson.address || "",
+    lastCheckInAt: apiPerson.lastCheckInAt || null,
+    hasPendingCheckIn: Boolean(apiPerson.hasPendingCheckIn),
+    pastoralCheckIns: apiPerson.pastoralCheckIns || [],
     rawGender: apiPerson.gender,
     rawMembershipStatus: apiPerson.membershipStatus,
     dateOfBirth: apiPerson.dateOfBirth

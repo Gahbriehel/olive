@@ -1,19 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { Edit } from "lucide-react";
+import { Edit, Clock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { Badge } from "@/components/ui/Badge";
 import { Tabs } from "@/components/ui/Tabs";
 import { getInitials } from "@/utils/formatters";
 import { IPerson } from "@/models/person";
+import { IPastoralCheckIn } from "@/models/checkIn";
+import { usePerson } from "@/hooks/usePeople";
 import {
   PersonAttendanceTab,
   PersonDepartmentsTab,
   PersonInfoTab,
   PersonNotesTab,
 } from "./PersonDetailTabs";
+import { PersonPastoralCareTab } from "./PersonPastoralCareTab";
 
 interface PersonDetailPanelProps {
   person: IPerson | null;
@@ -23,6 +27,10 @@ interface PersonDetailPanelProps {
   canPromote?: boolean;
   onPromote?: (person: IPerson) => void;
   onFollowUp?: (person: IPerson) => void;
+  onLogCheckIn?: (person: IPerson) => void;
+  onScheduleCare?: (person: IPerson) => void;
+  onCompleteCheckIn?: (checkIn: IPastoralCheckIn) => void;
+  onCancelCheckIn?: (checkInId: string) => void;
 }
 
 /** Read-only person profile in the side panel, with sub-tabs. */
@@ -33,11 +41,38 @@ export function PersonDetailPanel({
   canPromote = false,
   onPromote,
   onFollowUp,
+  onLogCheckIn,
+  onScheduleCare,
+  onCompleteCheckIn,
+  onCancelCheckIn,
 }: PersonDetailPanelProps) {
   const [drawerTab, setDrawerTab] = useState("info");
 
+  // Fetch complete person profile (GET /people/:id) which includes full pastoralCheckIns history
+  const { data: fullPersonData, isLoading: isLoadingFullPerson } = usePerson(
+    person?.id,
+    person?.raw,
+  );
+
+  const isVisitor =
+    person?.rawMembershipStatus === "VISITOR" ||
+    person?.membershipStatus === "Visitor";
+
+  const checkIns =
+    fullPersonData?.pastoralCheckIns || person?.pastoralCheckIns || [];
+  const hasPendingCare =
+    fullPersonData?.hasPendingCheckIn ??
+    person?.hasPendingCheckIn ??
+    checkIns.some((c) => c.status === "SCHEDULED");
+  const lastCheckInAt = fullPersonData?.lastCheckInAt ?? person?.lastCheckInAt;
+
   const drawerTabs = [
     { id: "info", label: "Details" },
+    {
+      id: "pastoralCare",
+      label: "Pastoral Care",
+      count: checkIns.length,
+    },
     {
       id: "departments",
       label: "Departments",
@@ -51,10 +86,6 @@ export function PersonDetailPanel({
     { id: "notes", label: "Notes" },
   ];
 
-  const isVisitor =
-    person?.rawMembershipStatus === "VISITOR" ||
-    person?.membershipStatus === "Visitor";
-
   return (
     <SidebarModal
       isOpen={!!person}
@@ -62,11 +93,35 @@ export function PersonDetailPanel({
       title={person?.name || ""}
       footer={
         person ? (
-          <div className="flex items-center justify-between w-full">
+          <div className="flex items-center justify-between w-full flex-wrap gap-2">
             <Button variant="outline" size="sm" type="button" onClick={onClose}>
               Close
             </Button>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              {onScheduleCare && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  type="button"
+                  className="gap-1 text-xs"
+                  onClick={() => onScheduleCare(person)}
+                >
+                  <Clock className="w-3.5 h-3.5 text-warning-text" />
+                  <span>Flag for Care</span>
+                </Button>
+              )}
+              {onLogCheckIn && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  type="button"
+                  className="gap-1 text-xs"
+                  onClick={() => onLogCheckIn(person)}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Log Check-in</span>
+                </Button>
+              )}
               {onFollowUp && isVisitor && (
                 <Button
                   size="sm"
@@ -114,6 +169,16 @@ export function PersonDetailPanel({
                       size="sm"
                     />
                   )}
+                  {hasPendingCare && (
+                    <Badge variant="amber" size="sm" dot>
+                      Care Scheduled
+                    </Badge>
+                  )}
+                  {!hasPendingCare && lastCheckInAt && (
+                    <span className="text-2xs text-fg-muted font-medium">
+                      Last Care: {new Date(lastCheckInAt).toLocaleDateString()}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -139,6 +204,17 @@ export function PersonDetailPanel({
           />
 
           {drawerTab === "info" && <PersonInfoTab person={person} />}
+          {drawerTab === "pastoralCare" && (
+            <PersonPastoralCareTab
+              person={person}
+              checkIns={checkIns}
+              isLoading={isLoadingFullPerson}
+              onLogCheckIn={() => onLogCheckIn?.(person)}
+              onScheduleCare={() => onScheduleCare?.(person)}
+              onCompleteCheckIn={(task) => onCompleteCheckIn?.(task)}
+              onCancelCheckIn={(id) => onCancelCheckIn?.(id)}
+            />
+          )}
           {drawerTab === "departments" && (
             <PersonDepartmentsTab person={person} />
           )}

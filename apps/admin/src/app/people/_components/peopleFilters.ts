@@ -37,4 +37,12 @@ export const peopleFilterFields: FilterField[] = [
       { label: "Other", value: "OTHER" },
     ],
   },
+  {
+    type: "boolean",
+    key: "hasPendingCheckIn",
+    label: "Pastoral Care",
+    allLabel: "All Care Statuses",
+    trueLabel: "Care Scheduled / Pending Outreach",
+    falseLabel: "Healthy / No Active Care",
+  },
 ];

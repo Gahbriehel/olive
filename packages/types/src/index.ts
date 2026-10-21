@@ -26,6 +26,7 @@ export interface IQueryParams {
   gender?: string;
   departmentId?: string;
   followUpStatus?: string;
+  hasPendingCheckIn?: boolean;
   type?: string;
   category?: string;
   isPrivate?: boolean;
@@ -153,6 +154,81 @@ export interface IPersonResponse {
   lastFollowUpAt?: string;
   notes?: string;
   avatarUrl?: string;
+  lastCheckInAt?: string | null;
+  hasPendingCheckIn?: boolean;
+  pastoralCheckIns?: IPastoralCheckIn[];
+}
+
+// Pastoral Check-in types
+export type CheckInReason =
+  | "ABSENTEEISM"
+  | "ILLNESS"
+  | "BEREAVEMENT"
+  | "WORKER_WELFARE"
+  | "DISCIPLESHIP"
+  | "FAMILY_SUPPORT"
+  | "GENERAL_CHECK_IN";
+
+export type CheckInStatus = "SCHEDULED" | "COMPLETED" | "CANCELLED";
+
+export interface IPastoralCheckInUserSummary {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
+
+export interface IPastoralCheckIn {
+  id: string;
+  personId?: string;
+  person?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+    membershipStatus?: ApiMembershipStatus;
+  };
+  reason: CheckInReason;
+  status: CheckInStatus;
+  scheduledFor?: string | null;
+  completedAt?: string | null;
+  notes?: string;
+  outcome?: string | null;
+  assignedToId?: string | null;
+  assignedTo?: IPastoralCheckInUserSummary | null;
+  createdById?: string | null;
+  createdBy?: IPastoralCheckInUserSummary | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ICreateCheckInPayload {
+  personId: string;
+  reason: CheckInReason;
+  status: CheckInStatus;
+  notes: string;
+  outcome?: string;
+  assignedToId?: string;
+  scheduledFor?: string;
+}
+
+export interface IUpdateCheckInPayload {
+  status?: CheckInStatus;
+  outcome?: string;
+  notes?: string;
+  scheduledFor?: string;
+  assignedToId?: string;
+  completedAt?: string;
+}
+
+export interface ICheckInQueryParams {
+  status?: CheckInStatus;
+  assignedToId?: string;
+  personId?: string;
+  reason?: CheckInReason;
+  page?: number;
+  limit?: number;
 }
 
 // Department types

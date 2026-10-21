@@ -25,6 +25,7 @@ export interface IQueryParams {
   gender?: string;
   departmentId?: string;
   followUpStatus?: string;
+  hasPendingCheckIn?: boolean;
   type?: string;
   category?: string;
   isPrivate?: boolean;

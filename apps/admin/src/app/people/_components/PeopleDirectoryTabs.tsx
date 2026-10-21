@@ -7,13 +7,14 @@ import {
   Clock,
   MessageSquare,
   CheckCircle2,
+  HeartHandshake,
 } from "lucide-react";
 import { Tabs, type TabItem } from "@/components/ui/Tabs";
 import { type FilterValues } from "@/models/filters";
 import { type IPeopleStats } from "@/models/person";
 
 export type PeopleTabId =
-  "all" | "visitors" | "pending" | "in_progress" | "converted";
+  "all" | "visitors" | "pending" | "in_progress" | "converted" | "care_queue";
 
 interface PeopleDirectoryTabsProps {
   filters: FilterValues;
@@ -23,13 +24,16 @@ interface PeopleDirectoryTabsProps {
 }
 
 /**
- * Determines which visitor follow-up tab is currently active based on applied filters.
+ * Determines which directory or care tab is currently active based on applied filters.
  */
 export function getActivePeopleTab(
   filters: FilterValues,
 ): PeopleTabId | "custom" {
-  const { membershipStatus, followUpStatus } = filters;
+  const { membershipStatus, followUpStatus, hasPendingCheckIn } = filters;
 
+  if (hasPendingCheckIn === "true") {
+    return "care_queue";
+  }
   if (membershipStatus === "VISITOR" && followUpStatus === "IN_PROGRESS") {
     return "in_progress";
   }
@@ -42,7 +46,7 @@ export function getActivePeopleTab(
   if (membershipStatus === "VISITOR" && !followUpStatus) {
     return "visitors";
   }
-  if (!membershipStatus && !followUpStatus) {
+  if (!membershipStatus && !followUpStatus && !hasPendingCheckIn) {
     return "all";
   }
   return "custom";
@@ -54,13 +58,16 @@ export function getActivePeopleTab(
  * - Pending Contact: GET /people?followUpStatus=PENDING (visitors awaiting first contact)
  * - In Progress: GET /people?membershipStatus=VISITOR&followUpStatus=IN_PROGRESS
  * - Converted: GET /people?followUpStatus=CONVERTED
- * - All People: clears membershipStatus and followUpStatus
+ * - Care Queue: GET /people?hasPendingCheckIn=true (scheduled pastoral care)
+ * - All People: clears membershipStatus, followUpStatus, and hasPendingCheckIn
  */
 export function getFiltersForPeopleTab(
   tabId: PeopleTabId,
   currentFilters: FilterValues,
 ): FilterValues {
   const next: FilterValues = { ...currentFilters };
+
+  delete next.hasPendingCheckIn;
 
   if (tabId === "all") {
     delete next.membershipStatus;
@@ -77,6 +84,10 @@ export function getFiltersForPeopleTab(
   } else if (tabId === "converted") {
     delete next.membershipStatus;
     next.followUpStatus = "CONVERTED";
+  } else if (tabId === "care_queue") {
+    delete next.membershipStatus;
+    delete next.followUpStatus;
+    next.hasPendingCheckIn = "true";
   }
 
   return next;
@@ -126,6 +137,12 @@ export function PeopleDirectoryTabs({
         label: "Converted",
         icon: <CheckCircle2 className="w-3.5 h-3.5" />,
         count: activeTab === "converted" ? totalItems : undefined,
+      },
+      {
+        id: "care_queue",
+        label: "Care Queue",
+        icon: <HeartHandshake className="w-3.5 h-3.5" />,
+        count: activeTab === "care_queue" ? totalItems : undefined,
       },
     ];
   }, [stats, activeTab, totalItems]);
