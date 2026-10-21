@@ -138,7 +138,8 @@ export const DepartmentMemberForm: React.FC<DepartmentMemberFormProps> = ({
                       type="text"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder="Search congregation by name, email, or phone..."
+                      placeholder="Search congregation"
+                      title="Search by name, email, or phone"
                       className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-border-control bg-surface text-fg placeholder:text-fg-subtle focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                   </div>

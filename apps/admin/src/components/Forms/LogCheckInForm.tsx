@@ -16,6 +16,7 @@ import {
 } from "./schemas/checkInSchema";
 import { CHECK_IN_REASONS, type CheckInReason } from "@/models/checkIn";
 import { IPerson } from "@/models/person";
+import { InfoTip } from "@/components/ui/InfoTip";
 
 export type { ImmediateLogCheckInFormValues };
 
@@ -111,7 +112,13 @@ export const LogCheckInForm: React.FC<LogCheckInFormProps> = ({
             <TextArea
               {...field}
               label="Conversation Notes"
-              placeholder="e.g. Hospital visit after minor surgery; checked in on health and family..."
+              placeholder="e.g. Hospital visit"
+              labelSuffix={
+                <InfoTip label="See example">
+                  Hospital visit after minor surgery; checked in on health and
+                  family.
+                </InfoTip>
+              }
               rows={4}
               required
               error={error?.message}
@@ -127,7 +134,13 @@ export const LogCheckInForm: React.FC<LogCheckInFormProps> = ({
             <TextArea
               {...field}
               label="Outcome & Next Steps"
-              placeholder="e.g. Recovering well at home. Church providing prayer support; attending this Sunday..."
+              placeholder="e.g. Recovering well"
+              labelSuffix={
+                <InfoTip label="See example">
+                  Recovering well at home. Church providing prayer support;
+                  attending this Sunday.
+                </InfoTip>
+              }
               rows={3}
               required
               error={error?.message}

@@ -15,6 +15,8 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   /** Helper text under the control, linked via aria-describedby. */
   hint?: React.ReactNode;
+  /** Rendered beside the label, e.g. an `InfoTip`. */
+  labelSuffix?: React.ReactNode;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   shortcutHint?: string;
@@ -38,6 +40,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       label,
       error,
       hint,
+      labelSuffix,
       leftIcon,
       rightIcon,
       icon,
@@ -95,6 +98,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <FormField
         id={id}
         label={label}
+        labelSuffix={labelSuffix}
         required={required}
         hint={hint}
         error={error}

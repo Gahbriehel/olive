@@ -68,7 +68,8 @@ export function EventRegistrationsTab({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="sm:col-span-2">
             <Input
-              placeholder="Search by attendee name, email, or registration #..."
+              placeholder="Search registrations"
+              title="Search by attendee name, email, or registration #"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               leftIcon={<Search className="w-4 h-4" />}

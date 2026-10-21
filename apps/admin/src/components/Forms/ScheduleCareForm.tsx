@@ -18,6 +18,7 @@ import {
 } from "./schemas/checkInSchema";
 import { CHECK_IN_REASONS, type CheckInReason } from "@/models/checkIn";
 import { IPerson } from "@/models/person";
+import { InfoTip } from "@/components/ui/InfoTip";
 
 export type { ScheduleCareCheckInFormValues };
 
@@ -116,9 +117,10 @@ export const ScheduleCareForm: React.FC<ScheduleCareFormProps> = ({
             <Select
               {...field}
               label="Assign To (Optional)"
+              hint="Leave unassigned to add this to the open pastoral queue."
               error={error?.message}
             >
-              <option value="">Unassigned (Open Pastoral Task)</option>
+              <option value="">Unassigned</option>
               {users.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.name} ({u.role})
@@ -150,7 +152,13 @@ export const ScheduleCareForm: React.FC<ScheduleCareFormProps> = ({
             <TextArea
               {...field}
               label="Care Concern & Outreach Instructions"
-              placeholder="e.g. Has missed 3 consecutive Sunday services. Please check in on well-being and family."
+              placeholder="e.g. Missed 3 Sundays"
+              labelSuffix={
+                <InfoTip label="See example">
+                  Has missed 3 consecutive Sunday services. Please check in on
+                  well-being and family.
+                </InfoTip>
+              }
               rows={4}
               required
               error={error?.message}

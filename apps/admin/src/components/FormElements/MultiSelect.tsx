@@ -201,7 +201,7 @@ export function MultiSelect({
       error={errorText}
       labelSuffix={
         selectedCount > 0 && (
-          <span className="ml-1 font-normal text-fg-subtle">
+          <span className="ml-1 text-xs font-normal text-fg-subtle">
             ({selectedCount} selected)
           </span>
         )

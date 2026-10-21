@@ -140,7 +140,7 @@ export function EventBasicsSection({
           <TextArea
             {...field}
             label="Event Description"
-            placeholder="Provide a comprehensive summary and expectations for attendees..."
+            placeholder="Summary and expectations"
             error={error?.message}
             rows={3}
           />

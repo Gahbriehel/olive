@@ -56,7 +56,8 @@ export function EventAdmissionSection({ control }: EventAdmissionSectionProps) {
                 {...field}
                 type="number"
                 label="Capacity Limit"
-                placeholder="e.g. 500 (Leave empty for unlimited capacity)"
+                placeholder="e.g. 500"
+                hint="Leave empty for unlimited capacity."
                 error={error?.message}
               />
             )}

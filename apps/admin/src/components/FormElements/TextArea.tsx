@@ -23,6 +23,8 @@ interface Props extends DetailedHTMLProps<
   required?: boolean;
   /** Helper text under the control, linked via aria-describedby. */
   hint?: ReactNode;
+  /** Rendered beside the label, e.g. an `InfoTip`. */
+  labelSuffix?: ReactNode;
   /** Class for the outer field wrapper (label + control + messages). */
   containerClassName?: string;
 }
@@ -34,6 +36,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, Props>(
       label,
       error,
       hint,
+      labelSuffix,
       required,
       className,
       containerClassName,
@@ -54,6 +57,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, Props>(
       <FormField
         id={id}
         label={label}
+        labelSuffix={labelSuffix}
         required={required}
         hint={hint}
         error={error}

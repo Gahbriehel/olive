@@ -23,8 +23,8 @@ export const bounceFilterFields: FilterField[] = [
     label: "Recipient Type",
     allLabel: "All Recipients",
     options: [
-      { label: "Person (Member/Visitor)", value: "PERSON" },
-      { label: "User (Admin/Staff)", value: "USER" },
+      { label: "Person", value: "PERSON" },
+      { label: "User", value: "USER" },
     ],
   },
 ];

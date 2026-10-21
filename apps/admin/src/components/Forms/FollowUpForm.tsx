@@ -18,6 +18,7 @@ import {
   type FollowUpFormValues,
 } from "./schemas/followUpSchema";
 import { IPerson } from "@/models/person";
+import { InfoTip } from "@/components/ui/InfoTip";
 
 export type { FollowUpFormValues };
 
@@ -151,7 +152,13 @@ export const FollowUpForm: React.FC<FollowUpFormProps> = ({
             <TextArea
               {...field}
               label="Notes"
-              placeholder="e.g. Spoke with visitor. Welcomed to the church, planning to attend Sunday service..."
+              placeholder="e.g. Spoke with visitor"
+              labelSuffix={
+                <InfoTip label="See example">
+                  Spoke with visitor. Welcomed to the church, planning to attend
+                  Sunday service.
+                </InfoTip>
+              }
               rows={5}
               error={error?.message}
             />

@@ -59,7 +59,7 @@ export interface FormFieldProps {
   /** id of the control the label points at (see `useFieldIds`). */
   id: string;
   label?: ReactNode;
-  /** Extra content rendered after the label/asterisk (e.g. a counter). */
+  /** Extra content rendered beside the label, outside it (e.g. a counter or an `InfoTip`). */
   labelSuffix?: ReactNode;
   required?: boolean;
   hint?: ReactNode;
@@ -90,19 +90,22 @@ export function FormField({
   return (
     <div className={cn("flex w-full flex-col gap-1.5", className)}>
       {label && (
-        <label
-          id={labelId}
-          htmlFor={id}
-          className="text-xs font-semibold text-fg-secondary"
-        >
-          {label}
-          {required && (
-            <span aria-hidden="true" className="ml-0.5 text-danger-text">
-              *
-            </span>
-          )}
+        <div className="flex items-center">
+          <label
+            id={labelId}
+            htmlFor={id}
+            className="text-xs font-semibold text-fg-secondary"
+          >
+            {label}
+            {required && (
+              <span aria-hidden="true" className="ml-0.5 text-danger-text">
+                *
+              </span>
+            )}
+          </label>
+          {/* Outside the <label>: interactive content (InfoTip) can't live inside it. */}
           {labelSuffix}
-        </label>
+        </div>
       )}
       {children}
       {hint && (

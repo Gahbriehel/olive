@@ -33,6 +33,8 @@ export interface ISelect {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: { _id: string; [key: string]: any };
   label: string;
+  /** One short line of context, shown under the label in the dropdown and as the field hint once selected. */
+  description?: string;
 }
 
 export interface IQueryParams {
@@ -78,6 +80,8 @@ interface Props {
   id?: string;
   /** Helper text under the control, linked via aria-describedby. */
   hint?: ReactNode;
+  /** Rendered after the label, e.g. an `InfoTip`. */
+  labelSuffix?: ReactNode;
 }
 
 export const Select = forwardRef<HTMLInputElement, Props>(function Select(
@@ -103,7 +107,8 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
     optionsClassName,
     className,
     id: idProp,
-    hint,
+    hint: hintProp,
+    labelSuffix,
   }: Props,
   ref,
 ): JSX.Element {
@@ -138,7 +143,7 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
 
     if (!Array.isArray(dataArray)) return [];
 
-    return dataArray.map((item) => {
+    return dataArray.map((item): ISelect => {
       if (transformData) {
         return transformData(item);
       }
@@ -177,10 +182,18 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
     onChange(selectedValue);
   };
 
+  const selectedDescription = value?.value?._id
+    ? (value.description ??
+      availableOptions.find((o) => o.value?._id === value.value._id)
+        ?.description)
+    : undefined;
+
   const errorText =
     typeof validationError === "string"
       ? validationError
       : validationError?.message;
+  // An explicit hint wins; otherwise describe the selected option.
+  const hint = hintProp ?? selectedDescription;
   const aria = fieldAria({ errorId, hintId, error: errorText, hint });
   const hasValue = !!value?.value?._id;
   const showClear = !disabled && !isLoading && !!closeIconFn && hasValue;
@@ -192,6 +205,7 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
     <FormField
       id={id}
       label={label}
+      labelSuffix={labelSuffix}
       required={required}
       hint={hint}
       error={errorText}
@@ -306,15 +320,22 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
                         selected || value?.value?._id === option.value._id;
                       return (
                         <>
-                          <span
-                            className={cn(
-                              "block truncate capitalize",
-                              isSelected
-                                ? "font-semibold text-primary-text"
-                                : "font-normal",
+                          <span className="block min-w-0">
+                            <span
+                              className={cn(
+                                "block truncate capitalize",
+                                isSelected
+                                  ? "font-semibold text-primary-text"
+                                  : "font-normal",
+                              )}
+                            >
+                              {option.label}
+                            </span>
+                            {option.description && (
+                              <span className="block truncate text-2xs text-fg-muted">
+                                {option.description}
+                              </span>
                             )}
-                          >
-                            {option.label}
                           </span>
                           {isSelected && (
                             <Check

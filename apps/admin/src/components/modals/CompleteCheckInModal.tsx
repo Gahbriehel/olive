@@ -13,6 +13,7 @@ import {
   type CompleteCheckInFormValues,
 } from "@/components/Forms/schemas/checkInSchema";
 import type { IPastoralCheckIn } from "@/models/checkIn";
+import { InfoTip } from "@/components/ui/InfoTip";
 
 interface CompleteCheckInModalProps {
   checkIn: IPastoralCheckIn | null;
@@ -120,7 +121,13 @@ export const CompleteCheckInModal: React.FC<CompleteCheckInModalProps> = ({
             <TextArea
               {...field}
               label="Outreach Outcome & Discussion Summary"
-              placeholder="e.g. Spoke on the phone. Was traveling for work; attending this Sunday. Encouraged and prayed together."
+              placeholder="e.g. Spoke by phone"
+              labelSuffix={
+                <InfoTip label="See example">
+                  Spoke on the phone. Was traveling for work; attending this
+                  Sunday. Encouraged and prayed together.
+                </InfoTip>
+              }
               rows={4}
               required
               error={error?.message}

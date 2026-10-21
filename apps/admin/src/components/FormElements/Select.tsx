@@ -16,6 +16,14 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   leftIcon?: React.ReactNode;
   /** Helper text under the control, linked via aria-describedby. */
   hint?: React.ReactNode;
+  /** Rendered after the label, e.g. an `InfoTip`. */
+  labelSuffix?: React.ReactNode;
+  /**
+   * One line of context per option value. The entry for the current value is
+   * shown as the hint unless an explicit `hint` is passed. Native `<option>`
+   * can't hold two lines, so keep option text short and describe it here.
+   */
+  descriptions?: Record<string, string>;
   /** Class for the outer field wrapper (label + control + messages). */
   containerClassName?: string;
 }
@@ -28,7 +36,9 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       containerClassName,
       label,
       error,
-      hint,
+      hint: hintProp,
+      labelSuffix,
+      descriptions,
       leftIcon,
       required,
       children,
@@ -37,6 +47,12 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     ref,
   ) => {
     const { id, hintId, errorId } = useFieldIds(idProp);
+    const current = props.value ?? props.defaultValue;
+    const hint =
+      hintProp ??
+      (current !== undefined && current !== ""
+        ? descriptions?.[String(current)]
+        : undefined);
     const aria = fieldAria({
       errorId,
       hintId,
@@ -49,6 +65,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
       <FormField
         id={id}
         label={label}
+        labelSuffix={labelSuffix}
         required={required}
         hint={hint}
         error={error}

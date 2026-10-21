@@ -232,7 +232,8 @@ export function RegistrantsEmailComposer({
               <div className="flex flex-col gap-2">
                 <MultiSelect
                   label="Recipients"
-                  placeholder="Search & select attendees by name or reg #..."
+                  placeholder="Search attendees"
+                  hint="Search by name or registration #."
                   value={recipients.map(transformRegistrationToSelect)}
                   onChange={handleMultiSelectChange}
                   queryHook={useRegistrationsSelectQuery}

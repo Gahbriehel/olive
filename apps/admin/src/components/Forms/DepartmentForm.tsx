@@ -95,7 +95,7 @@ export const DepartmentForm: React.FC<DepartmentFormProps> = ({
             <TextArea
               {...field}
               label="Description"
-              placeholder="Brief overview of ministry responsibilities and focus..."
+              placeholder="Responsibilities and focus"
               rows={4}
               error={error?.message}
             />
