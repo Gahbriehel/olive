@@ -163,7 +163,11 @@ export const Select = forwardRef<HTMLInputElement, Props>(function Select(
     return query === ""
       ? availableOptions
       : availableOptions.filter((option) => {
-          return option.label?.toLowerCase().includes(query?.toLowerCase());
+          const q = query?.toLowerCase();
+          return (
+            option.label?.toLowerCase().includes(q) ||
+            option.description?.toLowerCase().includes(q)
+          );
         });
   }, [queryHook, availableOptions, query]);
 

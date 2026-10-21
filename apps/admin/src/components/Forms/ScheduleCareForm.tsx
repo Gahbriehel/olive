@@ -16,7 +16,11 @@ import {
   scheduleCareCheckInSchema,
   type ScheduleCareCheckInFormValues,
 } from "./schemas/checkInSchema";
-import { CHECK_IN_REASONS, type CheckInReason } from "@/models/checkIn";
+import {
+  CHECK_IN_REASONS,
+  CHECK_IN_REASON_DESCRIPTIONS,
+  type CheckInReason,
+} from "@/models/checkIn";
 import { IPerson } from "@/models/person";
 import { InfoTip } from "@/components/ui/InfoTip";
 
@@ -92,6 +96,7 @@ export const ScheduleCareForm: React.FC<ScheduleCareFormProps> = ({
             <Select
               {...field}
               label="Care Concern / Reason"
+              descriptions={CHECK_IN_REASON_DESCRIPTIONS}
               required
               error={error?.message}
             >
@@ -100,7 +105,7 @@ export const ScheduleCareForm: React.FC<ScheduleCareFormProps> = ({
                   const item = CHECK_IN_REASONS[reasonKey];
                   return (
                     <option key={reasonKey} value={reasonKey}>
-                      {item.label} — {item.description}
+                      {item.label}
                     </option>
                   );
                 },

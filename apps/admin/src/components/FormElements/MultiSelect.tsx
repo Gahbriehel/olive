@@ -135,7 +135,12 @@ export function MultiSelect({
 
     const q = query.toLowerCase();
     return availableOptions
-      .filter((option) => q === "" || option.label?.toLowerCase().includes(q))
+      .filter(
+        (option) =>
+          q === "" ||
+          option.label?.toLowerCase().includes(q) ||
+          option.description?.toLowerCase().includes(q),
+      )
       .sort((a, b) => (a.label ?? "").localeCompare(b.label ?? ""));
   }, [queryHook, availableOptions, query]);
 
@@ -305,15 +310,22 @@ export function MultiSelect({
                 >
                   {({ selected }) => (
                     <>
-                      <span
-                        className={cn(
-                          "block truncate capitalize",
-                          selected
-                            ? "font-semibold text-primary-text"
-                            : "font-normal",
+                      <span className="block min-w-0">
+                        <span
+                          className={cn(
+                            "block truncate capitalize",
+                            selected
+                              ? "font-semibold text-primary-text"
+                              : "font-normal",
+                          )}
+                        >
+                          {option.label}
+                        </span>
+                        {option.description && (
+                          <span className="block truncate text-2xs text-fg-muted">
+                            {option.description}
+                          </span>
                         )}
-                      >
-                        {option.label}
                       </span>
                       {selected && (
                         <Check

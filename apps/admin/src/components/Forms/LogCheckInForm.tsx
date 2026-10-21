@@ -14,7 +14,11 @@ import {
   immediateLogCheckInSchema,
   type ImmediateLogCheckInFormValues,
 } from "./schemas/checkInSchema";
-import { CHECK_IN_REASONS, type CheckInReason } from "@/models/checkIn";
+import {
+  CHECK_IN_REASONS,
+  CHECK_IN_REASON_DESCRIPTIONS,
+  type CheckInReason,
+} from "@/models/checkIn";
 import { IPerson } from "@/models/person";
 import { InfoTip } from "@/components/ui/InfoTip";
 
@@ -87,6 +91,7 @@ export const LogCheckInForm: React.FC<LogCheckInFormProps> = ({
             <Select
               {...field}
               label="Care Reason"
+              descriptions={CHECK_IN_REASON_DESCRIPTIONS}
               required
               error={error?.message}
             >
@@ -95,7 +100,7 @@ export const LogCheckInForm: React.FC<LogCheckInFormProps> = ({
                   const item = CHECK_IN_REASONS[reasonKey];
                   return (
                     <option key={reasonKey} value={reasonKey}>
-                      {item.label} — {item.description}
+                      {item.label}
                     </option>
                   );
                 },

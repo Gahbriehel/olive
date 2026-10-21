@@ -61,7 +61,8 @@ const transformRegistrationToSelect = (reg: IRegistration): ISelect => ({
     email: reg.email,
     registrationNumber: reg.registrationNumber,
   },
-  label: `${reg.name} (${reg.registrationNumber})`,
+  label: reg.name,
+  description: reg.registrationNumber,
 });
 
 const PLACEHOLDER_TAGS = [

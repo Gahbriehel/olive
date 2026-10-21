@@ -63,6 +63,14 @@ export const CHECK_IN_REASONS: Record<CheckInReason, CheckInReasonConfig> = {
   },
 };
 
+/** One-line meaning per reason, for `Select`'s `descriptions` prop. */
+export const CHECK_IN_REASON_DESCRIPTIONS = Object.fromEntries(
+  Object.entries(CHECK_IN_REASONS).map(([key, { description }]) => [
+    key,
+    description,
+  ]),
+) as Record<CheckInReason, string>;
+
 export const CHECK_IN_REASON_KEYS = Object.keys(
   CHECK_IN_REASONS,
 ) as CheckInReason[];

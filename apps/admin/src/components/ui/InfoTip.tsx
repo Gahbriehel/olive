@@ -1,6 +1,6 @@
 "use client";
 
-import { type JSX, type ReactNode } from "react";
+import { type JSX, type ReactNode, useEffect, useRef, useState } from "react";
 
 import * as Popover from "@radix-ui/react-popover";
 import { Info } from "lucide-react";
@@ -28,10 +28,34 @@ export function InfoTip({
   children,
   className,
 }: InfoTipProps): JSX.Element {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Radix's own outside-press detection misses clicks inside a Headless UI
+  // Dialog (the dialog swallows them), so close on any press outside both the
+  // trigger and the popover, captured before anything can stop it.
+  useEffect(() => {
+    if (!open) return;
+    const onPress = (e: Event): void => {
+      const target = e.target as Node;
+      if (
+        triggerRef.current?.contains(target) ||
+        contentRef.current?.contains(target)
+      ) {
+        return;
+      }
+      setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPress, true);
+    return () => document.removeEventListener("pointerdown", onPress, true);
+  }, [open]);
+
   return (
-    <Popover.Root>
+    <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
         <button
+          ref={triggerRef}
           type="button"
           aria-label={label}
           className={cn(
@@ -44,6 +68,7 @@ export function InfoTip({
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
+          ref={contentRef}
           sideOffset={6}
           align="start"
           collisionPadding={16}
