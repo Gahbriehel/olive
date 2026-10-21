@@ -59,22 +59,73 @@ export function OverlayHeader({
   );
 }
 
-/** Action bar pinned to the bottom of an overlay: secondary actions left, primary right. */
-export function OverlayFooter({
-  children,
-  className,
-}: {
-  children: ReactNode;
+interface ActionBarProps {
+  /** Left slot: Close, Cancel, Clear all, or a destructive action. */
+  start?: ReactNode;
+  /** Right slot: secondary actions first, primary last. */
+  children?: ReactNode;
+  /** Stretch the start and end groups, and the buttons in them, to share the full width equally. */
+  fill?: boolean;
   className?: string;
-}) {
+}
+
+/**
+ * The one layout for overlay actions, used by every footer (OverlayFooter and
+ * FormFooter). `start` sits left, `children` sit right. When the row is too
+ * narrow, each group wraps on its own and stays on its side, so a crowded
+ * footer never leaves the primary action stranded on the left.
+ */
+export function ActionBar({
+  start,
+  children,
+  fill,
+  className,
+}: ActionBarProps) {
+  return (
+    <div
+      className={cn("flex flex-wrap items-center gap-x-3 gap-y-2", className)}
+    >
+      {start && (
+        <div
+          className={cn(
+            "flex flex-wrap items-center gap-2",
+            fill ? "flex-1 *:flex-1" : "mr-auto",
+          )}
+        >
+          {start}
+        </div>
+      )}
+      {children && (
+        <div
+          className={cn(
+            "flex flex-wrap items-center justify-end gap-2",
+            fill ? "flex-1 *:flex-1" : "ml-auto",
+          )}
+        >
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Footer bar pinned to the bottom of an overlay (Modal and SidebarModal `footer` / `footerStart`). */
+export function OverlayFooter({
+  start,
+  children,
+  fill,
+  className,
+}: ActionBarProps) {
   return (
     <div
       className={cn(
-        "flex shrink-0 flex-col-reverse gap-3 border-t border-border-subtle bg-subtle sm:flex-row sm:items-center sm:justify-end",
+        "shrink-0 border-t border-border-subtle bg-subtle",
         className,
       )}
     >
-      {children}
+      <ActionBar start={start} fill={fill}>
+        {children}
+      </ActionBar>
     </div>
   );
 }

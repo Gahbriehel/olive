@@ -16,8 +16,12 @@ export interface Props {
   children: ReactNode;
   title: string;
   description?: ReactNode;
-  /** Rendered in the shared footer bar (buttons: secondary first, primary last). */
+  /** Right side of the footer bar: secondary actions first, primary last. */
   footer?: ReactNode;
+  /** Left side of the footer bar: Close, Cancel, Clear all or a destructive action. */
+  footerStart?: ReactNode;
+  /** Split the footer width equally between the start and end buttons. */
+  footerFill?: boolean;
   isOpen: boolean;
   /** Called on Escape, backdrop click and the close button. */
   onClose: () => void;
@@ -28,6 +32,8 @@ export const SidebarModal = ({
   title,
   description,
   footer,
+  footerStart,
+  footerFill,
   children,
   isOpen,
   onClose,
@@ -53,8 +59,14 @@ export const SidebarModal = ({
             <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-6 py-4">
               {children}
             </div>
-            {footer && (
-              <OverlayFooter className="px-6 py-4">{footer}</OverlayFooter>
+            {(footer || footerStart) && (
+              <OverlayFooter
+                className="px-6 py-4"
+                start={footerStart}
+                fill={footerFill}
+              >
+                {footer}
+              </OverlayFooter>
             )}
             {discardDialog}
           </UnsavedChangesProvider>

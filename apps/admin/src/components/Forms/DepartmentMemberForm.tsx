@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Search, UserCheck } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/FormElements/Input";
 import { Button } from "@/components/ui/Button";
 import { FormFooter } from "@/components/ui/FormFooter";
@@ -231,7 +231,6 @@ export const DepartmentMemberForm: React.FC<DepartmentMemberFormProps> = ({
           variant="primary"
           loading={isPending}
           disabled={!selectedPerson}
-          leftIcon={<UserCheck className="w-3.5 h-3.5" />}
         >
           Assign Member
         </Button>

@@ -19,8 +19,12 @@ interface ModalProps {
   onClose: () => void;
   title?: string;
   description?: React.ReactNode;
-  /** Rendered in the shared footer bar (buttons: secondary first, primary last). */
+  /** Right side of the footer bar: secondary actions first, primary last. */
   footer?: React.ReactNode;
+  /** Left side of the footer bar: Close, Cancel, Clear all or a destructive action. */
+  footerStart?: React.ReactNode;
+  /** Split the footer width equally between the start and end buttons. */
+  footerFill?: boolean;
   children: React.ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl";
 }
@@ -40,6 +44,8 @@ export const Modal: React.FC<ModalProps> = ({
   title,
   description,
   footer,
+  footerStart,
+  footerFill,
   children,
   maxWidth = "md",
 }) => {
@@ -65,8 +71,14 @@ export const Modal: React.FC<ModalProps> = ({
               className="p-5"
             />
             <div className="flex-1 overflow-y-auto p-5">{children}</div>
-            {footer && (
-              <OverlayFooter className="px-5 py-4">{footer}</OverlayFooter>
+            {(footer || footerStart) && (
+              <OverlayFooter
+                className="px-5 py-4"
+                start={footerStart}
+                fill={footerFill}
+              >
+                {footer}
+              </OverlayFooter>
             )}
             {discardDialog}
           </UnsavedChangesProvider>

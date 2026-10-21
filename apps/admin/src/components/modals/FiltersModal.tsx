@@ -95,20 +95,15 @@ export function FiltersModal({
       title={title}
       isOpen={display}
       onClose={close}
+      footerStart={
+        <Button variant="outline" onClick={clearAll} disabled={!hasAnything}>
+          Clear all
+        </Button>
+      }
       footer={
-        <>
-          <Button
-            variant="outline"
-            onClick={clearAll}
-            disabled={!hasAnything}
-            className="sm:mr-auto"
-          >
-            Clear all
-          </Button>
-          <Button type="submit" form={formId}>
-            Apply filters
-          </Button>
-        </>
+        <Button type="submit" form={formId}>
+          Apply filters
+        </Button>
       }
     >
       <form id={formId} onSubmit={onSubmit} className="flex flex-col gap-5">

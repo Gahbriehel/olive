@@ -73,7 +73,6 @@ export const PromotePersonModal: React.FC<PromotePersonModalProps> = ({
           <Button
             type="button"
             variant="outline"
-            size="sm"
             onClick={onClose}
             disabled={isLoading}
           >

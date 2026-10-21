@@ -412,9 +412,6 @@ export default function PeoplePage() {
         person={selectedPerson}
         onClose={() => setSelectedPerson(null)}
         onEdit={isSuperAdmin ? setEditingPerson : undefined}
-        canPromote={canPromote}
-        onPromote={setPromotingPerson}
-        onFollowUp={setFollowUpPerson}
         onLogCheckIn={setLogCheckInPerson}
         onScheduleCare={setScheduleCarePerson}
         onCompleteCheckIn={setCompletingCheckIn}

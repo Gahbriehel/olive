@@ -3,7 +3,7 @@
 import React, { useEffect, useId } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Cake, Send } from "lucide-react";
+import { Cake } from "lucide-react";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { Button } from "@/components/ui/Button";
 import { useUnsavedChangesGuard } from "@/components/ui/UnsavedChanges";
@@ -123,25 +123,26 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
 
   return (
     <SidebarModal
+      footerFill
+      footerStart={
+        birthday && (
+          <GuardedCancel
+            isDirty={isDirty && !isSubmitSuccessful}
+            disabled={isSubmitting}
+            onCancel={onClose}
+          />
+        )
+      }
       footer={
         birthday && (
-          <>
-            <GuardedCancel
-              isDirty={isDirty && !isSubmitSuccessful}
-              disabled={isSubmitting}
-              onCancel={onClose}
-            />
-            <Button
-              type="submit"
-              form={formId}
-              disabled={isSubmitting || !birthday.email || birthday.isGreeted}
-              loading={isSubmitting}
-              rightIcon={<Send className="w-4 h-4" />}
-              className="w-full sm:w-auto"
-            >
-              Send Birthday Greeting
-            </Button>
-          </>
+          <Button
+            type="submit"
+            form={formId}
+            disabled={isSubmitting || !birthday.email || birthday.isGreeted}
+            loading={isSubmitting}
+          >
+            Send Greeting
+          </Button>
         )
       }
       title="Send Birthday Greeting"

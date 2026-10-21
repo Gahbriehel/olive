@@ -233,8 +233,9 @@ Each row is the **only** approved way to do that job. Items marked *(target)* do
 | Select | `ui/Select` (searchable, async, paginated) or `FormElements/Select` (native, for short fixed lists) | Both share the FormField contract. Multi-value: `FormElements/MultiSelect`. Pagination inside a dropdown: `FormElements/SelectPagination`. |
 | Create/edit/detail overlay | `ui/SidebarModal` (side panel) | Built on Headless UI `Dialog`. Gives focus trap, Escape, scroll lock and ARIA. Props: `isOpen`, `onClose`, `title`, `description`, `footer`. |
 | Short decision or confirmation | `ui/Modal` / `ConfirmActionModal` | Same Dialog base and props as SidebarModal, plus `maxWidth`. |
-| Overlay action bar | the `footer` prop on Modal or SidebarModal | Secondary buttons first, primary last. A submit button outside the `<form>` uses `form={formId}`. |
-| Form action bar | `ui/FormFooter` | For forms rendered in an overlay body; see §6.3. |
+| Record detail view | `ui/DetailDrawer` | A SidebarModal with the standard Close + one-action footer. Used by people, contact, bounce, email log, birthday greeting and department roster. |
+| Overlay action bar | the `footer` and `footerStart` props on Modal or SidebarModal | One footer for every overlay, built on `ActionBar` (`ui/OverlayParts`). `footerStart` is the left slot (Close, Cancel, Clear all); `footer` is the right slot (secondary first, primary last). Never hand-roll a footer row, pass your own `justify-*`/`sm:mr-auto` classes, wrap buttons in a `w-full` div, or set `size="sm"` or `!h-*` overrides on footer buttons. Groups wrap and stay on their side when space is tight. A submit button outside the `<form>` uses `form={formId}`. Never put actions at the end of the body. Record detail views never build a footer: they use `ui/DetailDrawer`, whose footer is Close plus at most one `action` button, text only, sharing the width equally. Other actions live in the table row menu or inside the relevant tab. |
+| Form action bar | `ui/FormFooter` | For forms rendered in an overlay body; Cancel and the primary share the width equally like `DetailDrawer`, `destructive` sits at the far left at natural width. See §6.3. |
 | Email writing | `email/EmailComposer` | One composer for broadcasts, registrant emails and birthday greetings.
   - It renders the shared content fields: subject, heading, message, image (optionally with upload), QR pass, and the CTA label and link.
   - Callers supply a `recipients` slot, their own mutation hook, any confirmation, and the footer.
@@ -260,7 +261,7 @@ Each row is the **only** approved way to do that job. Items marked *(target)* do
   - *Known exceptions:* "Manage Scores" and "Remediate bounce".
 - **Forms:**
   - **Setup:** react-hook-form with a yup schema, `useForm({ resolver: yupResolver(schema), mode: "onTouched" })`. Build schemas from the shared rules in `models/validation.ts` (`requiredText`, `email`, `requiredEmail`, `phone`, `url`). Don't write inline `rules` or duplicate regexes.
-  - **Footer:** use `ui/FormFooter`, which sticks to the bottom of the panel.
+  - **Footer:** use `ui/FormFooter`, which sticks to the bottom of the panel. Cancel and the primary action are text-only (no icons) and share the full width equally, matching the `DetailDrawer` footer.
     - Delete (`DeleteButton`) goes in `destructive`, on the far left, and is disabled while saving.
     - On the right, Cancel comes first and the primary action last.
     - Cancel is always present, in both create and edit mode.

@@ -2,8 +2,7 @@
 
 import React from "react";
 import { Mail, User, Send, FileText, Hash, ShieldAlert } from "lucide-react";
-import { SidebarModal } from "@/components/ui/SidebarModal";
-import { Button } from "@/components/ui/Button";
+import { DetailDrawer } from "@/components/ui/DetailDrawer";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Badge } from "@/components/ui/Badge";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
@@ -33,18 +32,7 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
     : null;
 
   return (
-    <SidebarModal
-      footer={
-        <>
-          <Button
-            variant="outline"
-            className="!h-10 !text-xs font-semibold"
-            onClick={onClose}
-          >
-            Close
-          </Button>
-        </>
-      }
+    <DetailDrawer
       isOpen={isOpen}
       onClose={onClose}
       title="Email Log Details"
@@ -287,6 +275,6 @@ export const ViewEmailLogModal: React.FC<ViewEmailLogModalProps> = ({
           </div>
         )}
       </div>
-    </SidebarModal>
+    </DetailDrawer>
   );
 };

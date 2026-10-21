@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Send } from "lucide-react";
 import { MultiSelect } from "@/components/FormElements/MultiSelect";
 import { Button } from "@/components/ui/Button";
 import { FormFooter } from "@/components/ui/FormFooter";
@@ -196,7 +195,6 @@ export function BroadcastComposer({
               type="submit"
               disabled={sendBatchEmail.isPending || selectedCount === 0}
               loading={sendBatchEmail.isPending}
-              rightIcon={<Send className="w-4 h-4" />}
             >
               {selectedCount > 0
                 ? `Send broadcast (${selectedCount})`

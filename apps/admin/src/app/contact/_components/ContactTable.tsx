@@ -14,9 +14,8 @@ import { Table } from "@/components/ui/Table";
 import { ListToolbar } from "@/components/ui/ListToolbar";
 import { FiltersButton } from "@/components/ui/FiltersButton";
 import { ActionsList } from "@/components/ui/ActionsList";
-import { SidebarModal } from "@/components/ui/SidebarModal";
+import { DetailDrawer } from "@/components/ui/DetailDrawer";
 import { FiltersModal } from "@/components/modals/FiltersModal";
-import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { NotAvailable } from "@/components/ui/NotAvailable";
 import { useAuth } from "@/hooks/useAuth";
@@ -30,7 +29,6 @@ import {
   MessageSquare,
   HeartHandshake,
   Tag,
-  Send,
   type LucideIcon,
 } from "lucide-react";
 
@@ -263,7 +261,17 @@ export function ContactTable({ type }: ContactTableProps): JSX.Element {
 
       <FiltersModal {...panelProps} />
 
-      <SidebarModal
+      <DetailDrawer
+        action={
+          selectedContact?.email ? (
+            <a
+              href={`mailto:${selectedContact.email}`}
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-primary bg-primary px-4 text-sm font-semibold text-white shadow-xs transition-colors hover:border-primary-hover hover:bg-primary-hover"
+            >
+              Reply via Email
+            </a>
+          ) : undefined
+        }
         title={config.detailTitle}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -376,25 +384,9 @@ export function ContactTable({ type }: ContactTableProps): JSX.Element {
                 )}
               </div>
             </div>
-
-            {/* Footer Action Buttons */}
-            <div className="mt-2 flex items-center justify-end gap-3 border-t border-border pt-5">
-              {selectedContact.email && (
-                <a
-                  href={`mailto:${selectedContact.email}`}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold text-xs transition-colors shadow-xs"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  Reply via Email
-                </a>
-              )}
-              <Button variant="outline" onClick={() => setIsModalOpen(false)}>
-                Close
-              </Button>
-            </div>
           </div>
         )}
-      </SidebarModal>
+      </DetailDrawer>
     </>
   );
 }

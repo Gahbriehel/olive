@@ -8,9 +8,8 @@ import {
   User,
   Clock,
   Terminal,
-  Wrench,
 } from "lucide-react";
-import { SidebarModal } from "@/components/ui/SidebarModal";
+import { DetailDrawer } from "@/components/ui/DetailDrawer";
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Badge } from "@/components/ui/Badge";
@@ -51,38 +50,15 @@ export const ViewBounceDetailsModal: React.FC<ViewBounceDetailsModalProps> = ({
     bounce.eventType?.toLowerCase().includes("failed");
 
   return (
-    <SidebarModal
-      footer={
-        <>
-          <Button variant="outline" onClick={onClose} className="sm:mr-auto">
-            Close
+    <DetailDrawer
+      action={
+        bounce.isResolved ? undefined : onRemediate ? (
+          <Button onClick={() => onRemediate(bounce)}>Fix & Remediate</Button>
+        ) : onResolve ? (
+          <Button loading={isResolving} onClick={() => onResolve(bounce)}>
+            Mark Resolved
           </Button>
-
-          <div className="flex items-center gap-2">
-            {!bounce.isResolved && onResolve && (
-              <Button
-                variant="outline"
-                loading={isResolving}
-                onClick={() => onResolve(bounce)}
-                leftIcon={
-                  <CheckCircle2 className="w-4 h-4 text-success-text" />
-                }
-              >
-                Mark Resolved
-              </Button>
-            )}
-
-            {!bounce.isResolved && onRemediate && (
-              <Button
-                variant="primary"
-                onClick={() => onRemediate(bounce)}
-                leftIcon={<Wrench className="w-4 h-4" />}
-              >
-                Fix & Remediate
-              </Button>
-            )}
-          </div>
-        </>
+        ) : undefined
       }
       isOpen={isOpen}
       onClose={onClose}
@@ -243,6 +219,6 @@ export const ViewBounceDetailsModal: React.FC<ViewBounceDetailsModalProps> = ({
           </div>
         </div>
       </div>
-    </SidebarModal>
+    </DetailDrawer>
   );
 };

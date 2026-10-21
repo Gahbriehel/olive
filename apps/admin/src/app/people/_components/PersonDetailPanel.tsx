@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Edit, Clock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { SidebarModal } from "@/components/ui/SidebarModal";
+import { DetailDrawer } from "@/components/ui/DetailDrawer";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Tabs } from "@/components/ui/Tabs";
@@ -24,9 +23,6 @@ interface PersonDetailPanelProps {
   onClose: () => void;
   /** Only passed for users allowed to edit people. */
   onEdit?: (person: IPerson) => void;
-  canPromote?: boolean;
-  onPromote?: (person: IPerson) => void;
-  onFollowUp?: (person: IPerson) => void;
   onLogCheckIn?: (person: IPerson) => void;
   onScheduleCare?: (person: IPerson) => void;
   onCompleteCheckIn?: (checkIn: IPastoralCheckIn) => void;
@@ -38,9 +34,6 @@ export function PersonDetailPanel({
   person,
   onClose,
   onEdit,
-  canPromote = false,
-  onPromote,
-  onFollowUp,
   onLogCheckIn,
   onScheduleCare,
   onCompleteCheckIn,
@@ -87,65 +80,15 @@ export function PersonDetailPanel({
   ];
 
   return (
-    <SidebarModal
+    <DetailDrawer
       isOpen={!!person}
       onClose={onClose}
       title={person?.name || ""}
-      footer={
-        person ? (
-          <div className="flex items-center justify-between w-full flex-wrap gap-2">
-            <Button variant="outline" size="sm" type="button" onClick={onClose}>
-              Close
-            </Button>
-            <div className="flex items-center gap-2 flex-wrap">
-              {onScheduleCare && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  type="button"
-                  className="gap-1 text-xs"
-                  onClick={() => onScheduleCare(person)}
-                >
-                  <Clock className="w-3.5 h-3.5 text-warning-text" />
-                  <span>Flag for Care</span>
-                </Button>
-              )}
-              {onLogCheckIn && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  type="button"
-                  className="gap-1 text-xs"
-                  onClick={() => onLogCheckIn(person)}
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>+ Log Check-in</span>
-                </Button>
-              )}
-              {onFollowUp && isVisitor && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  type="button"
-                  onClick={() => onFollowUp(person)}
-                >
-                  Follow-up
-                </Button>
-              )}
-              {canPromote &&
-                onPromote &&
-                person.rawMembershipStatus !== "PASTOR" && (
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    type="button"
-                    onClick={() => onPromote(person)}
-                  >
-                    {isVisitor ? "Promote to Member" : "Promote Person"}
-                  </Button>
-                )}
-            </div>
-          </div>
+      action={
+        person && onEdit ? (
+          <Button type="button" onClick={() => onEdit(person)}>
+            Edit
+          </Button>
         ) : undefined
       }
     >
@@ -182,18 +125,6 @@ export function PersonDetailPanel({
                 </div>
               </div>
             </div>
-
-            {onEdit && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1.5 text-xs shrink-0"
-                onClick={() => onEdit(person)}
-              >
-                <Edit className="w-3.5 h-3.5 text-fg-muted" />
-                <span>Edit</span>
-              </Button>
-            )}
           </div>
 
           {/* Drawer Sub-Tabs */}
@@ -224,6 +155,6 @@ export function PersonDetailPanel({
           {drawerTab === "notes" && <PersonNotesTab person={person} />}
         </div>
       )}
-    </SidebarModal>
+    </DetailDrawer>
   );
 }

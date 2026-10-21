@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Users, Send } from "lucide-react";
+import { Users } from "lucide-react";
 import { MultiSelect } from "@/components/FormElements/MultiSelect";
 import { Switch } from "@/components/FormElements/Switch";
 import { Button } from "@/components/ui/Button";
@@ -302,7 +302,6 @@ export function RegistrantsEmailComposer({
                 (!sendToAll && recipients.length === 0)
               }
               loading={sendEmail.isPending}
-              rightIcon={<Send className="w-4 h-4" />}
             >
               {sendEmail.isPending
                 ? "Sending..."

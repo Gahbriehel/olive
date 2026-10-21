@@ -80,7 +80,7 @@ export const PersonPastoralCareTab: React.FC<PersonPastoralCareTabProps> = ({
             onClick={onLogCheckIn}
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>+ Log Check-in</span>
+            <span>Log Check-in</span>
           </Button>
         </div>
       </div>
@@ -284,7 +284,7 @@ export const PersonPastoralCareTab: React.FC<PersonPastoralCareTabProps> = ({
                 onClick={onLogCheckIn}
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>+ Log Check-in</span>
+                <span>Log Check-in</span>
               </Button>
             </div>
           </div>

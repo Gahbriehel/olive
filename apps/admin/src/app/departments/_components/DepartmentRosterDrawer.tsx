@@ -11,6 +11,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { SidebarModal } from "@/components/ui/SidebarModal";
+import { DetailDrawer } from "@/components/ui/DetailDrawer";
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState, SkeletonList } from "@/components/ui/QueryState";
@@ -64,7 +65,7 @@ export const DepartmentRosterDrawer: React.FC<DepartmentRosterDrawerProps> = ({
 
   return (
     <>
-      <SidebarModal
+      <DetailDrawer
         isOpen={Boolean(departmentId)}
         onClose={onClose}
         title={department?.name || "Department Details"}
@@ -211,7 +212,7 @@ export const DepartmentRosterDrawer: React.FC<DepartmentRosterDrawerProps> = ({
             )}
           </div>
         ) : null}
-      </SidebarModal>
+      </DetailDrawer>
 
       {/* Add Member Sidebar Modal */}
       <SidebarModal

@@ -9,9 +9,8 @@ import {
   User,
   ExternalLink,
   Cake,
-  Send,
 } from "lucide-react";
-import { SidebarModal } from "@/components/ui/SidebarModal";
+import { DetailDrawer } from "@/components/ui/DetailDrawer";
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { NotAvailable } from "@/components/ui/NotAvailable";
@@ -59,26 +58,19 @@ export const ViewBirthdayGreetingModal: React.FC<
       : null;
 
   return (
-    <SidebarModal
-      footer={
-        <>
-          <Button variant="outline" type="button" onClick={onClose}>
-            Close
+    <DetailDrawer
+      action={
+        person.email && onSendGreeting ? (
+          <Button
+            type="button"
+            onClick={() => {
+              onClose();
+              onSendGreeting(person);
+            }}
+          >
+            Send Another Greeting
           </Button>
-          {person.email && onSendGreeting && (
-            <Button
-              variant="primary"
-              type="button"
-              onClick={() => {
-                onClose();
-                onSendGreeting(person);
-              }}
-              rightIcon={<Send className="w-3.5 h-3.5" />}
-            >
-              Send Another Greeting
-            </Button>
-          )}
-        </>
+        ) : undefined
       }
       title={fullName}
       description={`Birthday Outreach Record • ID: ${person.id}`}
@@ -251,6 +243,6 @@ export const ViewBirthdayGreetingModal: React.FC<
           </div>
         )}
       </div>
-    </SidebarModal>
+    </DetailDrawer>
   );
 };
