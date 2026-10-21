@@ -83,7 +83,7 @@ export const SendBirthdayEmailModal: React.FC<SendBirthdayEmailModalProps> = ({
         subject: `Happy Birthday, ${firstName}! 🎂 Celebrating You Today!`,
         heading: `Happy Birthday, ${firstName}!`,
         message: `<p>Dear ${firstName},</p><p>On behalf of our entire church family, we want to wish you a very happy and blessed birthday!</p><p>May this new year of your life be filled with God's abundant grace, peace, good health, and fruitfulness in all you do.</p><p>Warmest blessings,<br />Church Leadership</p>`,
-        imageUrl: "",
+        imageUrl: "https://api.abwog.org/public/uploads/1792601056334-762496662.jpg",
         ctaLabel: "",
         ctaUrl: "",
       });
