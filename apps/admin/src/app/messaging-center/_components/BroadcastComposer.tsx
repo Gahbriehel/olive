@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { Switch } from "@/components/FormElements/Switch";
 import { MultiSelect } from "@/components/FormElements/MultiSelect";
 import { Button } from "@/components/ui/Button";
 import { FormFooter } from "@/components/ui/FormFooter";
@@ -23,6 +24,7 @@ import { usePeopleSelectQuery } from "@/hooks/usePeopleSelect";
 import { useSendBatchEmail } from "@/hooks/useEmail";
 import { useIsUploadingFlyer } from "@/hooks/useUploads";
 import { IPerson } from "@/models/person";
+import { peopleService } from "@/services/people.service";
 import { yup } from "@/models/validation";
 import { type IBatchEmailPayload } from "@/services/email.service";
 
@@ -32,14 +34,26 @@ interface BroadcastFormValues extends EmailBaseValues {
 }
 
 const broadcastSchema = yup.object({
-  recipients: yup
-    .array()
-    .of(yup.mixed<IPerson>().required())
-    .min(1, "Select at least one recipient")
-    .required(),
+  recipients: yup.array().of(yup.mixed<IPerson>().required()).required(),
   ...emailContentFields(),
   ...emailImageField(),
 }) as yup.ObjectSchema<BroadcastFormValues>;
+
+const ALL_PEOPLE_PAGE_SIZE = 100;
+
+/** Every person ID, paged through the people list. */
+async function fetchAllPersonIds(): Promise<string[]> {
+  const ids: string[] = [];
+  for (let page = 1; ; page++) {
+    const res = await peopleService.getPeople({
+      page,
+      limit: ALL_PEOPLE_PAGE_SIZE,
+    });
+    res.people.forEach((p) => ids.push(p.id));
+    const total = res.meta?.total ?? 0;
+    if (res.people.length === 0 || ids.length >= total) return ids;
+  }
+}
 
 const transformPersonToSelect = (person: IPerson): ISelect => ({
   value: {
@@ -87,12 +101,15 @@ export function BroadcastComposer({
   const isUploadingFlyer = useIsUploadingFlyer();
   const sendBatchEmail = useSendBatchEmail();
   const [pending, setPending] = useState<IBatchEmailPayload | null>(null);
+  const [sendToAll, setSendToAll] = useState(false);
+  const [resolvingAll, setResolvingAll] = useState(false);
 
   const {
     control,
     handleSubmit,
     setValue,
     watch,
+    setError,
     formState: { errors, isDirty },
   } = useForm<BroadcastFormValues>({
     resolver: yupResolver(broadcastSchema),
@@ -132,9 +149,28 @@ export function BroadcastComposer({
   };
 
   // Validated values open the confirmation; the send happens on confirm.
-  const onSubmit = (formData: BroadcastFormValues) =>
+  const onSubmit = async (formData: BroadcastFormValues) => {
+    let personIds: string[];
+    if (sendToAll) {
+      setResolvingAll(true);
+      try {
+        personIds = await fetchAllPersonIds();
+      } catch {
+        // The API client interceptor already toasted the error.
+        return;
+      } finally {
+        setResolvingAll(false);
+      }
+      if (personIds.length === 0) return;
+    } else {
+      if (formData.recipients.length === 0) {
+        setError("recipients", { message: "Select at least one recipient" });
+        return;
+      }
+      personIds = formData.recipients.map((p) => p.id);
+    }
     setPending({
-      personIds: formData.recipients.map((p) => p.id),
+      personIds,
       subject: formData.subject.trim(),
       heading: formData.heading.trim(),
       message: formData.message.trim(),
@@ -142,6 +178,7 @@ export function BroadcastComposer({
       ctaUrl: trimOrUndefined(formData.ctaUrl),
       imageUrl: trimOrUndefined(formData.imageUrl),
     });
+  };
 
   const pendingCount = pending?.personIds.length ?? 0;
 
@@ -152,34 +189,45 @@ export function BroadcastComposer({
         onSubmit={handleSubmit(onSubmit)}
         image={{ label: "Announcement Flyer Image", upload: true }}
         recipients={
-          <div className="flex flex-col gap-2">
-            <MultiSelect
-              label="Recipients"
-              placeholder="Search & select recipients..."
-              value={recipients.map(transformPersonToSelect)}
-              onChange={handleMultiSelectChange}
-              queryHook={usePeopleSelectQuery}
-              dataKey="items"
-              transformData={transformPersonToSelect}
-              closeIconFn={() => setRecipients([])}
-              validationError={errors.recipients?.message}
-              required
+          <div className="flex flex-col gap-3">
+            <Switch
+              checked={sendToAll}
+              onChange={setSendToAll}
+              label="Send to everyone"
+              description="Email every person in the directory instead of picking recipients"
+              color="indigo"
             />
-            <RecipientChips
-              items={recipients.map((p) => ({
-                id: p.id,
-                name: p.name || `${p.firstName} ${p.lastName}`.trim(),
-                initials: (
-                  p.firstName?.[0] ||
-                  p.name?.[0] ||
-                  "?"
-                ).toUpperCase(),
-              }))}
-              onRemove={(id) =>
-                setRecipients(recipients.filter((r) => r.id !== id))
-              }
-              onClear={() => setRecipients([])}
-            />
+            {!sendToAll && (
+              <>
+                <MultiSelect
+                  label="Recipients"
+                  placeholder="Search & select recipients..."
+                  value={recipients.map(transformPersonToSelect)}
+                  onChange={handleMultiSelectChange}
+                  queryHook={usePeopleSelectQuery}
+                  dataKey="items"
+                  transformData={transformPersonToSelect}
+                  closeIconFn={() => setRecipients([])}
+                  validationError={errors.recipients?.message}
+                  required
+                />
+                <RecipientChips
+                  items={recipients.map((p) => ({
+                    id: p.id,
+                    name: p.name || `${p.firstName} ${p.lastName}`.trim(),
+                    initials: (
+                      p.firstName?.[0] ||
+                      p.name?.[0] ||
+                      "?"
+                    ).toUpperCase(),
+                  }))}
+                  onRemove={(id) =>
+                    setRecipients(recipients.filter((r) => r.id !== id))
+                  }
+                  onClear={() => setRecipients([])}
+                />
+              </>
+            )}
           </div>
         }
         placeholders={{
@@ -205,13 +253,16 @@ export function BroadcastComposer({
               disabled={
                 sendBatchEmail.isPending ||
                 isUploadingFlyer ||
-                selectedCount === 0
+                resolvingAll ||
+                (!sendToAll && selectedCount === 0)
               }
-              loading={sendBatchEmail.isPending}
+              loading={sendBatchEmail.isPending || resolvingAll}
             >
-              {selectedCount > 0
-                ? `Send broadcast (${selectedCount})`
-                : "Send broadcast"}
+              {sendToAll
+                ? "Send to everyone"
+                : selectedCount > 0
+                  ? `Send broadcast (${selectedCount})`
+                  : "Send broadcast"}
             </Button>
           </FormFooter>
         }
