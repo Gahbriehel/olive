@@ -15,17 +15,20 @@ import {
 import { RecipientChips } from "@/components/email/RecipientChips";
 import {
   emailContentFields,
+  emailImageField,
   trimOrUndefined,
 } from "@/components/email/emailFields";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { usePeopleSelectQuery } from "@/hooks/usePeopleSelect";
 import { useSendBatchEmail } from "@/hooks/useEmail";
+import { useIsUploadingFlyer } from "@/hooks/useUploads";
 import { IPerson } from "@/models/person";
 import { yup } from "@/models/validation";
 import { type IBatchEmailPayload } from "@/services/email.service";
 
 interface BroadcastFormValues extends EmailBaseValues {
   recipients: IPerson[];
+  imageUrl?: string;
 }
 
 const broadcastSchema = yup.object({
@@ -35,6 +38,7 @@ const broadcastSchema = yup.object({
     .min(1, "Select at least one recipient")
     .required(),
   ...emailContentFields(),
+  ...emailImageField(),
 }) as yup.ObjectSchema<BroadcastFormValues>;
 
 const transformPersonToSelect = (person: IPerson): ISelect => ({
@@ -80,6 +84,7 @@ export function BroadcastComposer({
   onCancel,
   onSent,
 }: BroadcastComposerProps) {
+  const isUploadingFlyer = useIsUploadingFlyer();
   const sendBatchEmail = useSendBatchEmail();
   const [pending, setPending] = useState<IBatchEmailPayload | null>(null);
 
@@ -99,6 +104,7 @@ export function BroadcastComposer({
       message: "",
       ctaLabel: "",
       ctaUrl: "",
+      imageUrl: "",
     },
   });
 
@@ -134,6 +140,7 @@ export function BroadcastComposer({
       message: formData.message.trim(),
       ctaLabel: trimOrUndefined(formData.ctaLabel),
       ctaUrl: trimOrUndefined(formData.ctaUrl),
+      imageUrl: trimOrUndefined(formData.imageUrl),
     });
 
   const pendingCount = pending?.personIds.length ?? 0;
@@ -143,6 +150,7 @@ export function BroadcastComposer({
       <EmailComposer
         control={control}
         onSubmit={handleSubmit(onSubmit)}
+        image={{ label: "Announcement Flyer Image", upload: true }}
         recipients={
           <div className="flex flex-col gap-2">
             <MultiSelect
@@ -178,6 +186,7 @@ export function BroadcastComposer({
           subject: "e.g. Weekly Fellowship & Community Announcement",
           heading: "e.g. Welcome to Sunday Service",
           message: "Write your broadcast message here...",
+          imageUrl: "https://... or upload flyer image",
           ctaLabel: "e.g. Read More",
           ctaUrl: "https://example.org/news",
         }}
@@ -193,7 +202,11 @@ export function BroadcastComposer({
             </Button>
             <Button
               type="submit"
-              disabled={sendBatchEmail.isPending || selectedCount === 0}
+              disabled={
+                sendBatchEmail.isPending ||
+                isUploadingFlyer ||
+                selectedCount === 0
+              }
               loading={sendBatchEmail.isPending}
             >
               {selectedCount > 0
