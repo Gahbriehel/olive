@@ -229,6 +229,34 @@ export default function RegistrationsPage() {
       <PageHeader
         title="Registrations Manager"
         description="Real-time roster of confirmed registrants, QR ticket dispatches, and assigned tournament teams."
+        actions={
+          <ListToolbar
+            create={{
+              label: "Send Email",
+              onClick: handleOpenEmailModal,
+              icon: <Mail className="w-4 h-4" />,
+            }}
+            actions={[
+              { title: "Refresh", fn: () => refetch() },
+              ...(canExport
+                ? [
+                    {
+                      title: "Export CSV",
+                      fn: () =>
+                        downloadCsvExport(
+                          "/registrations/export",
+                          {
+                            eventId: selectedEventId || undefined,
+                            ...exportParams,
+                          },
+                          `registrations-${new Date().toISOString().slice(0, 10)}.csv`,
+                        ),
+                    },
+                  ]
+                : []),
+            ]}
+          />
+        }
       />
 
       {/* Metrics Grid */}
@@ -268,30 +296,6 @@ export default function RegistrationsPage() {
         onRowClick={setSelectedRegistration}
       >
         <ListToolbar
-          create={{
-            label: "Send Email",
-            onClick: handleOpenEmailModal,
-            icon: <Mail className="w-4 h-4" />,
-          }}
-          actions={[
-            { title: "Refresh", fn: () => refetch() },
-            ...(canExport
-              ? [
-                  {
-                    title: "Export CSV",
-                    fn: () =>
-                      downloadCsvExport(
-                        "/registrations/export",
-                        {
-                          eventId: selectedEventId || undefined,
-                          ...exportParams,
-                        },
-                        `registrations-${new Date().toISOString().slice(0, 10)}.csv`,
-                      ),
-                  },
-                ]
-              : []),
-          ]}
           trailing={
             <FiltersButton onClick={openPanel} activeCount={activeCount} />
           }

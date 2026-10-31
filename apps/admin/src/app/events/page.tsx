@@ -166,8 +166,6 @@ export default function EventsPage() {
             <RefreshButton onRefetch={refetch} />
             <AuthorityGuard roles={EVENT_MANAGER_ROLES}>
               <Button
-                size="sm"
-                className="h-9"
                 leftIcon={<Plus className="w-4 h-4" />}
                 onClick={() => setIsCreateEventOpen(true)}
               >

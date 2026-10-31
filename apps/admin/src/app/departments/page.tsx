@@ -115,6 +115,17 @@ export default function DepartmentsPage() {
         title="Departments & Ministries"
         description="Oversee church ministries, active rosters, leadership assignments, and member moderation."
         icon={Building2}
+        actions={
+          <ListToolbar
+            create={{
+              label: "Create Department",
+              onClick: () => setIsCreateOpen(true),
+              icon: <Plus className="w-4 h-4" />,
+              show: canManage,
+            }}
+            actions={[{ title: "Refresh", fn: () => refetch() }]}
+          />
+        }
       />
 
       {/* Stats Summary */}
@@ -176,17 +187,7 @@ export default function DepartmentsPage() {
         onRetry={() => refetch()}
         resource="departments"
         onRowClick={setSelectedRosterDept}
-      >
-        <ListToolbar
-          create={{
-            label: "Create Department",
-            onClick: () => setIsCreateOpen(true),
-            icon: <Plus className="w-4 h-4" />,
-            show: canManage,
-          }}
-          actions={[{ title: "Refresh", fn: () => refetch() }]}
-        />
-      </Table>
+      />
 
       {/* Create Department Sidebar Modal */}
       <SidebarModal

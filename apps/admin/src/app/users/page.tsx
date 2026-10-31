@@ -1,8 +1,16 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Shield, Users as UsersIcon, ShieldCheck, Lock } from "lucide-react";
+import {
+  Shield,
+  Users as UsersIcon,
+  ShieldCheck,
+  Lock,
+  UserPlus,
+} from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { ListToolbar } from "@/components/ui/ListToolbar";
+import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
@@ -148,6 +156,34 @@ export default function UsersPage() {
       <PageHeader
         title="Users & Permission Control"
         description="Manage system access, assign roles, and synchronize user contact directory."
+        actions={
+          canAccessUserDirectory && (
+            <ListToolbar
+              create={{
+                label: "Invite User",
+                onClick: () => setIsCreateOpen(true),
+                icon: <UserPlus className="w-4 h-4" />,
+                show: canManageUsers,
+              }}
+              actions={[
+                { title: "Refresh", fn: () => refetch() },
+                ...(canManageUsers
+                  ? [
+                      {
+                        title: "Export CSV",
+                        fn: () =>
+                          downloadCsvExport(
+                            "/users/export",
+                            exportParams,
+                            `users-${new Date().toISOString().slice(0, 10)}.csv`,
+                          ),
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+          )
+        }
       />
 
       {canAccessUserDirectory ? (
@@ -215,9 +251,6 @@ export default function UsersPage() {
                 isError={isError}
                 error={error}
                 onRefresh={() => refetch()}
-                onInvite={() => setIsCreateOpen(true)}
-                canManageUsers={canManageUsers}
-                exportParams={exportParams}
                 onRowClick={setEditingUser}
               />
             ) : (

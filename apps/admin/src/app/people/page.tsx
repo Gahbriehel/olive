@@ -313,6 +313,31 @@ export default function PeoplePage() {
       <PageHeader
         title="People Directory"
         description="Central repository of church members, visitors, and ministry leaders with pastoral care and touchpoint history."
+        actions={
+          <ListToolbar
+            create={{
+              label: "Add Person",
+              onClick: () => setIsAddPersonOpen(true),
+              icon: <UserPlus className="w-4 h-4" />,
+            }}
+            actions={[
+              { title: "Refresh", fn: () => refetch() },
+              {
+                title: "Export CSV",
+                fn: () =>
+                  downloadCsvExport(
+                    "/people/export",
+                    exportParams,
+                    `people-${new Date().toISOString().slice(0, 10)}.csv`,
+                  ),
+              },
+              {
+                title: "Register Person for Event",
+                fn: () => setIsRegisterOpen(true),
+              },
+            ]}
+          />
+        }
       />
 
       <PeopleStats
@@ -395,27 +420,6 @@ export default function PeoplePage() {
           onRowClick={setSelectedPerson}
         >
           <ListToolbar
-            create={{
-              label: "Add Person",
-              onClick: () => setIsAddPersonOpen(true),
-              icon: <UserPlus className="w-4 h-4" />,
-            }}
-            actions={[
-              { title: "Refresh", fn: () => refetch() },
-              {
-                title: "Export CSV",
-                fn: () =>
-                  downloadCsvExport(
-                    "/people/export",
-                    exportParams,
-                    `people-${new Date().toISOString().slice(0, 10)}.csv`,
-                  ),
-              },
-              {
-                title: "Register Person for Event",
-                fn: () => setIsRegisterOpen(true),
-              },
-            ]}
             trailing={
               <FiltersButton onClick={openPanel} activeCount={activeCount} />
             }
