@@ -64,4 +64,8 @@ export const peopleService = {
     >(`/people/${id}/promote`, payload);
     return extractData<IPersonResponse>(res.data);
   },
+
+  async deletePerson(id: string): Promise<void> {
+    await apiClient.delete(`/people/${id}`);
+  },
 };

@@ -52,6 +52,14 @@ export function usePeople(params?: IQueryParams) {
     },
   });
 
+  const deletePersonMutation = useMutation({
+    meta: { successMessage: "Person deleted successfully" },
+    mutationFn: (id: string) => peopleService.deletePerson(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["people"] });
+    },
+  });
+
   return {
     people: peopleQuery.data?.people || EMPTY_PEOPLE,
     meta: peopleQuery.data?.meta,
@@ -66,6 +74,8 @@ export function usePeople(params?: IQueryParams) {
     isUpdating: updatePersonMutation.isPending,
     promotePerson: promotePersonMutation.mutateAsync,
     isPromoting: promotePersonMutation.isPending,
+    deletePerson: deletePersonMutation.mutateAsync,
+    isDeleting: deletePersonMutation.isPending,
   };
 }
 

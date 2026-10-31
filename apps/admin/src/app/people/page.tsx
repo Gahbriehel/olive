@@ -21,6 +21,7 @@ import {
   ScheduleCareCheckInFormValues,
 } from "@/components/Forms/ScheduleCareForm";
 import { CompleteCheckInModal } from "@/components/modals/CompleteCheckInModal";
+import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import { GlobalCheckInQueue } from "./_components/GlobalCheckInQueue";
 import { usePeople } from "@/hooks/usePeople";
 import { useCheckIns } from "@/hooks/useCheckIns";
@@ -69,6 +70,7 @@ export default function PeoplePage() {
 
   const [selectedPerson, setSelectedPerson] = useState<IPerson | null>(null);
   const [editingPerson, setEditingPerson] = useState<IPerson | null>(null);
+  const [deletingPerson, setDeletingPerson] = useState<IPerson | null>(null);
   const [promotingPerson, setPromotingPerson] = useState<IPerson | null>(null);
   const [followUpPerson, setFollowUpPerson] = useState<IPerson | null>(null);
   const [logCheckInPerson, setLogCheckInPerson] = useState<IPerson | null>(
@@ -96,6 +98,8 @@ export default function PeoplePage() {
     isCreating,
     updatePerson,
     isUpdating,
+    deletePerson,
+    isDeleting,
     promotePerson,
     isPromoting,
     refetch,
@@ -275,6 +279,19 @@ export default function PeoplePage() {
     }
   };
 
+  const handleDeletePerson = async () => {
+    if (!deletingPerson || !isSuperAdmin) return;
+    try {
+      await deletePerson(deletingPerson.id);
+      if (selectedPerson?.id === deletingPerson.id) {
+        setSelectedPerson(null);
+      }
+      setDeletingPerson(null);
+    } catch (err) {
+      console.error("Failed to delete person:", err);
+    }
+  };
+
   const columns = usePeopleColumns({
     page,
     limit,
@@ -282,6 +299,7 @@ export default function PeoplePage() {
     canPromote,
     onView: setSelectedPerson,
     onEdit: setEditingPerson,
+    onDelete: isSuperAdmin ? setDeletingPerson : undefined,
     onPromote: setPromotingPerson,
     onFollowUp: setFollowUpPerson,
     onLogCheckIn: setLogCheckInPerson,
@@ -543,6 +561,19 @@ export default function PeoplePage() {
             />
           )}
         </SidebarModal>
+      )}
+
+      {/* Delete Person Confirmation Modal */}
+      {deletingPerson && (
+        <ConfirmActionModal
+          display={Boolean(deletingPerson)}
+          close={() => setDeletingPerson(null)}
+          actionName="delete"
+          title={`Are you sure you want to delete ${deletingPerson.name}?`}
+          description="This action is permanent and cannot be undone."
+          fn={handleDeletePerson}
+          loading={isDeleting}
+        />
       )}
     </div>
   );

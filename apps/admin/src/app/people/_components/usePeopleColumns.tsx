@@ -18,6 +18,7 @@ interface Options {
   canPromote?: boolean;
   onView: (person: IPerson) => void;
   onEdit: (person: IPerson) => void;
+  onDelete?: (person: IPerson) => void;
   onPromote?: (person: IPerson) => void;
   onFollowUp?: (person: IPerson) => void;
   onLogCheckIn?: (person: IPerson) => void;
@@ -32,6 +33,7 @@ export function usePeopleColumns({
   canPromote = false,
   onView,
   onEdit,
+  onDelete,
   onPromote,
   onFollowUp,
   onLogCheckIn,
@@ -242,6 +244,16 @@ export function usePeopleColumns({
                 onEdit(person);
               },
             });
+
+            if (onDelete) {
+              actions.push({
+                title: "Delete Person",
+                fn: () => {
+                  onDelete(person);
+                },
+                destructive: true,
+              });
+            }
           }
 
           return <ActionsList actions={actions} />;
@@ -255,6 +267,7 @@ export function usePeopleColumns({
       canPromote,
       onView,
       onEdit,
+      onDelete,
       onPromote,
       onFollowUp,
       onLogCheckIn,
