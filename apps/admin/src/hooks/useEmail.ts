@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { customToast } from "@/helpers/customToast";
 import {
   emailService,
   type IBatchEmailPayload,
@@ -18,7 +19,21 @@ export function useSendBatchEmail() {
     meta: { successMessage: "Broadcast sent" },
     mutationFn: (payload: IBatchEmailPayload) =>
       emailService.sendBatchEmail(payload),
-    onSuccess: () => invalidateLogs(),
+    onSuccess: (data) => {
+      invalidateLogs();
+      const results = data?.results;
+      if (results?.totalOptedOut) {
+        const n = results.totalOptedOut;
+        customToast.success(
+          `${n} ${n === 1 ? "person was" : "people were"} skipped because they unsubscribed.`,
+        );
+      }
+      if (results?.totalFailed) {
+        customToast.error(
+          `${results.totalFailed} email${results.totalFailed === 1 ? "" : "s"} failed to send.`,
+        );
+      }
+    },
   });
 }
 

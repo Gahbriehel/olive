@@ -190,6 +190,10 @@ export function BroadcastComposer({
         image={{ label: "Announcement Flyer Image", upload: true }}
         recipients={
           <div className="flex flex-col gap-3">
+            <p className="text-2xs text-fg-muted">
+              People without an email address or who have unsubscribed will be
+              skipped.
+            </p>
             <Switch
               checked={sendToAll}
               onChange={setSendToAll}

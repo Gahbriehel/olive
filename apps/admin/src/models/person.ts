@@ -64,6 +64,8 @@ export interface IPerson {
   dob: string;
   membershipStatus: MembershipStatus;
   avatarUrl?: string;
+  emailOptOut?: boolean;
+  emailOptOutAt?: string | null;
   registrationHistoryCount: number;
   eventsAttendedCount: number;
   registrations: {
@@ -111,6 +113,8 @@ export interface IPersonResponse {
   emailBounceReason: string;
   emailBouncedAt: string;
   emailStatus: ApiEmailStatus;
+  emailOptOut?: boolean;
+  emailOptOutAt?: string | null;
   dateOfBirth?: string;
   address?: string;
   createdAt?: string;
@@ -166,7 +170,10 @@ export interface IPromotePersonPayload {
   membershipStatus: ApiMembershipStatus;
 }
 
-export type IUpdatePersonPayload = Partial<IPersonPayload>;
+export type IUpdatePersonPayload = Partial<IPersonPayload> & {
+  /** false re-subscribes the person to broadcast emails. The server owns emailOptOutAt. */
+  emailOptOut?: boolean;
+};
 
 export const MEMBERSHIP_HIERARCHY: ApiMembershipStatus[] = [
   "VISITOR",
@@ -291,6 +298,8 @@ export function adaptApiPersonToPerson(apiPerson: IPersonResponse): IPerson {
       ? membershipMap[apiPerson.membershipStatus] || "Visitor"
       : "Visitor",
     avatarUrl: apiPerson.avatarUrl || undefined,
+    emailOptOut: Boolean(apiPerson.emailOptOut),
+    emailOptOutAt: apiPerson.emailOptOutAt ?? null,
     registrationHistoryCount: eventsRegisteredCount,
     eventsAttendedCount,
     registrations,

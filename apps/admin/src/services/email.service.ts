@@ -18,6 +18,21 @@ export interface IBatchEmailPayload {
   imageUrl?: string;
 }
 
+export interface IBatchEmailResults {
+  totalTargeted: number;
+  totalWithEmail: number;
+  totalSent: number;
+  totalFailed: number;
+  /** Present only when at least one person was skipped for unsubscribing. */
+  totalOptedOut?: number;
+  failedRecipients: Array<{ recipient: string; reason: string }>;
+}
+
+export interface IBatchEmailResponse {
+  message: string;
+  results: IBatchEmailResults;
+}
+
 export interface ISendSinglePersonEmailPayload {
   personId: string;
   subject: string;
@@ -69,12 +84,14 @@ export const emailService = {
     };
   },
 
-  async sendBatchEmail(payload: IBatchEmailPayload): Promise<unknown> {
+  async sendBatchEmail(
+    payload: IBatchEmailPayload,
+  ): Promise<IBatchEmailResponse> {
     const res = await apiClient.post<IBaseResponse<unknown>>(
       "/email/people/batch",
       payload,
     );
-    return extractData(res.data);
+    return extractData<IBatchEmailResponse>(res.data);
   },
 
   async sendBatchRegistrantsEmail(

@@ -71,6 +71,8 @@ export default function PeoplePage() {
   const [selectedPerson, setSelectedPerson] = useState<IPerson | null>(null);
   const [editingPerson, setEditingPerson] = useState<IPerson | null>(null);
   const [deletingPerson, setDeletingPerson] = useState<IPerson | null>(null);
+  const [resubscribingPerson, setResubscribingPerson] =
+    useState<IPerson | null>(null);
   const [promotingPerson, setPromotingPerson] = useState<IPerson | null>(null);
   const [followUpPerson, setFollowUpPerson] = useState<IPerson | null>(null);
   const [logCheckInPerson, setLogCheckInPerson] = useState<IPerson | null>(
@@ -292,6 +294,17 @@ export default function PeoplePage() {
     }
   };
 
+  const handleResubscribePerson = async () => {
+    if (!resubscribingPerson || !isSuperAdmin) return;
+    const updated = await updatePerson({
+      id: resubscribingPerson.id,
+      dto: { emailOptOut: false },
+    });
+    if (selectedPerson?.id === resubscribingPerson.id && updated) {
+      setSelectedPerson(adaptApiPersonToPerson(updated));
+    }
+  };
+
   const columns = usePeopleColumns({
     page,
     limit,
@@ -434,6 +447,7 @@ export default function PeoplePage() {
         person={selectedPerson}
         onClose={() => setSelectedPerson(null)}
         onEdit={isSuperAdmin ? setEditingPerson : undefined}
+        onResubscribe={isSuperAdmin ? setResubscribingPerson : undefined}
         onLogCheckIn={setLogCheckInPerson}
         onScheduleCare={setScheduleCarePerson}
         onCompleteCheckIn={setCompletingCheckIn}
@@ -565,6 +579,20 @@ export default function PeoplePage() {
             />
           )}
         </SidebarModal>
+      )}
+
+      {/* Re-subscribe Person Confirmation Modal */}
+      {resubscribingPerson && (
+        <ConfirmActionModal
+          display={Boolean(resubscribingPerson)}
+          close={() => setResubscribingPerson(null)}
+          actionName="re-subscribe"
+          confirmLabel="Re-subscribe"
+          title={`Re-subscribe ${resubscribingPerson.name} to broadcast emails?`}
+          description="Only do this if they asked to receive them again."
+          fn={handleResubscribePerson}
+          loading={isUpdating}
+        />
       )}
 
       {/* Delete Person Confirmation Modal */}

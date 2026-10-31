@@ -23,6 +23,8 @@ interface PersonDetailPanelProps {
   onClose: () => void;
   /** Only passed for users allowed to edit people. */
   onEdit?: (person: IPerson) => void;
+  /** Only passed for super admins. */
+  onResubscribe?: (person: IPerson) => void;
   onLogCheckIn?: (person: IPerson) => void;
   onScheduleCare?: (person: IPerson) => void;
   onCompleteCheckIn?: (checkIn: IPastoralCheckIn) => void;
@@ -34,6 +36,7 @@ export function PersonDetailPanel({
   person,
   onClose,
   onEdit,
+  onResubscribe,
   onLogCheckIn,
   onScheduleCare,
   onCompleteCheckIn,
@@ -111,6 +114,30 @@ export function PersonDetailPanel({
                       status={person.followUpStatus || "PENDING"}
                       size="sm"
                     />
+                  )}
+                  {person.emailOptOut && (
+                    <span
+                      title={
+                        person.emailOptOutAt
+                          ? `Unsubscribed ${new Date(person.emailOptOutAt).toLocaleDateString()}`
+                          : undefined
+                      }
+                    >
+                      <Badge variant="slate" size="sm" dot>
+                        Unsubscribed
+                      </Badge>
+                    </span>
+                  )}
+                  {person.emailOptOut && onResubscribe && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-6 px-2"
+                      onClick={() => onResubscribe(person)}
+                    >
+                      Re-subscribe
+                    </Button>
                   )}
                   {hasPendingCare && (
                     <Badge variant="amber" size="sm" dot>
