@@ -14,6 +14,7 @@ import {
   Mail,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { EmptyState, ErrorState } from "@/components/ui/QueryState";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { CheckInReasonBadge } from "@/components/ui/CheckInBadges";
@@ -61,7 +62,7 @@ const formatVisitorSubtitle = (visitor: {
 export const TodaysOutreachCard: React.FC<TodaysOutreachCardProps> = ({
   className,
 }) => {
-  const { data, isLoading, isError } = useOutreachToday();
+  const { data, isLoading, isError, error, refetch } = useOutreachToday();
   const confirmMutation = useConfirmOutreach();
 
   if (isLoading) {
@@ -83,11 +84,22 @@ export const TodaysOutreachCard: React.FC<TodaysOutreachCardProps> = ({
     );
   }
 
-  if (isError || !data) {
-    return null;
+  if (isError) {
+    return (
+      <Card className={className}>
+        <ErrorState
+          resource="today's outreach"
+          error={error}
+          onRetry={() => refetch()}
+        />
+      </Card>
+    );
   }
 
-  const { birthdays, checkIns, visitorFollowUps, unconfirmed } = data;
+  const birthdays = data?.birthdays;
+  const checkIns = data?.checkIns;
+  const visitorFollowUps = data?.visitorFollowUps;
+  const unconfirmed = data?.unconfirmed;
 
   const hasAnyOutreach =
     (birthdays?.items && birthdays.items.length > 0) ||
@@ -96,7 +108,26 @@ export const TodaysOutreachCard: React.FC<TodaysOutreachCardProps> = ({
     (unconfirmed?.items && unconfirmed.items.length > 0);
 
   if (!hasAnyOutreach) {
-    return null; // Per spec: compact groups hidden when empty, hide card if completely empty
+    return (
+      <Card className={className}>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-success-soft text-success-text">
+              <MessageCircle className="w-4 h-4" />
+            </div>
+            <CardTitle>Today&apos;s Outreach</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <EmptyState
+            icon={Check}
+            title="All caught up!"
+            description="No pending outreach tasks, birthdays, or check-ins scheduled for today."
+            className="py-8"
+          />
+        </CardContent>
+      </Card>
+    );
   }
 
   const handleConfirmUnconfirmed = (
