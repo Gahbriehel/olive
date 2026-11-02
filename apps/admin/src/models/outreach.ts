@@ -130,7 +130,9 @@ export interface OutreachTodayResponse {
       firstName: string;
       lastName: string;
       phone: string | null;
-      firstSeenDaysAgo: number;
+      firstSeenDaysAgo?: number | null;
+      firstSeenAt?: string | null;
+      createdAt?: string | null;
     }>;
   };
   unconfirmed: {

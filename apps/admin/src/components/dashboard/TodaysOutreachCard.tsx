@@ -28,6 +28,36 @@ export interface TodaysOutreachCardProps {
   className?: string;
 }
 
+const formatVisitorSubtitle = (visitor: {
+  firstSeenDaysAgo?: number | null;
+  firstSeenAt?: string | null;
+  createdAt?: string | null;
+}): string => {
+  if (
+    visitor.firstSeenDaysAgo !== undefined &&
+    visitor.firstSeenDaysAgo !== null &&
+    !Number.isNaN(Number(visitor.firstSeenDaysAgo))
+  ) {
+    const days = Number(visitor.firstSeenDaysAgo);
+    if (days <= 0) return "first seen today";
+    if (days === 1) return "first seen yesterday";
+    return `first seen ${days} days ago`;
+  }
+
+  const fallbackDate = visitor.firstSeenAt || visitor.createdAt;
+  if (fallbackDate && dayjs(fallbackDate).isValid()) {
+    const days = Math.max(
+      0,
+      dayjs().startOf("day").diff(dayjs(fallbackDate).startOf("day"), "day"),
+    );
+    if (days === 0) return "first seen today";
+    if (days === 1) return "first seen yesterday";
+    return `first seen ${days} days ago`;
+  }
+
+  return "Follow-up pending";
+};
+
 export const TodaysOutreachCard: React.FC<TodaysOutreachCardProps> = ({
   className,
 }) => {
@@ -210,10 +240,7 @@ export const TodaysOutreachCard: React.FC<TodaysOutreachCardProps> = ({
               {visitorFollowUps.items.map((visitor) => {
                 const fullName =
                   `${visitor.firstName} ${visitor.lastName}`.trim();
-                const daysAgoText =
-                  visitor.firstSeenDaysAgo === 1
-                    ? "first seen yesterday"
-                    : `first seen ${visitor.firstSeenDaysAgo} days ago`;
+                const subtitle = formatVisitorSubtitle(visitor);
 
                 return (
                   <div
@@ -225,7 +252,7 @@ export const TodaysOutreachCard: React.FC<TodaysOutreachCardProps> = ({
                         {fullName}
                       </span>
                       <span className="text-2xs text-muted-foreground">
-                        {daysAgoText}
+                        {subtitle}
                       </span>
                     </div>
 
