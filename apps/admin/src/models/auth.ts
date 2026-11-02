@@ -27,6 +27,7 @@ export interface IUser {
   email: string;
   firstName?: string;
   lastName?: string;
+  displayName?: string;
   churchName?: string;
   church?: {
     id: string;

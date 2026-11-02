@@ -161,6 +161,7 @@ export default function PeoplePage() {
       }
     } catch (err) {
       console.error("Failed to update person:", err);
+      throw err;
     }
   };
 
@@ -310,6 +311,9 @@ export default function PeoplePage() {
     limit,
     isSuperAdmin,
     canPromote,
+    isFollowUpFilterActive: Boolean(
+      queryParams.followUpStatus || filters.followUpStatus,
+    ),
     onView: setSelectedPerson,
     onEdit: setEditingPerson,
     onDelete: isSuperAdmin ? setDeletingPerson : undefined,

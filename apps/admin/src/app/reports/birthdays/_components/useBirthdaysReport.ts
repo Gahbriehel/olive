@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { BirthdayPersonItem, BirthdayStatusFilter } from "@/models/birthday";
+import {
+  BirthdayPersonItem,
+  BirthdayStatusFilter,
+  BirthdayGreetedFilter,
+} from "@/models/birthday";
 import { useAuth } from "@/hooks/useAuth";
 import { useListFilters } from "@/hooks/useListFilters";
 import { useBirthdayAnalytics, useBirthdays } from "@/hooks/useBirthdays";
@@ -23,6 +27,8 @@ export function useBirthdaysReport() {
   const [statusFilter, setStatusFilter] = useState<BirthdayStatusFilter>(
     BirthdayStatusFilter.ALL,
   );
+  const [greetedFilter, setGreetedFilter] =
+    useState<BirthdayGreetedFilter>("any");
   // Pagination + table search. Year, month and status stay page state: they
   // drive the analytics cards too, not just the list.
   const filters = useListFilters({});
@@ -49,6 +55,11 @@ export function useBirthdaysReport() {
     setPage(1);
   };
 
+  const changeGreeted = (greeted: BirthdayGreetedFilter) => {
+    setGreetedFilter(greeted);
+    setPage(1);
+  };
+
   const analytics = useBirthdayAnalytics({
     year: selectedYear,
     month: selectedMonth,
@@ -58,6 +69,7 @@ export function useBirthdaysReport() {
     year: selectedYear,
     month: selectedMonth,
     status: statusFilter,
+    greeted: greetedFilter,
     search,
     page,
     limit,
@@ -74,6 +86,8 @@ export function useBirthdaysReport() {
     setMonthFilter,
     statusFilter,
     changeStatus,
+    greetedFilter,
+    changeGreeted,
     filters,
     analytics,
     list,

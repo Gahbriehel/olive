@@ -8,7 +8,7 @@ import { RefreshButton } from "@/components/ui/RefreshButton";
 import { ListToolbar } from "@/components/ui/ListToolbar";
 import { SendBirthdayEmailModal } from "@/components/dashboard/SendBirthdayEmailModal";
 import { ViewBirthdayGreetingModal } from "@/components/modals/ViewBirthdayGreetingModal";
-import { BirthdayStatusFilter } from "@/models/birthday";
+import { BirthdayStatusFilter, BirthdayGreetedFilter } from "@/models/birthday";
 import { YearSelect } from "../_components/YearSelect";
 import { ReportStatusBar } from "../_components/ReportStatusBar";
 import { AnalyticsErrorCard } from "../_components/AnalyticsErrorCard";
@@ -97,13 +97,34 @@ export default function BirthdayReportsPage() {
       )}
 
       <div className="rounded-2xl border border-border bg-surface/90 p-3.5 sm:p-6 shadow-xs space-y-4 min-w-0 max-w-full overflow-hidden">
-        <ReportStatusBar
-          tabs={statusTabs}
-          activeTab={report.statusFilter}
-          onTabChange={(id) => report.changeStatus(id as BirthdayStatusFilter)}
-          selectedMonth={report.selectedMonth}
-          onClearMonth={() => report.setMonthFilter(null)}
-        />
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <ReportStatusBar
+            tabs={statusTabs}
+            activeTab={report.statusFilter}
+            onTabChange={(id) =>
+              report.changeStatus(id as BirthdayStatusFilter)
+            }
+            selectedMonth={report.selectedMonth}
+            onClearMonth={() => report.setMonthFilter(null)}
+          />
+          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 pb-2 sm:pb-0">
+            <span className="text-xs font-medium text-muted-foreground">
+              Channel:
+            </span>
+            <select
+              value={report.greetedFilter}
+              onChange={(e) =>
+                report.changeGreeted(e.target.value as BirthdayGreetedFilter)
+              }
+              className="text-xs rounded-lg border border-border bg-background px-2.5 py-1 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="any">Any Channel</option>
+              <option value="email">Email</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+        </div>
 
         <Table
           columns={columns}

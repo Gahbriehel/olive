@@ -15,7 +15,7 @@ export function Hero() {
       <div className="absolute inset-0 z-0">
         <Image
           src="/images/hero-img.jpg"
-          alt="Abiding Word Of Grace Missions (a.k.a. Amazing Grace Bible Church) auditorium congregation"
+          alt="Abiding Word Of Grace Missions (PKA Amazing Grace Bible Church) auditorium congregation"
           fill
           priority
           className="object-cover object-center grayscale contrast-[1.05] brightness-[0.85]"
@@ -82,7 +82,7 @@ export function Hero() {
             Of Grace Missions
           </span>
           <span className="block text-sm sm:text-lg lg:text-xl mt-3 text-[#D4D0C7] font-sans font-light tracking-[0.2em] normal-case">
-            (a.k.a. Amazing Grace Bible Church)
+            (PKA Amazing Grace Bible Church)
           </span>
         </motion.h1>
 

@@ -7,6 +7,7 @@ import {
   BirthdayPersonItem,
   BirthdayAnalyticsResponse,
   BirthdayStatusFilter,
+  BirthdayGreetedFilter,
 } from "@/models/birthday";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -23,6 +24,7 @@ export interface BirthdayQueryParams {
   year?: number;
   month?: number;
   status?: BirthdayStatusFilter | string;
+  greeted?: BirthdayGreetedFilter | string;
   search?: string;
   page?: number;
   limit?: number;

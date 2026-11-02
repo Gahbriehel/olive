@@ -18,6 +18,7 @@ import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { BirthdayPersonItem } from "@/models/birthday";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserRoles, ROLES } from "@/utils/rbac";
+import { WhatsAppIcon } from "@/components/ui/icons/WhatsAppIcon";
 import dayjs from "dayjs";
 
 interface ViewBirthdayGreetingModalProps {
@@ -37,6 +38,7 @@ export const ViewBirthdayGreetingModal: React.FC<
   if (!person) return null;
 
   const greeting = person.greeting;
+  const whatsappGreeting = person.whatsappGreeting;
   const fullName = `${person.firstName} ${person.lastName}`.trim();
   const initials = `${person.firstName?.[0] || ""}${
     person.lastName?.[0] || ""
@@ -103,29 +105,76 @@ export const ViewBirthdayGreetingModal: React.FC<
           </div>
         </div>
 
-        {/* Delivery Audit Status Card */}
-        <div className="rounded-xl border border-success-border bg-success-soft p-3.5 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold text-success-text">
-            <MailCheck className="w-4 h-4 text-success-text shrink-0" />
-            <span>Greeting Successfully Delivered</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs text-fg-secondary">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <User className="w-3.5 h-3.5 text-fg-subtle shrink-0" />
-              <span className="truncate">
-                Sent by:{" "}
-                <strong className="font-semibold text-fg">{senderName}</strong>
-              </span>
+        {/* WhatsApp Delivery Audit Card */}
+        {whatsappGreeting && (
+          <div className="rounded-xl border border-success-border bg-success-soft p-3.5 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-success-text">
+              <WhatsAppIcon className="w-4 h-4 text-success-text shrink-0" />
+              <span>WhatsApp Birthday Greeting Delivered</span>
             </div>
-            {sentAtFormatted && (
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs text-fg-secondary">
               <div className="flex items-center gap-1.5 min-w-0">
-                <Calendar className="w-3.5 h-3.5 text-fg-subtle shrink-0" />
-                <span className="truncate">{sentAtFormatted}</span>
+                <User className="w-3.5 h-3.5 text-fg-subtle shrink-0" />
+                <span className="truncate">
+                  Sent by:{" "}
+                  <strong className="font-semibold text-fg">
+                    {whatsappGreeting.sentBy?.name ||
+                      `${whatsappGreeting.sentBy?.firstName || ""} ${whatsappGreeting.sentBy?.lastName || ""}`.trim() ||
+                      "Church Staff"}
+                  </strong>
+                </span>
               </div>
-            )}
+              {whatsappGreeting.sentAt && (
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <Calendar className="w-3.5 h-3.5 text-fg-subtle shrink-0" />
+                  <span className="truncate">
+                    {dayjs(whatsappGreeting.sentAt).format(
+                      "MMMM D, YYYY [at] h:mm A",
+                    )}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-2 border-t border-border-subtle">
+              <label className="text-2xs font-bold uppercase tracking-wider text-fg-subtle block mb-1">
+                WhatsApp Message Body
+              </label>
+              <div className="text-xs text-fg-secondary p-3 rounded-lg bg-surface border border-border whitespace-pre-wrap leading-relaxed">
+                {whatsappGreeting.body}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Email Delivery Audit Status Card */}
+        {greeting && (
+          <div className="rounded-xl border border-success-border bg-success-soft p-3.5 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-success-text">
+              <MailCheck className="w-4 h-4 text-success-text shrink-0" />
+              <span>Email Greeting Successfully Delivered</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs text-fg-secondary">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <User className="w-3.5 h-3.5 text-fg-subtle shrink-0" />
+                <span className="truncate">
+                  Sent by:{" "}
+                  <strong className="font-semibold text-fg">
+                    {senderName}
+                  </strong>
+                </span>
+              </div>
+              {sentAtFormatted && (
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <Calendar className="w-3.5 h-3.5 text-fg-subtle shrink-0" />
+                  <span className="truncate">{sentAtFormatted}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Member Contact Details Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">

@@ -39,6 +39,8 @@ export interface IQueryParams {
   month?: number;
   deliveryStatus?: string;
   sentByUserId?: string;
+  purpose?: string;
+  personId?: string;
 }
 
 export function extractData<T>(resData: unknown): T {

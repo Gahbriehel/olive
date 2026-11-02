@@ -66,6 +66,8 @@ export interface IPerson {
   avatarUrl?: string;
   emailOptOut?: boolean;
   emailOptOutAt?: string | null;
+  whatsappOptOut?: boolean;
+  whatsappOptOutAt?: string | null;
   registrationHistoryCount: number;
   eventsAttendedCount: number;
   registrations: {
@@ -115,6 +117,8 @@ export interface IPersonResponse {
   emailStatus: ApiEmailStatus;
   emailOptOut?: boolean;
   emailOptOutAt?: string | null;
+  whatsappOptOut?: boolean;
+  whatsappOptOutAt?: string | null;
   dateOfBirth?: string;
   address?: string;
   createdAt?: string;
@@ -164,6 +168,7 @@ export interface IPersonPayload {
   lastFollowUpAt?: string;
   dateOfBirth?: string;
   address?: string;
+  whatsappOptOut?: boolean;
 }
 
 export interface IPromotePersonPayload {
@@ -173,6 +178,8 @@ export interface IPromotePersonPayload {
 export type IUpdatePersonPayload = Partial<IPersonPayload> & {
   /** false re-subscribes the person to broadcast emails. The server owns emailOptOutAt. */
   emailOptOut?: boolean;
+  /** false opts back in to WhatsApp messages. The server owns whatsappOptOutAt. */
+  whatsappOptOut?: boolean;
 };
 
 export const MEMBERSHIP_HIERARCHY: ApiMembershipStatus[] = [
@@ -300,6 +307,8 @@ export function adaptApiPersonToPerson(apiPerson: IPersonResponse): IPerson {
     avatarUrl: apiPerson.avatarUrl || undefined,
     emailOptOut: Boolean(apiPerson.emailOptOut),
     emailOptOutAt: apiPerson.emailOptOutAt ?? null,
+    whatsappOptOut: Boolean(apiPerson.whatsappOptOut),
+    whatsappOptOutAt: apiPerson.whatsappOptOutAt ?? null,
     registrationHistoryCount: eventsRegisteredCount,
     eventsAttendedCount,
     registrations,

@@ -32,6 +32,21 @@ export interface BirthdayGreetingRecord {
   sentBy: BirthdayGreetingAuthor;
 }
 
+export type BirthdayGreetedFilter = "any" | "email" | "whatsapp" | "none";
+
+export interface BirthdayWhatsAppGreetingRecord {
+  id: string;
+  body: string;
+  sentAt: string;
+  sentBy: {
+    id: string;
+    name?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+  };
+}
+
 export interface BirthdayPersonItem {
   id: string;
   firstName: string;
@@ -46,6 +61,8 @@ export interface BirthdayPersonItem {
   status: "COMPLETED" | "PENDING" | "MISSED";
   isGreeted: boolean;
   greeting?: BirthdayGreetingRecord | null;
+  whatsappGreeting?: BirthdayWhatsAppGreetingRecord | null;
+  greetedChannels?: ("EMAIL" | "WHATSAPP")[];
 }
 
 export interface BirthdayListResponse {
@@ -64,6 +81,8 @@ export interface MonthlyBirthdayStat {
   pending: number;
   missed: number;
   handlingRate: number; // e.g. 85.50
+  whatsappSent?: number;
+  anyChannelSent?: number;
 }
 
 export interface BirthdayAnalyticsResponse {
@@ -74,6 +93,8 @@ export interface BirthdayAnalyticsResponse {
   pendingCount: number;
   missedCount: number;
   handlingRate: number; // percentage (0.00 - 100.00)
+  whatsappSent?: number;
+  anyChannelSent?: number;
   monthlyBreakdown: MonthlyBirthdayStat[];
 }
 

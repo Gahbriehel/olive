@@ -39,6 +39,7 @@ export const personSchema = yup.object({
     .required("Membership category is required"),
   dateOfBirth: pastDate(),
   address: optionalText(),
+  whatsappOptOut: yup.boolean().default(false),
 });
 
 export type PersonFormValues = yup.InferType<typeof personSchema>;

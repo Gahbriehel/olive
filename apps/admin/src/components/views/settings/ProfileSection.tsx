@@ -37,6 +37,7 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
       await onSave({
         firstName: profileData.firstName,
         lastName: profileData.lastName,
+        displayName: profileData.displayName,
         email: profileData.email,
         phone: profileData.phone,
       });
@@ -94,6 +95,27 @@ export const ProfileSection: React.FC<ProfileSectionProps> = ({
                 setProfileData({ ...profileData, phone: e.target.value })
               }
             />
+          </div>
+
+          <div>
+            <Input
+              label="Display Name in Messages"
+              value={profileData.displayName || ""}
+              placeholder="e.g. Pastor John, Sis. Grace"
+              maxLength={100}
+              onChange={(e) =>
+                setProfileData({ ...profileData, displayName: e.target.value })
+              }
+            />
+            <p className="mt-1.5 text-2xs text-muted-foreground">
+              Messages will say: &quot;I&apos;m{" "}
+              <strong className="text-foreground">
+                {profileData.displayName?.trim() ||
+                  profileData.firstName?.trim() ||
+                  "your name"}
+              </strong>{" "}
+              from {children ? "" : "the church"}&quot;
+            </p>
           </div>
 
           <div className="flex justify-end">

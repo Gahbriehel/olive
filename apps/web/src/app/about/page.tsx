@@ -7,7 +7,7 @@ import { AnchorScripture } from "@/components/anchor-scripture";
 export const metadata: Metadata = {
   title: "About Us, Mission & Vision",
   description:
-    "Learn about Abiding Word Of Grace Missions (a.k.a. Amazing Grace Bible Church), our core mission, vision, values, weekly service times, and pastoral leadership team.",
+    "Learn about Abiding Word Of Grace Missions (PKA Amazing Grace Bible Church), our core mission, vision, values, weekly service times, and pastoral leadership team.",
 };
 
 export default function AboutPage() {
@@ -23,8 +23,8 @@ export default function AboutPage() {
             Who We Are
           </h1>
           <p className="text-lg sm:text-xl text-[#D4D0C7] leading-relaxed font-sans font-light max-w-3xl mx-auto">
-            Abiding Word Of Grace Missions (a.k.a. Amazing Grace Bible Church)
-            was founded with a singular conviction: to cultivate an inclusive,
+            Abiding Word Of Grace Missions (PKA Amazing Grace Bible Church) was
+            founded with a singular conviction: to cultivate an inclusive,
             spirit-filled community where lives are restored by Christ&apos;s
             love and sent out to impact the world.
           </p>

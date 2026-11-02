@@ -28,6 +28,7 @@ import { exportToCsv } from "@/helpers/exportCsv";
 import { getCategoryColor, EventCategory } from "@/models/event";
 import { UpcomingBirthdaysCard } from "@/components/dashboard/UpcomingBirthdaysCard";
 import { RecentPeopleCard } from "@/components/dashboard/RecentPeopleCard";
+import { TodaysOutreachCard } from "@/components/dashboard/TodaysOutreachCard";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -134,6 +135,9 @@ export default function DashboardPage() {
               />
             ))}
           </StatsCardGroup>
+
+          {/* Today's Outreach Card (hidden when empty) */}
+          <TodaysOutreachCard />
 
           {/* Main Grid: Upcoming Birthdays (2 cols) & Sidebar (Recent People & Upcoming Events) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

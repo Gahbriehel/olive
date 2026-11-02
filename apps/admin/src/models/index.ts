@@ -11,6 +11,8 @@ export * from "./team";
 export type {
   BirthdayGreetingAuthor,
   BirthdayGreetingRecord,
+  BirthdayWhatsAppGreetingRecord,
+  BirthdayGreetedFilter,
   BirthdayPersonItem,
   BirthdayListResponse,
   MonthlyBirthdayStat,
@@ -20,6 +22,7 @@ export type {
 } from "./birthday";
 export { BirthdayStatusFilter } from "./birthday";
 export * from "./emailBounce";
+export * from "./outreach";
 export type {
   EmailLogItem,
   EmailLogRecipient,

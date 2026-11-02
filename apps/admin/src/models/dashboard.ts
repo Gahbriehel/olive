@@ -51,6 +51,7 @@ export interface IUserProfile {
   id: string;
   firstName: string;
   lastName: string;
+  displayName?: string | null;
   email: string;
   phone?: string | null;
   churchId?: string | null;
@@ -60,6 +61,7 @@ export interface IUserProfile {
 export interface IUpdateProfilePayload {
   firstName?: string;
   lastName?: string;
+  displayName?: string;
   email?: string;
   phone?: string;
 }
@@ -67,6 +69,8 @@ export interface IUpdateProfilePayload {
 export interface IChurchSettings {
   id?: string;
   churchName: string;
+  shortName?: string;
+  whatsappNumber?: string;
   branchName?: string;
   campusName: string;
   address: string;

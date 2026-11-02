@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { MailCheck, Clock, AlertCircle, Percent, Users } from "lucide-react";
 import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
+import { WhatsAppIcon } from "@/components/ui/icons/WhatsAppIcon";
 import { BirthdayAnalyticsResponse } from "@/models/birthday";
 import { monthName } from "../../_components/months";
 
@@ -39,11 +40,18 @@ export function BirthdayKpis({
         color: "indigo" as const,
       },
       {
-        title: "Greeted",
-        value: analytics?.completedCount ?? 0,
+        title: "Greeted (any channel)",
+        value: analytics?.anyChannelSent ?? analytics?.completedCount ?? 0,
         description: "Delivered",
         icon: MailCheck,
         color: "cyan" as const,
+      },
+      {
+        title: "WhatsApp Sent",
+        value: analytics?.whatsappSent ?? 0,
+        description: "Via WhatsApp",
+        icon: WhatsAppIcon,
+        color: "emerald" as const,
       },
       {
         title: "Pending",
@@ -58,7 +66,6 @@ export function BirthdayKpis({
         description: "Ungreeted past",
         icon: AlertCircle,
         color: "rose" as const,
-        className: "col-span-2 sm:col-span-1",
       },
     ],
     [analytics, selectedMonth, selectedYear],

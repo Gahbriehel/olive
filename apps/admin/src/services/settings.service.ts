@@ -16,6 +16,8 @@ export const settingsService = {
       return {
         id: (data.id as string) || "",
         churchName: (data.name as string) || (data.churchName as string) || "",
+        shortName: (data.shortName as string) || "",
+        whatsappNumber: (data.whatsappNumber as string) || "",
         branchName: (data.branchName as string) || "",
         campusName: (data.campusName as string) || "",
         address: (data.address as string) || "",
@@ -46,6 +48,8 @@ export const settingsService = {
       // Fallback if settings endpoint error
       return {
         churchName: "",
+        shortName: "",
+        whatsappNumber: "",
         branchName: "",
         campusName: "",
         address: "",
@@ -67,6 +71,8 @@ export const settingsService = {
     const payload = {
       name: settings.churchName,
       churchName: settings.churchName,
+      shortName: settings.shortName,
+      whatsappNumber: settings.whatsappNumber,
       branchName: settings.branchName,
       campusName: settings.campusName,
       address: settings.address,
@@ -89,6 +95,9 @@ export const settingsService = {
         (data.churchName as string) ||
         settings.churchName ||
         "Church Events",
+      shortName: (data.shortName as string) || settings.shortName || "",
+      whatsappNumber:
+        (data.whatsappNumber as string) || settings.whatsappNumber || "",
       branchName: (data.branchName as string) || settings.branchName || "",
       campusName: (data.campusName as string) || settings.campusName || "",
       address: (data.address as string) || settings.address || "",

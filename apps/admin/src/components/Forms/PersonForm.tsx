@@ -117,7 +117,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
     person?.raw,
   );
 
-  const { control, handleSubmit, reset, formState } = useForm({
+  const { control, handleSubmit, reset, setError, formState } = useForm({
     resolver: yupResolver(personSchema),
     mode: "onTouched",
     defaultValues: {
@@ -139,6 +139,13 @@ export const PersonForm: React.FC<PersonFormProps> = ({
       membershipStatus: resolveMembershipStatus(initialValues),
       dateOfBirth: resolveDob(initialValues),
       address: person?.raw?.address || initialValues?.address || "",
+      whatsappOptOut: Boolean(
+        person?.raw?.whatsappOptOut ??
+        (person as unknown as { whatsappOptOut?: boolean })?.whatsappOptOut ??
+        (initialValues as unknown as { whatsappOptOut?: boolean })
+          ?.whatsappOptOut ??
+        false,
+      ),
     },
   });
 
@@ -161,6 +168,7 @@ export const PersonForm: React.FC<PersonFormProps> = ({
           ? new Date(fullPerson.dateOfBirth).toISOString().slice(0, 10)
           : resolveDob(initialValues),
         address: fullPerson.address || "",
+        whatsappOptOut: Boolean(fullPerson.whatsappOptOut),
       });
     }
   }, [fullPerson, isEditing, initialValues, reset]);
@@ -175,8 +183,24 @@ export const PersonForm: React.FC<PersonFormProps> = ({
       membershipStatus: data.membershipStatus,
       dateOfBirth: data.dateOfBirth || undefined,
       address: data.address?.trim() || undefined,
+      whatsappOptOut: Boolean(data.whatsappOptOut),
     };
-    await onSubmit(payload);
+    try {
+      await onSubmit(payload);
+    } catch (err: unknown) {
+      const axiosErr = err as {
+        response?: { data?: { message?: string | string[] } };
+        message?: string;
+      };
+      const rawMsg = axiosErr.response?.data?.message || axiosErr.message || "";
+      const msg = Array.isArray(rawMsg) ? rawMsg.join(", ") : String(rawMsg);
+      if (/phone|whatsapp/i.test(msg)) {
+        setError("phone", {
+          type: "server",
+          message: msg,
+        });
+      }
+    }
   };
 
   const isPending = isLoading || formState.isSubmitting;
@@ -269,6 +293,34 @@ export const PersonForm: React.FC<PersonFormProps> = ({
             )}
           />
         </div>
+
+        {/* WhatsApp Opt-Out Toggle */}
+        <Controller
+          name="whatsappOptOut"
+          control={control}
+          render={({ field: { value, onChange } }) => (
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-surface border border-border">
+              <input
+                type="checkbox"
+                id="person-whatsapp-opt-out"
+                checked={Boolean(value)}
+                onChange={(e) => onChange(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+              />
+              <div className="flex-1">
+                <label
+                  htmlFor="person-whatsapp-opt-out"
+                  className="text-xs font-semibold text-fg cursor-pointer select-none"
+                >
+                  Don&apos;t message on WhatsApp
+                </label>
+                <p className="text-2xs text-fg-muted mt-0.5">
+                  Use this if the person asks not to be contacted on WhatsApp.
+                </p>
+              </div>
+            </div>
+          )}
+        />
 
         {/* Membership Status & Gender */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { FollowUpStatusBadge } from "@/components/ui/FollowUpStatusBadge";
 import { ActionsList, type ActionItem } from "@/components/ui/ActionsList";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { getInitials, capitalizeWords } from "@/utils/formatters";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { padNumberWithZeros } from "@/helpers/padNumberWithZeros";
@@ -16,6 +17,7 @@ interface Options {
   limit: number;
   isSuperAdmin: boolean;
   canPromote?: boolean;
+  isFollowUpFilterActive?: boolean;
   onView: (person: IPerson) => void;
   onEdit: (person: IPerson) => void;
   onDelete?: (person: IPerson) => void;
@@ -31,6 +33,7 @@ export function usePeopleColumns({
   limit,
   isSuperAdmin,
   canPromote = false,
+  isFollowUpFilterActive = false,
   onView,
   onEdit,
   onDelete,
@@ -256,7 +259,22 @@ export function usePeopleColumns({
             }
           }
 
-          return <ActionsList actions={actions} />;
+          return (
+            <div className="flex items-center justify-end gap-1.5">
+              {isFollowUpFilterActive &&
+                isVisitor &&
+                person.phone &&
+                person.phone !== "N/A" && (
+                  <WhatsAppButton
+                    personId={person.id}
+                    purpose="VISITOR_FOLLOW_UP"
+                    size="sm"
+                    label="WhatsApp"
+                  />
+                )}
+              <ActionsList actions={actions} />
+            </div>
+          );
         },
       },
     ],
@@ -265,6 +283,7 @@ export function usePeopleColumns({
       limit,
       isSuperAdmin,
       canPromote,
+      isFollowUpFilterActive,
       onView,
       onEdit,
       onDelete,

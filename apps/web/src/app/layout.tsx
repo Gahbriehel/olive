@@ -22,13 +22,12 @@ export const metadata: Metadata = {
     template: "%s | Abiding Word Of Grace Missions",
   },
   description:
-    "Welcome to Abiding Word Of Grace Missions (a.k.a. Amazing Grace Bible Church). Join us for Sunday worship, experience salvation, healing and deliverance, and connect with our vibrant community.",
+    "Welcome to Abiding Word Of Grace Missions (PKA Amazing Grace Bible Church). Join us for Sunday worship, experience salvation, healing and deliverance, and connect with our vibrant community.",
   openGraph: {
     title: "Abiding Word Of Grace Missions",
     description:
       "Join us this Sunday for worship. Experience salvation, healing and deliverance.",
-    siteName:
-      "Abiding Word Of Grace Missions (a.k.a. Amazing Grace Bible Church)",
+    siteName: "Abiding Word Of Grace Missions (PKA Amazing Grace Bible Church)",
     type: "website",
   },
   icons: {

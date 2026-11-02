@@ -130,7 +130,7 @@ export function Footer() {
         {/* Legal / Copyright Bottom Bar */}
         <div className="mt-16 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-light text-[#77736B]">
           <p>
-            © {new Date().getFullYear()} Abiding Word Of Grace Missions (a.k.a.
+            © {new Date().getFullYear()} Abiding Word Of Grace Missions (PKA
             Amazing Grace Bible Church). All rights reserved.
           </p>
           <p className="tracking-wider uppercase text-[10px] text-[#B18A4A]">

@@ -1,9 +1,16 @@
-import type React from "react";
-import { History, Calendar } from "lucide-react";
+import { useState } from "react";
+import { History, Calendar, Mail, MessageSquare, Clock } from "lucide-react";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { FollowUpStatusBadge } from "@/components/ui/FollowUpStatusBadge";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
+import { WhatsAppIcon } from "@/components/ui/icons/WhatsAppIcon";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { usePersonMessages, useConfirmOutreach } from "@/hooks/useOutreach";
 import { IPerson } from "@/models/person";
+import { PersonMessageTimelineItem } from "@/models/outreach";
 
 function InfoTile({
   label,
@@ -31,7 +38,18 @@ export function PersonInfoTab({ person }: { person: IPerson }) {
     <div className="space-y-4 text-xs">
       <div className="grid grid-cols-2 gap-3">
         <InfoTile label="Phone Number">
-          <p className="font-semibold text-fg mt-1">{person.phone}</p>
+          <div className="flex items-center justify-between gap-2 mt-1">
+            <p className="font-semibold text-fg">{person.phone}</p>
+            {person.phone && person.phone !== "N/A" && (
+              <WhatsAppButton
+                personId={person.id}
+                purpose={isVisitor ? "VISITOR_FOLLOW_UP" : "PASTORAL_CHECK_IN"}
+                size="sm"
+                variant="outline"
+                label="WhatsApp"
+              />
+            )}
+          </div>
         </InfoTile>
         <InfoTile label="Email Address">
           <div className="mt-1">
@@ -261,6 +279,215 @@ export function PersonNotesTab({ person }: { person: IPerson }) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+export function PersonMessagesTab({ person }: { person: IPerson }) {
+  const { data, isLoading, isError, refetch } = usePersonMessages(person.id);
+  const confirmMutation = useConfirmOutreach();
+  const [confirmingRefId, setConfirmingRefId] = useState<string | null>(null);
+
+  const messages: PersonMessageTimelineItem[] = data?.items || [];
+
+  const handleConfirm = (refId: string, sent: boolean) => {
+    confirmMutation.mutate(
+      { id: refId, sent, personId: person.id },
+      {
+        onSettled: () => {
+          setConfirmingRefId(null);
+          refetch();
+        },
+      },
+    );
+  };
+
+  const isVisitor =
+    person.rawMembershipStatus === "VISITOR" ||
+    person.membershipStatus === "Visitor";
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3 py-2">
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-16 w-full" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="p-6 text-center text-xs text-fg-muted space-y-2">
+        <p>Failed to load message history.</p>
+        <Button size="sm" variant="outline" onClick={() => refetch()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  if (messages.length === 0) {
+    return (
+      <div className="p-8 text-center text-xs text-fg-muted space-y-3 bg-subtle rounded-2xl border border-border-subtle">
+        <MessageSquare className="w-8 h-8 text-fg-subtle mx-auto" />
+        <div className="space-y-1">
+          <p className="font-semibold text-fg">No message history</p>
+          <p className="text-2xs text-fg-muted max-w-xs mx-auto">
+            No email or WhatsApp messages recorded for {person.name}.
+          </p>
+        </div>
+        {person.phone && person.phone !== "N/A" && (
+          <div className="pt-1">
+            <WhatsAppButton
+              personId={person.id}
+              purpose={isVisitor ? "VISITOR_FOLLOW_UP" : "PASTORAL_CHECK_IN"}
+              label="Send WhatsApp Message"
+              variant="outline"
+              size="sm"
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3 text-xs">
+      <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+        <p className="text-2xs font-semibold text-fg-muted uppercase tracking-wider">
+          Message Timeline ({messages.length})
+        </p>
+        {person.phone && person.phone !== "N/A" && (
+          <WhatsAppButton
+            personId={person.id}
+            purpose={isVisitor ? "VISITOR_FOLLOW_UP" : "PASTORAL_CHECK_IN"}
+            label="Send WhatsApp"
+            variant="outline"
+            size="sm"
+          />
+        )}
+      </div>
+
+      {messages.map((msg, idx) => {
+        const isWhatsApp = msg.type === "WHATSAPP";
+        const isOpened = msg.status === "OPENED";
+        const isSent = msg.status === "CONFIRMED_SENT";
+        const isConfirming = confirmingRefId === msg.refId;
+
+        const purposeLabel = msg.purpose
+          ? msg.purpose.toLowerCase().replace(/_/g, " ")
+          : "Message";
+
+        return (
+          <div
+            key={msg.refId || idx}
+            className="p-3.5 rounded-xl border border-border bg-surface space-y-2 transition-all"
+          >
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`p-1.5 rounded-lg ${
+                    isWhatsApp
+                      ? "bg-success-soft text-success-text"
+                      : "bg-primary-soft text-primary-text"
+                  }`}
+                >
+                  {isWhatsApp ? (
+                    <WhatsAppIcon className="w-3.5 h-3.5" />
+                  ) : (
+                    <Mail className="w-3.5 h-3.5" />
+                  )}
+                </div>
+                <div>
+                  <span className="font-semibold text-fg capitalize">
+                    {purposeLabel}
+                  </span>
+                  <span className="text-2xs text-fg-muted ml-2">
+                    by {msg.by}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-2xs text-fg-muted font-mono">
+                  {new Date(msg.at).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </span>
+                {isSent ? (
+                  <Badge variant="emerald" size="sm">
+                    Sent
+                  </Badge>
+                ) : isOpened ? (
+                  <Badge variant="amber" size="sm">
+                    Opened
+                  </Badge>
+                ) : (
+                  <Badge variant="slate" size="sm">
+                    {msg.status.toLowerCase().replace(/_/g, " ")}
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Preview text (capped at 140 chars) */}
+            <p className="text-xs text-fg-muted leading-relaxed line-clamp-2">
+              {msg.preview?.slice(0, 140)}
+            </p>
+
+            {/* Confirm action for OPENED messages */}
+            {isOpened && (
+              <div className="pt-2 border-t border-border-subtle flex items-center justify-between gap-2">
+                <span className="text-2xs text-warning-text flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  Waiting for send confirmation
+                </span>
+
+                {isConfirming ? (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-2xs text-fg-muted">Sent?</span>
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      disabled={confirmMutation.isPending}
+                      loading={confirmMutation.isPending}
+                      onClick={() => handleConfirm(msg.refId, true)}
+                    >
+                      Yes
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={confirmMutation.isPending}
+                      onClick={() => handleConfirm(msg.refId, false)}
+                    >
+                      No
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingRefId(null)}
+                      className="text-2xs text-fg-muted hover:underline ml-1"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingRefId(msg.refId)}
+                    className="text-xs font-semibold text-primary hover:underline"
+                  >
+                    Confirm status
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

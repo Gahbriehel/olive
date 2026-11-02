@@ -15,6 +15,7 @@ import {
   PersonDepartmentsTab,
   PersonInfoTab,
   PersonNotesTab,
+  PersonMessagesTab,
 } from "./PersonDetailTabs";
 import { PersonPastoralCareTab } from "./PersonPastoralCareTab";
 
@@ -64,6 +65,10 @@ export function PersonDetailPanel({
 
   const drawerTabs = [
     { id: "info", label: "Details" },
+    {
+      id: "messages",
+      label: "Messages",
+    },
     {
       id: "pastoralCare",
       label: "Pastoral Care",
@@ -162,6 +167,7 @@ export function PersonDetailPanel({
           />
 
           {drawerTab === "info" && <PersonInfoTab person={person} />}
+          {drawerTab === "messages" && <PersonMessagesTab person={person} />}
           {drawerTab === "pastoralCare" && (
             <PersonPastoralCareTab
               person={person}

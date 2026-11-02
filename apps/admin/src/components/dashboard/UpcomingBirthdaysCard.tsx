@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/QueryState";
 import { IUpcomingBirthday } from "@/models/dashboard";
 import { SendBirthdayEmailModal } from "./SendBirthdayEmailModal";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import dayjs from "dayjs";
 
 interface UpcomingBirthdaysCardProps {
@@ -184,6 +185,16 @@ export const UpcomingBirthdaysCard: React.FC<UpcomingBirthdaysCardProps> = ({
                     <span className="inline-flex items-center gap-1 text-2xs font-semibold text-success-text bg-success-soft border border-success-border px-2 py-0.5 rounded-full">
                       <Check className="w-3 h-3" /> Greeted
                     </span>
+                  )}
+
+                  {birthday.daysUntil === 0 && (
+                    <WhatsAppButton
+                      personId={birthday.id}
+                      purpose="BIRTHDAY"
+                      size="icon"
+                      title={`Send WhatsApp greeting to ${birthday.firstName}`}
+                      onSendEmailInstead={() => handleOpenEmailModal(birthday)}
+                    />
                   )}
 
                   {isGreeted ? (

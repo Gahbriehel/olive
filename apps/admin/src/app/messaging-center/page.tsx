@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { Send } from "lucide-react";
 import { ActionsList } from "@/components/ui/ActionsList";
@@ -12,6 +13,7 @@ import { FiltersModal } from "@/components/modals/FiltersModal";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Badge } from "@/components/ui/Badge";
 import { Table } from "@/components/ui/Table";
+import { Tabs, type TabItem } from "@/components/ui/Tabs";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { NotAvailable } from "@/components/ui/NotAvailable";
 import { RefreshButton } from "@/components/ui/RefreshButton";
@@ -24,6 +26,7 @@ import { type FilterField } from "@/models/filters";
 import { EmailLogItem } from "@/models/emailLog";
 import { ViewEmailLogModal } from "@/components/modals/ViewEmailLogModal";
 import { BroadcastComposer } from "./_components/BroadcastComposer";
+import { WhatsAppLogTable } from "./_components/WhatsAppLogTable";
 import dayjs from "dayjs";
 
 const columnHelper = createColumnHelper<EmailLogItem>();
@@ -45,6 +48,24 @@ const EMAIL_TYPE_FORMATS: Record<
 };
 
 export default function MessagingCenterPage() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<string>(
+    tabParam === "whatsapp" ? "whatsapp" : "email",
+  );
+
+  useEffect(() => {
+    if (tabParam === "whatsapp") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActiveTab("whatsapp");
+    }
+  }, [tabParam]);
+
+  const mainTabs: TabItem[] = [
+    { id: "email", label: "Email Logs" },
+    { id: "whatsapp", label: "WhatsApp Log" },
+  ];
+
   // Modals state
   const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState<EmailLogItem | null>(null);
@@ -296,39 +317,51 @@ export default function MessagingCenterPage() {
         }
       />
 
-      {/* Email Delivery Logs Table */}
-      <div className="flex flex-col gap-4">
-        <Table
-          data={emailLogs}
-          columns={columns as Array<ColumnDef<EmailLogItem>>}
-          loading={isLoading || isFetching}
-          searchPlaceholder="Search logs by recipient email, name, or subject..."
-          search={search}
-          onSearchChange={setSearch}
-          page={page}
-          onPageChange={setPage}
-          limit={limit}
-          onLimitChange={setLimit}
-          meta={meta}
-          isError={isError}
-          error={error}
-          onRetry={() => refetch()}
-          resource="email logs"
-          emptyMessage="No email communication logs found matching criteria"
-          onRowClick={(item) => {
-            setSelectedLog(item);
-            setIsLogModalOpen(true);
-          }}
-        >
-          <ListToolbar
-            trailing={
-              <FiltersButton onClick={openPanel} activeCount={activeCount} />
-            }
-          />
-        </Table>
-      </div>
+      {/* Tabs */}
+      <Tabs tabs={mainTabs} activeTab={activeTab} onChange={setActiveTab} />
 
-      <FiltersModal {...panelProps} />
+      {activeTab === "email" ? (
+        <>
+          {/* Email Delivery Logs Table */}
+          <div className="flex flex-col gap-4">
+            <Table
+              data={emailLogs}
+              columns={columns as Array<ColumnDef<EmailLogItem>>}
+              loading={isLoading || isFetching}
+              searchPlaceholder="Search logs by recipient email, name, or subject..."
+              search={search}
+              onSearchChange={setSearch}
+              page={page}
+              onPageChange={setPage}
+              limit={limit}
+              onLimitChange={setLimit}
+              meta={meta}
+              isError={isError}
+              error={error}
+              onRetry={() => refetch()}
+              resource="email logs"
+              emptyMessage="No email communication logs found matching criteria"
+              onRowClick={(item) => {
+                setSelectedLog(item);
+                setIsLogModalOpen(true);
+              }}
+            >
+              <ListToolbar
+                trailing={
+                  <FiltersButton
+                    onClick={openPanel}
+                    activeCount={activeCount}
+                  />
+                }
+              />
+            </Table>
+          </div>
+
+          <FiltersModal {...panelProps} />
+        </>
+      ) : (
+        <WhatsAppLogTable />
+      )}
 
       {/* Compose Broadcast Modal */}
       <SidebarModal

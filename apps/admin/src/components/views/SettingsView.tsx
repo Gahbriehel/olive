@@ -18,6 +18,7 @@ import { PasswordChangedDialog } from "./settings/PasswordChangedDialog";
 import { BrandingSection } from "./settings/BrandingSection";
 import { EmailConfigSection } from "./settings/EmailConfigSection";
 import { PreferencesSection } from "./settings/PreferencesSection";
+import { MessageTemplatesSection } from "./settings/MessageTemplatesSection";
 
 interface SettingsViewProps {
   settings?: IChurchSettings;
@@ -81,6 +82,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     () => [
       ...(isAdmin ? [{ id: "church-info", label: "Church Information" }] : []),
       { id: "profile", label: "My Profile & Security" },
+      { id: "message-templates", label: "Message Templates" },
       ...(isAdmin
         ? [
             { id: "branding", label: "Branding & Theme" },
@@ -228,6 +230,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
       {activeTab === "preferences" && !settingsUnavailable && (
         <PreferencesSection value={formData} onChange={setFormData} />
+      )}
+
+      {activeTab === "message-templates" && (
+        <MessageTemplatesSection isAdmin={isAdmin} />
       )}
 
       <PasswordChangedDialog

@@ -22,6 +22,7 @@ import {
   type IPastoralCheckIn,
 } from "@/models/checkIn";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 
 interface GlobalCheckInQueueProps {
   onCompleteTask: (task: IPastoralCheckIn) => void;
@@ -207,6 +208,16 @@ export function GlobalCheckInQueue({
                 </div>
 
                 <div className="flex items-center justify-end gap-2 pt-2 border-t border-border-subtle">
+                  {task.person?.id && (
+                    <WhatsAppButton
+                      personId={task.person.id}
+                      purpose="PASTORAL_CHECK_IN"
+                      checkInId={task.id}
+                      size="sm"
+                      label="WhatsApp"
+                      onConfirmedSent={() => onCompleteTask(task)}
+                    />
+                  )}
                   <Button
                     size="sm"
                     variant="outline"

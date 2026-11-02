@@ -11,6 +11,8 @@ import { NotAvailable } from "@/components/ui/NotAvailable";
 import { TruncatedTextWithCopy } from "@/helpers/TruncatedTextWithCopy";
 import { BirthdayPersonItem } from "@/models/birthday";
 
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+
 const columnHelper = createColumnHelper<BirthdayPersonItem>();
 
 interface BirthdayColumnOptions {
@@ -144,27 +146,35 @@ export function useBirthdayColumns({
         header: "Outreach Status",
         cell: ({ row }) => {
           const person = row.original;
-          if (person.isGreeted || person.status === "COMPLETED") {
-            const senderName =
-              [
-                person.greeting?.sentBy?.firstName,
-                person.greeting?.sentBy?.lastName,
-              ]
-                .filter(Boolean)
-                .join(" ") || "Admin";
+          const emailGreeted =
+            person.greetedChannels?.includes("EMAIL") ||
+            Boolean(person.greeting) ||
+            person.status === "COMPLETED";
+          const whatsappGreeted =
+            person.greetedChannels?.includes("WHATSAPP") ||
+            Boolean(person.whatsappGreeting);
 
+          if (emailGreeted || whatsappGreeted) {
             return (
-              <div className="flex flex-col gap-0.5 whitespace-nowrap">
-                <Badge
-                  variant="emerald"
-                  size="sm"
-                  className="font-semibold w-fit"
-                >
-                  <CheckCircle2 className="w-3 h-3" /> Greeted
-                </Badge>
-                <span className="text-2xs text-fg-muted truncate max-w-[140px]">
-                  By {senderName}
-                </span>
+              <div className="flex flex-wrap items-center gap-1.5 whitespace-nowrap">
+                {emailGreeted && (
+                  <Badge
+                    variant="indigo"
+                    size="sm"
+                    className="font-semibold text-2xs inline-flex items-center gap-1"
+                  >
+                    <CheckCircle2 className="w-3 h-3" /> Email
+                  </Badge>
+                )}
+                {whatsappGreeted && (
+                  <Badge
+                    variant="emerald"
+                    size="sm"
+                    className="font-semibold text-2xs inline-flex items-center gap-1"
+                  >
+                    <CheckCircle2 className="w-3 h-3" /> WhatsApp
+                  </Badge>
+                )}
               </div>
             );
           }
@@ -198,7 +208,11 @@ export function useBirthdayColumns({
         header: () => <div className="text-right">Actions</div>,
         cell: ({ row }) => {
           const person = row.original;
-          const isGreeted = person.isGreeted || person.status === "COMPLETED";
+          const isGreeted =
+            person.isGreeted ||
+            person.status === "COMPLETED" ||
+            Boolean(person.greeting) ||
+            Boolean(person.whatsappGreeting);
 
           const actions: ActionItem[] = isGreeted
             ? [
@@ -206,7 +220,7 @@ export function useBirthdayColumns({
                 ...(person.email
                   ? [
                       {
-                        title: "Send Another Message",
+                        title: "Send Another Email",
                         fn: () => onSendEmail(person),
                       },
                     ]
@@ -214,14 +228,20 @@ export function useBirthdayColumns({
               ]
             : [
                 {
-                  title: "Send Birthday Message",
+                  title: "Send Birthday Email",
                   disabled: !person.email,
                   fn: () => onSendEmail(person),
                 },
               ];
 
           return (
-            <div className="flex justify-end">
+            <div className="flex items-center justify-end gap-1.5">
+              <WhatsAppButton
+                personId={person.id}
+                purpose="BIRTHDAY"
+                size="sm"
+                onSendEmailInstead={() => onSendEmail(person)}
+              />
               <ActionsList actions={actions} />
             </div>
           );

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/CheckInBadges";
 import { IPerson } from "@/models/person";
 import { IPastoralCheckIn } from "@/models/checkIn";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 
 interface PersonPastoralCareTabProps {
   person: IPerson;
@@ -150,6 +151,14 @@ export const PersonPastoralCareTab: React.FC<PersonPastoralCareTabProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <WhatsAppButton
+                      personId={person.id}
+                      purpose="PASTORAL_CHECK_IN"
+                      checkInId={task.id}
+                      size="sm"
+                      label="WhatsApp"
+                      onConfirmedSent={() => onCompleteCheckIn(task)}
+                    />
                     <Button
                       size="sm"
                       variant="outline"
@@ -254,38 +263,18 @@ export const PersonPastoralCareTab: React.FC<PersonPastoralCareTabProps> = ({
             ))}
           </div>
         ) : scheduledTasks.length === 0 ? (
-          <div className="p-6 text-center bg-subtle border border-border-subtle rounded-2xl space-y-3">
+          <div className="p-8 text-center bg-subtle border border-border-subtle rounded-2xl space-y-2">
             <div className="w-10 h-10 rounded-full bg-success-soft text-success-text flex items-center justify-center mx-auto">
               <HeartHandshake className="w-5 h-5" />
             </div>
             <div className="space-y-1">
               <p className="font-semibold text-fg text-xs">
-                Member is Healthy & Up-to-Date
+                Member is Healthy &amp; Up-to-Date
               </p>
               <p className="text-2xs text-fg-muted max-w-sm mx-auto">
                 Members and workers are healthy by default. No active outreach
                 tasks or check-in history logged.
               </p>
-            </div>
-            <div className="flex items-center justify-center gap-2 pt-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1 text-xs"
-                onClick={onScheduleCare}
-              >
-                <Clock className="w-3.5 h-3.5 text-warning-text" />
-                <span>Flag for Care</span>
-              </Button>
-              <Button
-                size="sm"
-                variant="primary"
-                className="gap-1 text-xs"
-                onClick={onLogCheckIn}
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Log Check-in</span>
-              </Button>
             </div>
           </div>
         ) : null}

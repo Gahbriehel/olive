@@ -9,6 +9,7 @@ import { birthdayService } from "@/services/birthday.service";
 import {
   BirthdayPersonItem,
   BirthdayStatusFilter,
+  BirthdayGreetedFilter,
   SendBirthdayGreetingPayload,
 } from "@/models/birthday";
 
@@ -42,6 +43,7 @@ export function useBirthdayAnalytics({ year, month }: BirthdayCycle) {
 
 interface BirthdayListParams extends BirthdayCycle {
   status: BirthdayStatusFilter;
+  greeted?: BirthdayGreetedFilter;
   search: string;
   page: number;
   limit: number;
@@ -52,17 +54,28 @@ export function useBirthdays({
   year,
   month,
   status,
+  greeted,
   search,
   page,
   limit,
 }: BirthdayListParams) {
   const query = useQuery({
-    queryKey: ["birthdays-list", year, month, status, search, page, limit],
+    queryKey: [
+      "birthdays-list",
+      year,
+      month,
+      status,
+      greeted,
+      search,
+      page,
+      limit,
+    ],
     queryFn: () =>
       birthdayService.getBirthdays({
         year,
         month: month || undefined,
         status: status === BirthdayStatusFilter.ALL ? undefined : status,
+        greeted: greeted === "any" || !greeted ? undefined : greeted,
         search: search.trim() || undefined,
         page,
         limit,
