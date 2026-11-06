@@ -18,6 +18,7 @@ import { PasswordChangedDialog } from "./settings/PasswordChangedDialog";
 import { BrandingSection } from "./settings/BrandingSection";
 import { EmailConfigSection } from "./settings/EmailConfigSection";
 import { PreferencesSection } from "./settings/PreferencesSection";
+import { GivingAccountsSection } from "./settings/GivingAccountsSection";
 import { MessageTemplatesSection } from "./settings/MessageTemplatesSection";
 
 interface SettingsViewProps {
@@ -37,6 +38,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const { user, logout } = useAuth();
   const userRoles = getUserRoles(user);
   const isAdmin = hasAuthority(userRoles, [ROLES.SUPER_ADMIN, ROLES.ADMIN]);
+  const isSuperAdmin = hasAuthority(userRoles, [ROLES.SUPER_ADMIN]);
   const {
     settings: hookSettings,
     updateSettings: hookUpdateSettings,
@@ -83,6 +85,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       ...(isAdmin ? [{ id: "church-info", label: "Church Information" }] : []),
       { id: "profile", label: "My Profile & Security" },
       { id: "message-templates", label: "Message Templates" },
+      ...(isSuperAdmin
+        ? [{ id: "giving-accounts", label: "Giving Accounts" }]
+        : []),
       ...(isAdmin
         ? [
             { id: "branding", label: "Branding & Theme" },
@@ -91,7 +96,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           ]
         : []),
     ],
-    [isAdmin],
+    [isAdmin, isSuperAdmin],
   );
 
   useEffect(() => {
@@ -234,6 +239,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
       {activeTab === "message-templates" && (
         <MessageTemplatesSection isAdmin={isAdmin} />
+      )}
+
+      {activeTab === "giving-accounts" && isSuperAdmin && (
+        <GivingAccountsSection />
       )}
 
       <PasswordChangedDialog
