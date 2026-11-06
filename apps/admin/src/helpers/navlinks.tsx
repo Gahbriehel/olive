@@ -17,6 +17,7 @@ import {
   Cake,
   MailWarning,
   Building2,
+  BookOpen,
 } from "lucide-react";
 import { ROLES, hasAuthority } from "@/utils/rbac";
 
@@ -118,6 +119,12 @@ export const mainNavItems: NavItem[] = [
     href: "/contact",
     label: "Prayers & Inquiries",
     icon: Heart,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
+  {
+    href: "/confessions",
+    label: "Confessions",
+    icon: BookOpen,
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
   {

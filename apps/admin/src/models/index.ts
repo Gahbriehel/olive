@@ -34,3 +34,4 @@ export type {
   EmailLogDeliveryStatus,
 } from "./emailLog";
 export * from "./giving-account";
+export * from "./confession";
