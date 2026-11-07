@@ -12,6 +12,7 @@ interface Options {
   page: number;
   limit: number;
   canManage: boolean;
+  canEdit: boolean;
   onViewRoster: (dept: IDepartment) => void;
   onEdit: (dept: IDepartment) => void;
   onDelete: (dept: IDepartment) => void;
@@ -21,6 +22,7 @@ export function useDepartmentColumns({
   page,
   limit,
   canManage,
+  canEdit,
   onViewRoster,
   onEdit,
   onDelete,
@@ -84,11 +86,13 @@ export function useDepartmentColumns({
             },
           ];
 
-          if (canManage) {
+          if (canEdit) {
             actions.push({
               title: "Edit Department",
               fn: () => onEdit(dept),
             });
+          }
+          if (canManage) {
             actions.push({
               title: "Delete Department",
               fn: () => onDelete(dept),
@@ -99,6 +103,6 @@ export function useDepartmentColumns({
         },
       },
     ],
-    [page, limit, canManage, onViewRoster, onEdit, onDelete],
+    [page, limit, canManage, canEdit, onViewRoster, onEdit, onDelete],
   );
 }

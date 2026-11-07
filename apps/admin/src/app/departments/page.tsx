@@ -25,6 +25,9 @@ export default function DepartmentsPage() {
   const userRoles = getUserRoles(user);
   const isSuperAdmin = userRoles.includes(ROLES.SUPER_ADMIN);
   const canManage = isSuperAdmin || userRoles.includes(ROLES.ADMIN);
+  // Coordinators may create and edit departments, but not delete them or
+  // manage rosters; those stay with admins (`canManage`).
+  const canCreateOrEdit = canManage || userRoles.includes(ROLES.COORDINATOR);
 
   const { page, setPage, limit, setLimit, search, setSearch } = useListFilters({
     searchDebounceMs: 300,
@@ -104,6 +107,7 @@ export default function DepartmentsPage() {
     page,
     limit,
     canManage,
+    canEdit: canCreateOrEdit,
     onViewRoster: setSelectedRosterDept,
     onEdit: setEditingDept,
     onDelete: setDeletingDept,
@@ -121,7 +125,7 @@ export default function DepartmentsPage() {
               label: "Create Department",
               onClick: () => setIsCreateOpen(true),
               icon: <Plus className="w-4 h-4" />,
-              show: canManage,
+              show: canCreateOrEdit,
             }}
             actions={[{ title: "Refresh", fn: () => refetch() }]}
           />
@@ -216,10 +220,14 @@ export default function DepartmentsPage() {
           <DepartmentForm
             initialValues={editingDept}
             onSubmit={handleEditSubmit}
-            onDelete={() => {
-              setDeletingDept(editingDept);
-              setEditingDept(null);
-            }}
+            onDelete={
+              canManage
+                ? () => {
+                    setDeletingDept(editingDept);
+                    setEditingDept(null);
+                  }
+                : undefined
+            }
             onCancel={() => setEditingDept(null)}
             isLoading={isUpdating}
           />
