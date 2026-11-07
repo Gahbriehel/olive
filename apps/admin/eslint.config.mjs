@@ -16,7 +16,11 @@ const eslintConfig = defineConfig([
   {
     files: ["src/**/*.tsx"],
     // Intentionally always-dark screens; see docs/architecture.md §6.1.
-    ignores: ["src/app/(auth)/login/page.tsx", "src/app/not-found.tsx"],
+    ignores: [
+      "src/app/(auth)/**/page.tsx",
+      "src/components/auth/AuthCardLayout.tsx",
+      "src/app/not-found.tsx",
+    ],
     rules: {
       "no-restricted-syntax": [
         "error",

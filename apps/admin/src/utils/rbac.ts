@@ -58,7 +58,13 @@ export const ROUTE_PERMISSIONS: Record<string, string[]> = {
 };
 
 /** Every app route the shell knows about (others render the 404 page). */
-export const KNOWN_ROUTES = ["/", "/login", ...Object.keys(ROUTE_PERMISSIONS)];
+export const PUBLIC_ROUTES = ["/login", "/forgot-password", "/reset-password"];
+
+export const KNOWN_ROUTES = [
+  "/",
+  ...PUBLIC_ROUTES,
+  ...Object.keys(ROUTE_PERMISSIONS),
+];
 
 /**
  * Normalizes role display strings or backend keys to standard role keys

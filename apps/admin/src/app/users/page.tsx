@@ -14,8 +14,14 @@ import { downloadCsvExport } from "@/helpers/downloadCsvExport";
 import { StatsCard, StatsCardGroup } from "@/components/ui/StatsCard";
 import { SidebarModal } from "@/components/ui/SidebarModal";
 import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
+import { ResetUserPasswordModal } from "@/components/modals/ResetUserPasswordModal";
 import { UserForm, UserFormValues } from "@/components/Forms/UserForm";
-import { ROLES, getUserRoles, hasAuthority } from "@/utils/rbac";
+import {
+  ROLES,
+  getUserRoles,
+  hasAuthority,
+  normalizeRoleKey,
+} from "@/utils/rbac";
 import { IS_STRICT_RBAC_RESTRICTED } from "@/config/features";
 import { useAuth } from "@/hooks/useAuth";
 import { useUsers } from "@/hooks/useUsers";
@@ -53,6 +59,8 @@ export default function UsersPage() {
     createUser,
     updateUser,
     deleteUser,
+    resetPassword,
+    isResettingPassword,
     isCreating,
     isUpdating,
     isDeleting,
@@ -73,6 +81,7 @@ export default function UsersPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<IAdminUser | null>(null);
   const [deletingUser, setDeletingUser] = useState<IAdminUser | null>(null);
+  const [resettingUser, setResettingUser] = useState<IAdminUser | null>(null);
 
   const handleCreateSubmit = async (data: UserFormValues) => {
     const payload: ICreateUserPayload = {
@@ -290,12 +299,32 @@ export default function UsersPage() {
               await deleteUser(editingUser.id);
               setEditingUser(null);
             }}
+            onResetPassword={
+              // A plain ADMIN can't reset a Super Admin (the API returns 403).
+              canManageUsers &&
+              (isSuperAdmin ||
+                normalizeRoleKey(editingUser.role) !== ROLES.SUPER_ADMIN)
+                ? () => setResettingUser(editingUser)
+                : undefined
+            }
             onCancel={() => setEditingUser(null)}
             isLoading={isUpdating}
             isDeleting={isDeleting}
           />
         )}
       </SidebarModal>
+
+      {/* Reset Password Modal */}
+      <ResetUserPasswordModal
+        isOpen={!!resettingUser}
+        userName={resettingUser?.name || "this user"}
+        onClose={() => setResettingUser(null)}
+        loading={isResettingPassword}
+        onSubmit={async (password) => {
+          if (!resettingUser) return;
+          await resetPassword({ id: resettingUser.id, password });
+        }}
+      />
 
       {/* Delete User Confirmation Modal */}
       {deletingUser && (

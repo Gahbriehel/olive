@@ -1,13 +1,37 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Lock, Mail, ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-react";
+import React, { Suspense, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Lock,
+  Mail,
+  ArrowRight,
+  AlertCircle,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { loginUser } from "@/store/slices/authSlice";
 import { getDefaultRouteForUser } from "@/utils/rbac";
 import Image from "next/image";
 import { Spinner } from "@/components/ui/Spinner";
+
+/** Shown after a successful reset redirects here with `?reset=1`. */
+function PasswordResetBanner() {
+  const searchParams = useSearchParams();
+  if (searchParams.get("reset") !== "1") return null;
+  return (
+    <div
+      role="status"
+      className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3 text-emerald-400 text-xs"
+    >
+      <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+      <span>Password updated. Please log in with your new password.</span>
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -62,6 +86,10 @@ export default function LoginPage() {
           </p>
         </div>
 
+        <Suspense fallback={null}>
+          <PasswordResetBanner />
+        </Suspense>
+
         {/* Error Alert */}
         {(localError || error) && (
           <div className="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-3 text-rose-400 text-xs">
@@ -114,6 +142,14 @@ export default function LoginPage() {
                   <Eye className="w-5 h-5" />
                 )}
               </button>
+            </div>
+            <div className="mt-2 text-right">
+              <Link
+                href="/forgot-password"
+                className="text-xs font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
+              >
+                Forgot password?
+              </Link>
             </div>
           </div>
 

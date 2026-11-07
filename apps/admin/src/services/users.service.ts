@@ -135,6 +135,11 @@ export const usersService = {
     };
   },
 
+  /** Sets a new password for another user and signs them out everywhere. */
+  async resetPassword(id: string, password: string): Promise<void> {
+    await apiClient.patch(`/users/${id}`, { password });
+  },
+
   async deleteUser(id: string): Promise<void> {
     await apiClient.delete(`/users/${id}`);
   },

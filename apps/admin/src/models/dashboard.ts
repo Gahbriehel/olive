@@ -45,6 +45,8 @@ export interface IUpdateUserPayload {
   membershipStatus?: string;
   status?: "Active" | "Inactive";
   isActive?: boolean;
+  /** Admin-initiated reset. Only send when an admin typed one (min 8). */
+  password?: string;
 }
 
 export interface IUserProfile {

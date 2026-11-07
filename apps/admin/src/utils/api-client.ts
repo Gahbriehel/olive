@@ -188,6 +188,9 @@ apiClient.interceptors.response.use(
     const isSilent =
       url.includes("/auth/refresh") ||
       url.includes("/auth/login") ||
+      // Forgot/reset pages show their own inline errors.
+      url.includes("/auth/forgot-password") ||
+      url.includes("/auth/reset-password") ||
       // Night prayer not configured yet: the page shows an empty form instead.
       (status === 404 && /\/night-prayer$/.test(url)) ||
       (status === 401 && !url.includes("/auth/change-password"));
@@ -208,6 +211,8 @@ apiClient.interceptors.response.use(
     // Ignore authentication action endpoints (login, change-password) for session refresh/logout handling
     if (
       originalRequest?.url?.includes("/auth/login") ||
+      originalRequest?.url?.includes("/auth/forgot-password") ||
+      originalRequest?.url?.includes("/auth/reset-password") ||
       originalRequest?.url?.includes("/auth/change-password")
     ) {
       return Promise.reject(error);

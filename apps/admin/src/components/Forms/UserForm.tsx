@@ -26,6 +26,8 @@ interface UserFormProps {
   initialValues?: Partial<IAdminUser>;
   onSubmit: (data: UserFormValues) => void | Promise<void>;
   onDelete?: () => void | Promise<void>;
+  /** Opens the reset-password dialog. Omit to hide the action (e.g. no permission). */
+  onResetPassword?: () => void;
   onCancel: () => void;
   isLoading?: boolean;
   isDeleting?: boolean;
@@ -43,6 +45,7 @@ export const UserForm: React.FC<UserFormProps> = ({
   initialValues,
   onSubmit,
   onDelete,
+  onResetPassword,
   onCancel,
   isLoading = false,
   isDeleting = false,
@@ -198,28 +201,41 @@ export const UserForm: React.FC<UserFormProps> = ({
           </div>
         )}
 
-        {/* Password (Optional for Edit, Optional/Recommended for Create) */}
-        <Controller
-          name="password"
-          control={control}
-          render={({ field, fieldState: { error } }) => (
-            <Input
-              {...field}
-              type="password"
-              label={
-                isEditing
-                  ? "Reset Password (Optional)"
-                  : "Account Password (Optional)"
-              }
-              placeholder={
-                isEditing
-                  ? "Leave blank to keep unchanged"
-                  : "Set initial password..."
-              }
-              error={error?.message}
-            />
-          )}
-        />
+        {/* Initial password is only collected on create. Editing never sends
+            one; resets go through the separate "Reset password" dialog so a
+            name change can't carry a blank or autofilled password. */}
+        {!isEditing && (
+          <Controller
+            name="password"
+            control={control}
+            render={({ field, fieldState: { error } }) => (
+              <Input
+                {...field}
+                type="password"
+                autoComplete="new-password"
+                label="Account Password (Optional)"
+                placeholder="Set initial password..."
+                error={error?.message}
+              />
+            )}
+          />
+        )}
+
+        {isEditing && onResetPassword && (
+          <div>
+            <label className="block text-xs font-semibold text-fg-secondary mb-1.5">
+              Password
+            </label>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onResetPassword}
+              disabled={isPending}
+            >
+              Reset password
+            </Button>
+          </div>
+        )}
       </div>
 
       <FormFooter

@@ -12,8 +12,8 @@ export const userSchema = yup.object({
     .string()
     .test(
       "password-length",
-      "Password must be at least 6 characters",
-      (value) => !value || value.length >= 6,
+      "Password must be at least 8 characters",
+      (value) => !value || value.length >= 8,
     ),
 });
 

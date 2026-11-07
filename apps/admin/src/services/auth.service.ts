@@ -6,6 +6,8 @@ import {
   ISignUpResponse,
   IUser,
   IChangePasswordPayload,
+  IForgotPasswordPayload,
+  IResetPasswordPayload,
 } from "@/models/auth";
 import { IBaseResponse, extractData } from "@/models/base";
 
@@ -95,6 +97,14 @@ export const authService = {
       refreshToken,
       user,
     };
+  },
+
+  async forgotPassword(payload: IForgotPasswordPayload): Promise<void> {
+    await apiClient.post("/auth/forgot-password", payload);
+  },
+
+  async resetPassword(payload: IResetPasswordPayload): Promise<void> {
+    await apiClient.post("/auth/reset-password", payload);
   },
 
   async changePassword(payload: IChangePasswordPayload): Promise<unknown> {

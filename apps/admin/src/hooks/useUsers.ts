@@ -37,6 +37,12 @@ export function useUsers(params?: IQueryParams) {
     },
   });
 
+  const resetPasswordMutation = useMutation({
+    meta: { successMessage: "Password reset" },
+    mutationFn: ({ id, password }: { id: string; password: string }) =>
+      usersService.resetPassword(id, password),
+  });
+
   const deleteUserMutation = useMutation({
     meta: { successMessage: "User deleted" },
     mutationFn: (id: string) => usersService.deleteUser(id),
@@ -56,6 +62,8 @@ export function useUsers(params?: IQueryParams) {
     isCreating: createUserMutation.isPending,
     updateUser: updateUserMutation.mutateAsync,
     isUpdating: updateUserMutation.isPending,
+    resetPassword: resetPasswordMutation.mutateAsync,
+    isResettingPassword: resetPasswordMutation.isPending,
     deleteUser: deleteUserMutation.mutateAsync,
     isDeleting: deleteUserMutation.isPending,
     refetch: usersQuery.refetch,

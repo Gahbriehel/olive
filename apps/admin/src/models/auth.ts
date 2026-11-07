@@ -54,6 +54,15 @@ export interface IRefreshTokenPayload {
   refreshToken: string;
 }
 
+export interface IForgotPasswordPayload {
+  email: string;
+}
+
+export interface IResetPasswordPayload {
+  token: string;
+  newPassword: string;
+}
+
 export interface IChangePasswordPayload {
   currentPassword: string;
   newPassword: string;

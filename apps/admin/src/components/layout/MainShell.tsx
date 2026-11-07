@@ -17,6 +17,7 @@ import {
   getDefaultRouteForUser,
   ROUTE_PERMISSIONS,
   KNOWN_ROUTES,
+  PUBLIC_ROUTES,
 } from "@/utils/rbac";
 import { Spinner } from "@/components/ui/Spinner";
 
@@ -34,7 +35,13 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  const isAuthPage = pathname?.startsWith("/login");
+  // Public pages render without the shell and need no session.
+  const isAuthPage = PUBLIC_ROUTES.some(
+    (route) => pathname === route || pathname?.startsWith(`${route}/`),
+  );
+  // Only the sign-in page bounces signed-in users: a reset link must work
+  // even when someone is already logged in.
+  const isLoginPage = pathname?.startsWith("/login");
   const isKnownRoute = KNOWN_ROUTES.some((route) =>
     route === "/"
       ? pathname === "/"
@@ -54,7 +61,7 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
       if (!isAuthenticated && !isAuthPage) {
         router.push("/login");
       } else if (isAuthenticated) {
-        if (isAuthPage) {
+        if (isLoginPage) {
           // Without a profile there are no roles yet; let "/" wait for it.
           router.push(user ? getDefaultRouteForUser(user) : "/");
           return;
@@ -63,7 +70,7 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
         // On a reload the token is restored before the profile arrives. With
         // no roles loaded, every permission check would fail and bounce the
         // user to their default page, so wait for the profile first.
-        if (!user) return;
+        if (!user || isAuthPage) return;
 
         // Check path permissions against RBAC matrix
         const userRoles = getUserRoles(user);
@@ -86,6 +93,7 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
     isAuthenticated,
     isLoading,
     isAuthPage,
+    isLoginPage,
     isKnownRoute,
     router,
     mounted,
