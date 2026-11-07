@@ -35,3 +35,4 @@ export type {
 } from "./emailLog";
 export * from "./giving-account";
 export * from "./confession";
+export * from "./scripture";

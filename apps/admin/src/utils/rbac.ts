@@ -51,6 +51,7 @@ export const ROUTE_PERMISSIONS: Record<string, string[]> = {
   "/contact": [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   "/messaging-center": [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   "/confessions": [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  "/scriptures": [ROLES.SUPER_ADMIN, ROLES.ADMIN],
 };
 
 /** Every app route the shell knows about (others render the 404 page). */

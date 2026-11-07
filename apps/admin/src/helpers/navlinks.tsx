@@ -18,6 +18,7 @@ import {
   MailWarning,
   Building2,
   BookOpen,
+  BookMarked,
 } from "lucide-react";
 import { ROLES, hasAuthority } from "@/utils/rbac";
 
@@ -125,6 +126,12 @@ export const mainNavItems: NavItem[] = [
     href: "/confessions",
     label: "Confessions",
     icon: BookOpen,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
+  {
+    href: "/scriptures",
+    label: "Scripture",
+    icon: BookMarked,
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
   {
