@@ -1,4 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { IQueryParams } from "@/models/base";
 import {
   IDepartment,
   ICreateDepartmentPayload,
@@ -9,13 +15,14 @@ import { departmentService } from "@/services/department.service";
 
 const EMPTY_DEPARTMENTS: IDepartment[] = [];
 
-export function useDepartments() {
+export function useDepartments(params?: IQueryParams) {
   const queryClient = useQueryClient();
 
   const departmentsQuery = useQuery({
-    queryKey: ["departments"],
-    queryFn: () => departmentService.getDepartments(),
+    queryKey: ["departments", params ?? {}],
+    queryFn: () => departmentService.getDepartments(params),
     staleTime: 1000 * 60 * 3,
+    placeholderData: keepPreviousData,
   });
 
   const createDepartmentMutation = useMutation({
@@ -88,7 +95,8 @@ export function useDepartments() {
   });
 
   return {
-    departments: departmentsQuery.data || EMPTY_DEPARTMENTS,
+    departments: departmentsQuery.data?.departments || EMPTY_DEPARTMENTS,
+    meta: departmentsQuery.data?.meta,
     isLoading: departmentsQuery.isLoading,
     isError: departmentsQuery.isError,
     error: departmentsQuery.error,

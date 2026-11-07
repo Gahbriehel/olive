@@ -29,12 +29,14 @@ export default function DepartmentsPage() {
   // manage rosters; those stay with admins (`canManage`).
   const canCreateOrEdit = canManage || userRoles.includes(ROLES.COORDINATOR);
 
-  const { page, setPage, limit, setLimit, search, setSearch } = useListFilters({
-    searchDebounceMs: 300,
-  });
+  const { page, setPage, limit, setLimit, search, setSearch, queryParams } =
+    useListFilters({
+      searchDebounceMs: 300,
+    });
 
   const {
     departments: apiDepartments,
+    meta,
     isLoading,
     isError,
     error,
@@ -45,7 +47,7 @@ export default function DepartmentsPage() {
     isUpdating,
     deleteDepartment,
     isDeleting,
-  } = useDepartments();
+  } = useDepartments(queryParams);
 
   const [selectedRosterDept, setSelectedRosterDept] =
     useState<IDepartment | null>(null);
@@ -53,31 +55,17 @@ export default function DepartmentsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deletingDept, setDeletingDept] = useState<IDepartment | null>(null);
 
-  // Client-side filtering & pagination for department list
-  const filteredDepartments = useMemo(() => {
-    if (!search.trim()) return apiDepartments;
-    const q = search.toLowerCase();
-    return apiDepartments.filter(
-      (d) =>
-        d.name?.toLowerCase().includes(q) ||
-        d.description?.toLowerCase().includes(q),
-    );
-  }, [apiDepartments, search]);
-
-  const paginatedDepartments = useMemo(() => {
-    const start = (page - 1) * limit;
-    return filteredDepartments.slice(start, start + limit);
-  }, [filteredDepartments, page, limit]);
-
-  const paginationMeta = useMemo(() => {
-    const total = filteredDepartments.length;
-    return {
-      total,
-      page,
-      limit,
-      totalPages: Math.max(1, Math.ceil(total / limit)),
-    };
-  }, [filteredDepartments.length, page, limit]);
+  // Pagination and search are server-side; `meta` describes the full result set.
+  const totalDepartments = meta?.total ?? apiDepartments.length;
+  const paginationMeta = useMemo(
+    () => ({
+      total: totalDepartments,
+      page: meta?.page ?? page,
+      limit: meta?.limit ?? limit,
+      totalPages: Math.max(1, meta?.totalPages ?? 1),
+    }),
+    [meta, totalDepartments, page, limit],
+  );
 
   const totalMembersAssigned = useMemo(() => {
     return apiDepartments.reduce(
@@ -136,7 +124,7 @@ export default function DepartmentsPage() {
       <StatsCardGroup>
         <StatsCard
           title="Total Departments"
-          value={apiDepartments.length.toString()}
+          value={totalDepartments.toString()}
           change="Active units"
           trend="neutral"
           icon={Building2}
@@ -172,7 +160,7 @@ export default function DepartmentsPage() {
       {/* Table adhering to architecture standards */}
       <Table
         columns={columns}
-        data={paginatedDepartments}
+        data={apiDepartments}
         searchPlaceholder="Search departments by name or description..."
         enableSearch={true}
         enablePagination={true}

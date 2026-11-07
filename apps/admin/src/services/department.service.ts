@@ -5,14 +5,26 @@ import {
   IUpdateDepartmentPayload,
   IAssignDepartmentMemberPayload,
 } from "@/models/department";
-import { IBaseResponse, extractData, extractArray } from "@/models/base";
+import {
+  IBaseResponse,
+  IQueryParams,
+  extractData,
+  extractArray,
+  extractMeta,
+} from "@/models/base";
 
 export const departmentService = {
-  async getDepartments(): Promise<IDepartment[]> {
+  async getDepartments(params?: IQueryParams): Promise<{
+    departments: IDepartment[];
+    meta?: IBaseResponse["meta"];
+  }> {
     const res = await apiClient.get<
       IBaseResponse<IDepartment[]> | IDepartment[]
-    >("/departments");
-    return extractArray<IDepartment>(res.data);
+    >("/departments", { params });
+    return {
+      departments: extractArray<IDepartment>(res.data),
+      meta: extractMeta(res.data),
+    };
   },
 
   async getDepartmentById(id: string): Promise<IDepartment> {
