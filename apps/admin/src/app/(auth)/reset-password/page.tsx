@@ -134,7 +134,7 @@ function ResetPasswordForm() {
   };
 
   const inputClass =
-    "w-full bg-slate-950/60 border border-slate-800 focus:border-cyan-500 rounded-xl py-3 pl-10 pr-10 text-base text-slate-200 placeholder:text-slate-600 focus:outline-none transition-colors";
+    "w-full bg-slate-950/60 border border-slate-800 focus:border-indigo-500 rounded-xl py-3 pl-10 pr-10 text-base text-slate-200 placeholder:text-slate-600 focus:outline-none transition-colors";
 
   return (
     <AuthCardLayout

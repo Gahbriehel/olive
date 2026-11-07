@@ -74,7 +74,7 @@ export default function ForgotPasswordPage() {
             type="button"
             onClick={() => setIsSent(false)}
             disabled={cooldown > 0}
-            className="text-xs font-medium text-cyan-400 hover:text-cyan-300 disabled:text-slate-600 disabled:cursor-not-allowed cursor-pointer transition-colors"
+            className="text-xs font-medium text-indigo-400 hover:text-indigo-300 disabled:text-slate-600 disabled:cursor-not-allowed cursor-pointer transition-colors"
           >
             {cooldown > 0 ? `Send again in ${cooldown}s` : "Send again"}
           </button>
@@ -123,7 +123,7 @@ export default function ForgotPasswordPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@olive.church"
               required
-              className="w-full bg-slate-950/60 border border-slate-800 focus:border-cyan-500 rounded-xl py-3 pl-10 pr-4 text-base text-slate-200 placeholder:text-slate-600 focus:outline-none transition-colors"
+              className="w-full bg-slate-950/60 border border-slate-800 focus:border-indigo-500 rounded-xl py-3 pl-10 pr-4 text-base text-slate-200 placeholder:text-slate-600 focus:outline-none transition-colors"
             />
           </div>
         </div>
