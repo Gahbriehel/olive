@@ -188,6 +188,8 @@ apiClient.interceptors.response.use(
     const isSilent =
       url.includes("/auth/refresh") ||
       url.includes("/auth/login") ||
+      // Night prayer not configured yet: the page shows an empty form instead.
+      (status === 404 && /\/night-prayer$/.test(url)) ||
       (status === 401 && !url.includes("/auth/change-password"));
 
     if (isSilent) {

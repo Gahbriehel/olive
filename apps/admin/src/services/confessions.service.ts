@@ -3,6 +3,8 @@ import { extractArray, extractData } from "@/models/base";
 import {
   ConfessionDetail,
   ConfessionListItem,
+  ConfessionReminder,
+  ConfessionReminderInput,
   ConfessionVoice,
   CreateConfessionPayload,
   ReorderConfessionsPayload,
@@ -75,5 +77,20 @@ export const confessionsService = {
   ): Promise<{ message: string }> {
     const res = await apiClient.delete(`/confessions/${id}/audio/${voice}`);
     return extractData<{ message: string }>(res.data);
+  },
+
+  async getReminders(id: string): Promise<ConfessionReminder[]> {
+    const res = await apiClient.get(`/confessions/${id}/reminders`);
+    return extractArray<ConfessionReminder>(res.data);
+  },
+
+  async saveReminders(
+    id: string,
+    reminders: ConfessionReminderInput[],
+  ): Promise<ConfessionReminder[]> {
+    const res = await apiClient.put(`/confessions/${id}/reminders`, {
+      reminders,
+    });
+    return extractArray<ConfessionReminder>(res.data);
   },
 };

@@ -26,6 +26,7 @@ export const scriptureSchema = yup.object({
     .required("Choose a start date")
     .matches(/^\d{4}-\d{2}-\d{2}$/, "Use the format YYYY-MM-DD"),
   published: yup.boolean().required().default(false),
+  notifyMembers: yup.boolean().required().default(true),
 });
 
 export type ScriptureFormValues = yup.InferType<typeof scriptureSchema>;

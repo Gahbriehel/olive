@@ -24,6 +24,8 @@ export interface Scripture {
   updatedAt: string;
   /** True when this is the record the public /scriptures/current returns. */
   isCurrent: boolean;
+  /** Push members when this scripture goes live. Defaults to true. */
+  notifyMembers?: boolean;
 }
 
 export interface CreateScripturePayload {
@@ -34,6 +36,7 @@ export interface CreateScripturePayload {
   givenBy: string | null;
   startsOn: string;
   status: ScriptureStatus;
+  notifyMembers: boolean;
 }
 
 /** `kind` is fixed once a scripture exists. */

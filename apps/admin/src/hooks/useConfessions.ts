@@ -3,6 +3,7 @@ import { confessionsService } from "@/services/confessions.service";
 import {
   ConfessionDetail,
   ConfessionListItem,
+  ConfessionReminderInput,
   ConfessionVoice,
   CreateConfessionPayload,
   ReorderConfessionsPayload,
@@ -150,5 +151,40 @@ export function useConfessionDetail(id: string) {
     deletingVoice: deleteAudioMutation.isPending
       ? deleteAudioMutation.variables
       : undefined,
+  };
+}
+
+export const confessionRemindersKey = (id: string) => [
+  "confessions",
+  "reminders",
+  id,
+];
+
+/** Reminders for one saved confession. Replaced wholesale on save. */
+export function useConfessionReminders(id: string) {
+  const queryClient = useQueryClient();
+  const enabled = Boolean(id) && id !== "new";
+
+  const query = useQuery({
+    queryKey: confessionRemindersKey(id),
+    queryFn: () => confessionsService.getReminders(id),
+    enabled,
+  });
+
+  const saveMutation = useMutation({
+    meta: { successMessage: "Reminders saved" },
+    mutationFn: (reminders: ConfessionReminderInput[]) =>
+      confessionsService.saveReminders(id, reminders),
+    onSuccess: (saved) =>
+      queryClient.setQueryData(confessionRemindersKey(id), saved),
+  });
+
+  return {
+    reminders: query.data,
+    isLoading: enabled && query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
+    saveReminders: saveMutation.mutateAsync,
+    isSavingReminders: saveMutation.isPending,
   };
 }

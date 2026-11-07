@@ -15,6 +15,7 @@ import { ConfirmActionModal } from "@/components/modals/ConfirmActionModal";
 import {
   useConfessionCategories,
   useConfessionDetail,
+  useConfessionReminders,
   useCreateConfession,
   useConfessions,
 } from "@/hooks/useConfessions";
@@ -25,6 +26,15 @@ import {
 } from "@/models/confession";
 import { AudioPanel } from "./AudioPanel";
 import { PhonePreview } from "./PhonePreview";
+import { RemindersPanel } from "./RemindersPanel";
+import {
+  ReminderDraft,
+  ReminderErrors,
+  serialize,
+  toDrafts,
+  toInputs,
+  validateReminders,
+} from "./reminderUtils";
 import { ConfessionFormValues, confessionSchema } from "./confessionSchema";
 import { countWords, slugify } from "./confessionUtils";
 
@@ -63,6 +73,34 @@ export const ConfessionEditor: React.FC<Props> = ({ confession }) => {
     deletingVoice,
   } = useConfessionDetail(id);
   const { deleteConfession, isDeleting } = useConfessions();
+  const {
+    reminders: savedReminders,
+    isLoading: remindersLoading,
+    isError: remindersError,
+    refetch: refetchReminders,
+    saveReminders,
+    isSavingReminders,
+  } = useConfessionReminders(id);
+
+  // Reminder rows are edited locally and saved together with the confession.
+  // `null` until the server list has loaded. Re-seeded when the cache entry
+  // changes (initial load, or a save); tracking the seeded snapshot avoids re-seeding the
+  // same server snapshot over in-progress edits.
+  const [reminderDrafts, setReminderDrafts] = useState<ReminderDraft[] | null>(
+    null,
+  );
+  const [reminderErrors, setReminderErrors] = useState<
+    Record<string, ReminderErrors>
+  >({});
+  const [seededFrom, setSeededFrom] = useState<unknown>(null);
+  if (savedReminders && seededFrom !== savedReminders) {
+    setSeededFrom(savedReminders);
+    setReminderDrafts(toDrafts(savedReminders));
+  }
+  const remindersDirty =
+    !!savedReminders &&
+    !!reminderDrafts &&
+    serialize(reminderDrafts) !== serialize(toDrafts(savedReminders));
 
   const {
     control,
@@ -99,7 +137,7 @@ export const ConfessionEditor: React.FC<Props> = ({ confession }) => {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmUnpublish, setConfirmUnpublish] = useState(false);
 
-  const { isDirty } = formState;
+  const isDirty = formState.isDirty || remindersDirty;
   useEffect(() => {
     if (!isDirty) return;
     const onBeforeUnload = (e: BeforeUnloadEvent) => e.preventDefault();
@@ -111,7 +149,8 @@ export const ConfessionEditor: React.FC<Props> = ({ confession }) => {
   const wordCount = countWords(body ?? "");
   const canPublish = Boolean(title.trim() && body?.trim());
   const isPublished = confession?.status === "PUBLISHED";
-  const busy = isSaving || isCreating || formState.isSubmitting;
+  const busy =
+    isSaving || isCreating || isSavingReminders || formState.isSubmitting;
 
   const persist = async (
     values: ConfessionFormValues,
@@ -124,6 +163,9 @@ export const ConfessionEditor: React.FC<Props> = ({ confession }) => {
         router.replace(`/confessions/${created.id}`);
       } else {
         const updated = await updateConfession(toPayload(values, status));
+        if (remindersDirty && reminderDrafts) {
+          await saveReminders(toInputs(reminderDrafts));
+        }
         reset({
           title: updated.title,
           slug: updated.slug,
@@ -148,6 +190,11 @@ export const ConfessionEditor: React.FC<Props> = ({ confession }) => {
 
   const submit = (status?: ConfessionStatus) =>
     handleSubmit((values) => {
+      if (reminderDrafts) {
+        const errs = validateReminders(reminderDrafts);
+        setReminderErrors(errs);
+        if (Object.keys(errs).length > 0) return;
+      }
       if (status === "PUBLISHED" && !values.body.trim()) {
         setError("body", {
           message: "Add the confession text before publishing",
@@ -361,6 +408,24 @@ export const ConfessionEditor: React.FC<Props> = ({ confession }) => {
           )}
         </div>
       </div>
+
+      {confession ? (
+        <RemindersPanel
+          drafts={reminderDrafts}
+          isLoading={remindersLoading}
+          isError={remindersError}
+          onRetry={() => refetchReminders()}
+          errors={reminderErrors}
+          onChange={(d) => {
+            setReminderDrafts(d);
+            setReminderErrors({});
+          }}
+        />
+      ) : (
+        <p className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-fg-muted">
+          Save this confession to add push reminders.
+        </p>
+      )}
 
       <ConfirmActionModal
         display={Boolean(pendingSlugSave)}

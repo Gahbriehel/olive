@@ -52,6 +52,9 @@ export const ROUTE_PERMISSIONS: Record<string, string[]> = {
   "/messaging-center": [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   "/confessions": [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   "/scriptures": [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  "/night-prayer": [ROLES.SUPER_ADMIN],
+  "/faith-boosts": [ROLES.SUPER_ADMIN],
+  "/notifications": [ROLES.SUPER_ADMIN],
 };
 
 /** Every app route the shell knows about (others render the 404 page). */
@@ -195,5 +198,6 @@ export function getDefaultRouteForUser(
   if (normalized.includes(ROLES.REGISTRATION_DESK)) {
     return "/attendance";
   }
-  return "/events";
+  // Every role may open the profile page, so this never bounces.
+  return "/profile";
 }

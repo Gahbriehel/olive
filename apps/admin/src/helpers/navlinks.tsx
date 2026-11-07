@@ -19,6 +19,10 @@ import {
   Building2,
   BookOpen,
   BookMarked,
+  Moon,
+  Sparkles,
+  BellRing,
+  Smartphone,
 } from "lucide-react";
 import { ROLES, hasAuthority } from "@/utils/rbac";
 
@@ -123,16 +127,41 @@ export const mainNavItems: NavItem[] = [
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
   {
-    href: "/confessions",
-    label: "Confessions",
-    icon: BookOpen,
+    label: "Member App",
+    icon: Smartphone,
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-  },
-  {
-    href: "/scriptures",
-    label: "Scripture",
-    icon: BookMarked,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+    subs: [
+      {
+        href: "/confessions",
+        label: "Confessions",
+        icon: BookOpen,
+        allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+      },
+      {
+        href: "/scriptures",
+        label: "Scripture",
+        icon: BookMarked,
+        allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+      },
+      {
+        href: "/night-prayer",
+        label: "Night Prayer",
+        icon: Moon,
+        allowedRoles: [ROLES.SUPER_ADMIN],
+      },
+      {
+        href: "/faith-boosts",
+        label: "Faith Boosts",
+        icon: Sparkles,
+        allowedRoles: [ROLES.SUPER_ADMIN],
+      },
+      {
+        href: "/notifications",
+        label: "Push Notifications",
+        icon: BellRing,
+        allowedRoles: [ROLES.SUPER_ADMIN],
+      },
+    ],
   },
   {
     href: "/messaging-center",

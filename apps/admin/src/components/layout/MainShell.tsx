@@ -55,10 +55,15 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({
         router.push("/login");
       } else if (isAuthenticated) {
         if (isAuthPage) {
-          const defaultRoute = getDefaultRouteForUser(user);
-          router.push(defaultRoute);
+          // Without a profile there are no roles yet; let "/" wait for it.
+          router.push(user ? getDefaultRouteForUser(user) : "/");
           return;
         }
+
+        // On a reload the token is restored before the profile arrives. With
+        // no roles loaded, every permission check would fail and bounce the
+        // user to their default page, so wait for the profile first.
+        if (!user) return;
 
         // Check path permissions against RBAC matrix
         const userRoles = getUserRoles(user);

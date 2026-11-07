@@ -58,3 +58,25 @@ export interface ReorderConfessionsPayload {
 }
 
 export const CONFESSION_AUDIO_MAX_BYTES = 25 * 1024 * 1024;
+
+export interface ConfessionReminder {
+  id?: string;
+  /** "HH:mm" in Africa/Lagos. */
+  timeOfDay: string;
+  /** 0 = Sun .. 6 = Sat. Empty means every day. */
+  daysOfWeek: number[];
+  startsOn?: string | null;
+  endsOn?: string | null;
+  message?: string | null;
+}
+
+export interface ConfessionReminderInput {
+  timeOfDay: string;
+  daysOfWeek: number[];
+  startsOn?: string;
+  endsOn?: string;
+  message?: string;
+}
+
+export const MAX_CONFESSION_REMINDERS = 6;
+export const REMINDER_MESSAGE_MAX = 200;

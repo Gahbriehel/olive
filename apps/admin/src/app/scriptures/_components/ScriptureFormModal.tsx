@@ -46,6 +46,7 @@ const toPayload = (
   givenBy: v.givenBy?.trim() || null,
   startsOn: v.startsOn,
   status: v.published ? "PUBLISHED" : "DRAFT",
+  notifyMembers: v.notifyMembers,
 });
 
 /**
@@ -73,6 +74,7 @@ export const ScriptureFormModal: React.FC<Props> = ({
       givenBy: scripture?.givenBy ?? "",
       startsOn: scripture?.startsOn ?? defaultStartsOn(kind),
       published: scripture ? scripture.status === "PUBLISHED" : false,
+      notifyMembers: scripture?.notifyMembers ?? true,
     }),
     [scripture, kind],
   );
@@ -239,6 +241,24 @@ export const ScriptureFormModal: React.FC<Props> = ({
                     field.value
                       ? "Members see it from the start date."
                       : "Hidden from members until published."
+                  }
+                />
+              )}
+            />
+
+            <Controller
+              name="notifyMembers"
+              control={control}
+              render={({ field }) => (
+                <Switch
+                  checked={field.value}
+                  onChange={field.onChange}
+                  color="indigo"
+                  label="Notify members when this scripture starts"
+                  description={
+                    field.value
+                      ? "A push notification is sent on the start date, at the scripture send time."
+                      : "Saved without sending a push notification."
                   }
                 />
               )}

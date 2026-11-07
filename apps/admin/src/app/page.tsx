@@ -11,7 +11,8 @@ export default function Home() {
   const { user, isLoading } = useAuth();
 
   useEffect(() => {
-    if (!isLoading) {
+    // Wait for the profile: without roles the default route is meaningless.
+    if (!isLoading && user) {
       const defaultRoute = getDefaultRouteForUser(user);
       router.replace(defaultRoute);
     }
