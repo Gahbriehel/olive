@@ -14,7 +14,9 @@ export function EventScheduleSection({
   onStartDateChange,
 }: EventScheduleSectionProps) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    // Single column: the native date picker popup anchors to the input's left
+    // edge and is ~400px wide, so a right-hand column pushes it off-screen.
+    <div className="grid grid-cols-1 gap-3">
       <Controller
         name="startDate"
         control={control}
