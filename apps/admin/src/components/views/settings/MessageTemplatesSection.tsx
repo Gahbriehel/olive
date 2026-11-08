@@ -73,16 +73,25 @@ export const MessageTemplatesSection: React.FC<
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Debounced preview calculation
+  // Debounced preview calculation.
+  // `mutate`/`reset` are stable; the mutation object itself changes every
+  // render, so depending on it would re-fire this effect in a loop.
+  const { mutate: previewBody, reset: resetPreview } = previewMutation;
+
   useEffect(() => {
-    if (!isEditorOpen || !formBody.trim()) return;
+    if (!isEditorOpen) return;
+
+    if (!formBody.trim()) {
+      resetPreview();
+      return;
+    }
 
     const timer = setTimeout(() => {
-      previewMutation.mutate(formBody);
+      previewBody(formBody);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [formBody, isEditorOpen, previewMutation]);
+  }, [formBody, isEditorOpen, previewBody, resetPreview]);
 
   const handleOpenCreate = () => {
     setEditingTemplate(null);
@@ -90,6 +99,7 @@ export const MessageTemplatesSection: React.FC<
     setFormPurpose("BIRTHDAY");
     setFormReason("");
     setFormBody("");
+    resetPreview();
     setIsEditorOpen(true);
   };
 
@@ -99,6 +109,7 @@ export const MessageTemplatesSection: React.FC<
     setFormPurpose(t.purpose);
     setFormReason(t.checkInReason || "");
     setFormBody(t.body);
+    resetPreview();
     setIsEditorOpen(true);
   };
 
