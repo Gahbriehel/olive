@@ -189,9 +189,24 @@ export const PersonForm: React.FC<PersonFormProps> = ({
       await onSubmit(payload);
     } catch (err: unknown) {
       const axiosErr = err as {
-        response?: { data?: { message?: string | string[] } };
+        response?: { data?: { message?: string | string[]; code?: string } };
         message?: string;
       };
+      const code = axiosErr.response?.data?.code;
+      if (
+        code === "CONTACT_REQUIRED" ||
+        code === "CONTACT_ALREADY_REGISTERED"
+      ) {
+        // Dove's answer is deliberately generic: it never says which field
+        // collided or who owns it, so don't guess. Flag both fields.
+        const message =
+          code === "CONTACT_REQUIRED"
+            ? "Enter an email address or a phone number"
+            : "This email or phone number is already registered.";
+        setError("email", { type: "server", message });
+        setError("phone", { type: "server", message });
+        return;
+      }
       const rawMsg = axiosErr.response?.data?.message || axiosErr.message || "";
       const msg = Array.isArray(rawMsg) ? rawMsg.join(", ") : String(rawMsg);
       if (/phone|whatsapp/i.test(msg)) {

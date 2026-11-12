@@ -4,6 +4,7 @@ import {
   IUpdatePersonPayload,
   IPromotePersonPayload,
   IPersonResponse,
+  IAddRelativePayload,
 } from "@/models/person";
 import { IQueryParams } from "@/models/base";
 import { peopleService } from "@/services/people.service";
@@ -87,5 +88,44 @@ export function usePerson(id?: string, initialData?: IPersonResponse) {
     initialData,
     staleTime: 1000 * 60,
     enabled: Boolean(id),
+  });
+}
+
+/** Family links for one person (GET /people/:id/relatives). */
+export function useRelatives(id?: string) {
+  return useQuery({
+    queryKey: ["person-relatives", id],
+    queryFn: () => peopleService.getRelatives(id as string),
+    enabled: Boolean(id),
+  });
+}
+
+export function useAddRelative(personId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    meta: { successMessage: "Family link added" },
+    mutationFn: (dto: IAddRelativePayload) =>
+      peopleService.addRelative(personId, dto),
+    onSuccess: (_, dto) => {
+      queryClient.invalidateQueries({
+        queryKey: ["person-relatives", personId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["person-relatives", dto.relatedPersonId],
+      });
+    },
+  });
+}
+
+export function useRemoveRelative(personId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    meta: { successMessage: "Family link removed" },
+    mutationFn: (relationshipId: string) =>
+      peopleService.removeRelative(personId, relationshipId),
+    onSuccess: () => {
+      // The other person's list holds the inverse row, so refresh all of them.
+      queryClient.invalidateQueries({ queryKey: ["person-relatives"] });
+    },
   });
 }

@@ -32,6 +32,7 @@ const PURPOSE_FORMATS: Record<
   BIRTHDAY: { label: "Birthday", variant: "indigo" },
   VISITOR_FOLLOW_UP: { label: "Visitor Follow-up", variant: "purple" },
   PASTORAL_CHECK_IN: { label: "Pastoral Check-in", variant: "amber" },
+  PROFILE_LINK: { label: "Profile Link", variant: "emerald" },
 };
 
 export function WhatsAppLogTable() {
@@ -53,6 +54,7 @@ export function WhatsAppLogTable() {
           { label: "Birthday", value: "BIRTHDAY" },
           { label: "Visitor Follow-up", value: "VISITOR_FOLLOW_UP" },
           { label: "Pastoral Check-in", value: "PASTORAL_CHECK_IN" },
+          { label: "Profile Link", value: "PROFILE_LINK" },
         ],
       },
       {

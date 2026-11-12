@@ -68,6 +68,8 @@ export interface IPerson {
   emailOptOutAt?: string | null;
   whatsappOptOut?: boolean;
   whatsappOptOutAt?: string | null;
+  /** True once the person has set a PIN (claimed their profile). Undefined when the API didn't say. */
+  claimed?: boolean;
   registrationHistoryCount: number;
   eventsAttendedCount: number;
   registrations: {
@@ -119,6 +121,8 @@ export interface IPersonResponse {
   emailOptOutAt?: string | null;
   whatsappOptOut?: boolean;
   whatsappOptOutAt?: string | null;
+  /** True once the person has set a PIN. Omitted by older API responses. */
+  claimed?: boolean;
   dateOfBirth?: string;
   address?: string;
   createdAt?: string;
@@ -136,6 +140,36 @@ export interface IPersonResponse {
   lastCheckInAt?: string | null;
   hasPendingCheckIn?: boolean;
   pastoralCheckIns?: IPastoralCheckIn[];
+}
+
+export type RelationshipType =
+  "SPOUSE" | "PARENT" | "CHILD" | "SIBLING" | "OTHER";
+
+export const RELATIONSHIP_LABELS: Record<RelationshipType, string> = {
+  SPOUSE: "Spouse",
+  PARENT: "Parent",
+  CHILD: "Child",
+  SIBLING: "Sibling",
+  OTHER: "Other",
+};
+
+/** One row of GET /people/:id/relatives. `relationship` is already inverted for the viewed person. */
+export interface IRelative {
+  relationshipId: string;
+  person: { id: string; firstName: string; lastName: string };
+  relationship: RelationshipType;
+  relationshipNote: string | null;
+  addedByMe: boolean;
+  claimed: boolean;
+  maskedEmail: string | null;
+  maskedPhone: string | null;
+  canSendClaimLink: boolean;
+}
+
+export interface IAddRelativePayload {
+  relatedPersonId: string;
+  relationship: RelationshipType;
+  relationshipNote?: string | null;
 }
 
 export interface IPeopleStats {
@@ -309,6 +343,7 @@ export function adaptApiPersonToPerson(apiPerson: IPersonResponse): IPerson {
     emailOptOutAt: apiPerson.emailOptOutAt ?? null,
     whatsappOptOut: Boolean(apiPerson.whatsappOptOut),
     whatsappOptOutAt: apiPerson.whatsappOptOutAt ?? null,
+    claimed: apiPerson.claimed,
     registrationHistoryCount: eventsRegisteredCount,
     eventsAttendedCount,
     registrations,

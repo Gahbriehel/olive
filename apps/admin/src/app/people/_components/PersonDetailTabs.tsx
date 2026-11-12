@@ -11,6 +11,7 @@ import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { usePersonMessages, useConfirmOutreach } from "@/hooks/useOutreach";
 import { IPerson } from "@/models/person";
 import { PersonMessageTimelineItem } from "@/models/outreach";
+import { PersonFamilySection } from "./PersonFamilySection";
 
 function InfoTile({
   label,
@@ -67,6 +68,26 @@ export function PersonInfoTab({ person }: { person: IPerson }) {
           <p className="font-semibold text-fg mt-1">{person.dob}</p>
         </InfoTile>
 
+        {person.claimed !== true && person.phone && person.phone !== "N/A" && (
+          <InfoTile
+            label="Profile Access"
+            className="col-span-2 p-3 rounded-xl bg-subtle"
+          >
+            <div className="flex items-center justify-between gap-2 mt-1">
+              <p className="text-fg-muted">
+                Hasn&apos;t claimed their profile yet.
+              </p>
+              <WhatsAppButton
+                personId={person.id}
+                purpose="PROFILE_LINK"
+                size="sm"
+                variant="outline"
+                label="Send Profile Link (WhatsApp)"
+              />
+            </div>
+          </InfoTile>
+        )}
+
         {/* Follow-up status & touchpoint are STRICTLY for visitors */}
         {isVisitor && (
           <>
@@ -97,6 +118,8 @@ export function PersonInfoTab({ person }: { person: IPerson }) {
           </InfoTile>
         )}
       </div>
+
+      <PersonFamilySection person={person} />
 
       <div className="p-3.5 rounded-xl border border-border space-y-2">
         <p className="font-bold text-fg flex items-center gap-1.5">

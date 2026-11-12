@@ -25,6 +25,7 @@ import {
   useOpenOutreach,
   useOutreachPreview,
 } from "@/hooks/useOutreach";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSettings } from "@/hooks/useSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { getUserRoles, hasAuthority, ROLES } from "@/utils/rbac";
@@ -57,6 +58,7 @@ export const WhatsAppComposeModal: React.FC<WhatsAppComposeModalProps> = ({
   onSendEmailInstead,
   onEditPerson,
 }) => {
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const { settings } = useSettings();
   const userRoles = getUserRoles(user);
@@ -163,8 +165,13 @@ export const WhatsAppComposeModal: React.FC<WhatsAppComposeModalProps> = ({
   );
   const hasBlockingWarning = blockingWarnings.length > 0;
 
+  const isProfileLink = purpose === "PROFILE_LINK";
+  // The server swaps the placeholder for the live single-use link on send.
+  const PROFILE_LINK_PLACEHOLDER = "[profile link]";
+
   const canOpen =
     !previewMutation.isPending &&
+    (!isProfileLink || body.includes(PROFILE_LINK_PLACEHOLDER)) &&
     !hasBlockingWarning &&
     body.trim().length > 0 &&
     body.length <= 1000 &&
@@ -178,14 +185,42 @@ export const WhatsAppComposeModal: React.FC<WhatsAppComposeModalProps> = ({
   const handleOpenClick = () => {
     if (!canOpen) return;
 
-    // Log the open in Dove
-    openMutation.mutate({
+    const payload = {
       personId,
       purpose,
       checkInId,
       templateId: selectedTemplateId || preview?.template?.id,
       body,
-    });
+    };
+
+    if (isProfileLink) {
+      // The claim URL only exists once Dove has issued the token, so the
+      // record must be created first and its whatsappUrl opened afterwards.
+      openMutation.mutate(payload, {
+        onSuccess: (record) => {
+          if (record.whatsappUrl) {
+            window.open(record.whatsappUrl, "_blank", "noopener,noreferrer");
+          }
+          queryClient.invalidateQueries({ queryKey: ["person", personId] });
+          setStep("confirm");
+        },
+        // ALREADY_CLAIMED and other API errors are toasted by the API client;
+        // stay on the review step so nothing looks sent.
+        onError: (err) => {
+          if (
+            (err as { response?: { data?: { code?: string } } })?.response?.data
+              ?.code === "ALREADY_CLAIMED"
+          ) {
+            queryClient.invalidateQueries({ queryKey: ["person", personId] });
+            queryClient.invalidateQueries({ queryKey: ["people"] });
+          }
+        },
+      });
+      return;
+    }
+
+    // Log the open in Dove
+    openMutation.mutate(payload);
 
     // Advance to confirmation step
     setStep("confirm");
@@ -244,7 +279,9 @@ export const WhatsAppComposeModal: React.FC<WhatsAppComposeModalProps> = ({
           </Button>
         ) : (
           <a
-            href={whatsappUrl}
+            href={
+              isProfileLink ? (openedRecord?.whatsappUrl ?? "#") : whatsappUrl
+            }
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-fg-muted hover:text-fg inline-flex items-center gap-1.5 transition-colors"
@@ -257,15 +294,13 @@ export const WhatsAppComposeModal: React.FC<WhatsAppComposeModalProps> = ({
       footer={
         step === "review" ? (
           <a
-            href={canOpen ? whatsappUrl : undefined}
+            href={canOpen && !isProfileLink ? whatsappUrl : undefined}
             target="_blank"
             rel="noopener noreferrer"
             aria-disabled={!canOpen}
             onClick={(e) => {
-              if (!canOpen) {
-                e.preventDefault();
-                return;
-              }
+              if (!canOpen || isProfileLink) e.preventDefault();
+              if (!canOpen || openMutation.isPending) return;
               handleOpenClick();
             }}
             className={clsx(

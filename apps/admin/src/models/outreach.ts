@@ -2,7 +2,7 @@ import type { CheckInReason, CheckInStatus } from "@olive/types";
 
 export type MessageChannel = "EMAIL" | "WHATSAPP";
 export type OutreachPurpose =
-  "BIRTHDAY" | "VISITOR_FOLLOW_UP" | "PASTORAL_CHECK_IN";
+  "BIRTHDAY" | "VISITOR_FOLLOW_UP" | "PASTORAL_CHECK_IN" | "PROFILE_LINK";
 export type OutreachStatus = "OPENED" | "CONFIRMED_SENT" | "NOT_SENT";
 export type OutreachWarning =
   | "NO_PHONE"
@@ -49,6 +49,8 @@ export interface OutreachMessage {
   confirmedAt: string | null;
   checkInId: string | null;
   sentBy: { id: string; name: string };
+  /** PROFILE_LINK only: wa.me URL with the live single-use claim link embedded. */
+  whatsappUrl?: string;
   person?: { id: string; firstName: string; lastName: string };
 }
 

@@ -24,11 +24,23 @@ export const pastDate = () =>
     (value) => !value || value <= new Date().toISOString().slice(0, 10),
   );
 
+const CONTACT_REQUIRED = "Enter an email address or a phone number";
+
+/** At least one of email / phone must be filled in (Dove: CONTACT_REQUIRED). */
+const hasContact = (
+  _: unknown,
+  ctx: { parent: { email?: string; phone?: string } },
+) => Boolean(ctx.parent.email?.trim() || ctx.parent.phone?.trim());
+
 export const personSchema = yup.object({
   firstName: requiredText("First name").max(100, "Max 100 characters"),
   lastName: requiredText("Last name").max(100, "Max 100 characters"),
-  email: email().default(""),
-  phone: phone().default(""),
+  email: email()
+    .default("")
+    .test("contact-required", CONTACT_REQUIRED, hasContact),
+  phone: phone()
+    .default("")
+    .test("contact-required", CONTACT_REQUIRED, hasContact),
   gender: yup
     .mixed<ApiGender>()
     .oneOf(GENDERS, "Select a gender")
