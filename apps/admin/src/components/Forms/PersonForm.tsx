@@ -183,7 +183,8 @@ export const PersonForm: React.FC<PersonFormProps> = ({
       membershipStatus: data.membershipStatus,
       dateOfBirth: data.dateOfBirth || undefined,
       address: data.address?.trim() || undefined,
-      whatsappOptOut: Boolean(data.whatsappOptOut),
+      // Dove's create endpoint rejects whatsappOptOut; only update accepts it.
+      ...(isEditing ? { whatsappOptOut: Boolean(data.whatsappOptOut) } : {}),
     };
     try {
       await onSubmit(payload);
