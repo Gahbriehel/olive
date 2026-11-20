@@ -252,15 +252,15 @@ export default function EventDetailsPage({
                 </>
               ) : (
                 <>
-                  {/* Walk-In: Open Admission Box */}
+                  {/* Walk-In: welcome box */}
                   <div className="flex items-center space-x-2.5 px-5 py-3 rounded-sm border border-emerald-500/30 bg-emerald-500/10">
                     <DoorOpen className="w-5 h-5 text-emerald-400" />
                     <div>
                       <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block">
-                        Open Admission • No Registration Required
+                        Everyone Is Welcome
                       </span>
                       <span className="text-[11px] text-[#D4D0C7]">
-                        Free walk-in service. Everyone is welcome!
+                        No sign-up needed. Just come as you are.
                       </span>
                     </div>
                   </div>
@@ -521,7 +521,7 @@ export default function EventDetailsPage({
                 ) : (
                   <div className="w-full py-3.5 rounded-sm border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2">
                     <DoorOpen className="w-4 h-4" />
-                    <span>Walk-In • No Registration Needed</span>
+                    <span>Come As You Are</span>
                   </div>
                 )}
 
