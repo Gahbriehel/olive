@@ -217,7 +217,12 @@ function drawGoldText(
   // Top glint
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  const glint = ctx.createLinearGradient(0, baseline - s * 0.75, 0, baseline - s * 0.45);
+  const glint = ctx.createLinearGradient(
+    0,
+    baseline - s * 0.75,
+    0,
+    baseline - s * 0.45,
+  );
   glint.addColorStop(0, "rgba(255, 255, 255, 0.35)");
   glint.addColorStop(1, "rgba(255, 255, 255, 0)");
   ctx.fillStyle = glint;
@@ -379,7 +384,8 @@ function drawBackground(ctx: CanvasRenderingContext2D) {
     ctx.lineWidth = 26 + i * 3;
     ctx.strokeStyle =
       i % 2 === 0 ? "rgba(255, 110, 110, 0.10)" : "rgba(70, 0, 6, 0.16)";
-    ctx.shadowColor = i % 2 === 0 ? "rgba(255, 140, 140, 0.3)" : "rgba(0,0,0,0)";
+    ctx.shadowColor =
+      i % 2 === 0 ? "rgba(255, 140, 140, 0.3)" : "rgba(0,0,0,0)";
     ctx.shadowBlur = 24;
     ctx.stroke();
   }
@@ -514,7 +520,13 @@ function drawHeader(
   ctx.restore();
 
   if (logo) {
-    ctx.drawImage(logo, pillX + padX, pillY + (pillH - logoSize) / 2, logoSize, logoSize);
+    ctx.drawImage(
+      logo,
+      pillX + padX,
+      pillY + (pillH - logoSize) / 2,
+      logoSize,
+      logoSize,
+    );
   }
 
   ctx.textAlign = "left";
