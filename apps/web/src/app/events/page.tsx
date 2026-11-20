@@ -211,7 +211,7 @@ export default function EventsListPage() {
                     </span>
                   ) : (
                     <span className="text-[11px] font-sans text-emerald-400">
-                      All Are Welcome
+                      Open Event
                     </span>
                   )}
                   <Link
