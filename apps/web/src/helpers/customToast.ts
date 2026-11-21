@@ -21,13 +21,16 @@ const successConfig = {
   ...toastConfig,
   style: {
     ...toastConfig.style,
-    background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-    color: "#ffffff",
-    border: "1px solid #059669",
+    // Brand charcoal + gold instead of the usual green, to match the site theme.
+    background: "#1F1F1F",
+    color: "#F7F5F0",
+    border: "1px solid rgba(177, 138, 74, 0.5)",
+    boxShadow:
+      "0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(177, 138, 74, 0.1)",
   },
   iconTheme: {
-    primary: "#ffffff",
-    secondary: "#10b981",
+    primary: "#B18A4A",
+    secondary: "#1F1F1F",
   },
 };
 

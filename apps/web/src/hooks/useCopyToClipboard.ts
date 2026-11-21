@@ -45,7 +45,7 @@ export function useCopyToClipboard(
         if (successful) {
           setIsCopied(true);
           if (showToast) {
-            customToast.info(toastMessage, text);
+            customToast.success(toastMessage, text);
           }
           callback?.();
           setTimeout(() => {
@@ -71,7 +71,7 @@ export function useCopyToClipboard(
           await navigator.clipboard.writeText(text);
           setIsCopied(true);
           if (showToast) {
-            customToast.info(toastMessage, text);
+            customToast.success(toastMessage, text);
           }
           callback?.();
           setTimeout(() => {

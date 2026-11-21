@@ -7,7 +7,7 @@ export function copyToClipboard(text: string): void {
     navigator.clipboard
       .writeText(text)
       .then(() => {
-        customToast.info("Copied to clipboard", text);
+        customToast.success("Copied to clipboard", text);
       })
       .catch(() => {
         customToast.error("Failed to copy text to clipboard");
@@ -23,7 +23,7 @@ export function copyToClipboard(text: string): void {
       textarea.select();
       document.execCommand("copy");
       document.body.removeChild(textarea);
-      customToast.info("Copied to clipboard", text);
+      customToast.success("Copied to clipboard", text);
     } catch {
       customToast.error("Failed to copy text to clipboard");
     }
