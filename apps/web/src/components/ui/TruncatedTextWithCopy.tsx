@@ -56,12 +56,12 @@ export function TruncatedTextWithCopy({
       {displayIcon ? (
         <button
           type="button"
-          className="cursor-pointer text-slate-400 hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400 transition-colors flex items-center justify-center shrink-0"
+          className="cursor-pointer text-[#77736B] hover:text-[#B18A4A] transition-colors flex items-center justify-center shrink-0"
           onClick={handleCopy}
           aria-label={`Copy ${text} to clipboard`}
         >
           {isCopied ? (
-            <CopyCheck className="w-4 h-4 text-emerald-500 animate-in fade-in zoom-in-75 duration-200" />
+            <CopyCheck className="w-4 h-4 text-[#B18A4A] animate-in fade-in zoom-in-75 duration-200" />
           ) : (
             <Copy className="w-4 h-4" />
           )}

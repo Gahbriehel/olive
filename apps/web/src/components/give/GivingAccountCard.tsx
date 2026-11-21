@@ -66,7 +66,7 @@ export function GivingAccountCard({ account }: { account: GivingAccount }) {
         onClick={() => copyToClipboard(account.accountNumber)}
         className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-sm border px-4 py-3 text-xs font-sans font-medium uppercase tracking-wider transition-colors ${
           isCopied
-            ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+            ? "border-[#B18A4A] bg-[#B18A4A] text-white"
             : "border-[#B18A4A]/50 text-[#B18A4A] hover:bg-[#B18A4A] hover:text-white"
         }`}
       >

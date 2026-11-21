@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Copy, Check, Sparkles } from "lucide-react";
-import toast from "react-hot-toast";
+import { customToast } from "@/helpers/customToast";
 
 const VERSES = [
   {
@@ -52,10 +52,10 @@ export function AnchorScripture() {
     try {
       await navigator.clipboard.writeText(fullText);
       setCopied(true);
-      toast.success("Scripture passage copied to clipboard");
+      customToast.success("Scripture passage copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Failed to copy scripture");
+      customToast.error("Failed to copy scripture");
     }
   };
 
@@ -141,8 +141,8 @@ export function AnchorScripture() {
               >
                 {copied ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-emerald-400">Passage Copied</span>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Passage Copied</span>
                   </>
                 ) : (
                   <>
