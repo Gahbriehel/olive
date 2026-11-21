@@ -1,29 +1,14 @@
-export type GivingCurrency = "NGN" | "USD" | "GBP" | "EUR";
+import type {
+  GivingAccount as SharedGivingAccount,
+  GivingCurrency,
+  GivingPurpose,
+} from "@olive/types";
 
-export type GivingPurpose =
-  "TITHE" | "OFFERING" | "BUILDING" | "MISSIONS" | "SEED" | "SPECIAL";
+export type { GivingCurrency, GivingPurpose } from "@olive/types";
+export { GIVING_CURRENCIES, GIVING_PURPOSES } from "@olive/types";
 
-export const GIVING_CURRENCIES: GivingCurrency[] = ["NGN", "USD", "GBP", "EUR"];
-
-export const GIVING_PURPOSES: Array<{ id: GivingPurpose; label: string }> = [
-  { id: "TITHE", label: "Tithe" },
-  { id: "OFFERING", label: "Offering" },
-  { id: "BUILDING", label: "Building" },
-  { id: "MISSIONS", label: "Missions" },
-  { id: "SEED", label: "Seed" },
-  { id: "SPECIAL", label: "Special" },
-];
-
-export interface GivingAccount {
-  id: string;
-  label: string;
-  bankName: string;
-  accountName: string;
-  accountNumber: string;
-  currency: GivingCurrency;
-  note: string | null;
-  purposes: GivingPurpose[];
-  sortOrder: number;
+/** The admin listing always includes isActive, since it returns inactive accounts too. */
+export interface GivingAccount extends SharedGivingAccount {
   isActive: boolean;
 }
 

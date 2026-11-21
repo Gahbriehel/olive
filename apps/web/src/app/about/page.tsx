@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { Compass, Target, Heart, Users, BookOpen, Award } from "lucide-react";
 import { WeeklyServices } from "@/components/weekly-services";
 import { AnchorScripture } from "@/components/anchor-scripture";
+import { GiveCallout } from "@/components/give-callout";
 
 export const metadata: Metadata = {
   title: "About Us, Mission & Vision",
@@ -194,6 +195,9 @@ export default function AboutPage() {
           <WeeklyServices dark={false} />
         </div>
       </section>
+
+      {/* GIVE SHORTCUT */}
+      <GiveCallout />
     </div>
   );
 }

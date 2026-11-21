@@ -83,6 +83,14 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  href="/give"
+                  className="text-[#D4D0C7] hover:text-[#B18A4A] transition-colors"
+                >
+                  Give
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/contact"
                   className="text-[#D4D0C7] hover:text-[#B18A4A] transition-colors"
                 >

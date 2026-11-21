@@ -10,6 +10,7 @@ import {
   ILeaderboardResponse,
   ICreateContactSubmissionPayload,
   IContactSubmissionResponse,
+  GivingAccount,
 } from "@olive/types";
 
 const API_URL =
@@ -350,6 +351,22 @@ export const webService = {
     } catch {
       return { eventId, leaderboard: [] };
     }
+  },
+
+  // Fetch public giving accounts. Dove returns active accounts only, already sorted.
+  // Errors are rethrown (not turned into []) so the page can tell
+  // "couldn't load" apart from "nothing set up yet".
+  async getGivingAccounts(): Promise<GivingAccount[]> {
+    const res = await webApiClient.get<unknown>("/giving-accounts");
+    const raw = res.data as Record<string, unknown> | unknown[] | null;
+    const list = Array.isArray(raw)
+      ? raw
+      : raw && Array.isArray(raw.data)
+        ? raw.data
+        : [];
+    return (list as GivingAccount[])
+      .filter((a) => a.isActive !== false)
+      .sort((a, b) => a.sortOrder - b.sortOrder);
   },
 
   // Submit Contact Form (prayer requests / inquiry)

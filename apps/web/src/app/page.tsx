@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { webService } from "@/services/api";
 import { WeeklyServices } from "@/components/weekly-services";
 import { Hero } from "@/components/hero";
+import { GiveCallout } from "@/components/give-callout";
 import { CATEGORY_LABELS } from "@/lib/category";
 import { EventCategory } from "@olive/types";
 
@@ -254,6 +255,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* GIVE SHORTCUT */}
+      <GiveCallout />
     </div>
   );
 }

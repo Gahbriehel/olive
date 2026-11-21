@@ -478,3 +478,42 @@ export interface EmailLogResponse {
     };
   };
 }
+
+// ── Giving accounts ────────────────────────────────────────────────────────
+
+export type GivingCurrency = "NGN" | "USD" | "GBP" | "EUR";
+
+export type GivingPurpose =
+  | "TITHE"
+  | "OFFERING"
+  | "BUILDING"
+  | "MISSIONS"
+  | "SEED"
+  | "SPECIAL";
+
+export const GIVING_CURRENCIES: GivingCurrency[] = ["NGN", "USD", "GBP", "EUR"];
+
+export const GIVING_PURPOSES: Array<{ id: GivingPurpose; label: string }> = [
+  { id: "TITHE", label: "Tithe" },
+  { id: "OFFERING", label: "Offering" },
+  { id: "BUILDING", label: "Building" },
+  { id: "MISSIONS", label: "Missions" },
+  { id: "SEED", label: "Seed" },
+  { id: "SPECIAL", label: "Special" },
+];
+
+export interface GivingAccount {
+  id: string;
+  /** What the money is for, e.g. "Tithe" or "Building project". */
+  label: string;
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  currency: GivingCurrency;
+  note: string | null;
+  /** What this account can receive; one account may serve several purposes. */
+  purposes: GivingPurpose[];
+  sortOrder: number;
+  /** Present on the admin listing; public responses contain active accounts only. */
+  isActive?: boolean;
+}
